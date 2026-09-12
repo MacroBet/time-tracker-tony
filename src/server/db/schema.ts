@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   check,
   boolean,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role", [
@@ -24,6 +25,7 @@ export const taskStatusEnum = pgEnum("task_status", [
   "pending",
   "in-progress",
   "blocked",
+  "review",
   "completed",
   "not-applicable",
 ]);
@@ -33,6 +35,7 @@ export const sourceEnum = pgEnum("issue_source", [
   "bim360",
   "acc",
   "procore",
+  "excel",
 ]);
 export const shiftStatusEnum = pgEnum("shift_status", [
   "active",
@@ -91,14 +94,14 @@ export const tasks = pgTable(
     companyId: text("company_id")
       .notNull()
       .references(() => companies.id),
-    assignedTo: text("assigned_to")
-      .notNull()
-      .references(() => users.id),
+    assignedTo: text("assigned_to").references(() => users.id),
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id),
     status: taskStatusEnum().notNull().default("pending"),
-    priority: priorityEnum().notNull().default("P2"),
+    priority: priorityEnum(),
+    importData:
+      jsonb("import_data").$type<import("@/lib/domain").Task["importData"]>(),
     discipline: text().notNull(),
     location: text().notNull().default(""),
     source: sourceEnum().notNull().default("manual"),

@@ -1,4 +1,6 @@
 "use client";
+import { AssignmentDialog } from "./AssignmentDialog";
+import { TaskPlan } from "./TaskPlan";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -106,13 +108,13 @@ function TaskContent({ task }: { task: Task }) {
       title={
         task.externalId ? `Activity #${task.externalId}` : "Activity detail"
       }
-      subtitle={`${task.discipline} · ${task.priority}`}
+      subtitle={`${task.discipline} · ${task.priority || "No priority"}`}
       back={homeFor(currentUser)}
     >
       <Card>
         <CardContent className="p-5 space-y-5">
           <div className="flex gap-2 items-center">
-            <Badge variant="outline">{task.priority}</Badge>
+            <Badge variant="outline">{task.priority || "No priority"}</Badge>
             <TaskStatusBadge task={task} />
             {isOverdue(task) && (
               <Badge className="bg-red-50 text-red-700">
@@ -132,7 +134,8 @@ function TaskContent({ task }: { task: Task }) {
               [
                 "Responsible",
                 users.find((u) => u.id === task.assignedTo)?.name ||
-                  "Assigned worker",
+                  task.importData?.assignee ||
+                  "Unassigned",
               ],
               [
                 "Company",
@@ -165,6 +168,49 @@ function TaskContent({ task }: { task: Task }) {
           )}
         </CardContent>
       </Card>
+      {currentUser.role !== "worker" && (
+        <>
+          <AssignmentDialog tasks={[task]} />
+          <TaskPlan task={task} />
+        </>
+      )}
+      {task.importData && (
+        <Card>
+          <CardContent className="p-5 space-y-3">
+            <h3 className="font-semibold">Original issue report</h3>
+            <p className="text-sm text-slate-600">
+              {task.importData.status} · {task.importData.assigneeType}:{" "}
+              {task.importData.assignee}
+            </p>
+            <p className="text-xs text-slate-500">
+              {task.importData.file} · row {task.importData.row}. Report values
+              are a snapshot; progress updates are tracked separately.
+            </p>
+            {!task.assignedTo && (
+              <p className="text-sm text-amber-700">
+                The original assignee has not been linked to an app account.
+              </p>
+            )}
+            <details className="text-sm">
+              <summary className="cursor-pointer font-medium">
+                View original fields
+              </summary>
+              <dl className="mt-3 space-y-3">
+                {Object.entries(task.importData.fields)
+                  .filter(([, value]) => value)
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <dt className="text-xs text-slate-500">{key}</dt>
+                      <dd className="whitespace-pre-wrap break-words">
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+              </dl>
+            </details>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
@@ -221,7 +267,14 @@ function TaskContent({ task }: { task: Task }) {
           )}
         </CardContent>
       </Card>
-      {(!closed || currentUser.role !== "worker") && (
+      {task.status === "review" && currentUser.role === "worker" && (
+        <p className="rounded-xl border border-purple-200 bg-purple-50 p-5 text-sm">
+          Your work is awaiting supervisor review. You can add evidence while
+          waiting.
+        </p>
+      )}
+      {((!closed && task.status !== "review") ||
+        currentUser.role !== "worker") && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
@@ -241,8 +294,8 @@ function TaskContent({ task }: { task: Task }) {
               />
             </div>
             <p className="text-xs text-slate-500">
-              Completion needs a note or evidence. Blocked and not applicable
-              need a reason.
+              Submit completed work with a note or evidence. Your supervisor
+              reviews the result. Explain any blocker or returned work.
             </p>
             <div className="space-y-2">
               {!closed && (
@@ -259,7 +312,7 @@ function TaskContent({ task }: { task: Task }) {
                 task.status === "blocked" ||
                 closed) && (
                 <Button
-                  disabled={busy || !isOnline}
+                  disabled={busy || !isOnline || !task.assignedTo}
                   className="w-full h-12"
                   onClick={() => update("in-progress")}
                 >
@@ -274,12 +327,29 @@ function TaskContent({ task }: { task: Task }) {
                 <Button
                   disabled={busy || !isOnline}
                   className="w-full h-12 bg-green-600 hover:bg-green-700"
-                  onClick={() => update("completed")}
+                  onClick={() => update("review")}
                 >
-                  Mark as completed
+                  Submit for review
                 </Button>
               )}
-              {!closed && (
+              {task.status === "review" && currentUser.role !== "worker" && (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    disabled={busy || !isOnline}
+                    onClick={() => update("completed")}
+                  >
+                    Approve completion
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={busy || !isOnline || notes.trim().length < 10}
+                    onClick={() => update("in-progress")}
+                  >
+                    Return for correction
+                  </Button>
+                </div>
+              )}
+              {!closed && task.status !== "review" && (
                 <div className="grid grid-cols-2 gap-2">
                   {task.status !== "blocked" && (
                     <Button
@@ -291,14 +361,16 @@ function TaskContent({ task }: { task: Task }) {
                       Report blocker
                     </Button>
                   )}
-                  <Button
-                    disabled={busy || !isOnline}
-                    variant="outline"
-                    className="h-11"
-                    onClick={() => update("not-applicable")}
-                  >
-                    Not applicable
-                  </Button>
+                  {currentUser.role !== "worker" && (
+                    <Button
+                      disabled={busy || !isOnline}
+                      variant="outline"
+                      className="h-11"
+                      onClick={() => update("not-applicable")}
+                    >
+                      Not applicable
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

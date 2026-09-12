@@ -33,11 +33,11 @@ test("employee can only see assigned tasks, own shifts and own directory entry",
     false,
   );
 });
-test("supervisor access is company-scoped; managers are project-scoped", () => {
-  assert(
-    scopeData(supervisor, data).tasks.every(
-      (t) => t.companyId === supervisor.companyId,
-    ),
+test("supervisors and managers are restricted to their assigned projects", () => {
+  assert.equal(scopeData(supervisor, data).tasks.length, data.tasks.length);
+  assert.equal(
+    scopeData(supervisor, { ...data, memberships: [] }).tasks.length,
+    0,
   );
   assert.equal(scopeData(manager, data).tasks.length, data.tasks.length);
   assert.equal(
@@ -97,16 +97,10 @@ test("workflow prevents unsupported transitions and unexplained closure", () => 
   const task = data.tasks[0];
   assert(taskUpdateError(worker, task, "completed", "", 0));
   assert.equal(
-    taskUpdateError(
-      worker,
-      task,
-      "completed",
-      "Tested and verified on site.",
-      0,
-    ),
+    taskUpdateError(worker, task, "review", "Tested and verified on site.", 0),
     null,
   );
-  assert.equal(taskUpdateError(worker, task, "completed", "", 1), null);
+  assert.equal(taskUpdateError(worker, task, "review", "", 1), null);
   assert(taskUpdateError(worker, task, "blocked", "no", 0));
   assert(
     taskUpdateError(
@@ -193,4 +187,35 @@ test("CSRF accepts the public host behind a proxy but rejects missing and foreig
     false,
   );
   assert.equal(sameOrigin(null, "example.vercel.app"), false);
+});
+
+test("workers submit evidence for review; supervisors approve or return with a reason", () => {
+  const task = {
+    ...data.tasks[0],
+    status: "review" as const,
+    notes: "Work tested on site with all checks passing.",
+  };
+  assert(taskUpdateError(worker, task, "completed", task.notes, 1));
+  assert(taskUpdateError(worker, task, "in-progress", "", 1));
+  assert.equal(taskUpdateError(supervisor, task, "completed", "", 0), null);
+  assert(taskUpdateError(supervisor, task, "in-progress", "", 0));
+  assert.equal(
+    taskUpdateError(
+      supervisor,
+      task,
+      "in-progress",
+      "Please repeat the pressure test.",
+      0,
+    ),
+    null,
+  );
+  assert(
+    taskUpdateError(
+      manager,
+      { ...task, status: "pending", assignedTo: undefined },
+      "in-progress",
+      "",
+      0,
+    ),
+  );
 });

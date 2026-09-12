@@ -1,3 +1,4 @@
+import { assignmentQuery } from "./db/assignment";
 import { attachmentInsertQuery } from "./db/attachment-insert";
 import { taskUpdateQuery } from "./db/task-update";
 import "server-only";
@@ -140,11 +141,7 @@ export async function loadData(user: User): Promise<AppData> {
     .where(inArray(tables.memberships.projectId, projectIds));
   const taskScope = and(
     inArray(tables.tasks.projectId, projectIds),
-    user.role === "worker"
-      ? eq(tables.tasks.assignedTo, user.id)
-      : user.role === "supervisor"
-        ? eq(tables.tasks.companyId, user.companyId)
-        : undefined,
+    user.role === "worker" ? eq(tables.tasks.assignedTo, user.id) : undefined,
   );
   const [projects, users, companies, tasks, shiftRows, feedback] =
     await Promise.all([
@@ -172,9 +169,7 @@ export async function loadData(user: User): Promise<AppData> {
             inArray(tables.shifts.projectId, projectIds),
             user.role === "worker"
               ? eq(tables.shifts.userId, user.id)
-              : user.role === "supervisor"
-                ? eq(tables.users.companyId, user.companyId)
-                : undefined,
+              : undefined,
           ),
         ),
       db()
@@ -412,4 +407,140 @@ export async function consumeLoginAttempt(key: string, limit: number) {
     429,
     "Too many sign-in attempts. Try again in 15 minutes.",
   );
+}
+
+export async function assignTasks(
+  updates: { task: Task; activity: Activity; expectedVersion: number }[],
+) {
+  if (usingDemo()) {
+    requireCondition(
+      updates.every((u) =>
+        demo().data.tasks.some(
+          (t) => t.id === u.task.id && t.version === u.expectedVersion,
+        ),
+      ),
+      409,
+      "An activity changed. Refresh and try again.",
+    );
+    for (const u of updates) {
+      demo().data.tasks[
+        demo().data.tasks.findIndex((t) => t.id === u.task.id)
+      ] = u.task;
+      demo().data.activities.push(u.activity);
+    }
+    return;
+  }
+  const result = await db().execute(assignmentQuery(updates));
+  requireCondition(
+    result.rows.length === updates.length,
+    409,
+    "An activity changed. No assignments were saved. Refresh and try again.",
+  );
+}
+export async function planTask(
+  task: Task,
+  activity: Activity,
+  version: number,
+) {
+  if (usingDemo()) {
+    await updateTask(task, activity, version);
+    return;
+  }
+  const result = await db().execute(sql`
+    WITH changed AS (UPDATE tasks SET title=${task.title},description=${task.description},priority=${task.priority ?? null},due_date=${task.dueDate ?? null},discipline=${task.discipline},location=${task.location},version=version+1,updated_at=${task.updatedAt} WHERE id=${task.id} AND version=${version} RETURNING id)
+    INSERT INTO task_activities(id,task_id,actor_id,actor_name,action,note,created_at) SELECT ${activity.id},id,${activity.actorId},${activity.actorName},${activity.action},${activity.note},${activity.createdAt}::timestamptz FROM changed RETURNING id`);
+  requireCondition(
+    result.rows.length,
+    409,
+    "Activity changed. Refresh and try again.",
+  );
+}
+
+export async function putAccount(
+  user: User,
+  passwordHash: string,
+  projectIds: string[],
+) {
+  requireCondition(
+    !usingDemo(),
+    400,
+    "Account provisioning requires a connected database.",
+  );
+  try {
+    await db().batch([
+      db()
+        .insert(tables.users)
+        .values({ ...user, passwordHash }),
+      db()
+        .insert(tables.memberships)
+        .values(
+          projectIds.map((projectId) => ({ userId: user.id, projectId })),
+        ),
+    ]);
+  } catch (error) {
+    const e = error as { cause?: { code?: string } };
+    if (e.cause?.code === "23505")
+      throw new HttpError(409, "Email already exists.");
+    throw error;
+  }
+}
+export async function putProject(
+  project: AppData["projects"][number],
+  userId: string,
+) {
+  requireCondition(
+    !usingDemo(),
+    400,
+    "Project provisioning requires a connected database.",
+  );
+  await db().batch([
+    db().insert(tables.projects).values(project),
+    db().insert(tables.memberships).values({ userId, projectId: project.id }),
+  ]);
+}
+export async function changePassword(userId: string, passwordHash: string) {
+  requireCondition(
+    !usingDemo(),
+    400,
+    "Password changes require a connected database.",
+  );
+  await db().batch([
+    db()
+      .update(tables.users)
+      .set({ passwordHash })
+      .where(eq(tables.users.id, userId)),
+    db().delete(tables.sessions).where(eq(tables.sessions.userId, userId)),
+  ]);
+}
+
+export async function setProjectAccess(
+  userId: string,
+  managedProjectIds: string[],
+  projectIds: string[],
+) {
+  requireCondition(
+    !usingDemo(),
+    400,
+    "Project access changes require a connected database.",
+  );
+  // Revoke sessions as part of the change; subsequent API calls always recheck membership.
+  const queries = [
+    db()
+      .delete(tables.memberships)
+      .where(
+        and(
+          eq(tables.memberships.userId, userId),
+          inArray(tables.memberships.projectId, managedProjectIds),
+        ),
+      ),
+    db().delete(tables.sessions).where(eq(tables.sessions.userId, userId)),
+  ] as const;
+  if (projectIds.length)
+    await db().batch([
+      ...queries,
+      db()
+        .insert(tables.memberships)
+        .values(projectIds.map((projectId) => ({ userId, projectId }))),
+    ]);
+  else await db().batch([...queries]);
 }

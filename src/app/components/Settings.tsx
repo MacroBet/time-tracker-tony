@@ -1,4 +1,8 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Input } from "./ui/input";
+import { apiRequest } from "@/lib/api-client";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { homeFor } from "@/lib/domain";
@@ -6,6 +10,8 @@ import { AppShell } from "./AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 export function Settings() {
+  const router = useRouter();
+  const [changing, setChanging] = useState(false);
   const {
     currentUser,
     currentCompany,
@@ -34,6 +40,63 @@ export function Settings() {
           </p>
         </CardContent>
       </Card>
+      {mode === "neon" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Change password</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              className="space-y-3"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                const form = new FormData(event.currentTarget);
+                setChanging(true);
+                try {
+                  await apiRequest("/api/auth/password", {
+                    method: "POST",
+                    body: JSON.stringify({
+                      currentPassword: form.get("currentPassword"),
+                      newPassword: form.get("newPassword"),
+                    }),
+                  });
+                  router.replace("/");
+                  router.refresh();
+                } catch (e) {
+                  toast.error(
+                    e instanceof Error ? e.message : "Password change failed",
+                  );
+                } finally {
+                  setChanging(false);
+                }
+              }}
+            >
+              <Input
+                name="currentPassword"
+                aria-label="Current password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Current password"
+                required
+              />
+              <Input
+                name="newPassword"
+                aria-label="New password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="New password (8+ characters)"
+                minLength={8}
+                required
+              />
+              <p className="text-xs text-slate-500">
+                Changing your password signs out all sessions. Sign in again
+                with your new password.
+              </p>
+              <Button disabled={changing || !isOnline}>Update password</Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Workspace status</CardTitle>

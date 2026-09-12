@@ -51,7 +51,7 @@ test("API sessions, role boundaries, persistence, evidence and timesheet lifecyc
   ).json();
   assert(
     supervisorData.tasks.every(
-      (t: { companyId: string }) => t.companyId === "c1",
+      (t: { projectId: string }) => t.projectId === "p1",
     ),
   );
   assert.equal((await request("/api/tasks", worker, "POST", {})).status, 403);
@@ -81,7 +81,7 @@ test("API sessions, role boundaries, persistence, evidence and timesheet lifecyc
       await request("/api/tasks", supervisor, "POST", {
         title: "Cross-company task",
         description: "Not allowed",
-        projectId: "p1",
+        projectId: "unassigned-project",
         assignedTo: "u2",
         discipline: "Safety",
       })
@@ -175,6 +175,15 @@ test("API sessions, role boundaries, persistence, evidence and timesheet lifecyc
     (
       await request(`/api/tasks/${task.id}`, worker, "PATCH", {
         version: 5,
+        status: "review",
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await request(`/api/tasks/${task.id}`, supervisor, "PATCH", {
+        version: 6,
         status: "completed",
       })
     ).status,
@@ -190,7 +199,7 @@ test("API sessions, role boundaries, persistence, evidence and timesheet lifecyc
   assert.equal(
     (
       await request(`/api/tasks/${task.id}`, worker, "PATCH", {
-        version: 6,
+        version: 7,
         status: "in-progress",
       })
     ).status,
@@ -293,4 +302,152 @@ test("API sessions, role boundaries, persistence, evidence and timesheet lifecyc
   );
   assert.equal((await request("/api/auth/logout", worker, "POST")).status, 200);
   assert.equal((await request("/api/bootstrap", worker)).status, 401);
+});
+
+test("assignment, handover, review, correction and plan lifecycle", async () => {
+  const manager = await session("u4"),
+    supervisor = await session("u3"),
+    worker = await session("u1"),
+    other = await session("u2");
+  const create = async (title: string) =>
+    await (
+      await request("/api/tasks", manager, "POST", {
+        title,
+        description: "Verify the operational assignment and review flow.",
+        projectId: "p1",
+        assignedTo: "u1",
+        discipline: "Electrical",
+      })
+    ).json();
+  const a = await create("Assignment acceptance check"),
+    b = await create("Second assignment acceptance check");
+  const assignment = {
+    tasks: [
+      { id: a.id, version: 1 },
+      { id: b.id, version: 1 },
+    ],
+    assignedTo: "u2",
+    reason: "Handover to the second worker for the acceptance test.",
+  };
+  assert.equal(
+    (await request("/api/tasks/assignments", worker, "POST", assignment))
+      .status,
+    403,
+  );
+  assert.equal(
+    (await request("/api/tasks/assignments", supervisor, "POST", assignment))
+      .status,
+    200,
+  );
+  assert.equal(
+    (await request("/api/tasks/assignments", manager, "POST", assignment))
+      .status,
+    409,
+  );
+  assert.equal(
+    (
+      await request(`/api/tasks/${a.id}`, worker, "PATCH", {
+        version: 2,
+        notes: "I must no longer be able to update this task.",
+      })
+    ).status,
+    404,
+  );
+  const patch = async (
+    cookie: string,
+    version: number,
+    status: string,
+    notes?: string,
+  ) =>
+    request(`/api/tasks/${a.id}`, cookie, "PATCH", {
+      version,
+      status,
+      ...(notes ? { notes } : {}),
+    });
+  assert.equal((await patch(other, 2, "in-progress")).status, 200);
+  assert.equal((await patch(other, 3, "review")).status, 400);
+  assert.equal(
+    (
+      await patch(
+        other,
+        3,
+        "review",
+        "All verification checks were completed on site.",
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await patch(other, 4, "completed", "I cannot approve my own delivery."))
+      .status,
+    400,
+  );
+  assert.equal((await patch(supervisor, 4, "in-progress")).status, 400);
+  assert.equal(
+    (
+      await patch(
+        supervisor,
+        4,
+        "in-progress",
+        "Please correct the labeling before completion.",
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await patch(
+        other,
+        5,
+        "review",
+        "Labels corrected and the verification repeated.",
+      )
+    ).status,
+    200,
+  );
+  assert.equal((await patch(supervisor, 6, "completed")).status, 200);
+  const updated = (
+    await (await request("/api/bootstrap", manager)).json()
+  ).tasks.find((t: { id: string }) => t.id === a.id);
+  assert.equal(updated.status, "completed");
+  assert.equal(updated.assignedTo, "u2");
+  const plan = {
+    version: 7,
+    title: updated.title,
+    description: updated.description,
+    discipline: "Mechanical",
+    priority: "P1",
+    location: "Room S201",
+    dueDate: "2026-10-01",
+    reason: "Update the plan following the completed verification.",
+  };
+  assert.equal(
+    (await request(`/api/tasks/${a.id}/plan`, other, "PATCH", plan)).status,
+    403,
+  );
+  assert.equal(
+    (await request(`/api/tasks/${a.id}/plan`, manager, "PATCH", plan)).status,
+    200,
+  );
+  assert.equal(
+    (
+      await request("/api/tasks/assignments", manager, "POST", {
+        tasks: [{ id: b.id, version: 2 }],
+        assignedTo: null,
+        reason: "Return this activity to the planning queue.",
+      })
+    ).status,
+    200,
+  );
+  const data = await (await request("/api/bootstrap", supervisor)).json();
+  assert.equal(
+    data.tasks.find((t: { id: string }) => t.id === b.id).assignedTo,
+    undefined,
+  );
+  assert(
+    data.activities.some(
+      (t: { taskId: string; action: string }) =>
+        t.taskId === a.id && t.action.startsWith("Assignment:"),
+    ),
+  );
 });

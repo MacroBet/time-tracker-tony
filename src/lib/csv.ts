@@ -24,6 +24,8 @@ export function tasksCsv(
     "Overdue",
     "Last update",
     "Source",
+    "Original status",
+    "Original assignee type",
   ];
   const rows = tasks.map((t) => [
     t.id,
@@ -32,7 +34,8 @@ export function tasksCsv(
     statusLabels[t.status],
     t.priority,
     data.companies.find((c) => c.id === t.companyId)?.name,
-    data.users.find((u) => u.id === t.assignedTo)?.name,
+    data.users.find((u) => u.id === t.assignedTo)?.name ||
+      t.importData?.assignee,
     data.projects.find((p) => p.id === t.projectId)?.name,
     t.discipline,
     t.location,
@@ -40,6 +43,8 @@ export function tasksCsv(
     isOverdue(t) ? "Yes" : "No",
     t.updatedAt,
     t.source,
+    t.importData?.status,
+    t.importData?.assigneeType,
   ]);
   return (
     "\uFEFF" +

@@ -14,24 +14,25 @@ Le priorità, i riferimenti esterni, l’area e la disciplina derivano dal conte
 
 - Ogni account deve appartenere esplicitamente a un progetto tramite `project_memberships`.
 - Operatore: solo attività assegnate e turni propri.
-- Supervisore: attività e turni dell’azienda nei progetti assegnati.
+- Supervisore: tutte le attività e i turni dei progetti che supervisiona, anche non assegnati o di altre aziende. La membership determina i progetti supervisionati.
 - Manager/admin: tutte le aziende, ma solo nei progetti assegnati. Non esiste un superutente che attraversa automaticamente tutti i cantieri.
 - Creazione attività solo per supervisori/manager, con assegnatario operatore appartenente al progetto e alla vista consentita.
 - Ogni API rivalida sessione e perimetro. Cambiare un URL, un ID o il client non estende i permessi.
 
-La scelta degli utenti è disponibile solo nella demo locale. Con Neon, l’accesso usa password individuali scrypt, sessioni opache casuali di 8 ore, hash del token in DB e cookie HttpOnly/SameSite/Secure in produzione. Le richieste mutative controllano Origin/Host. I tentativi di login sono limitati nel DB per account (e per IP dietro Vercel), quindi il limite è condiviso tra istanze. Non sono ancora presenti SSO, MFA, recupero password o interfaccia amministrativa degli utenti.
+La scelta degli utenti è disponibile solo nella demo locale. Con Neon, l’accesso usa password individuali scrypt, sessioni opache casuali di 8 ore, hash del token in DB e cookie HttpOnly/SameSite/Secure in produzione. Le richieste mutative controllano Origin/Host. I tentativi di login sono limitati nel DB per account (e per IP dietro Vercel), quindi il limite è condiviso tra istanze. L’admin può creare account/progetti e gestire le membership dalla sezione Team. Ogni utente può cambiare la propria password. Non sono ancora presenti SSO, MFA o recupero password via email.
 
 ## Workflow iniziale
 
 - To do → In progress / Blocked / Not applicable.
-- In progress → Completed / Blocked / Not applicable.
+- Operatore: In progress → Awaiting review / Blocked. La consegna richiede nota o evidenza.
+- Supervisore/manager: Awaiting review → Completed oppure In progress con motivo di restituzione. Solo la gestione può dichiarare Not applicable.
 - Blocked → In progress / Not applicable.
 - Completed e Not applicable possono essere riaperti da supervisore/manager.
 - Completed richiede una nota nuova di almeno 10 caratteri oppure un’evidenza caricata.
 - Blocked e Not applicable richiedono una motivazione nuova di almeno 10 caratteri.
 - Stato, autore, data e note sono registrati nello storico. La nota corrente non sostituisce le note storiche.
 
-È una prima regola operativa da validare con Tony: un’eventuale approvazione formale delle chiusure o obbligo universale di fotografia richiederà un passaggio ulteriore. Gli aggiornamenti usano una versione: un client con dati vecchi riceve `409`, anziché sovrascrivere. Aggiornamento attività e audit sono atomici nello stesso statement SQL.
+Il flusso operativo ora include la revisione delle consegne da parte di supervisor/manager. Un obbligo universale di fotografia richiederebbe una regola aggiuntiva. Gli aggiornamenti usano una versione: un client con dati vecchi riceve `409`, anziché sovrascrivere. Aggiornamento attività e audit sono atomici nello stesso statement SQL.
 
 I turni mantengono il flusso esistente: check-in manuale → fine turno → revisione delle ore → invio → approvazione/rifiuto motivato. Il server imposta le ore di inizio/fine; l’indice PostgreSQL impedisce due turni attivi per persona. Nessun GPS/NFC/Wi-Fi viene dichiarato funzionante senza una vera integrazione.
 
@@ -45,8 +46,8 @@ Il primo backend salva payload e metadati degli allegati in PostgreSQL. PNG/JPEG
 
 ## Limiti e fase successiva
 
-1. **Neon reale:** database di test collegato il 12 settembre 2026, migrazione iniziale applicata e 11 tabelle verificate. Configurazione locale esclusa da Git, modalità demo disattivata. Verificati login in modalità Neon e rifiuto delle API senza sessione. Restano creazione del primo account e collaudo autenticato, poi configurazione e verifica su Vercel.
-2. **Import Excel/CSV:** ricevuto e analizzato l’export di 305 issue. Servono assegnazioni ad aziende/ruoli oltre alle persone e conservazione degli stati esterni prima di importarlo correttamente. Lo schema ha già unicità `(project_id, source, external_id)`. L’export CSV della vista è disponibile; l’import non è ancora implementato e nessuna issue del report è stata caricata.
+1. **Neon reale:** database di test collegato il 12 settembre 2026, migrazione iniziale applicata e 11 tabelle verificate. Configurazione locale esclusa da Git, modalità demo disattivata. Verificati login in modalità Neon e rifiuto delle API senza sessione. Creati quattro account di test e verificati gli accessi autenticati. Resta configurazione e verifica su Vercel.
+2. **Import Excel/CSV:** importate e riconciliate 305 issue nel progetto di test tramite script con anteprima, transazione e deduplica. Stato e assegnatario originali sono conservati nei metadati e visibili nella UI. Restano il collegamento degli assegnatari esterni agli account e un’interfaccia di importazione; dettagli in [Analisi importazione](import-analysis.md).
 3. **Autodesk/terza piattaforma:** integrare API/OAuth dopo disponibilità di credenziali, permessi e frequenza di sincronizzazione. Il nome “Procure” è ambiguo: `procore` è un valore predisposto nello schema, non una conferma del prodotto da integrare.
 4. **Report manageriale:** validare il formato atteso con Tony; al momento sono disponibili dashboard e CSV.
 5. **Offline e notifiche:** l’app avvisa quando manca rete e non dichiara riuscito un salvataggio. Non ha coda offline, push o reminder attivi.

@@ -1,4 +1,5 @@
 "use client";
+import { AssignmentDialog } from "./AssignmentDialog";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -29,6 +30,7 @@ export function TaskStatusBadge({ task }: { task: Task }) {
     pending: "bg-slate-100 text-slate-700",
     "in-progress": "bg-blue-50 text-blue-700",
     blocked: "bg-red-50 text-red-700",
+    review: "bg-purple-50 text-purple-700",
     completed: "bg-emerald-50 text-emerald-700",
     "not-applicable": "bg-slate-100 text-slate-600",
   };
@@ -41,6 +43,8 @@ export function TaskStatusBadge({ task }: { task: Task }) {
 export function TaskBoard({ management = false }: { management?: boolean }) {
   const data = useApp();
   const { tasks, users, companies, projects, currentUser } = data;
+  const [selected, setSelected] = useState<string[]>([]);
+  const [limit, setLimit] = useState(24);
   const [query, setQuery] = useState("");
   const [project, setProject] = useState("all");
   const [company, setCompany] = useState("all");
@@ -57,6 +61,8 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
         t.description,
         t.externalId,
         t.location,
+        t.importData?.assignee,
+        t.importData?.status,
         users.find((u) => u.id === t.assignedTo)?.name,
       ]
         .join(" ")
@@ -66,8 +72,10 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
         (project === "all" || t.projectId === project) &&
         (company === "all" || t.companyId === company) &&
         (person === "all" || t.assignedTo === person) &&
-        (priority === "all" || t.priority === priority) &&
-        (status === "all" || t.status === status) &&
+        (priority === "all" || (t.priority || "unspecified") === priority) &&
+        (status === "all" ||
+          t.status === status ||
+          (status === "unassigned" && !t.assignedTo && !isClosed(t))) &&
         (discipline === "all" || t.discipline === discipline) &&
         (due === "all" ||
           (due === "overdue" && isOverdue(t)) ||
@@ -79,7 +87,7 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
       (a, b) =>
         Number(isOverdue(b)) - Number(isOverdue(a)) ||
         Number(isClosed(a)) - Number(isClosed(b)) ||
-        a.priority.localeCompare(b.priority) ||
+        (a.priority || "P9").localeCompare(b.priority || "P9") ||
         (a.dueDate || "9999").localeCompare(b.dueDate || "9999"),
     );
   const completed = filtered.filter((t) => t.status === "completed").length;
@@ -142,41 +150,82 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
   );
   return (
     <section className="space-y-4" aria-label="Activities">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div
+        className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2 pb-2"
+        aria-label="Activity views"
+      >
         {[
-          {
-            label: "Open activities",
-            value: filtered.filter((t) => !isClosed(t)).length,
-            color: "text-blue-600",
-          },
-          {
-            label: "Overdue",
-            value: filtered.filter((t) => isOverdue(t)).length,
-            color: "text-red-600",
-          },
-          {
-            label: "Blocked",
-            value: filtered.filter((t) => t.status === "blocked").length,
-            color: "text-amber-600",
-          },
-          {
-            label: "Completed",
-            value: `${progress}%`,
-            color: "text-emerald-600",
-          },
-        ].map((s) => (
-          <Card key={s.label} className="shadow-none">
-            <CardContent className="p-4">
-              <p className="text-xs text-slate-500">{s.label}</p>
-              <p
-                className={`text-3xl font-semibold tracking-tight mt-1 ${s.color}`}
-              >
-                {s.value}
-              </p>
-            </CardContent>
-          </Card>
+          ...(management ? [{ id: "unassigned", name: "To assign" }] : []),
+          { id: "pending", name: "To do" },
+          { id: "in-progress", name: "In progress" },
+          { id: "review", name: "To review" },
+          { id: "blocked", name: "Blocked" },
+          { id: "completed", name: "Completed" },
+          { id: "all", name: "All" },
+        ].map((view) => (
+          <Button
+            key={view.id}
+            variant={status === view.id ? "default" : "outline"}
+            className="shrink-0 h-11 px-2 text-xs sm:text-sm"
+            aria-pressed={status === view.id}
+            onClick={() => {
+              setStatus(view.id);
+              setLimit(24);
+              setSelected([]);
+            }}
+          >
+            {view.name}{" "}
+            <span className="ml-1 opacity-70">
+              {
+                tasks.filter(
+                  (t) =>
+                    view.id === "all" ||
+                    (view.id === "unassigned"
+                      ? !t.assignedTo && !isClosed(t)
+                      : t.status === view.id),
+                ).length
+              }
+            </span>
+          </Button>
         ))}
       </div>
+      {management && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            {
+              label: "Open activities",
+              value: filtered.filter((t) => !isClosed(t)).length,
+              color: "text-blue-600",
+            },
+            {
+              label: "Overdue",
+              value: filtered.filter((t) => isOverdue(t)).length,
+              color: "text-red-600",
+            },
+            {
+              label: "Blocked",
+              value: filtered.filter((t) => t.status === "blocked").length,
+              color: "text-amber-600",
+            },
+            {
+              label: "Completed",
+              value: `${progress}%`,
+              color: "text-emerald-600",
+            },
+          ].map((s) => (
+            <Card key={s.label} className="shadow-none">
+              <CardContent className="p-4">
+                <p className="text-xs text-slate-500">{s.label}</p>
+                <p
+                  className={`text-3xl font-semibold tracking-tight mt-1 ${s.color}`}
+                >
+                  {s.value}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
       {management && (
         <div className="text-xs text-slate-500">
           {completed} of {applicable} applicable activities completed · counts
@@ -226,8 +275,7 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {select("Projects", project, setProject, projects)}
               {management &&
-                (currentUser.role === "manager" ||
-                  currentUser.role === "admin") &&
+                currentUser.role !== "worker" &&
                 select("Companies", company, setCompany, companies)}
               {management &&
                 select(
@@ -240,7 +288,10 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
                 "Priorities",
                 priority,
                 setPriority,
-                ["P1", "P2", "P3"].map((id) => ({ id, name: id })),
+                ["P1", "P2", "P3", "unspecified"].map((id) => ({
+                  id,
+                  name: id === "unspecified" ? "Not specified" : id,
+                })),
               )}
               {select(
                 "Statuses",
@@ -270,74 +321,79 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
         </Card>
       )}
       {management && (
-        <div className="grid md:grid-cols-2 gap-4">
-          {[
-            {
-              title: "Progress by company",
-              entries: companies.map((c) => ({
-                id: c.id,
-                label: c.name,
-                items: filtered.filter((t) => t.companyId === c.id),
-              })),
-            },
-            {
-              title: "Progress by discipline",
-              entries: disciplines.map((d) => ({
-                id: d,
-                label: d,
-                items: filtered.filter((t) => t.discipline === d),
-              })),
-            },
-          ].map((group) => (
-            <Card key={group.title} className="shadow-none">
-              <CardContent className="p-4 space-y-3">
-                <h3 className="font-semibold text-sm">{group.title}</h3>
-                {group.entries
-                  .filter((e) => e.items.length)
-                  .map((e) => {
-                    const total = e.items.filter(
-                      (t) => t.status !== "not-applicable",
-                    ).length;
-                    const done = e.items.filter(
-                      (t) => t.status === "completed",
-                    ).length;
-                    return (
-                      <div key={e.id}>
-                        <div className="flex justify-between gap-3 text-xs mb-1.5">
-                          <span>{e.label}</span>
-                          <span className="text-slate-500">
-                            {done}/{total}
-                          </span>
-                        </div>
-                        <div
-                          role="progressbar"
-                          aria-label={e.label}
-                          aria-valuenow={
-                            total ? Math.round((done / total) * 100) : 0
-                          }
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          className="h-1.5 rounded-full bg-slate-100 overflow-hidden"
-                        >
+        <details className="rounded-xl border bg-white p-4">
+          <summary className="cursor-pointer font-semibold text-sm">
+            Project progress by company and discipline
+          </summary>
+          <div className="grid md:grid-cols-2 gap-4 mt-4">
+            {[
+              {
+                title: "Progress by company",
+                entries: companies.map((c) => ({
+                  id: c.id,
+                  label: c.name,
+                  items: filtered.filter((t) => t.companyId === c.id),
+                })),
+              },
+              {
+                title: "Progress by discipline",
+                entries: disciplines.map((d) => ({
+                  id: d,
+                  label: d,
+                  items: filtered.filter((t) => t.discipline === d),
+                })),
+              },
+            ].map((group) => (
+              <Card key={group.title} className="shadow-none">
+                <CardContent className="p-4 space-y-3 max-h-80 overflow-y-auto">
+                  <h3 className="font-semibold text-sm">{group.title}</h3>
+                  {group.entries
+                    .filter((e) => e.items.length)
+                    .map((e) => {
+                      const total = e.items.filter(
+                        (t) => t.status !== "not-applicable",
+                      ).length;
+                      const done = e.items.filter(
+                        (t) => t.status === "completed",
+                      ).length;
+                      return (
+                        <div key={e.id}>
+                          <div className="flex justify-between gap-3 text-xs mb-1.5">
+                            <span>{e.label}</span>
+                            <span className="text-slate-500">
+                              {done}/{total}
+                            </span>
+                          </div>
                           <div
-                            className="h-full bg-blue-600 rounded-full"
-                            style={{
-                              width: `${total ? (done / total) * 100 : 0}%`,
-                            }}
-                          />
+                            role="progressbar"
+                            aria-label={e.label}
+                            aria-valuenow={
+                              total ? Math.round((done / total) * 100) : 0
+                            }
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            className="h-1.5 rounded-full bg-slate-100 overflow-hidden"
+                          >
+                            <div
+                              className="h-full bg-blue-600 rounded-full"
+                              style={{
+                                width: `${total ? (done / total) * 100 : 0}%`,
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                {!filtered.length && (
-                  <p className="text-sm text-slate-500">
-                    No activities match these filters.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                      );
+                    })}
+                  {!filtered.length && (
+                    <p className="text-sm text-slate-500">
+                      No activities match these filters.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </details>
       )}
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">
@@ -347,6 +403,31 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
           {filtered.length} activities
         </span>
       </div>
+      {management && filtered.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-white p-3">
+          <Button
+            variant="ghost"
+            onClick={() =>
+              setSelected(
+                filtered.slice(0, Math.min(limit, 50)).map((t) => t.id),
+              )
+            }
+          >
+            Select visible (max 50)
+          </Button>
+          <AssignmentDialog
+            tasks={tasks.filter((t) => selected.includes(t.id))}
+            onSaved={() => setSelected([])}
+          >
+            Assign selected ({selected.length})
+          </AssignmentDialog>
+          {!!selected.length && (
+            <Button variant="ghost" onClick={() => setSelected([])}>
+              Clear selection
+            </Button>
+          )}
+        </div>
+      )}
       {filtered.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center space-y-3">
@@ -362,61 +443,105 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
         </Card>
       ) : (
         <div className={management ? "grid md:grid-cols-2 gap-3" : "space-y-3"}>
-          {filtered.map((task) => (
-            <Link
-              key={task.id}
-              href={`/tasks/${task.id}`}
-              className={`block rounded-xl border bg-white p-4 sm:p-5 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600 ${isOverdue(task) ? "border-red-200 border-l-4 border-l-red-500" : "border-slate-200"}`}
-            >
-              <div className="flex gap-2 items-center mb-3">
-                <Badge
-                  variant="outline"
-                  className={
-                    task.priority === "P1"
-                      ? "text-red-700 border-red-200"
-                      : "text-slate-600"
-                  }
-                >
-                  {task.priority}
-                </Badge>
-                <span className="text-xs text-slate-500">
-                  {task.externalId ? `#${task.externalId}` : "Manual"} ·{" "}
-                  {task.discipline}
-                </span>
-                <ArrowUpRight className="size-4 ml-auto text-slate-400" />
-              </div>
-              <h3 className="font-semibold leading-snug">{task.title}</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                {task.location ||
-                  projects.find((p) => p.id === task.projectId)?.name}
-              </p>
-              <div className="flex gap-2 flex-wrap mt-3 items-center">
-                <TaskStatusBadge task={task} />
-                {isOverdue(task) && (
-                  <span className="flex gap-1 items-center text-xs text-red-700 font-medium">
-                    <AlertTriangle className="size-3" />
-                    Overdue
+          {filtered.slice(0, limit).map((task) => (
+            <div key={task.id} className="relative">
+              {management && (
+                <label className="flex items-center gap-2 text-xs p-2">
+                  <input
+                    type="checkbox"
+                    className="size-5"
+                    aria-label={`Select issue ${task.externalId || task.title}`}
+                    checked={selected.includes(task.id)}
+                    disabled={
+                      !selected.includes(task.id) && selected.length >= 50
+                    }
+                    onChange={(e) =>
+                      setSelected(
+                        e.target.checked
+                          ? [...selected, task.id]
+                          : selected.filter((id) => id !== task.id),
+                      )
+                    }
+                  />
+                  Select activity
+                </label>
+              )}
+              <Link
+                href={`/tasks/${task.id}`}
+                className={`block rounded-xl border bg-white p-4 sm:p-5 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600 ${isOverdue(task) ? "border-red-200 border-l-4 border-l-red-500" : "border-slate-200"}`}
+              >
+                <div className="flex gap-2 items-center mb-3">
+                  <Badge
+                    variant="outline"
+                    className={
+                      task.priority === "P1"
+                        ? "text-red-700 border-red-200"
+                        : "text-slate-600"
+                    }
+                  >
+                    {task.priority || "No priority"}
+                  </Badge>
+                  <span className="text-xs text-slate-500">
+                    {task.externalId ? `#${task.externalId}` : "Manual"} ·{" "}
+                    {task.discipline}
                   </span>
-                )}
-                {isStale(task) && (
-                  <span className="text-xs text-amber-700">
-                    No recent update
+                  <ArrowUpRight className="size-4 ml-auto text-slate-400" />
+                </div>
+                <h3 className="font-semibold leading-snug">{task.title}</h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  {task.location ||
+                    projects.find((p) => p.id === task.projectId)?.name}
+                </p>
+                <div className="flex gap-2 flex-wrap mt-3 items-center">
+                  <TaskStatusBadge task={task} />
+                  {task.importData && (
+                    <span className="text-xs text-slate-500">
+                      Report: {task.importData.status}
+                    </span>
+                  )}
+                  {isOverdue(task) && (
+                    <span className="flex gap-1 items-center text-xs text-red-700 font-medium">
+                      <AlertTriangle className="size-3" />
+                      Overdue
+                    </span>
+                  )}
+                  {isStale(task) && (
+                    <span className="text-xs text-amber-700">
+                      No recent update
+                    </span>
+                  )}
+                </div>
+                <div className="border-t border-slate-100 mt-4 pt-3 flex flex-wrap gap-x-4 gap-y-2 justify-between text-xs text-slate-500">
+                  <span>
+                    {users.find((u) => u.id === task.assignedTo)?.name ||
+                      task.importData?.assignee ||
+                      "Unassigned"}
                   </span>
-                )}
-              </div>
-              <div className="border-t border-slate-100 mt-4 pt-3 flex flex-wrap gap-x-4 gap-y-2 justify-between text-xs text-slate-500">
-                <span>
-                  {users.find((u) => u.id === task.assignedTo)?.name ||
-                    "Assigned worker"}
-                </span>
-                <span className="flex items-center gap-1">
-                  <CalendarDays className="size-3" />
-                  {task.dueDate || "No due date"}
-                </span>
-              </div>
-            </Link>
+                  <span className="flex items-center gap-1">
+                    <CalendarDays className="size-3" />
+                    {task.dueDate || "No due date"}
+                  </span>
+                </div>
+              </Link>
+              {management && (
+                <div className="pt-2">
+                  <AssignmentDialog tasks={[task]}>
+                    {task.assignedTo ? "Reassign" : "Assign worker"}
+                  </AssignmentDialog>
+                </div>
+              )}
+            </div>
           ))}
         </div>
+      )}
+      {filtered.length > limit && (
+        <Button
+          variant="outline"
+          className="w-full h-12"
+          onClick={() => setLimit(limit + 24)}
+        >
+          Show more ({filtered.length - limit} remaining)
+        </Button>
       )}
     </section>
   );

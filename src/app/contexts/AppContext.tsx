@@ -1,5 +1,6 @@
 "use client";
 import {
+  useEffect,
   createContext,
   useContext,
   useState,
@@ -48,6 +49,20 @@ export function AppProvider({
     setData(next);
     setLastSyncTime(new Date());
   }, []);
+  useEffect(() => {
+    const refresh = () => {
+      if (navigator.onLine && document.visibilityState === "visible")
+        void refreshData().catch(() => {});
+    };
+    const timer = window.setInterval(refresh, 20000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [refreshData]);
   async function mutate<T>(url: string, options: RequestInit) {
     if (!navigator.onLine)
       throw new Error("You are offline. Reconnect before saving.");

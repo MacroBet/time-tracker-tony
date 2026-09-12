@@ -1,3 +1,4 @@
+import { assignmentQuery } from "../src/server/db/assignment";
 import { attachmentInsertQuery } from "../src/server/db/attachment-insert";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -23,6 +24,30 @@ test("PostgreSQL migration, constraints and atomic optimistic updates", async ()
     await db.insert(schema.projects).values(data.projects);
     await db.insert(schema.memberships).values(data.memberships);
     await db.insert(schema.tasks).values(data.tasks);
+    await db.insert(schema.tasks).values({
+      ...data.tasks[0],
+      id: "imported-excel",
+      source: "excel",
+      externalId: "90001",
+      assignedTo: null,
+      priority: null,
+      importData: {
+        file: "report.xlsx",
+        row: 2,
+        status: "Open",
+        assignee: "Company A",
+        assigneeType: "Company",
+        importedAt: new Date().toISOString(),
+        fields: { Status: "Open" },
+      },
+    });
+    const imported = (
+      await pg.query<{ assigned_to: string | null; priority: string | null }>(
+        "SELECT assigned_to, priority FROM tasks WHERE id = 'imported-excel'",
+      )
+    ).rows[0];
+    assert.equal(imported.assigned_to, null);
+    assert.equal(imported.priority, null);
     const task = {
       ...data.tasks[0],
       notes: "Verified on site.",
@@ -101,6 +126,39 @@ test("PostgreSQL migration, constraints and atomic optimistic updates", async ()
         )
       ).rows[0].version,
       4,
+    );
+    const assignments = data.tasks
+      .slice(1, 3)
+      .map((t, i) => ({
+        task: { ...t, assignedTo: "u1" },
+        expectedVersion: 1,
+        activity: { ...event, id: `assignment-${i}`, taskId: t.id },
+      }));
+    const failedAssignment = dialect.sqlToQuery(
+      assignmentQuery(
+        assignments.map((a, i) => ({
+          ...a,
+          expectedVersion: i === 1 ? 99 : 1,
+        })),
+      ),
+    );
+    assert.equal(
+      (await pg.query(failedAssignment.sql, failedAssignment.params)).rows
+        .length,
+      0,
+    );
+    const unchanged = await pg.query<{ assigned_to: string }>(
+      "SELECT assigned_to FROM tasks WHERE id=$1",
+      [assignments[0].task.id],
+    );
+    assert.equal(unchanged.rows[0].assigned_to, data.tasks[1].assignedTo);
+    const successfulAssignment = dialect.sqlToQuery(
+      assignmentQuery(assignments),
+    );
+    assert.equal(
+      (await pg.query(successfulAssignment.sql, successfulAssignment.params))
+        .rows.length,
+      2,
     );
     await db.insert(schema.shifts).values({
       id: "active-1",

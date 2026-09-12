@@ -27,4 +27,18 @@ La colonna `Company name` è vuota per 155 righe. Il nome dell’assegnatario no
 
 L’importatore dovrà proporre un’anteprima con riferimenti alle righe e segnalare le mappature mancanti. Conservare ID esterno, descrizione, date, ubicazione e metadati sorgente, deduplicando per progetto, sorgente e ID. Le colonne sulle associazioni a documenti/checklist non contengono i relativi file: non possono diventare automaticamente evidenze caricate.
 
-Stato attuale: analisi completata, nessuna riga importata. Il database di test contiene lo schema dell’app, senza dati demo.
+## Importazione completata
+
+Il 12 settembre 2026 sono state importate 305 issue nel progetto `AMS16 · Test` di Neon. Tutte le 32 colonne sono conservate in `import_data.fields`, con file e riga sorgente. La riconciliazione ha verificato ogni riga; ripetendo il comando, tutte le 305 issue sono state saltate senza duplicati o sovrascritture.
+
+Il workflow iniziale mappa Open → To do, Ready to inspect / Answered → In progress, In dispute / Not approved → Blocked, Work completed → Completed. Lo stato originale è sempre visibile separatamente come snapshot del report. Non viene inventata una data di completamento né dichiarata una chiusura approvata. Le 82 priorità mancanti restano nulle.
+
+Le 30 denominazioni aziendali sono mantenute distinte, senza fondere automaticamente nomi simili. Le 9 assegnazioni al ruolo TEAM-MER-Commissioning sono sotto `Company not mapped`: il report non ne esplicita l’azienda. Non sono stati creati account per le persone dell’export. Le issue conservano l’assegnatario esterno. Nel successivo collaudo operativo, 12 issue sono state assegnate al worker principale e 6 al secondo worker tramite la nuova API, con storico esplicito e stati originali conservati. Manager, admin e supervisor vedono i progetti loro assegnati; ogni worker vede solo le proprie attività.
+
+I timestamp senza offset sono interpretati nel fuso Europe/Amsterdam. Le stringhe originali restano nei metadati. I documenti e le checklist associati non sono allegati nel workbook e non sono stati importati.
+
+### Ripetere l’importazione
+
+1. Usare Python con `openpyxl`: `python3 scripts/extract-issues.py report.xlsx output/import/issues.json`.
+2. Anteprima: `node --import tsx scripts/import-issues.ts --file output/import/issues.json --project PROJECT_ID --actor admin@test.com`.
+3. Aggiungere `--apply` per salvare. Il comando valida l’intero input e la membership dell’account manager/admin, poi inserisce aziende, issue e storico in una singola transazione. Le issue già presenti non vengono aggiornate. I file temporanei in `output/` sono esclusi da Git.

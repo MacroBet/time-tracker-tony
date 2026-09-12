@@ -7,7 +7,7 @@ export function taskUpdateQuery(
 ) {
   return sql`
     WITH changed AS (
-      UPDATE tasks SET status = ${task.status}, notes = ${task.notes ?? null},
+      UPDATE tasks SET status = ${task.status}, assigned_to = ${task.assignedTo ?? null}, notes = ${task.notes ?? null},
         completed_at = ${task.completedAt ?? null}, updated_at = ${task.updatedAt}, version = version + 1
       WHERE id = ${task.id} AND version = ${expectedVersion} RETURNING id
     )

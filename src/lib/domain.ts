@@ -22,20 +22,34 @@ export interface Membership {
   projectId: string;
 }
 export type TaskStatus =
-  "pending" | "in-progress" | "blocked" | "completed" | "not-applicable";
+  | "pending"
+  | "in-progress"
+  | "blocked"
+  | "review"
+  | "completed"
+  | "not-applicable";
 export interface Task {
   id: string;
   title: string;
   description: string;
   projectId: string;
   companyId: string;
-  assignedTo: string;
+  assignedTo?: string;
   createdBy: string;
   status: TaskStatus;
-  priority: "P1" | "P2" | "P3";
+  priority?: "P1" | "P2" | "P3";
   discipline: string;
   location: string;
-  source: "manual" | "bim360" | "acc" | "procore";
+  source: "manual" | "bim360" | "acc" | "procore" | "excel";
+  importData?: {
+    file: string;
+    row: number;
+    status: string;
+    assignee: string;
+    assigneeType: "User" | "Company" | "Role";
+    importedAt: string;
+    fields: Record<string, string | null>;
+  };
   externalId?: string;
   dueDate?: string;
   notes?: string;
@@ -117,6 +131,7 @@ export const statusLabels: Record<TaskStatus, string> = {
   pending: "To do",
   "in-progress": "In progress",
   blocked: "Blocked",
+  review: "Awaiting review",
   completed: "Completed",
   "not-applicable": "Not applicable",
 };

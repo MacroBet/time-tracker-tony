@@ -88,11 +88,13 @@ export function FeedbackButton() {
       <Button
         disabled={busy || !projects.length}
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-30 shadow-lg rounded-full h-11 text-sm bg-slate-900 hover:bg-slate-800"
+        aria-label="Report an issue"
+        title="Report an issue"
+        className="fixed bottom-4 left-4 sm:left-auto sm:right-4 z-30 shadow-lg rounded-full h-11 w-11 sm:w-auto px-0 sm:px-4 text-sm bg-slate-900 hover:bg-slate-800"
         style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
       >
         <Bug className="size-4" />
-        Report an issue
+        <span className="hidden sm:inline">Report an issue</span>
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90dvh] overflow-y-auto">

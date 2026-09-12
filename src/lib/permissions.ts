@@ -15,11 +15,7 @@ export function canReadTask(
 ) {
   return (
     isProjectMember(user, task.projectId, data) &&
-    (user.role === "worker"
-      ? task.assignedTo === user.id
-      : user.role === "supervisor"
-        ? task.companyId === user.companyId
-        : true)
+    (user.role === "worker" ? task.assignedTo === user.id : true)
   );
 }
 export function canReadShift(
@@ -29,13 +25,7 @@ export function canReadShift(
 ) {
   return (
     isProjectMember(user, shift.projectId, data) &&
-    (user.role === "worker"
-      ? shift.userId === user.id
-      : user.role === "supervisor"
-        ? data.users.some(
-            (u) => u.id === shift.userId && u.companyId === user.companyId,
-          )
-        : true)
+    (user.role === "worker" ? shift.userId === user.id : true)
   );
 }
 export function scopeData(user: User, data: AppData): AppData {
@@ -53,18 +43,15 @@ export function scopeData(user: User, data: AppData): AppData {
   );
   const visibleUsers = data.users.filter(
     (u) =>
-      userIds.has(u.id) &&
-      (user.role === "worker"
-        ? u.id === user.id
-        : user.role === "supervisor"
-          ? u.companyId === user.companyId
-          : true),
+      userIds.has(u.id) && (user.role === "worker" ? u.id === user.id : true),
   );
   const visibleUserIds = new Set(visibleUsers.map((u) => u.id));
   return {
     projects: data.projects.filter((p) => projectIds.has(p.id)),
-    companies: data.companies.filter((c) =>
-      visibleUsers.some((u) => u.companyId === c.id),
+    companies: data.companies.filter(
+      (c) =>
+        visibleUsers.some((u) => u.companyId === c.id) ||
+        tasks.some((t) => t.companyId === c.id),
     ),
     users: visibleUsers,
     memberships: data.memberships.filter(

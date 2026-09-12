@@ -1,11 +1,12 @@
 "use client";
+import { TeamPanel } from "./TeamPanel";
 import { useState } from "react";
 import Link from "next/link";
-import { Plus, CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
-import { TaskBoard } from "./TaskBoard";
+import { ManagementBoard } from "./ManagementBoard";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -45,32 +46,13 @@ export function SupervisorDashboard() {
   }
   return (
     <AppShell title={manager ? "Project overview" : "Team overview"} wide>
-      <div className="flex gap-4 justify-between items-end">
-        <div>
-          <p className="text-xs uppercase tracking-wider font-medium text-purple-600 mb-2">
-            {manager ? "PROJECT MANAGEMENT" : "SUPERVISION"}
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight">
-            A clear view of the work.
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            {manager
-              ? "Progress, priorities and accountability across your project companies."
-              : "Activities and timesheets for your company’s project team."}
-          </p>
-        </div>
-        <Button className="shrink-0" asChild>
-          <Link href="/create-task">
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">New activity</span>
-            <span className="sm:hidden">New</span>
-          </Link>
-        </Button>
-      </div>
       <Tabs defaultValue="tasks" className="space-y-5">
-        <TabsList className="w-full h-12">
+        <TabsList className="w-full h-auto min-h-12 flex-wrap">
           <TabsTrigger value="tasks" className="flex-1">
             Activities
+          </TabsTrigger>
+          <TabsTrigger value="team" className="flex-1">
+            Team
           </TabsTrigger>
           <TabsTrigger value="timesheets" className="flex-1">
             Timesheets ({pending.length})
@@ -80,7 +62,10 @@ export function SupervisorDashboard() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="tasks">
-          <TaskBoard management />
+          <ManagementBoard />
+        </TabsContent>
+        <TabsContent value="team">
+          <TeamPanel />
         </TabsContent>
         <TabsContent value="timesheets" className="space-y-3">
           <h2 className="font-semibold text-lg">Approval requests</h2>
@@ -164,6 +149,38 @@ export function SupervisorDashboard() {
               </CardContent>
             </Card>
           ))}
+          <details className="rounded-xl border bg-white p-5">
+            <summary className="font-semibold cursor-pointer">
+              All timesheets ({shifts.length})
+            </summary>
+            <div className="mt-4 space-y-2">
+              {[...shifts]
+                .sort((a, b) => b.startTime.localeCompare(a.startTime))
+                .map((shift) => (
+                  <Link
+                    key={shift.id}
+                    href={`/shifts/${shift.id}`}
+                    className="block rounded-lg border p-3 hover:bg-slate-50"
+                  >
+                    <p className="text-sm font-medium">
+                      {users.find((u) => u.id === shift.userId)?.name} ·{" "}
+                      {projects.find((p) => p.id === shift.projectId)?.name}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {new Date(shift.startTime).toLocaleString("en-GB", {
+                        timeZone: "Europe/Amsterdam",
+                      })}{" "}
+                      · {shift.status.replaceAll("-", " ")}
+                    </p>
+                  </Link>
+                ))}
+              {!shifts.length && (
+                <p className="text-sm text-slate-500">
+                  No recorded shifts yet.
+                </p>
+              )}
+            </div>
+          </details>
         </TabsContent>
         <TabsContent value="feedback" className="space-y-3">
           <p className="text-sm text-slate-500">

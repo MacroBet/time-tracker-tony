@@ -35,7 +35,7 @@ La demo conserva temporaneamente i dati nella memoria del server locale. Non scr
 
    Sostituisci l’email d’esempio. La password viene richiesta nel terminale senza mostrarla; minimo 12 caratteri. Non passarla negli argomenti della shell. La rotazione della password revoca le sessioni esistenti.
 
-5. Ripeti `db:provision` per operatori e supervisori (`--role worker` / `supervisor`), usando lo stesso nome progetto e la rispettiva azienda. L’azienda e il progetto esistenti vengono riutilizzati se il nome è univoco. Il comando non cambia i ruoli di account già presenti. Per assegnare account esistenti ad altri progetti, inserisci l’associazione in `project_memberships` tramite amministrazione DB.
+5. Ripeti `db:provision` per operatori e supervisori (`--role worker` / `supervisor`), usando lo stesso nome progetto e la rispettiva azienda. L’azienda e il progetto esistenti vengono riutilizzati se il nome è univoco. Il comando non cambia i ruoli di account già presenti. Con un account admin puoi creare account/progetti e gestire l’accesso degli utenti esistenti dalla scheda Team.
 
 Per un branch **esclusivamente di collaudo**, `npm run db:seed -- --demo` aggiunge dati sintetici senza sovrascrivere record esistenti. Non è una migrazione automatica dei dati del vecchio prototipo. Gli utenti del seed non hanno password finché non vengono impostate singolarmente.
 
@@ -84,3 +84,9 @@ Il test aggiunge attività, evidenze, feedback e turni sintetici; rifiuta ambien
 - [Decisioni e passi successivi](docs/architecture.md).
 
 Progetto Figma originale: [Mobile Time Tracking App](https://www.figma.com/design/DHcBe2jWzudcxYvxARTKFU/Mobile-Time-Tracking-App). Le schermate e il documento forniti sono stati usati come contesto funzionale; le integrazioni esterne non sono state attivate.
+
+## Flussi operativi
+
+La matrice dei ruoli, i casi coperti e i limiti verificati sono in [Use case](docs/use-cases.md). Il supervisor coordina tutti i progetti assegnati al proprio account. Manager e supervisor possono assegnare e riassegnare issue, anche in gruppo (massimo 50), modificare il piano e approvare le consegne. Il worker invia in revisione con nota o evidenza, senza auto-approvare la chiusura.
+
+L’interfaccia si aggiorna quando torna in primo piano e ogni 20 secondi mentre è visibile e online. Il manifest permette l’apertura standalone dai browser compatibili; non introduce salvataggi offline o un’app nativa.
