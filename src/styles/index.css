@@ -77,10 +77,6 @@ select:not(:disabled) {
   color: white;
   box-shadow: 0 2px 5px rgb(30 91 255 / 15%);
 }
-[data-slot="input"],
-[data-slot="textarea"] {
-  box-shadow: none;
-}
 input[type="checkbox"] {
   accent-color: #1e5bff;
 }
