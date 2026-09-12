@@ -1,0 +1,7 @@
+node_modules
+.next
+output
+.playwright-cli
+package-lock.json
+drizzle/meta
+src/app/components/ui

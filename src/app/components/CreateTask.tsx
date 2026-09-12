@@ -1,178 +1,175 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
-import { useApp } from '../contexts/AppContext';
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { getUsers, getProjects, saveTask, Task } from '../data/mockData';
-import { ArrowLeft, Plus } from 'lucide-react';
-import { toast } from 'sonner';
-
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { type Task, homeFor } from "@/lib/domain";
+import { useApp } from "../contexts/AppContext";
+import { AppShell } from "./AppShell";
+import { Card, CardContent } from "./ui/card";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import { Button } from "./ui/button";
 export function CreateTask() {
-  const { currentUser } = useApp();
-  const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [projectId, setProjectId] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [users, setUsers] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (!currentUser) {
-      navigate('/');
-      return;
+  const { currentUser, projects, users, memberships, mutate, isOnline } =
+    useApp();
+  const [projectId, setProjectId] = useState(projects[0]?.id || "");
+  const [assignedTo, setAssignedTo] = useState("");
+  const [busy, setBusy] = useState(false);
+  const router = useRouter();
+  const workers = users.filter(
+    (u) =>
+      u.role === "worker" &&
+      memberships.some((m) => m.userId === u.id && m.projectId === projectId),
+  );
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    if (!values.dueDate) delete values.dueDate;
+    try {
+      const task = await mutate<Task>("/api/tasks", {
+        method: "POST",
+        body: JSON.stringify({ ...values, projectId, assignedTo }),
+      });
+      toast.success("Activity created");
+      router.push(`/tasks/${task.id}`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not create activity",
+      );
+    } finally {
+      setBusy(false);
     }
-    
-    const allUsers = getUsers();
-    const workers = allUsers.filter(u => u.role === 'worker');
-    setUsers(workers);
-    setProjects(getProjects());
-  }, [currentUser]);
-
-  const handleCreate = () => {
-    if (!title || !description || !projectId || !assignedTo) {
-      toast.error('Fill in all required fields');
-      return;
-    }
-
-    const newTask: Task = {
-      id: `t${Date.now()}`,
-      title,
-      description,
-      projectId,
-      assignedTo,
-      createdBy: currentUser?.id || '',
-      status: 'pending',
-      dueDate: dueDate || undefined,
-    };
-
-    saveTask(newTask);
-    toast.success('Task created successfully!');
-    navigate('/supervisor');
-  };
-
+  }
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => navigate('/supervisor')}
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-purple-500"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-bold">New Task</h1>
-            <p className="text-sm text-purple-100">Assign a new task to a worker</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-4 space-y-4 max-w-2xl mx-auto">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Task Details</CardTitle>
-            <CardDescription>Enter the task information to assign</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+    <AppShell
+      title="New activity"
+      subtitle="A clear instruction, one responsible person."
+      back={homeFor(currentUser)}
+    >
+      <form onSubmit={submit} className="space-y-4">
+        <Card>
+          <CardContent className="p-5 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="title">Task Title *</Label>
+              <Label htmlFor="title">Activity title</Label>
               <Input
                 id="title"
-                placeholder="e.g. Install electrical system"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="h-12 text-base"
+                name="title"
+                placeholder="e.g. Verify S201 valve operation"
+                required
+                minLength={3}
+                maxLength={200}
+                className="h-12"
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description">What needs to be done?</Label>
               <Textarea
                 id="description"
-                placeholder="Describe in detail what needs to be done..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                name="description"
+                placeholder="Describe the work and the expected outcome…"
+                required
+                minLength={3}
+                maxLength={5000}
                 rows={4}
-                className="text-base"
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="project">Project/Site *</Label>
-              <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger id="project" className="h-12 text-base">
-                  <SelectValue placeholder="Select site" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map(project => (
-                    <SelectItem key={project.id} value={project.id} className="text-base py-3">
-                      <div>
-                        <p className="font-medium">{project.name}</p>
-                        <p className="text-xs text-muted-foreground">{project.location}</p>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="project">Project</Label>
+              <select
+                id="project"
+                className="field-select"
+                value={projectId}
+                onChange={(e) => {
+                  setProjectId(e.target.value);
+                  setAssignedTo("");
+                }}
+                required
+              >
+                <option value="">Choose project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="worker">Assign to *</Label>
-              <Select value={assignedTo} onValueChange={setAssignedTo}>
-                <SelectTrigger id="worker" className="h-12 text-base">
-                  <SelectValue placeholder="Select worker" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map(user => (
-                    <SelectItem key={user.id} value={user.id} className="text-base py-3">
-                      <div>
-                        <p className="font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="assignee">Responsible person</Label>
+              <select
+                id="assignee"
+                className="field-select"
+                value={assignedTo}
+                onChange={(e) => setAssignedTo(e.target.value)}
+                required
+              >
+                <option value="">Choose a team member</option>
+                {workers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
             </div>
-
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <select
+                  id="priority"
+                  name="priority"
+                  defaultValue="P2"
+                  className="field-select"
+                >
+                  <option value="P1">P1 · Critical</option>
+                  <option value="P2">P2 · Standard</option>
+                  <option value="P3">P3 · Low</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="discipline">Discipline</Label>
+                <select
+                  id="discipline"
+                  name="discipline"
+                  className="field-select"
+                  required
+                >
+                  {[
+                    "Commissioning",
+                    "Electrical",
+                    "Mechanical",
+                    "Controls",
+                    "Safety",
+                    "Construction",
+                  ].map((d) => (
+                    <option key={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="dueDate">Due Date (optional)</Label>
+              <Label htmlFor="location">Area / location</Label>
               <Input
-                id="dueDate"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="h-12 text-base"
+                id="location"
+                name="location"
+                placeholder="e.g. S201 · LV Room B"
+                maxLength={200}
+                className="h-12"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dueDate">Due date</Label>
+              <Input id="dueDate" name="dueDate" type="date" className="h-12" />
             </div>
           </CardContent>
         </Card>
-
         <Button
-          onClick={handleCreate}
-          className="w-full h-14 text-lg bg-purple-600 hover:bg-purple-700"
-          size="lg"
+          disabled={busy || !isOnline || !workers.length}
+          className="w-full h-12"
         >
-          <Plus className="mr-2 h-5 w-5" />
-          Create Task
+          {busy ? "Creating…" : "Create activity"}
         </Button>
-
-        <Button
-          onClick={() => navigate('/supervisor')}
-          variant="ghost"
-          className="w-full"
-        >
-          Cancel
-        </Button>
-      </div>
-    </div>
+      </form>
+    </AppShell>
   );
 }
