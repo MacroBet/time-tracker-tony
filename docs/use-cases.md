@@ -13,6 +13,13 @@ Aggiornamento del 12 settembre 2026, dopo il collaudo con le 305 issue reali. Qu
 | Tutti             | Login, logout, password personale, gestione sessione, indicazione offline, feedback con screenshot e aggiornamento periodico della vista. Le password non vengono restituite dalle API.                                                    |
 | Worker / gestione | Avvio e fine turno, rettifica delle ore con motivazione, invio timesheet, approvazione/rifiuto e reinvio. Storico personale e consultazione dello storico dei progetti supervisionati.                                                     |
 
+## Navigazione e interfaccia
+
+Lo stile condiviso usa navigazione laterale scura su desktop, superfici chiare e azioni blu. Su smartphone la barra inferiore dà accesso alle sezioni del ruolo; task, filtri, dettagli e finestre si adattano alla larghezza disponibile.
+
+- Gestione: `/overview` mostra indicatori, distribuzione degli stati, ultimi aggiornamenti e avanzamento per azienda calcolati sui dati autorizzati. `/supervisor` separa le code Unassigned, Assigned, To review, Closed e All activities; team, timesheet e feedback hanno collegamenti diretti.
+- Worker: `/dashboard` mostra timbratura e anteprima delle attività aperte; `/my-tasks` offre ricerca e viste per stato; `/time` dedica la schermata al turno. Storico e impostazioni restano sempre raggiungibili.
+
 ## Assegnazioni e revisione
 
 - Un worker deve appartenere a tutti i progetti della selezione. Nessuna assegnazione a manager/supervisor o a un account esterno al progetto.

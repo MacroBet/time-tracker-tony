@@ -52,16 +52,16 @@ export function Login({
     }
   }
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center p-5">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-12 items-center">
-        <div className="text-white space-y-6 hidden md:block">
+    <main className="min-h-screen bg-[#eef4fc] flex items-center justify-center p-5">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 gap-6 items-center">
+        <div className="text-white space-y-6 hidden md:block rounded-2xl workspace-sidebar p-8">
           <div className="inline-flex items-center gap-2 text-blue-300 text-sm font-medium">
             <ListChecks className="size-5" /> CONSTRUCTION & COMMISSIONING
           </div>
           <h1 className="text-5xl font-semibold tracking-tight leading-tight">
-            Clear priorities.
+            Time well spent.
             <br />
-            Confident teams.
+            Work well done.
           </h1>
           <p className="text-slate-300 text-lg leading-relaxed">
             The right activity, the right person, and a clear record of what
@@ -72,7 +72,7 @@ export function Login({
             One workspace for field teams, supervisors and project managers.
           </div>
         </div>
-        <Card className="w-full border-0 shadow-2xl">
+        <Card className="w-full border shadow-sm">
           <CardHeader className="space-y-4">
             <div className="size-14 bg-blue-600 rounded-2xl flex items-center justify-center">
               <Building2 className="size-8 text-white" />

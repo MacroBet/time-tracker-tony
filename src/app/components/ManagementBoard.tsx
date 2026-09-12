@@ -225,7 +225,7 @@ export function ManagementBoard() {
               setPerson("all");
               resetSelection();
             }}
-            className={`${q.id === "unassigned" || q.id === "assigned" ? "col-span-3" : "col-span-2"} text-left rounded-xl border px-3 sm:px-4 py-2 sm:py-3 sm:flex-1 transition-colors ${queue === q.id ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"}`}
+            className={`${q.id === "unassigned" || q.id === "assigned" ? "col-span-3" : "col-span-2"} text-left rounded-xl border px-3 sm:px-4 py-2 sm:py-3 sm:flex-1 transition-colors ${queue === q.id ? "bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-600/15" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"}`}
           >
             <span className="block text-xs font-medium">{q.label}</span>
             <span className="block mt-1 text-lg sm:text-2xl font-semibold tabular-nums">

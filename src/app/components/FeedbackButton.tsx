@@ -90,8 +90,8 @@ export function FeedbackButton() {
         onClick={() => setOpen(true)}
         aria-label="Report an issue"
         title="Report an issue"
-        className="fixed bottom-4 left-4 sm:left-auto sm:right-4 z-30 shadow-lg rounded-full h-11 w-11 sm:w-auto px-0 sm:px-4 text-sm bg-slate-900 hover:bg-slate-800"
-        style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
+        className="fixed right-4 lg:right-6 z-30 shadow-lg rounded-full h-11 w-11 sm:w-auto px-0 sm:px-4 text-sm bg-blue-600 hover:bg-blue-700"
+        style={{ bottom: "var(--feedback-bottom, 1.5rem)" }}
       >
         <Bug className="size-4" />
         <span className="hidden sm:inline">Report an issue</span>

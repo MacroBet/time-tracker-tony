@@ -10,7 +10,7 @@ import { AppShell } from "./AppShell";
 import { TaskBoard } from "./TaskBoard";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-export function WorkerDashboard() {
+export function WorkerDashboard({ view = "home" }: { view?: "home" | "time" }) {
   const { currentUser, projects, shifts, mutate, isOnline } = useApp();
   const [projectId, setProjectId] = useState(projects[0]?.id || "");
   const [busy, setBusy] = useState(false);
@@ -63,24 +63,25 @@ export function WorkerDashboard() {
     }
   }
   return (
-    <AppShell title="My workspace">
-      <div>
-        <p className="text-xs uppercase tracking-wider font-medium text-blue-600 mb-2">
-          FIELD TEAM
-        </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Ready for the next step, {currentUser.name.split(" ")[0]}?
-        </h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Your assigned activities, with urgent work first.
-        </p>
-      </div>
-      <TaskBoard />
+    <AppShell title={view === "time" ? "Time tracking" : "Today"}>
+      {view === "home" && (
+        <div>
+          <p className="text-xs uppercase tracking-wider font-medium text-blue-600 mb-2">
+            FIELD TEAM
+          </p>
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Hello, {currentUser.name.split(" ")[0]}
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Your assigned activities, with urgent work first.
+          </p>
+        </div>
+      )}
       <Card className={active ? "border-emerald-200" : ""}>
-        <CardContent className="p-5 space-y-4">
+        <CardContent className="p-4 space-y-3">
           <div className="flex items-center gap-2">
             <Clock className="size-5 text-blue-600" />
-            <h2 className="font-semibold">
+            <h2 className="font-semibold text-base">
               {active ? "Shift in progress" : "Site check-in"}
             </h2>
             {active && (
@@ -125,11 +126,15 @@ export function WorkerDashboard() {
             )}
             {busy ? "Saving…" : active ? "End shift" : "Start shift"}
           </Button>
-          <p className="text-xs text-slate-500">
-            Manual check-in. Start and end times are recorded by the server.
-          </p>
+          {view === "time" && (
+            <p className="text-xs text-slate-500">
+              Start your shift when you arrive and end it when your workday is
+              finished.
+            </p>
+          )}
         </CardContent>
       </Card>
+      {view === "home" && <TaskBoard initialLimit={3} preview />}
       {draft && (
         <Button variant="outline" className="w-full h-12" asChild>
           <Link href={`/shifts/${draft.id}`}>

@@ -1,5 +1,6 @@
 "use client";
 import { TeamPanel } from "./TeamPanel";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle, XCircle } from "lucide-react";
@@ -13,6 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Input } from "./ui/input";
 import { type Shift } from "@/lib/domain";
 export function SupervisorDashboard() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const activeView = ["tasks", "team", "timesheets", "feedback"].includes(
+    params.get("view") || "",
+  )
+    ? params.get("view")!
+    : "tasks";
   const { currentUser, shifts, users, projects, feedback, mutate, isOnline } =
     useApp();
   const [busy, setBusy] = useState<string | null>(null);
@@ -45,20 +53,42 @@ export function SupervisorDashboard() {
     }
   }
   return (
-    <AppShell title={manager ? "Project overview" : "Team overview"} wide>
-      <Tabs defaultValue="tasks" className="space-y-5">
-        <TabsList className="w-full h-auto min-h-12 flex-wrap">
-          <TabsTrigger value="tasks" className="flex-1">
+    <AppShell
+      title={
+        activeView === "team"
+          ? "Team management"
+          : activeView === "timesheets"
+            ? "Time & attendance"
+            : activeView === "feedback"
+              ? "Workspace feedback"
+              : "Task management"
+      }
+      subtitle={
+        activeView === "tasks"
+          ? "Create, assign and track work across your projects."
+          : "Manage your project workspace."
+      }
+      wide
+    >
+      <Tabs
+        value={activeView}
+        onValueChange={(value) =>
+          router.push(`/supervisor${value === "tasks" ? "" : `?view=${value}`}`)
+        }
+        className="space-y-5"
+      >
+        <TabsList className="w-full h-11 grid grid-cols-4 lg:hidden">
+          <TabsTrigger value="tasks" className="min-w-0 text-xs">
             Activities
           </TabsTrigger>
-          <TabsTrigger value="team" className="flex-1">
+          <TabsTrigger value="team" className="min-w-0 text-xs">
             Team
           </TabsTrigger>
-          <TabsTrigger value="timesheets" className="flex-1">
-            Timesheets ({pending.length})
+          <TabsTrigger value="timesheets" className="min-w-0 text-xs">
+            Time ({pending.length})
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="flex-1">
-            Feedback ({feedback.length})
+          <TabsTrigger value="feedback" className="min-w-0 text-xs">
+            Feedback
           </TabsTrigger>
         </TabsList>
         <TabsContent value="tasks">

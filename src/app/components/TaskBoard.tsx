@@ -1,12 +1,15 @@
 "use client";
 import { AssignmentDialog } from "./AssignmentDialog";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
   AlertTriangle,
   ArrowUpRight,
   CalendarDays,
   CheckCircle2,
+  ListTodo,
+  ChevronRight,
   Download,
   Search,
   SlidersHorizontal,
@@ -27,7 +30,7 @@ import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 export function TaskStatusBadge({ task }: { task: Task }) {
   const colors = {
-    pending: "bg-slate-100 text-slate-700",
+    pending: "bg-amber-50 text-amber-800",
     "in-progress": "bg-blue-50 text-blue-700",
     blocked: "bg-red-50 text-red-700",
     review: "bg-purple-50 text-purple-700",
@@ -40,17 +43,28 @@ export function TaskStatusBadge({ task }: { task: Task }) {
     </Badge>
   );
 }
-export function TaskBoard({ management = false }: { management?: boolean }) {
+export function TaskBoard({
+  management = false,
+  initialLimit = 24,
+  preview = false,
+}: {
+  management?: boolean;
+  initialLimit?: number;
+  preview?: boolean;
+}) {
   const data = useApp();
+  const params = useSearchParams();
   const { tasks, users, companies, projects, currentUser } = data;
   const [selected, setSelected] = useState<string[]>([]);
-  const [limit, setLimit] = useState(24);
+  const [limit, setLimit] = useState(initialLimit);
   const [query, setQuery] = useState("");
   const [project, setProject] = useState("all");
   const [company, setCompany] = useState("all");
   const [person, setPerson] = useState("all");
   const [priority, setPriority] = useState("all");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState(
+    params.get("status") === "completed" ? "completed" : "all",
+  );
   const [discipline, setDiscipline] = useState("all");
   const [due, setDue] = useState("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -148,6 +162,82 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
       </select>
     </label>
   );
+  if (preview) {
+    const open = filtered.filter((task) => !isClosed(task));
+    return (
+      <section className="space-y-4" aria-label="Your task summary">
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            {
+              label: "Active tasks",
+              count: open.length,
+              icon: ListTodo,
+              color: "text-blue-600",
+            },
+            {
+              label: "Completed",
+              count: completed,
+              icon: CheckCircle2,
+              color: "text-emerald-600",
+            },
+          ].map((stat) => (
+            <Link
+              key={stat.label}
+              href={
+                stat.label === "Completed"
+                  ? "/my-tasks?status=completed"
+                  : "/my-tasks"
+              }
+              className="flex items-center gap-3 rounded-lg border bg-white p-3 hover:border-blue-300"
+            >
+              <stat.icon className={`size-5 ${stat.color}`} />
+              <div>
+                <p className="text-xs text-slate-500">{stat.label}</p>
+                <p className="font-semibold text-lg">{stat.count}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="flex justify-between items-center">
+          <h2 className="text-base font-semibold">Your next activities</h2>
+          <Link href="/my-tasks" className="text-sm text-blue-600">
+            View all
+          </Link>
+        </div>
+        <div className="overflow-hidden rounded-lg border bg-white divide-y divide-slate-100">
+          {open.slice(0, initialLimit).map((task) => (
+            <Link
+              key={task.id}
+              href={`/tasks/${task.id}`}
+              className="flex items-center gap-3 p-4 hover:bg-blue-50/50"
+            >
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold leading-snug line-clamp-2">
+                  {task.title}
+                </h3>
+                <p className="text-xs text-slate-500 truncate mt-1">
+                  {task.location ||
+                    projects.find((p) => p.id === task.projectId)?.name}
+                </p>
+                <div className="flex flex-wrap gap-2 items-center mt-2">
+                  <TaskStatusBadge task={task} />
+                  {isOverdue(task) && (
+                    <span className="text-[11px] text-red-600">Overdue</span>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="size-4 text-slate-400 shrink-0" />
+            </Link>
+          ))}
+          {!open.length && (
+            <p className="text-sm text-slate-500 p-5">
+              No open activities assigned to you.
+            </p>
+          )}
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="space-y-4" aria-label="Activities">
       <div
@@ -468,7 +558,7 @@ export function TaskBoard({ management = false }: { management?: boolean }) {
               )}
               <Link
                 href={`/tasks/${task.id}`}
-                className={`block rounded-xl border bg-white p-4 sm:p-5 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-blue-600 ${isOverdue(task) ? "border-red-200 border-l-4 border-l-red-500" : "border-slate-200"}`}
+                className={`block rounded-xl border bg-white p-4 sm:p-5 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-blue-600 ${isOverdue(task) ? "border-red-100" : "border-slate-200"}`}
               >
                 <div className="flex gap-2 items-center mb-3">
                   <Badge
