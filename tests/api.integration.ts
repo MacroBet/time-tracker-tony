@@ -451,3 +451,197 @@ test("assignment, handover, review, correction and plan lifecycle", async () => 
     ),
   );
 });
+
+test("commissioning register, P6 revisions, tag generation, failed tests and feature access", async () => {
+  assert.equal(
+    (await (await request("/api/auth/session")).json()).mode,
+    "demo",
+  );
+  const admin = await session("u-admin"),
+    manager = await session("u4"),
+    worker = await session("u6");
+  const load = async (cookie: string) =>
+    (await request("/api/bootstrap", cookie)).json();
+  let data = await load(admin),
+    project = data.projects.find((p: { id: string }) => p.id === "p1");
+  const endpoint = "/api/projects/p1/commissioning";
+  const config = {
+    action: "configure",
+    version: project.commissioning.version,
+    reason: "Enable project levels for integration test",
+    config: {
+      levels: ["L2A", "L2B", "L3", "L4", "L5", "L6"],
+      priorities: ["P1", "P2", "P3", "P4", "P5"],
+    },
+  };
+  assert.equal((await request(endpoint, manager, "PATCH", config)).status, 403);
+  assert.equal((await request(endpoint, worker, "PATCH", config)).status, 403);
+  assert.equal((await request(endpoint, admin, "PATCH", config)).status, 200);
+  assert.equal((await request(endpoint, admin, "PATCH", config)).status, 409);
+  data = await load(admin);
+  project = data.projects[0];
+  const register = {
+    assets: [
+      {
+        id: "TEST-ASSET",
+        name: "Integration pump",
+        equipmentType: "Pump",
+        location: "Test room",
+        levels: ["L3"],
+        levelActivities: { L3: "P6-INTEGRATION" },
+      },
+    ],
+    schedule: [
+      { activityId: "P6-INTEGRATION", name: "Pump test", finish: "2020-01-01" },
+    ],
+  };
+  let input = {
+    action: "import",
+    version: project.commissioning.version,
+    reason: "Add integration asset and its programme",
+    data: register,
+  };
+  const preview = await (
+    await request(endpoint, manager, "PATCH", { ...input, preview: true })
+  ).json();
+  assert.equal(preview.errors.length, 0);
+  assert.equal(
+    (await load(admin)).projects[0].commissioning.version,
+    project.commissioning.version,
+  );
+  assert.equal((await request(endpoint, manager, "PATCH", input)).status, 200);
+  data = await load(admin);
+  project = data.projects[0];
+  const generated = await (
+    await request(endpoint, manager, "PATCH", {
+      action: "generate-tags",
+      version: project.commissioning.version,
+      reason: "Generate missing commissioning checks",
+    })
+  ).json();
+  assert(generated.created > 0);
+  assert.equal(
+    (
+      await (
+        await request(endpoint, manager, "PATCH", {
+          action: "generate-tags",
+          version: project.commissioning.version,
+          reason: "Repeat generation is idempotent",
+        })
+      ).json()
+    ).created,
+    0,
+  );
+  data = await load(manager);
+  let task = data.tasks.find(
+    (t: { cx?: { assetId: string } }) => t.cx?.assetId === "TEST-ASSET",
+  );
+  assert.equal(task.cx.activityId, "P6-INTEGRATION");
+  assert.equal(task.scheduleDueDate, "2020-01-01");
+  assert.equal(
+    (
+      await request("/api/tasks/assignments", manager, "POST", {
+        tasks: [{ id: task.id, version: task.version }],
+        assignedTo: "u6",
+        reason: "Assign commissioning test to engineer",
+      })
+    ).status,
+    200,
+  );
+  task = (await load(manager)).tasks.find(
+    (t: { id: string }) => t.id === task.id,
+  );
+  assert.equal(
+    (
+      await request(`/api/tasks/${task.id}`, worker, "PATCH", {
+        version: task.version,
+        status: "in-progress",
+        result: "failed",
+        notes: "Pump failed functional inspection",
+      })
+    ).status,
+    200,
+  );
+  task = (await load(manager)).tasks.find(
+    (t: { id: string }) => t.id === task.id,
+  );
+  assert.equal(
+    (
+      await request(`/api/tasks/${task.id}`, manager, "PATCH", {
+        version: task.version,
+        status: "completed",
+        notes: "Attempting closure with failed test",
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await request(`/api/tasks/${task.id}`, worker, "PATCH", {
+        version: task.version,
+        result: "passed",
+        notes: "Retested pump successfully after repair",
+      })
+    ).status,
+    200,
+  );
+  task = (await load(manager)).tasks.find(
+    (t: { id: string }) => t.id === task.id,
+  );
+  assert.equal(task.status, "in-progress");
+  project = (await load(admin)).projects[0];
+  input = {
+    ...input,
+    version: project.commissioning.version,
+    data: {
+      assets: [],
+      schedule: [
+        {
+          activityId: "P6-INTEGRATION",
+          name: "Pump test",
+          finish: "2099-01-01",
+        },
+      ],
+    },
+  };
+  assert.equal((await request(endpoint, manager, "PATCH", input)).status, 200);
+  data = await load(manager);
+  task = data.tasks.find((t: { id: string }) => t.id === task.id);
+  assert.equal(task.scheduleDueDate, "2099-01-01");
+  assert.equal(
+    data.projects[0].commissioning.schedule.find(
+      (s: { activityId: string }) => s.activityId === "P6-INTEGRATION",
+    ).baselineFinish,
+    "2020-01-01",
+  );
+  assert.equal(
+    (
+      await request("/api/team/u6/modules", manager, "PATCH", {
+        modules: ["tasks"],
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await request("/api/team/u6/modules", admin, "PATCH", {
+        modules: ["tasks"],
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await request("/api/shifts", worker, "POST", { projectId: "p1" })).status,
+    403,
+  );
+  assert.equal((await request(endpoint, worker, "PATCH", input)).status, 403);
+  assert.equal((await load(worker)).shifts.length, 0);
+  assert.equal(
+    (
+      await request("/api/team/u6/modules", admin, "PATCH", {
+        modules: ["tasks", "time", "commissioning", "feedback"],
+      })
+    ).status,
+    200,
+  );
+});

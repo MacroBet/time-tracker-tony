@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { type Bootstrap, type Company } from "@/lib/domain";
 import { apiRequest } from "@/lib/api-client";
 interface AppContextType extends Bootstrap {
+  selectedProjectId: string;
+  selectProject: (id: string) => void;
   currentCompany: Company | null;
   isOnline: boolean;
   lastSyncTime: Date | null;
@@ -37,6 +39,9 @@ export function AppProvider({
   initialData: Bootstrap;
 }) {
   const [data, setData] = useState(initialData);
+  const [projectId, selectProject] = useState(
+    initialData.projects[0]?.id ?? "",
+  );
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const isOnline = useSyncExternalStore(
     subscribeOnline,
@@ -89,6 +94,10 @@ export function AppProvider({
     <AppContext.Provider
       value={{
         ...data,
+        selectedProjectId: data.projects.some((p) => p.id === projectId)
+          ? projectId
+          : (data.projects[0]?.id ?? ""),
+        selectProject,
         currentCompany:
           data.companies.find((c) => c.id === data.currentUser.companyId) ??
           null,

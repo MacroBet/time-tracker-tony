@@ -6,6 +6,7 @@ import { json, readJson } from "./http";
 import { requireCondition } from "./errors";
 import { assignmentSchema, taskPlanSchema } from "@/lib/validation";
 import { canManage, isProjectMember } from "@/lib/permissions";
+import { commissioning, linkError } from "@/lib/commissioning";
 export async function assign(request: Request) {
   const user = await requireUser();
   requireCondition(
@@ -89,6 +90,29 @@ export async function plan(request: Request, id: string) {
     "Activity changed. Refresh before saving.",
   );
   const { reason, version, ...fields } = input;
+  const project = data.projects.find((p) => p.id === old.projectId)!;
+  requireCondition(
+    !fields.priority ||
+      fields.priority === old.priority ||
+      commissioning(project).config.priorities.includes(fields.priority),
+    400,
+    "This priority is disabled for this project.",
+  );
+  if (fields.cx) {
+    const linksChanged = (
+      ["kind", "assetId", "activityId", "level"] as const
+    ).some((key) => fields.cx![key] !== old.cx?.[key]);
+    const error = linksChanged
+      ? linkError(fields.cx, project, data.tasks, old.id)
+      : null;
+    requireCondition(!error, 400, error || "Invalid commissioning link.");
+    requireCondition(
+      fields.cx.result === (old.cx?.result ?? "untested") &&
+        fields.cx.progress === old.cx?.progress,
+      400,
+      "Use a progress update to change test results or progress.",
+    );
+  }
   const now = new Date().toISOString();
   const task = {
     ...old,

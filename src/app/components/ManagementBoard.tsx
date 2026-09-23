@@ -1,4 +1,5 @@
 "use client";
+import { dueDateFor, commissioning, taskAsset } from "@/lib/commissioning";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -75,17 +76,23 @@ export function ManagementBoard() {
   const { tasks, users, companies, projects } = data;
   const [queue, setQueue] = useState<Queue>("unassigned"),
     [query, setQuery] = useState(""),
-    [project, setProject] = useState("all"),
+    [project, setProject] = [data.selectedProjectId, data.selectProject],
     [company, setCompany] = useState("all"),
     [person, setPerson] = useState("all"),
     [status, setStatus] = useState("all"),
     [priority, setPriority] = useState("all"),
+    [level, setLevel] = useState("all"),
+    [equipment, setEquipment] = useState("all"),
+    [dueFrom, setDueFrom] = useState(""),
+    [dueTo, setDueTo] = useState(""),
     [overdue, setOverdue] = useState(false),
     [filters, setFilters] = useState(false),
     [page, setPage] = useState(0),
     [selected, setSelected] = useState<string[]>([]),
     [detail, setDetail] = useState<string | null>(null),
     [sort, setSort] = useState("priority");
+  const currentProject = projects.find((p) => p.id === project);
+  const register = commissioning(currentProject);
   const owner = (t: Task) =>
     users.find((u) => u.id === t.assignedTo)?.name ||
     (t.assignedTo ? "Assigned worker" : "Unassigned");
@@ -96,10 +103,19 @@ export function ManagementBoard() {
       (person === "all" || t.assignedTo === person) &&
       (status === "all" || t.status === status) &&
       (priority === "all" || t.priority === priority) &&
+      (level === "all" || t.cx?.level === level) &&
+      (equipment === "all" ||
+        taskAsset(t, currentProject)?.equipmentType === equipment) &&
+      (!dueFrom || (!!dueDateFor(t) && dueDateFor(t)! >= dueFrom)) &&
+      (!dueTo || (!!dueDateFor(t) && dueDateFor(t)! <= dueTo)) &&
       (!overdue || isOverdue(t)) &&
       [
         t.title,
         t.externalId,
+        t.id,
+        t.cx?.assetId,
+        t.cx?.activityId,
+        t.cx?.qualityTag,
         t.location,
         owner(t),
         companies.find((c) => c.id === t.companyId)?.name,
@@ -114,9 +130,9 @@ export function ManagementBoard() {
       sort === "updated"
         ? b.updatedAt.localeCompare(a.updatedAt)
         : sort === "due"
-          ? (a.dueDate || "9999").localeCompare(b.dueDate || "9999")
+          ? (dueDateFor(a) || "9999").localeCompare(dueDateFor(b) || "9999")
           : (a.priority || "P9").localeCompare(b.priority || "P9") ||
-            (a.dueDate || "9999").localeCompare(b.dueDate || "9999"),
+            (dueDateFor(a) || "9999").localeCompare(dueDateFor(b) || "9999"),
     );
   const currentPage = Math.min(
     page,
@@ -154,7 +170,9 @@ export function ManagementBoard() {
             resetSelection();
           }}
         >
-          <option value="all">All {label.toLowerCase()}</option>
+          {label !== "Projects" && (
+            <option value="all">All {label.toLowerCase()}</option>
+          )}
           {options.map((o) => (
             <option key={o.id} value={o.id}>
               {o.name}
@@ -175,14 +193,18 @@ export function ManagementBoard() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   const activeFilters =
-    [company, person, status, priority].filter((v) => v !== "all").length +
-    Number(overdue);
+    [company, person, status, priority, level, equipment].filter(
+      (v) => v !== "all",
+    ).length +
+    Number(overdue) +
+    Number(!!dueFrom) +
+    Number(!!dueTo);
   const due = (t: Task) => (
     <span
       className={`text-xs ${isOverdue(t) ? "text-red-600 font-medium" : "text-slate-500"}`}
     >
-      {t.dueDate
-        ? new Date(t.dueDate + "T12:00:00").toLocaleDateString("en-GB", {
+      {dueDateFor(t)
+        ? new Date(dueDateFor(t) + "T12:00:00").toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
             year: "2-digit",
@@ -272,6 +294,42 @@ export function ManagementBoard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {selectFilter("Companies", company, setCompany, companies)}
               {selectFilter(
+                "Levels",
+                level,
+                setLevel,
+                register.config.levels.map((id) => ({ id, name: id })),
+              )}
+              {selectFilter(
+                "Equipment types",
+                equipment,
+                setEquipment,
+                [...new Set(register.assets.map((a) => a.equipmentType))].map(
+                  (id) => ({ id, name: id }),
+                ),
+              )}
+              <label className="text-xs text-slate-500">
+                Due from
+                <Input
+                  type="date"
+                  value={dueFrom}
+                  onChange={(e) => {
+                    setDueFrom(e.target.value);
+                    resetSelection();
+                  }}
+                />
+              </label>
+              <label className="text-xs text-slate-500">
+                Due through
+                <Input
+                  type="date"
+                  value={dueTo}
+                  onChange={(e) => {
+                    setDueTo(e.target.value);
+                    resetSelection();
+                  }}
+                />
+              </label>
+              {selectFilter(
                 "Workers",
                 person,
                 setPerson,
@@ -290,7 +348,14 @@ export function ManagementBoard() {
                 "Priorities",
                 priority,
                 setPriority,
-                ["P1", "P2", "P3"].map((id) => ({ id, name: id })),
+                [
+                  ...new Set([
+                    ...register.config.priorities,
+                    ...tasks
+                      .filter((t) => t.projectId === project)
+                      .flatMap((t) => (t.priority ? [t.priority] : [])),
+                  ]),
+                ].map((id) => ({ id, name: id })),
               )}
             </div>
           )}

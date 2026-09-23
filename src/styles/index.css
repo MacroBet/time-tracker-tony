@@ -104,3 +104,43 @@ input[type="checkbox"] {
     --feedback-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 }
+
+@media print {
+  body:has(.report-print) aside,
+  body:has(.report-print) header,
+  body:has(.report-print) nav,
+  body:has(.report-print) [data-feedback],
+  body:has(.report-print) [data-slot="dialog-overlay"] {
+    display: none !important;
+  }
+  body:has([role="dialog"] .report-print) .app-workspace {
+    display: none !important;
+  }
+  body:has(.report-print) [role="dialog"] {
+    position: static !important;
+    transform: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: 0;
+  }
+  .report-print .overflow-x-auto {
+    overflow: visible;
+  }
+  .report-print table {
+    font-size: 8pt;
+  }
+  .report-print th,
+  .report-print td {
+    min-width: 0;
+    padding: 4pt;
+    overflow-wrap: anywhere;
+  }
+  .report-print tr {
+    break-inside: avoid;
+  }
+  .report-print thead {
+    display: table-header-group;
+  }
+}

@@ -8,3 +8,4 @@ out/
 output/
 .playwright-cli/
 .DS_Store
+tmp/

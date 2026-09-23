@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "tasks_asset_level_tag" ON "tasks" USING btree ("project_id",("cx"->>'assetId'),("cx"->>'level')) WHERE "tasks"."cx"->>'kind' = 'tag';

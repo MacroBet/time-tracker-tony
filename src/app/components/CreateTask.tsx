@@ -1,4 +1,6 @@
 "use client";
+import { CommissioningFields, cxFromForm } from "./CommissioningFields";
+import { commissioning } from "@/lib/commissioning";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -25,12 +27,16 @@ export function CreateTask() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
-    const values = Object.fromEntries(new FormData(event.currentTarget));
+    const form = new FormData(event.currentTarget);
+    const cx = cxFromForm(form);
+    const values = Object.fromEntries(
+      [...form.entries()].filter(([k]) => !k.startsWith("cx-")),
+    );
     if (!values.dueDate) delete values.dueDate;
     try {
       const task = await mutate<Task>("/api/tasks", {
         method: "POST",
-        body: JSON.stringify({ ...values, projectId, assignedTo }),
+        body: JSON.stringify({ ...values, projectId, assignedTo, cx }),
       });
       toast.success("Activity created");
       router.push(`/tasks/${task.id}`);
@@ -118,12 +124,18 @@ export function CreateTask() {
                 <select
                   id="priority"
                   name="priority"
-                  defaultValue="P2"
+                  key={projectId}
+                  defaultValue={
+                    commissioning(projects.find((p) => p.id === projectId))
+                      .config.priorities[0]
+                  }
                   className="field-select"
                 >
-                  <option value="P1">P1 · Critical</option>
-                  <option value="P2">P2 · Standard</option>
-                  <option value="P3">P3 · Low</option>
+                  {commissioning(
+                    projects.find((p) => p.id === projectId),
+                  ).config.priorities.map((p) => (
+                    <option key={p}>{p}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
@@ -161,6 +173,10 @@ export function CreateTask() {
               <Label htmlFor="dueDate">Due date</Label>
               <Input id="dueDate" name="dueDate" type="date" className="h-12" />
             </div>
+            <CommissioningFields
+              key={projectId}
+              project={projects.find((p) => p.id === projectId)}
+            />
           </CardContent>
         </Card>
         <Button

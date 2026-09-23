@@ -1,4 +1,5 @@
 "use client";
+import { hasModule, type Module } from "@/lib/commissioning";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
@@ -14,6 +15,9 @@ import {
   History,
   MessageSquare,
   Building2,
+  Boxes,
+  ShieldCheck,
+  FileBarChart,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -32,14 +36,23 @@ export function AppShell({
   children: React.ReactNode;
   wide?: boolean;
 }) {
-  const { currentUser, currentCompany, mode, isOnline, refreshData, logout } =
-    useApp();
+  const {
+    currentUser,
+    currentCompany,
+    mode,
+    isOnline,
+    refreshData,
+    logout,
+    projects,
+    selectedProjectId,
+    selectProject,
+  } = useApp();
   const [refreshing, setRefreshing] = useState(false);
   const pathname = usePathname();
   const params = useSearchParams();
   const worker = currentUser.role === "worker";
   const view = params.get("view") || "tasks";
-  const nav = worker
+  const baseNav = worker
     ? [
         { label: "Home", href: "/dashboard", icon: LayoutDashboard },
         { label: "My tasks", href: "/my-tasks", icon: ListTodo },
@@ -64,6 +77,33 @@ export function AppShell({
         },
         { label: "Settings", href: "/settings", icon: Settings },
       ];
+  const moduleFor = (href: string): Module | null =>
+    href.includes("timesheets") ||
+    ["/time", "/shift-history", "/dashboard"].includes(href)
+      ? "time"
+      : href.includes("view=team")
+        ? "team"
+        : href.includes("feedback")
+          ? "feedback"
+          : href === "/overview"
+            ? "dashboard"
+            : href === "/commissioning"
+              ? "commissioning"
+              : href === "/reports"
+                ? "reports"
+                : null;
+  const nav = [
+    ...baseNav,
+    { label: "Assets & schedule", href: "/commissioning", icon: Boxes },
+    ...(!worker
+      ? [{ label: "Reports", href: "/reports", icon: FileBarChart }]
+      : []),
+    ...(currentUser.role === "admin"
+      ? [{ label: "Admin control", href: "/admin", icon: ShieldCheck }]
+      : []),
+  ].filter(
+    (n) => !moduleFor(n.href) || hasModule(currentUser, moduleFor(n.href)!),
+  );
   const active = (href: string) => {
     const [path, query] = href.split("?");
     return (
@@ -106,7 +146,7 @@ export function AppShell({
               FieldTrack
             </span>
             <span className="block text-[10px] uppercase tracking-[.15em] text-slate-400 mt-0.5">
-              Time & task tracker
+              Commissioning management
             </span>
           </span>
         </Link>
@@ -200,6 +240,25 @@ export function AppShell({
               {initials}
             </Link>
           </div>
+          {projects.length > 0 && (
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-7 pb-3">
+              <label className="flex items-center gap-3 text-xs text-slate-500">
+                Project
+                <select
+                  aria-label="Active project"
+                  className="min-w-0 max-w-full text-sm text-slate-700 bg-transparent font-medium"
+                  value={selectedProjectId}
+                  onChange={(e) => selectProject(e.target.value)}
+                >
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
         </header>
         {mode === "demo" && (
           <div className="bg-amber-50 text-amber-900 text-xs text-center p-2 border-b border-amber-100">
@@ -223,14 +282,14 @@ export function AppShell({
       </div>
       <nav
         aria-label="Mobile navigation"
-        className="fixed inset-x-0 bottom-0 z-30 lg:hidden grid grid-cols-5 border-t border-[#e2e9f4] bg-white/95 backdrop-blur-sm pt-2 pb-[max(.6rem,env(safe-area-inset-bottom))]"
+        className="fixed inset-x-0 bottom-0 z-30 lg:hidden flex overflow-x-auto justify-around border-t border-[#e2e9f4] bg-white/95 backdrop-blur-sm pt-2 pb-[max(.6rem,env(safe-area-inset-bottom))]"
       >
         {mobileNav.map((n) => (
           <Link
             key={n.href}
             href={n.href}
             aria-current={active(n.href) ? "page" : undefined}
-            className={`flex flex-col items-center gap-1 py-2 text-[10px] font-medium ${active(n.href) ? "text-blue-600" : "text-slate-500"}`}
+            className={`flex shrink-0 min-w-16 flex-col items-center gap-1 px-2 py-2 text-[10px] font-medium ${active(n.href) ? "text-blue-600" : "text-slate-500"}`}
           >
             <n.icon className="size-5" />
             {"short" in n ? n.short : n.label}

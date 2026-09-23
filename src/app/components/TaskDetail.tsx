@@ -1,5 +1,7 @@
 "use client";
 import { AssignmentDialog } from "./AssignmentDialog";
+import { TestProgress } from "./CommissioningFields";
+import { dueDateFor } from "@/lib/commissioning";
 import { TaskPlan } from "./TaskPlan";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
@@ -144,7 +146,16 @@ function TaskContent({ task }: { task: Task }) {
               ],
               ["Project", projects.find((p) => p.id === task.projectId)?.name],
               ["Area", task.location || "Not specified"],
-              ["Due date", task.dueDate || "Not set"],
+              ["Due date", dueDateFor(task) || "Not set"],
+              ["Asset", task.cx?.assetId || "Unlinked"],
+              ["P6 Activity ID", task.cx?.activityId || "Unlinked"],
+              [
+                "Level / tag",
+                [task.cx?.level, task.cx?.qualityTag]
+                  .filter(Boolean)
+                  .join(" · ") || "Not set",
+              ],
+              ["Test result", task.cx?.result || "untested"],
               [
                 "Source",
                 task.source === "manual"
@@ -168,6 +179,7 @@ function TaskContent({ task }: { task: Task }) {
           )}
         </CardContent>
       </Card>
+      {!isClosed(task) && <TestProgress task={task} />}
       {currentUser.role !== "worker" && (
         <>
           <AssignmentDialog tasks={[task]} />

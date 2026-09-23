@@ -1,4 +1,5 @@
 "use client";
+import { hasModule } from "@/lib/commissioning";
 import { TeamPanel } from "./TeamPanel";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -81,13 +82,25 @@ export function SupervisorDashboard() {
           <TabsTrigger value="tasks" className="min-w-0 text-xs">
             Activities
           </TabsTrigger>
-          <TabsTrigger value="team" className="min-w-0 text-xs">
+          <TabsTrigger
+            disabled={!hasModule(currentUser, "team")}
+            value="team"
+            className="min-w-0 text-xs"
+          >
             Team
           </TabsTrigger>
-          <TabsTrigger value="timesheets" className="min-w-0 text-xs">
+          <TabsTrigger
+            disabled={!hasModule(currentUser, "time")}
+            value="timesheets"
+            className="min-w-0 text-xs"
+          >
             Time ({pending.length})
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="min-w-0 text-xs">
+          <TabsTrigger
+            disabled={!hasModule(currentUser, "feedback")}
+            value="feedback"
+            className="min-w-0 text-xs"
+          >
             Feedback
           </TabsTrigger>
         </TabsList>

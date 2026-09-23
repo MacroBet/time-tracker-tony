@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Priority } from "./commissioning";
 import type { TaskStatus } from "./domain";
 export const issueImportSchema = z.object({
   file: z.string().min(1),
@@ -36,8 +37,8 @@ export function mapIssue(fields: Record<string, string | null>) {
     .replace(/^#/, "");
   if (!status || !fields.Title?.trim())
     throw new Error("Missing title or unsupported source status");
-  const priority = /\bP([123])\b/.exec(fields.Type || "")?.[0] as
-    "P1" | "P2" | "P3" | undefined;
+  const priority = /\bP([12345])\b/.exec(fields.Type || "")?.[0] as
+    Priority | undefined;
   const company =
     assigneeType === "Company"
       ? assignee

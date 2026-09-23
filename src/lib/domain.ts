@@ -10,12 +10,14 @@ export interface User {
   email: string;
   role: Role;
   companyId: string;
+  modules?: import("./commissioning").Module[];
 }
 export interface Project {
   id: string;
   name: string;
   location: string;
   companyId: string;
+  commissioning?: import("./commissioning").Commissioning;
 }
 export interface Membership {
   userId: string;
@@ -37,7 +39,9 @@ export interface Task {
   assignedTo?: string;
   createdBy: string;
   status: TaskStatus;
-  priority?: "P1" | "P2" | "P3";
+  priority?: import("./commissioning").Priority;
+  cx?: import("./commissioning").CommissioningTask;
+  scheduleDueDate?: string;
   discipline: string;
   location: string;
   source: "manual" | "bim360" | "acc" | "procore" | "excel";
@@ -146,9 +150,15 @@ export function projectDate(now = new Date()) {
   }).format(now);
 }
 export const isOverdue = (task: Task, now = new Date()) =>
-  !isClosed(task) && !!task.dueDate && task.dueDate < projectDate(now);
+  !isClosed(task) &&
+  !!(task.scheduleDueDate ?? task.dueDate) &&
+  (task.scheduleDueDate ?? task.dueDate)! < projectDate(now);
 export const isStale = (task: Task, now = new Date()) =>
   !isClosed(task) &&
   now.getTime() - new Date(task.updatedAt).getTime() > 7 * 86400000;
 export const homeFor = (user: User) =>
-  user.role === "worker" ? "/dashboard" : "/supervisor";
+  user.role === "worker"
+    ? user.modules && !user.modules.includes("time")
+      ? "/my-tasks"
+      : "/dashboard"
+    : "/supervisor";

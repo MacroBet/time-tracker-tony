@@ -7,6 +7,7 @@ import { json, readBody, readJson } from "./http";
 import { requireCondition } from "./errors";
 import { canManage, isProjectMember } from "@/lib/permissions";
 import { taskUpdateError } from "@/lib/workflow";
+import { commissioning, hasModule, linkError } from "@/lib/commissioning";
 import { verifyPassword } from "@/lib/password";
 import {
   createTaskSchema,
@@ -79,6 +80,7 @@ export async function login(request: Request) {
       email: account.email,
       role: account.role,
       companyId: account.companyId,
+      modules: account.modules ?? undefined,
     };
   }
   requireCondition(user, 401, "Unable to sign in.");
@@ -106,6 +108,15 @@ export async function createTask(request: Request) {
   );
   const input = createTaskSchema.parse(await readJson(request));
   const data = await repo.loadData(user);
+  const project = data.projects.find((p) => p.id === input.projectId);
+  requireCondition(project, 403, "Choose a project assigned to you.");
+  requireCondition(
+    commissioning(project).config.priorities.includes(input.priority),
+    400,
+    "This priority is disabled for this project.",
+  );
+  const cxError = linkError(input.cx, project, data.tasks);
+  requireCondition(!cxError, 400, cxError || "Invalid asset link.");
   const assignee = data.users.find(
     (u) => u.id === input.assignedTo && u.role === "worker",
   );
@@ -143,6 +154,28 @@ export async function updateTask(request: Request, id: string) {
     "This activity changed. Refresh before saving again.",
   );
   const status = input.status ?? old.status;
+  const result = input.result ?? old.cx?.result ?? "untested";
+  requireCondition(
+    !(status === "completed" && ["failed", "retest"].includes(result)),
+    400,
+    "Resolve the failed test or retest before completing this activity.",
+  );
+  requireCondition(
+    !(
+      isClosed(old) &&
+      (input.result !== undefined || input.progress !== undefined) &&
+      status === old.status
+    ),
+    400,
+    "Reopen the activity before changing its test result or progress.",
+  );
+  requireCondition(
+    input.result === undefined ||
+      input.result === old.cx?.result ||
+      (input.notes?.trim().length ?? 0) >= 10,
+    400,
+    "Explain the test result in a note of at least 10 characters.",
+  );
   const error = taskUpdateError(
     user,
     old,
@@ -155,6 +188,19 @@ export async function updateTask(request: Request, id: string) {
   const task: Task = {
     ...old,
     status,
+    ...(old.cx || input.result !== undefined || input.progress !== undefined
+      ? {
+          cx: {
+            ...old.cx,
+            kind: old.cx?.kind ?? (old.source === "manual" ? "task" : "issue"),
+            result,
+            progress:
+              status === "completed"
+                ? 100
+                : (input.progress ?? old.cx?.progress),
+          },
+        }
+      : {}),
     notes: input.notes ?? old.notes,
     completedAt: isClosed({ ...old, status })
       ? (old.completedAt ?? now)
@@ -170,7 +216,13 @@ export async function updateTask(request: Request, id: string) {
       status !== old.status
         ? `${statusLabels[old.status]} → ${statusLabels[status]}`
         : "Progress update",
-      input.notes || "",
+      [
+        input.notes,
+        input.result !== undefined ? `Test result: ${result}` : "",
+        input.progress !== undefined ? `Progress: ${input.progress}%` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
     ),
     old.version,
   );
@@ -178,6 +230,11 @@ export async function updateTask(request: Request, id: string) {
 }
 export async function createShift(request: Request) {
   const user = await requireUser();
+  requireCondition(
+    hasModule(user, "time"),
+    403,
+    "Time access is disabled for your profile.",
+  );
   requireCondition(
     user.role === "worker",
     403,
@@ -202,6 +259,11 @@ export async function createShift(request: Request) {
 }
 export async function updateShift(request: Request, id: string) {
   const user = await requireUser();
+  requireCondition(
+    hasModule(user, "time"),
+    403,
+    "Time access is disabled for your profile.",
+  );
   const input = updateShiftSchema.parse(await readJson(request));
   const data = await repo.loadData(user);
   const old = data.shifts.find((s) => s.id === id);
@@ -352,6 +414,11 @@ export async function getAttachment(_request: Request, id: string) {
 }
 export async function createFeedback(request: Request) {
   const user = await requireUser();
+  requireCondition(
+    hasModule(user, "feedback"),
+    403,
+    "Feedback access is disabled for your profile.",
+  );
   const input = feedbackSchema.parse(await readJson(request, 1600000));
   const data = await repo.loadData(user);
   requireCondition(

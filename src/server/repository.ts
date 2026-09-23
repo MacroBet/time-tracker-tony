@@ -55,9 +55,83 @@ function usingDemo() {
   return mode === "demo";
 }
 function clean<T>(value: unknown): T {
+  if (value === undefined) return undefined as T;
   return JSON.parse(
     JSON.stringify(value, (_key, v) => (v === null ? undefined : v)),
   ) as T;
+}
+
+export async function saveCommissioning(
+  projectId: string,
+  state: import("@/lib/commissioning").Commissioning,
+  expectedVersion: number,
+) {
+  if (usingDemo()) {
+    const project = demo().data.projects.find((p) => p.id === projectId);
+    requireCondition(
+      project && (project.commissioning?.version ?? 0) === expectedVersion,
+      409,
+      "Project changed. Refresh before saving.",
+    );
+    project.commissioning = state;
+    return;
+  }
+  const result = await db()
+    .update(tables.projects)
+    .set({ commissioning: state })
+    .where(
+      and(
+        eq(tables.projects.id, projectId),
+        sql`coalesce((${tables.projects.commissioning}->>'version')::integer, 0) = ${expectedVersion}`,
+      ),
+    )
+    .returning({ id: tables.projects.id });
+  requireCondition(
+    result.length,
+    409,
+    "Project changed. Refresh before saving.",
+  );
+}
+
+export async function saveUserModules(
+  id: string,
+  modules: import("@/lib/commissioning").Module[],
+) {
+  if (usingDemo()) {
+    const user = demo().data.users.find((u) => u.id === id);
+    requireCondition(user, 404, "User not found.");
+    user.modules = modules;
+    return;
+  }
+  await db()
+    .update(tables.users)
+    .set({ modules })
+    .where(eq(tables.users.id, id));
+}
+
+export async function insertTagTasks(tasks: Task[]) {
+  if (usingDemo()) {
+    const missing = tasks.filter(
+      (t) =>
+        !demo().data.tasks.some(
+          (old) =>
+            old.projectId === t.projectId &&
+            old.cx?.kind === "tag" &&
+            old.cx.assetId === t.cx?.assetId &&
+            old.cx.level === t.cx?.level,
+        ),
+    );
+    demo().data.tasks.push(...missing);
+    return missing.length;
+  }
+  if (!tasks.length) return 0;
+  // A single statement and unique asset/level index keep repeated generation idempotent.
+  const inserted = await db()
+    .insert(tables.tasks)
+    .values(tasks)
+    .onConflictDoNothing()
+    .returning({ id: tables.tasks.id });
+  return inserted.length;
 }
 const publicUser = {
   id: tables.users.id,
@@ -65,6 +139,7 @@ const publicUser = {
   email: tables.users.email,
   role: tables.users.role,
   companyId: tables.users.companyId,
+  modules: tables.users.modules,
 };
 const fileMeta = {
   id: tables.attachments.id,
@@ -86,12 +161,14 @@ const feedbackMeta = {
 };
 export async function findUser(id: string): Promise<User | undefined> {
   if (usingDemo()) return demo().data.users.find((u) => u.id === id);
-  return (
-    await db()
-      .select(publicUser)
-      .from(tables.users)
-      .where(eq(tables.users.id, id))
-  )[0];
+  return clean<User | undefined>(
+    (
+      await db()
+        .select(publicUser)
+        .from(tables.users)
+        .where(eq(tables.users.id, id))
+    )[0],
+  );
 }
 export async function credentials(email: string) {
   if (usingDemo()) return undefined;
@@ -447,7 +524,7 @@ export async function planTask(
     return;
   }
   const result = await db().execute(sql`
-    WITH changed AS (UPDATE tasks SET title=${task.title},description=${task.description},priority=${task.priority ?? null},due_date=${task.dueDate ?? null},discipline=${task.discipline},location=${task.location},version=version+1,updated_at=${task.updatedAt} WHERE id=${task.id} AND version=${version} RETURNING id)
+    WITH changed AS (UPDATE tasks SET title=${task.title},description=${task.description},priority=${task.priority ?? null},due_date=${task.dueDate ?? null},discipline=${task.discipline},location=${task.location},cx=${JSON.stringify(task.cx ?? null)}::jsonb,version=version+1,updated_at=${task.updatedAt} WHERE id=${task.id} AND version=${version} RETURNING id)
     INSERT INTO task_activities(id,task_id,actor_id,actor_name,action,note,created_at) SELECT ${activity.id},id,${activity.actorId},${activity.actorName},${activity.action},${activity.note},${activity.createdAt}::timestamptz FROM changed RETURNING id`);
   requireCondition(
     result.rows.length,

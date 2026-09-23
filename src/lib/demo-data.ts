@@ -51,7 +51,14 @@ export function createDemoData(now = new Date()): AppData {
       companyId: "c3",
     },
   ];
-  const projects = [
+  users.push({
+    id: "u-admin",
+    name: "Project Administrator",
+    email: "admin@example.com",
+    role: "admin",
+    companyId: "c1",
+  });
+  const projects: AppData["projects"] = [
     {
       id: "p1",
       name: "AMS16 · Construction & commissioning",
@@ -167,6 +174,85 @@ export function createDemoData(now = new Date()): AppData {
     version: 1,
     ...t,
   }));
+  projects[0].commissioning = {
+    version: 1,
+    config: {
+      levels: ["L2A", "L2B", "L3", "L4", "L5", "L6"],
+      priorities: ["P1", "P2", "P3"],
+    },
+    assets: [
+      {
+        id: "S201_SBLVB",
+        name: "LV switchboard B",
+        equipmentType: "Switchboard",
+        location: "S201 LV Room B",
+        levels: ["L2A", "L2B", "L3", "L4", "L5", "L6"],
+        levelActivities: { L4: "AMS16-DEMO-1040" },
+      },
+      {
+        id: "S201_CRAH01",
+        name: "CRAH unit 01",
+        equipmentType: "CRAH",
+        location: "S201 LV Room",
+        levels: ["L2A", "L2B", "L3", "L4"],
+        deliveryActivityId: "AMS16-DEMO-DEL",
+        expectedDelivery: ago(-2).slice(0, 10),
+      },
+      {
+        id: "S201_CGM01",
+        name: "CGM pump 01",
+        equipmentType: "Pump",
+        location: "S201",
+        levels: ["L2B", "L3"],
+      },
+    ],
+    schedule: [
+      {
+        activityId: "AMS16-DEMO-1040",
+        name: "SBLVB functional test",
+        baselineFinish: ago(3).slice(0, 10),
+        finish: ago(1).slice(0, 10),
+      },
+      {
+        activityId: "AMS16-DEMO-DEL",
+        name: "CRAH delivery",
+        baselineFinish: ago(7).slice(0, 10),
+        finish: ago(3).slice(0, 10),
+      },
+    ],
+    revisions: [],
+  };
+  tasks[0].cx = {
+    kind: "issue",
+    assetId: "S201_SBLVB",
+    activityId: "AMS16-DEMO-1040",
+    level: "L4",
+    result: "untested",
+    progress: 60,
+  };
+  tasks[1].cx = {
+    kind: "issue",
+    assetId: "S201_CRAH01",
+    level: "L3",
+    result: "retest",
+    blockerRisk: "Controls issue prevents completion of L3 and delays L4.",
+  };
+  tasks.push(
+    ...(["L2A", "L2B"] as const).map((level, i) => ({
+      ...tasks[5],
+      id: `demo-tag-${i}`,
+      externalId: undefined,
+      title: `S201_SBLVB · ${level} approved tag`,
+      source: "manual" as const,
+      cx: {
+        kind: "tag" as const,
+        assetId: "S201_SBLVB",
+        level,
+        result: "passed" as const,
+        progress: 100,
+      },
+    })),
+  );
   return {
     ...structuredClone(emptyData),
     companies,

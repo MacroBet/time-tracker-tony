@@ -1,4 +1,5 @@
 "use client";
+import { hasModule } from "@/lib/commissioning";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Bug, Camera, X } from "lucide-react";
@@ -15,7 +16,7 @@ import {
   DialogDescription,
 } from "./ui/dialog";
 export function FeedbackButton() {
-  const { projects, mutate, isOnline } = useApp();
+  const { projects, mutate, isOnline, currentUser } = useApp();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [projectId, setProjectId] = useState(projects[0]?.id || "");
@@ -83,6 +84,7 @@ export function FeedbackButton() {
       setBusy(false);
     }
   }
+  if (!hasModule(currentUser, "feedback")) return null;
   return (
     <div data-feedback>
       <Button

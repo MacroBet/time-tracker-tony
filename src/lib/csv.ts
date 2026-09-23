@@ -1,3 +1,4 @@
+import { dueDateFor } from "@/lib/commissioning";
 import { type Task, type AppData, statusLabels, isOverdue } from "./domain";
 export function csvCell(value: unknown) {
   let text = String(value ?? "");
@@ -26,6 +27,13 @@ export function tasksCsv(
     "Source",
     "Original status",
     "Original assignee type",
+    "Asset",
+    "P6 Activity ID",
+    "Level",
+    "Quality tag",
+    "Test result",
+    "Progress",
+    "Blocker impact",
   ];
   const rows = tasks.map((t) => [
     t.id,
@@ -39,12 +47,19 @@ export function tasksCsv(
     data.projects.find((p) => p.id === t.projectId)?.name,
     t.discipline,
     t.location,
-    t.dueDate,
+    dueDateFor(t),
     isOverdue(t) ? "Yes" : "No",
     t.updatedAt,
     t.source,
     t.importData?.status,
     t.importData?.assigneeType,
+    t.cx?.assetId,
+    t.cx?.activityId,
+    t.cx?.level,
+    t.cx?.qualityTag,
+    t.cx?.result,
+    t.cx?.progress,
+    t.cx?.blockerRisk,
   ]);
   return (
     "\uFEFF" +

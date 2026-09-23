@@ -24,6 +24,42 @@ test("PostgreSQL migration, constraints and atomic optimistic updates", async ()
     await db.insert(schema.projects).values(data.projects);
     await db.insert(schema.memberships).values(data.memberships);
     await db.insert(schema.tasks).values(data.tasks);
+    assert.equal(
+      (
+        await pg.query<{ commissioning: { version: number } }>(
+          "SELECT commissioning FROM projects WHERE id = 'p1'",
+        )
+      ).rows[0].commissioning.version,
+      1,
+    );
+    assert.equal(
+      (
+        await pg.query(
+          "UPDATE projects SET commissioning = jsonb_set(commissioning, '{version}', '2') WHERE id = 'p1' AND (commissioning->>'version')::int = 1 RETURNING id",
+        )
+      ).rows.length,
+      1,
+    );
+    assert.equal(
+      (
+        await pg.query(
+          "UPDATE projects SET commissioning = jsonb_set(commissioning, '{version}', '3') WHERE id = 'p1' AND (commissioning->>'version')::int = 1 RETURNING id",
+        )
+      ).rows.length,
+      0,
+    );
+    await assert.rejects(
+      db.insert(schema.tasks).values({
+        ...data.tasks.find((t) => t.id === "demo-tag-0")!,
+        id: "duplicate-tag",
+      }),
+    );
+    await db.insert(schema.tasks).values({
+      ...data.tasks[0],
+      id: "priority-five",
+      externalId: null,
+      priority: "P5",
+    });
     await db.insert(schema.tasks).values({
       ...data.tasks[0],
       id: "imported-excel",
@@ -127,13 +163,11 @@ test("PostgreSQL migration, constraints and atomic optimistic updates", async ()
       ).rows[0].version,
       4,
     );
-    const assignments = data.tasks
-      .slice(1, 3)
-      .map((t, i) => ({
-        task: { ...t, assignedTo: "u1" },
-        expectedVersion: 1,
-        activity: { ...event, id: `assignment-${i}`, taskId: t.id },
-      }));
+    const assignments = data.tasks.slice(1, 3).map((t, i) => ({
+      task: { ...t, assignedTo: "u1" },
+      expectedVersion: 1,
+      activity: { ...event, id: `assignment-${i}`, taskId: t.id },
+    }));
     const failedAssignment = dialect.sqlToQuery(
       assignmentQuery(
         assignments.map((a, i) => ({

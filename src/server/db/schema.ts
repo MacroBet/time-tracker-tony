@@ -29,7 +29,7 @@ export const taskStatusEnum = pgEnum("task_status", [
   "completed",
   "not-applicable",
 ]);
-export const priorityEnum = pgEnum("priority", ["P1", "P2", "P3"]);
+export const priorityEnum = pgEnum("priority", ["P1", "P2", "P3", "P4", "P5"]);
 export const sourceEnum = pgEnum("issue_source", [
   "manual",
   "bim360",
@@ -61,11 +61,14 @@ export const users = pgTable("users", {
     .notNull()
     .references(() => companies.id),
   passwordHash: text("password_hash"),
+  modules: jsonb("modules").$type<import("@/lib/commissioning").Module[]>(),
 });
 export const projects = pgTable("projects", {
   id: text().primaryKey(),
   name: text().notNull(),
   location: text().notNull(),
+  commissioning:
+    jsonb("commissioning").$type<import("@/lib/commissioning").Commissioning>(),
   companyId: text("company_id")
     .notNull()
     .references(() => companies.id),
@@ -100,6 +103,7 @@ export const tasks = pgTable(
       .references(() => users.id),
     status: taskStatusEnum().notNull().default("pending"),
     priority: priorityEnum(),
+    cx: jsonb("cx").$type<import("@/lib/commissioning").CommissioningTask>(),
     importData:
       jsonb("import_data").$type<import("@/lib/domain").Task["importData"]>(),
     discipline: text().notNull(),
@@ -118,6 +122,9 @@ export const tasks = pgTable(
     index("tasks_assignee").on(t.assignedTo),
     index("tasks_due_date").on(t.dueDate),
     uniqueIndex("tasks_external_issue").on(t.projectId, t.source, t.externalId),
+    uniqueIndex("tasks_asset_level_tag")
+      .on(t.projectId, sql`(${t.cx}->>'assetId')`, sql`(${t.cx}->>'level')`)
+      .where(sql`${t.cx}->>'kind' = 'tag'`),
   ],
 );
 export const shifts = pgTable(

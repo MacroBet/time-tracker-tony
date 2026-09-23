@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cxSchema, PRIORITIES } from "./commissioning";
 const id = z.string().min(1).max(100);
 const note = z.string().trim().max(5000);
 const dueDate = z.iso.date().optional();
@@ -8,7 +9,8 @@ export const createTaskSchema = z
     description: z.string().trim().min(3).max(5000),
     projectId: id,
     assignedTo: id,
-    priority: z.enum(["P1", "P2", "P3"]).default("P2"),
+    priority: z.enum(PRIORITIES).default("P2"),
+    cx: cxSchema.optional(),
     discipline: z.string().trim().min(1).max(100),
     location: z.string().trim().max(200).default(""),
     dueDate,
@@ -28,10 +30,16 @@ export const updateTaskSchema = z
       ])
       .optional(),
     notes: note.optional(),
+    result: z.enum(["untested", "passed", "failed", "retest"]).optional(),
+    progress: z.number().min(0).max(100).optional(),
   })
   .strict()
   .refine(
-    (v) => v.status !== undefined || v.notes !== undefined,
+    (v) =>
+      v.status !== undefined ||
+      v.notes !== undefined ||
+      v.result !== undefined ||
+      v.progress !== undefined,
     "Provide an update.",
   );
 export const createShiftSchema = z.object({ projectId: id }).strict();
@@ -84,7 +92,8 @@ export const taskPlanSchema = z
     version: z.number().int().positive(),
     title: z.string().trim().min(3).max(200),
     description: z.string().trim().max(10000),
-    priority: z.enum(["P1", "P2", "P3"]).nullable(),
+    priority: z.enum(PRIORITIES).nullable(),
+    cx: cxSchema.optional(),
     dueDate: z.iso.date().nullable(),
     discipline: z.string().trim().min(1).max(200),
     location: z.string().trim().max(500),

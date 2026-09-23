@@ -90,3 +90,59 @@ Progetto Figma originale: [Mobile Time Tracking App](https://www.figma.com/desig
 La matrice dei ruoli, i casi coperti e i limiti verificati sono in [Use case](docs/use-cases.md). Il supervisor coordina tutti i progetti assegnati al proprio account. Manager e supervisor possono assegnare e riassegnare issue, anche in gruppo (massimo 50), modificare il piano e approvare le consegne. Il worker invia in revisione con nota o evidenza, senza auto-approvare la chiusura.
 
 L’interfaccia si aggiorna quando torna in primo piano e ogni 20 secondi mentre è visibile e online. Il manifest permette l’apertura standalone dai browser compatibili; non introduce salvataggi offline o un’app nativa.
+
+## Commissioning: feedback Tony
+
+Il piano e la lettura delle fonti sono in [Piano di sviluppo](docs/tony-development-plan.md).
+
+- `/overview`: dashboard per progetto, task/issue, arretrati, blockers, esiti test, tag per livello e andamento baseline/forecast/approvazioni. Ogni riepilogo apre un report filtrabile.
+- `/commissioning`: registro asset/gruppi, livelli applicabili, collegamenti P6 per livello e consegna, revisione del programma con baseline protetta, import con anteprima e storico. **Create missing tag activities** genera task non assegnati, uno per asset/livello; non duplica quelli già esistenti. Oltre 1.000 nuovi task, ripetere il comando per i successivi.
+- `/reports`: tag, riepilogo per tipo di attrezzatura, andamento, programma, issue/task, documentazione O&M/formazione/garanzie/sign-off e conformità. CSV di tutti i risultati filtrati; stampa della pagina visualizzata, fino a 50 righe.
+- `/admin`: il ruolo `admin` configura L1/L2/L2A/L2B/L3/L4/L5/L6 e P1–P5 per progetto e abilita i moduli per persona. **Task-only profile** mantiene task e impostazioni. Nella demo è disponibile **Project Administrator**; nessun account amministratore reale viene creato automaticamente. Membership e ruolo limitano sempre l'accesso ai dati.
+- Dettaglio task: collegamenti asset/P6, livello/tag, rischio, tipo documento e conteggi di conformità; registrazione separata di esito e avanzamento. Passare un test non approva automaticamente il tag; un esito fallito/retest impedisce la chiusura finché non viene risolto.
+
+Applicare `npm run db:migrate` sul database di destinazione **prima** di distribuire questa versione. Le nuove migrazioni aggiungono P4/P5, metadati commissioning, configurazioni per progetto, moduli per utente e unicità dei tag asset/livello. Lo sviluppo e i test usano una demo isolata e PostgreSQL in memoria, non il DB reale.
+
+### Conversione degli Excel
+
+Il browser importa un registro JSON validato. Il convertitore Python legge gli Excel forniti (richiede `openpyxl`) senza modificarli:
+
+```sh
+python3 scripts/extract-commissioning.py 'HGB1A SPC CX Schedule _WIP - WW44.xlsx' output/hgb1a-register.json
+python3 scripts/extract-commissioning.py AMS16_Cx_Programme.xlsx output/ams16-register.json
+```
+
+Il file `.review.json` associato contiene anomalie e scelte da verificare e non va importato. Per assegnare esplicitamente un insieme iniziale di livelli a tutti gli asset aggiungere, ad esempio, `--levels L2A L2B L3`, dopo aver verificato l'applicabilità. Senza l'opzione i livelli sono vuoti: non vengono indovinati dai colori. Configurare i livelli in Admin e verificare le eccezioni per asset prima di generare i tag.
+
+Il convertitore AMS16 usa le date delle colonne dichiarate P6. Le colonne miste Actual/Forecast non diventano consuntivi o approvazioni. Il collegamento livello → Activity ID va verificato nel registro asset; nomi generici nelle issue non vengono associati automaticamente. Asset e programmi HGB1A/AMS16 appartengono a progetti distinti e devono essere importati separatamente.
+
+Formato minimo del registro (le date assenti nelle revisioni mantengono il valore già registrato):
+
+```json
+{
+  "assets": [
+    {
+      "id": "PUMP-01",
+      "name": "Primary pump",
+      "equipmentType": "Pump",
+      "location": "Plant room",
+      "levels": ["L3"],
+      "levelActivities": { "L3": "P6-1000" }
+    }
+  ],
+  "schedule": [
+    {
+      "activityId": "P6-1000",
+      "name": "Pump commissioning",
+      "start": "2026-10-01",
+      "finish": "2026-10-02"
+    }
+  ]
+}
+```
+
+Le issue mantengono la pipeline `scripts/extract-issues.py` / `scripts/import-issues.ts`, che propone un riepilogo prima dell'opzione esplicita `--apply`. Il caricamento del registro asset/P6 non importa automaticamente le issue.
+
+### Limiti del collegamento esterno
+
+Questa versione importa esportazioni; non sincronizza direttamente P6, BIM360, ACC o CxAlloy. La conformità deriva dai conteggi registrati, non da una certificazione automatica. La documentazione usa task con evidenze e approvazione; non replica l'intero sistema di gestione documentale e template descritto nelle 190 pagine della guideline. Lo storico dei trend parte dalle date presenti nei record: nessun dato storico viene inventato. La disponibilità di una facility non viene dichiarata automaticamente sulla base di una percentuale.

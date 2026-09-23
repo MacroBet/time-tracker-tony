@@ -68,6 +68,17 @@ export function api(handler: (request: Request) => Promise<Response>) {
           },
           400,
         );
+      const code =
+        (error as { code?: string; cause?: { code?: string } })?.cause?.code ??
+        (error as { code?: string })?.code;
+      if (code === "23505")
+        return json(
+          {
+            error:
+              "A record with this identifier already exists. Refresh before retrying.",
+          },
+          409,
+        );
       if (error instanceof SyntaxError)
         return json({ error: "Invalid JSON." }, 400);
       // Avoid logging connection strings, SQL values or uploaded evidence.

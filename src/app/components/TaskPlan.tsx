@@ -1,13 +1,16 @@
 "use client";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CommissioningFields, cxFromForm } from "./CommissioningFields";
+import { commissioning } from "@/lib/commissioning";
 import type { Task } from "@/lib/domain";
 import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 export function TaskPlan({ task }: { task: Task }) {
-  const { mutate, isOnline } = useApp();
+  const { mutate, isOnline, projects } = useApp();
+  const project = projects.find((p) => p.id === task.projectId);
   const [busy, setBusy] = useState(false);
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -18,6 +21,7 @@ export function TaskPlan({ task }: { task: Task }) {
         method: "PATCH",
         body: JSON.stringify({
           version: task.version,
+          cx: cxFromForm(form, task.cx),
           title: form.get("title"),
           description: form.get("description"),
           priority: form.get("priority") || null,
@@ -67,7 +71,12 @@ export function TaskPlan({ task }: { task: Task }) {
               defaultValue={task.priority || ""}
             >
               <option value="">Not specified</option>
-              {["P1", "P2", "P3"].map((p) => (
+              {[
+                ...new Set([
+                  ...commissioning(project).config.priorities,
+                  ...(task.priority ? [task.priority] : []),
+                ]),
+              ].map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>
@@ -90,6 +99,16 @@ export function TaskPlan({ task }: { task: Task }) {
           Area
           <Input name="location" defaultValue={task.location} maxLength={500} />
         </label>
+        <CommissioningFields
+          key={`${task.version}`}
+          project={project}
+          value={
+            task.cx ?? {
+              kind: task.source === "manual" ? "task" : "issue",
+              result: "untested",
+            }
+          }
+        />
         <label className="block text-sm">
           Reason for change
           <Textarea name="reason" required minLength={10} maxLength={1000} />

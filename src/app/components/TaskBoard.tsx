@@ -1,4 +1,5 @@
 "use client";
+import { dueDateFor } from "@/lib/commissioning";
 import { AssignmentDialog } from "./AssignmentDialog";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -93,7 +94,9 @@ export function TaskBoard({
         (discipline === "all" || t.discipline === discipline) &&
         (due === "all" ||
           (due === "overdue" && isOverdue(t)) ||
-          (due === "today" && !isClosed(t) && t.dueDate === projectDate()) ||
+          (due === "today" &&
+            !isClosed(t) &&
+            dueDateFor(t) === projectDate()) ||
           (due === "stale" && isStale(t)))
       );
     })
@@ -102,7 +105,7 @@ export function TaskBoard({
         Number(isOverdue(b)) - Number(isOverdue(a)) ||
         Number(isClosed(a)) - Number(isClosed(b)) ||
         (a.priority || "P9").localeCompare(b.priority || "P9") ||
-        (a.dueDate || "9999").localeCompare(b.dueDate || "9999"),
+        (dueDateFor(a) || "9999").localeCompare(dueDateFor(b) || "9999"),
     );
   const completed = filtered.filter((t) => t.status === "completed").length;
   const applicable = filtered.filter(
@@ -378,7 +381,7 @@ export function TaskBoard({
                 "Priorities",
                 priority,
                 setPriority,
-                ["P1", "P2", "P3", "unspecified"].map((id) => ({
+                ["P1", "P2", "P3", "P4", "P5", "unspecified"].map((id) => ({
                   id,
                   name: id === "unspecified" ? "Not specified" : id,
                 })),
@@ -609,7 +612,7 @@ export function TaskBoard({
                   </span>
                   <span className="flex items-center gap-1">
                     <CalendarDays className="size-3" />
-                    {task.dueDate || "No due date"}
+                    {dueDateFor(task) || "No due date"}
                   </span>
                 </div>
               </Link>

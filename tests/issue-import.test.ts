@@ -63,3 +63,17 @@ test("Imported companies are visible to managers without creating fake users", (
     ).tasks.some((t) => t.id === "imported"),
   );
 });
+
+test("import recognizes configured P4 and P5 priorities", () => {
+  for (const priority of ["P4", "P5"]) {
+    const mapped = mapIssue({
+      ID: "#99",
+      Title: "Example issue",
+      Status: "Open",
+      Type: `Commissioning Issue ${priority}`,
+      "Assigned to": "Team",
+      "Assignee type": "Company",
+    });
+    assert.equal(mapped.priority, priority);
+  }
+});

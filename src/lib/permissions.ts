@@ -1,4 +1,5 @@
 import { type AppData, type Task, type User, type Shift } from "./domain";
+import { commissioning, hasModule } from "./commissioning";
 export const canManage = (user: User) => user.role !== "worker";
 export const isProjectMember = (
   user: User,
@@ -34,7 +35,14 @@ export function scopeData(user: User, data: AppData): AppData {
       .filter((m) => m.userId === user.id)
       .map((m) => m.projectId),
   );
-  const tasks = data.tasks.filter((t) => canReadTask(user, t, data));
+  const tasks = data.tasks
+    .filter((t) => canReadTask(user, t, data))
+    .map((t) => ({
+      ...t,
+      scheduleDueDate: commissioning(
+        data.projects.find((p) => p.id === t.projectId),
+      ).schedule.find((s) => s.activityId === t.cx?.activityId)?.finish,
+    }));
   const taskIds = new Set(tasks.map((t) => t.id));
   const userIds = new Set(
     data.memberships
@@ -47,7 +55,29 @@ export function scopeData(user: User, data: AppData): AppData {
   );
   const visibleUserIds = new Set(visibleUsers.map((u) => u.id));
   return {
-    projects: data.projects.filter((p) => projectIds.has(p.id)),
+    projects: data.projects
+      .filter((p) => projectIds.has(p.id))
+      .map((p) => {
+        if (user.role !== "worker") return p;
+        const state = commissioning(p);
+        const mine = tasks.filter((t) => t.projectId === p.id);
+        const assets = state.assets.filter((a) =>
+          mine.some((t) => t.cx?.assetId === a.id),
+        );
+        return {
+          ...p,
+          commissioning: {
+            ...state,
+            assets,
+            revisions: [],
+            schedule: state.schedule.filter(
+              (s) =>
+                mine.some((t) => t.cx?.activityId === s.activityId) ||
+                assets.some((a) => a.deliveryActivityId === s.activityId),
+            ),
+          },
+        };
+      }),
     companies: data.companies.filter(
       (c) =>
         visibleUsers.some((u) => u.companyId === c.id) ||
@@ -58,7 +88,9 @@ export function scopeData(user: User, data: AppData): AppData {
       (m) => projectIds.has(m.projectId) && visibleUserIds.has(m.userId),
     ),
     tasks,
-    shifts: data.shifts.filter((s) => canReadShift(user, s, data)),
+    shifts: hasModule(user, "time")
+      ? data.shifts.filter((s) => canReadShift(user, s, data))
+      : [],
     activities: data.activities.filter((a) => taskIds.has(a.taskId)),
     attachments: data.attachments.filter((a) => taskIds.has(a.taskId)),
     feedback: data.feedback.filter(
