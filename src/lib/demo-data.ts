@@ -1,5 +1,9 @@
 import { type AppData, type Task, emptyData } from "./domain";
-export function createDemoData(now = new Date()): AppData {
+import { withDemoShowcase } from "./demo-showcase";
+export function createDemoData(
+  now = new Date(),
+  options: { showcase?: boolean } = {},
+): AppData {
   const ago = (days: number) =>
     new Date(now.getTime() - days * 86400000).toISOString();
   const companies = [
@@ -253,7 +257,7 @@ export function createDemoData(now = new Date()): AppData {
       },
     })),
   );
-  return {
+  const data: AppData = {
     ...structuredClone(emptyData),
     companies,
     users,
@@ -286,4 +290,5 @@ export function createDemoData(now = new Date()): AppData {
       createdAt: t.createdAt,
     })),
   };
+  return options.showcase ? withDemoShowcase(data, now) : data;
 }

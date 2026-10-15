@@ -40,7 +40,11 @@ export function AppProvider({
 }) {
   const [data, setData] = useState(initialData);
   const [projectId, selectProject] = useState(
-    initialData.projects[0]?.id ?? "",
+    (initialData.mode === "demo" &&
+      initialData.projects.find((project) => project.id === "p-demo-rich")
+        ?.id) ||
+      initialData.projects[0]?.id ||
+      "",
   );
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
   const isOnline = useSyncExternalStore(

@@ -44,7 +44,7 @@ function demo() {
     "Configure the database to continue.",
   );
   return (globalStore.fieldtrackDemo ??= {
-    data: createDemoData(),
+    data: createDemoData(new Date(), { showcase: true }),
     sessions: [],
     files: [],
     feedback: [],

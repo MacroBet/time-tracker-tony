@@ -49,11 +49,23 @@ test("API sessions, role boundaries, persistence, evidence and timesheet lifecyc
   const supervisorData = await (
     await request("/api/bootstrap", supervisor)
   ).json();
+  const supervisorProjects = new Set(
+    supervisorData.memberships
+      .filter((membership: { userId: string }) => membership.userId === "u3")
+      .map((membership: { projectId: string }) => membership.projectId),
+  );
+  assert(supervisorProjects.has("p1"));
   assert(
-    supervisorData.tasks.every(
-      (t: { projectId: string }) => t.projectId === "p1",
+    supervisorData.tasks.every((task: { projectId: string }) =>
+      supervisorProjects.has(task.projectId),
     ),
   );
+  assert(
+    supervisorData.projects.every((project: { id: string }) =>
+      supervisorProjects.has(project.id),
+    ),
+  );
+  assert(!supervisorProjects.has("unassigned-project"));
   assert.equal((await request("/api/tasks", worker, "POST", {})).status, 403);
   assert.equal(
     (
