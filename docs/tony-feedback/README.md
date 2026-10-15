@@ -89,6 +89,26 @@ commerciale proposto del lavoro AI, non un pagamento ricevuto né un budget API.
 Nessuna nuova spesa, integrazione esterna, installazione collegata o modifica di
 permessi senza il relativo perimetro autorizzato. P6 è riferimento funzionale.
 
+## Copilot consegnato prima della chiave
+
+Commit applicativo **0f80a4e**, push main verificato. Aprire `/copilot` (More su
+mobile) con Tasks e Commissioning e ruolo di gestione. Controlli su record salvati
+e proposte manuali funzionano senza AI; gli esempi compilano soltanto la domanda.
+Il provider richiede chiave, modello e abilitazione esplicita. Setup documentato
+nel [README principale](../../README.md#copilot-di-progetto), rinviato a Marco.
+
+Strumenti limitati al progetto: riepilogo, scaduti, test/approvazioni, gruppi asset,
+ricerca task e bozze di modifica. Titolo, descrizione e priorità sono gli unici
+campi proponibili; il modello non ha un tool di conferma. Anteprima e conferma
+umana separata, token di 10 minuti, versioni e permessi ricontrollati; audit del
+salvataggio task esistente. Gruppi padre/figlio consultabili, task di gruppo
+condivisi ancora esclusi. Nessuna migrazione o scrittura DB remota nel ciclo.
+
+Verifiche del ciclo: 76 unitari/PostgreSQL, 9 API demo, typecheck, lint, formato,
+build e desktop/mobile (1440×1000/390×844), progetto pieno/vuoto e flusso
+anteprima→conferma locale. Provider verificato solo con mock, mai con chiave live.
+Non ripetere lo stesso collaudo a ogni heartbeat senza cambiamenti o nuove prove.
+
 ## Verifica locale e chiusura
 
 Per test API/browser avviare esclusivamente una demo isolata:

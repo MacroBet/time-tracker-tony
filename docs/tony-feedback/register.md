@@ -13,10 +13,14 @@ a Tony adesso. Se desktop occupato/inaccessibile, registrare la copertura e
 continuare il lavoro indipendente, senza prendere il primo piano ripetutamente.
 
 **Consegnato:** Gantt persistente, asset CSV/JSON, storico, review I/R/AC/A,
-Client Supplied e UX desktop/mobile. Codice UX aa8e67e, fixture locale 865315a;
-push fino a c591e78 verificati e deploy UX 108042a riuscito. Ultimo ciclo: 56 test
-unitari/PostgreSQL, 7 API, statici/build e UI superati. Rileggere git per HEAD
-corrente. Preservare next-env.d.ts preesistente, non committarlo.
+Client Supplied e UX desktop/mobile. Protocollo persistente cc14c07 consegnato
+prima del Copilot. **Copilot 0f80a4e su main remoto verificato:** controlli reali,
+esempi, provider server disabilitato e proposte task con anteprima/conferma.
+Ultimo ciclo: **76 test unitari/PostgreSQL, 9 API**, typecheck/lint/format/build
+e UI desktop/mobile superati. **Deploy Copilot Vercel success** verificato il
+15 ottobre alle 19:22 UTC (21:22 Europe/Rome), collaudo autenticato solo locale;
+deploy UX 108042a già riuscito. Rileggere git per HEAD corrente. Modifica
+next-env.d.ts preesistente preservata e non committata.
 
 **Copertura Tony:** lettura diretta root fino 19:20; resoconti verificati dalla
 chat vocale fino a saluto 20:23 letto e risposta successiva senza ora rilevata.
@@ -40,16 +44,16 @@ nessuna chiamata live/a pagamento. Copilot onesto "da configurare"; mock solo
 nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattivato.
 I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
 
-| Priorità / ID                       | Stato                                | Prossima unità concreta                                                                                                          | Accettazione / gate                                                                                                    |
-| ----------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/heartbeat        | in corso                             | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                                          | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                                     |
-| AI-001 copilot utile senza live API | pronta                               | Documentazione OpenAI aggiornata, contratti/strumenti su dati progetto, provider configurabile server-side e UI con esempi reali | Chiave assente=>stato configurazione, zero richieste provider; scope/permessi verificati                               |
-| AI-002 proposte controllabili       | pronta                               | Preparare aggiornamenti task con anteprima, conferma umana esplicita e controllo versione                                        | Il provider non esegue operazioni; senza conferma/permesso nessuna modifica; test con mock solo nella suite            |
-| CX-009 tag/gruppi/check sheet       | da definire nel dettaglio            | Valutare relazione task/check sheet per asset tag o gruppo, usando gerarchia esistente; acquisire la lista offerta se arriva     | Non fingere che uno stesso task copra già un gruppo; chiarire identità, membri e stato condiviso prima di nuove regole |
-| UX-002 chiarezza continua           | pronta                               | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                             | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                                     |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                             | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                                         |
-| AI-003 attivazione provider         | in attesa di Marco                   | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                                | Nessuna spesa implicita; prima live call solo dopo completamento del gate                                              |
-| AI-004 autopilot                    | futuro                               | Definire dashboard, regole, ambiti, audit e approvazioni                                                                         | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                                       |
+| Priorità / ID                       | Stato                                | Prossima unità concreta                                                                                                      | Accettazione / gate                                                                                                    |
+| ----------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/heartbeat        | completata (cc14c07)                 | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                                      | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                                     |
+| AI-001 copilot utile senza live API | completata (0f80a4e)                 | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003          | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                                       |
+| AI-002 proposte controllabili       | completata (0f80a4e)                 | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro                    | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato                         |
+| CX-009 tag/gruppi/check sheet       | da definire nel dettaglio            | Valutare relazione task/check sheet per asset tag o gruppo, usando gerarchia esistente; acquisire la lista offerta se arriva | Non fingere che uno stesso task copra già un gruppo; chiarire identità, membri e stato condiviso prima di nuove regole |
+| UX-002 chiarezza continua           | pronta                               | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                         | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                                     |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                         | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                                         |
+| AI-003 attivazione provider         | in attesa di Marco                   | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                            | Nessuna spesa implicita; prima live call solo dopo completamento del gate                                              |
+| AI-004 autopilot                    | futuro                               | Definire dashboard, regole, ambiti, audit e approvazioni                                                                     | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                                       |
 
 Quando una voce è bloccata, scegliere la prossima pronta. Dopo ogni unità annotare
 file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostante.
@@ -393,3 +397,53 @@ Link locali dei documenti verificati, 13 originali riconciliati per dimensione e
 SHA-256 e hash del payload di revisione verificato. Nessuna automazione creata
 o modificata dal root. Prossima unità: AI-001/002, scaffold copilot autorizzato
 con provider disabilitato e nessuna chiave/chiamata live.
+
+Avvio AI-001/002 dopo push protocollo cc14c07: backend/permessi/proposte, provider
+Responses disabilitato per default e UI copilot sviluppati in blocchi indipendenti.
+Nessuna chiave presente (solo controllo booleano), nessuna live API, nessun DB
+remoto. Root integra e verifica; non confondere scaffold in corso con AI attiva.
+
+### Consegna Copilot — 15 ottobre 2026, 21:22 Europe/Rome
+
+**0f80a4e**, commit e push su main verificati tramite ref remota; Vercel
+`success / Deployment has completed` per lo stesso SHA. Il deploy è verificato
+dal suo stato, mentre il collaudo autenticato è stato svolto esclusivamente nella
+demo locale isolata. Smoke pubblico `/copilot`: bundle presente e redirect Next
+verso `/` per sessione assente (HTML streamed HTTP 200 con meta refresh), senza
+dati di progetto. Nessuna nuova migrazione o scrittura sul DB remoto.
+
+- `/copilot`, link secondario/More, richiede ruolo di gestione e moduli Tasks e
+  Commissioning; worker esclusi e progetto non assegnato non consultabile.
+- Controlli reali: scaduti con date programma, test mancanti/non registrati e
+  approvazioni distinte dai test; fonti navigabili e gruppi padre/figlio esistenti.
+  Ricerca task disponibile al provider; testo dei record trattato come dato.
+- Chat con esempi modificabili, stato onesto senza chiave, nessuna risposta finta.
+  Provider server OpenAI Responses, URL fisso, `store:false`, chiave/modello/
+  `COPILOT_ENABLED=true` tutti necessari. Fino ad AI-003 nessuna live call.
+  Limiti: quattro richieste, sei tool call, 1.500 output token per richiesta,
+  8.000 caratteri risposta, timeout complessivo 20 secondi. Cronologia limitata
+  alla pagina e azzerata al cambio progetto; `store:false` non promette assenza
+  di ogni conservazione provider.
+- Proposte manuali già utili senza chiave: titolo, descrizione o priorità di un
+  task, motivo, confronto prima/dopo e conferma separata. HMAC con segreto della
+  sessione HttpOnly lato server; token di 10 minuti legato a utente/sessione/
+  progetto/versioni. Token alterati, replay, progetto/task cambiati e permessi
+  revocati rifiutati. Salvataggio/audit tramite operazione task esistente;
+  scadenza, assegnatario, workflow, test, review e programma preservati.
+- **76 test unitari/PostgreSQL e 9 API PASS**, inclusi 13 test trasporto provider
+  con mock e sette test dominio/firma. Typecheck, lint, format, build e diff check
+  PASS. Nessun test live. Controllo Impeccable dei file UI: nessun rilievo.
+- QA centrale in un batch desktop/mobile e una conferma finale: 1440×1000 e
+  390×844, demo piena/vuota, esempi, invio disabilitato, anteprima che non modifica,
+  conferma che aggiorna versione/storico, reset al cambio progetto e link More.
+  Nessun overflow orizzontale; prova completata senza page error. Log HMR iniziali
+  durante edit/build concorrenti risolti con riavvio demo e caricamento pulito.
+  Screenshot privati ignorati in `output/playwright/copilot-*`.
+
+**Ripresa concreta:** AI-001/002 completate. Attendere il setup sicuro della
+chiave e autorizzazione d'uso di Marco (AI-003); non richiederli nuovamente a ogni
+heartbeat. Per DATA-001 serve l'accesso ai metadati Production Vercel/Neon
+indicato nel piano; non eseguire import. Per CX-009 acquisire l'esempio asset se
+diventa disponibile senza interferenza e chiarire identità/membri/stato condiviso
+prima di implementare task di gruppo. Nessun nuovo messaggio Tony. Se non emergono
+nuove prove o richieste, heartbeat silenzioso: non rifare UI/test appena conclusi.
