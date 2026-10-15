@@ -16,7 +16,8 @@ import {
   DialogDescription,
 } from "./ui/dialog";
 export function FeedbackButton() {
-  const { projects, mutate, isOnline, currentUser } = useApp();
+  const { projects, selectedProjectId, mutate, isOnline, currentUser } =
+    useApp();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [projectId, setProjectId] = useState(projects[0]?.id || "");
@@ -89,10 +90,14 @@ export function FeedbackButton() {
     <div data-feedback>
       <Button
         disabled={busy || !projects.length}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setProjectId(selectedProjectId);
+          setOpen(true);
+        }}
         aria-label="Report an issue"
         title="Report an issue"
-        className="fixed right-4 lg:right-6 z-30 shadow-lg rounded-full h-11 w-11 sm:w-auto px-0 sm:px-4 text-sm bg-blue-600 hover:bg-blue-700"
+        variant="outline"
+        className="fixed right-4 lg:right-6 z-30 rounded-lg h-11 w-11 sm:w-auto px-0 sm:px-4 text-sm bg-white text-slate-700 hover:bg-slate-100"
         style={{ bottom: "var(--feedback-bottom, 1.5rem)" }}
       >
         <Bug className="size-4" />

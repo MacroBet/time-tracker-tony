@@ -1,7 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CalendarDays, Plus, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  List,
+  Plus,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
@@ -55,8 +62,8 @@ export function ScheduleWorkspace() {
     hasModule(app.currentUser, "commissioning");
   return (
     <AppShell
-      title="Programme & Gantt"
-      subtitle="Plan activities, link dependencies and review the impact before saving."
+      title="Programme"
+      subtitle="Dates, durations and the order of your project work."
       wide
     >
       {!allowed ? (
@@ -71,9 +78,10 @@ export function ScheduleWorkspace() {
 }
 
 function Programme({ project }: { project: Project }) {
-  const { tasks, isOnline } = useApp();
+  const { tasks, isOnline, currentUser } = useApp();
   const state = commissioning(project);
   const [query, setQuery] = useState("");
+  const [mobileTimeline, setMobileTimeline] = useState(false);
   const [page, setPage] = useState(0);
   const [assetId, setAssetId] = useState("");
   const [groupBy, setGroupBy] = useState<
@@ -106,227 +114,405 @@ function Programme({ project }: { project: Project }) {
   function edit(activity: ScheduleActivity) {
     setEditing({ activity, version: state.version });
   }
+  function addActivity() {
+    edit({
+      activityId: "",
+      name: "",
+      notBefore: projectDate(),
+      durationDays: 1,
+    });
+  }
+  const history = (
+    <details className="border-t border-slate-200 pt-5">
+      <summary className="min-h-11 cursor-pointer text-sm font-medium text-slate-700">
+        Project history
+      </summary>
+      <div className="mt-3">
+        <ProjectAudit projectId={project.id} refreshKey={state.version} />
+      </div>
+    </details>
+  );
+  if (!state.schedule.length)
+    return (
+      <div className="space-y-8">
+        {editing ? (
+          <ActivityEditor
+            key={editing.activity.activityId || "new"}
+            project={project}
+            activity={editing.activity}
+            version={editing.version}
+            onClose={() =>
+              setEditing((current) => (current === editing ? null : current))
+            }
+          />
+        ) : (
+          <section
+            className="bg-white border rounded-xl px-5 py-8 sm:px-10 sm:py-12"
+            aria-labelledby="programme-start"
+          >
+            <CalendarDays
+              className="size-8 text-blue-700 mb-6"
+              aria-hidden="true"
+            />
+            <h2
+              id="programme-start"
+              className="text-2xl font-semibold tracking-tight"
+            >
+              Plan your first activity
+            </h2>
+            <p className="mt-3 text-slate-600 max-w-xl leading-relaxed">
+              Add a start date and duration. Your programme will show when work
+              happens and which activities depend on each other.
+            </p>
+            <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:items-center">
+              <Button
+                className="min-h-11"
+                disabled={!isOnline}
+                onClick={addActivity}
+              >
+                <Plus className="size-4" /> Add first activity
+              </Button>
+              <Button asChild variant="outline" className="min-h-11">
+                <Link href="/commissioning#import-register">
+                  Import programme
+                </Link>
+              </Button>
+            </div>
+            <div className="mt-10 border-t pt-6 grid gap-6 sm:grid-cols-2 max-w-2xl">
+              <div>
+                <h3 className="font-medium">Equipment belongs in Assets</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  Add the equipment and choose its required tags. Link it to
+                  programme activities when you are ready.
+                </p>
+                <Link
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
+                  href="/commissioning"
+                >
+                  Go to Assets <ArrowRight className="size-4" />
+                </Link>
+              </div>
+              <div>
+                <h3 className="font-medium">Work and tests belong in Tasks</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  Assign work, record test results and collect evidence. Linked
+                  tasks follow the dates in this programme.
+                </p>
+                {hasModule(currentUser, "tasks") && (
+                  <Link
+                    className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
+                    href="/supervisor"
+                  >
+                    Go to Tasks <ArrowRight className="size-4" />
+                  </Link>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+        {history}
+      </div>
+    );
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold">{project.name}</h2>
+          <h2 className="font-semibold text-lg">Programme activities</h2>
           <p className="text-sm text-slate-600 mt-1">
-            {state.schedule.length} activities · {linked} linked tasks ·
-            Revision {state.version}
+            {state.schedule.length} activities · {linked} linked tasks
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
-            <Link href="/commissioning">Asset register & imports</Link>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" className="min-h-11">
+            <Link href="/commissioning#import-register">Import</Link>
           </Button>
           <Button
             disabled={!isOnline}
-            onClick={() =>
-              edit({
-                activityId: "",
-                name: "",
-                notBefore: projectDate(),
-                durationDays: 1,
-              })
-            }
+            className="min-h-11"
+            onClick={addActivity}
           >
             <Plus className="size-4" /> Add activity
           </Button>
         </div>
       </div>
-      <p className="text-sm text-slate-600 max-w-3xl">
-        The programme is managed in FieldTrack. Dates use a Monday–Friday
-        calendar, without public holidays. Finish-to-start links release
-        successors on the next working day; lag is measured in working days.
-      </p>
       {editing && (
         <ActivityEditor
           key={editing.activity.activityId || "new"}
           project={project}
           activity={editing.activity}
           version={editing.version}
-          onClose={() => setEditing(null)}
+          onClose={() =>
+            setEditing((current) => (current === editing ? null : current))
+          }
         />
       )}
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <label className="text-sm sm:w-80">
+        <label className="text-sm w-full sm:w-80">
           Find an activity
           <Input
+            className="min-h-11 mt-1"
             value={query}
-            placeholder="Activity ID or name"
+            placeholder="Name or reference"
             onChange={(e) => {
               setQuery(e.target.value);
               setPage(0);
             }}
           />
         </label>
-        <p className="text-xs text-slate-600">
-          {rows.length
-            ? `${currentPage * 50 + 1}–${Math.min(rows.length, currentPage * 50 + 50)}`
-            : "0"}{" "}
-          of {rows.length} activities
-        </p>
+        <div
+          className="md:hidden flex items-center gap-1 rounded-lg border bg-white p-1"
+          aria-label="Programme view"
+        >
+          <Button
+            variant={mobileTimeline ? "ghost" : "secondary"}
+            className="min-h-11"
+            aria-pressed={!mobileTimeline}
+            onClick={() => setMobileTimeline(false)}
+          >
+            <List className="size-4" /> Activities
+          </Button>
+          <Button
+            variant={mobileTimeline ? "secondary" : "ghost"}
+            className="min-h-11"
+            aria-pressed={mobileTimeline}
+            onClick={() => setMobileTimeline(true)}
+          >
+            <CalendarDays className="size-4" /> Timeline
+          </Button>
+        </div>
       </div>
       <div className="flex flex-col xl:flex-row gap-4 items-start">
-        <aside className="w-full xl:w-64 xl:shrink-0 rounded-xl border bg-white p-3">
-          <details open>
-            <summary className="font-semibold text-sm cursor-pointer">
-              Asset structure{" "}
-              <span className="font-normal text-slate-600">
-                ({state.assets.length})
-              </span>
-            </summary>
-            <div className="mt-3 space-y-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => {
-                  setAssetId("");
-                  setPage(0);
-                }}
-              >
-                All programme activities
-              </Button>
-              <label className="block text-xs">
-                Group assets by
-                <select
-                  aria-label="Group assets by"
-                  className="field-select mt-1"
-                  value={groupBy}
-                  onChange={(e) => setGroupBy(e.target.value as typeof groupBy)}
+        {state.assets.length > 0 && (
+          <aside className="w-full xl:w-56 xl:shrink-0 rounded-xl border bg-white p-3">
+            <details>
+              <summary className="font-semibold text-sm cursor-pointer">
+                Browse equipment{" "}
+                <span className="font-normal text-slate-600">
+                  ({state.assets.length})
+                </span>
+              </summary>
+              <div className="mt-3 space-y-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    setAssetId("");
+                    setPage(0);
+                  }}
                 >
-                  <option value="location">Location</option>
-                  <option value="phase">Phase</option>
-                  <option value="floor">Floor</option>
-                  <option value="area">Area</option>
-                </select>
-              </label>
-              <div className="max-h-96 overflow-y-auto space-y-2">
-                {[...new Set(state.assets.map((a) => a.equipmentType))]
-                  .sort()
-                  .map((type) => {
-                    const assets = state.assets.filter(
-                      (a) => a.equipmentType === type,
-                    );
-                    return (
-                      <details key={type}>
-                        <summary className="cursor-pointer text-sm py-1 font-medium">
-                          {type}{" "}
-                          <span className="text-slate-500 font-normal">
-                            ({assets.length})
-                          </span>
-                        </summary>
-                        {[
-                          ...new Set(
-                            assets.map((a) => a[groupBy] || "Not recorded"),
-                          ),
-                        ]
-                          .sort()
-                          .map((group) => (
-                            <details key={group} className="ml-3">
-                              <summary className="cursor-pointer py-1 text-xs text-slate-600">
-                                {group}
-                              </summary>
-                              <div className="ml-3 border-l pl-2">
-                                {assets
-                                  .filter(
-                                    (a) =>
-                                      (a[groupBy] || "Not recorded") === group,
-                                  )
-                                  .map((a) => (
-                                    <button
-                                      key={a.id}
-                                      className={`block w-full text-left py-2 text-xs rounded hover:bg-blue-50 focus-visible:outline-blue-600 ${a.id === assetId ? "text-blue-700 font-semibold" : "text-blue-900"}`}
-                                      title={a.name}
-                                      onClick={() => {
-                                        setAssetId(a.id);
-                                        setPage(0);
-                                      }}
-                                    >
-                                      {a.id}
-                                      <span className="block text-blue-800 font-normal">
-                                        {assetActivityIds(a, projectTasks).size}{" "}
-                                        linked activities
-                                      </span>
-                                    </button>
-                                  ))}
-                              </div>
-                            </details>
-                          ))}
-                      </details>
-                    );
-                  })}
-                {!state.assets.length && (
-                  <p className="text-xs text-slate-600">
-                    Add assets in the register to navigate by equipment type and
-                    location.
-                  </p>
-                )}
+                  All programme activities
+                </Button>
+                <label className="block text-xs">
+                  Group assets by
+                  <select
+                    aria-label="Group assets by"
+                    className="field-select mt-1"
+                    value={groupBy}
+                    onChange={(e) =>
+                      setGroupBy(e.target.value as typeof groupBy)
+                    }
+                  >
+                    <option value="location">Location</option>
+                    <option value="phase">Phase</option>
+                    <option value="floor">Floor</option>
+                    <option value="area">Area</option>
+                  </select>
+                </label>
+                <div className="max-h-96 overflow-y-auto space-y-2">
+                  {[...new Set(state.assets.map((a) => a.equipmentType))]
+                    .sort()
+                    .map((type) => {
+                      const assets = state.assets.filter(
+                        (a) => a.equipmentType === type,
+                      );
+                      return (
+                        <details key={type}>
+                          <summary className="cursor-pointer text-sm py-1 font-medium">
+                            {type}{" "}
+                            <span className="text-slate-500 font-normal">
+                              ({assets.length})
+                            </span>
+                          </summary>
+                          {[
+                            ...new Set(
+                              assets.map((a) => a[groupBy] || "Not recorded"),
+                            ),
+                          ]
+                            .sort()
+                            .map((group) => (
+                              <details key={group} className="ml-3">
+                                <summary className="cursor-pointer py-1 text-xs text-slate-600">
+                                  {group}
+                                </summary>
+                                <div className="ml-3 border-l pl-2">
+                                  {assets
+                                    .filter(
+                                      (a) =>
+                                        (a[groupBy] || "Not recorded") ===
+                                        group,
+                                    )
+                                    .map((a) => (
+                                      <button
+                                        key={a.id}
+                                        className={`block w-full text-left py-2 text-xs rounded hover:bg-blue-50 focus-visible:outline-blue-600 ${a.id === assetId ? "text-blue-700 font-semibold" : "text-blue-900"}`}
+                                        title={a.name}
+                                        onClick={() => {
+                                          setAssetId(a.id);
+                                          setPage(0);
+                                        }}
+                                      >
+                                        {a.id}
+                                        <span className="block text-blue-800 font-normal">
+                                          {
+                                            assetActivityIds(a, projectTasks)
+                                              .size
+                                          }{" "}
+                                          linked activities
+                                        </span>
+                                      </button>
+                                    ))}
+                                </div>
+                              </details>
+                            ))}
+                        </details>
+                      );
+                    })}
+                  {!state.assets.length && (
+                    <p className="text-xs text-slate-600">
+                      Add assets in the register to navigate by equipment type
+                      and location.
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          </details>
-        </aside>
+            </details>
+          </aside>
+        )}
         <div className="min-w-0 w-full space-y-3">
           {selectedAsset && (
             <p className="text-sm">
-              Activities linked to <strong>{selectedAsset.id}</strong> ·{" "}
-              {selectedAsset.name}{" "}
+              Equipment: <strong>{selectedAsset.name}</strong>
               <button
-                className="text-blue-700 underline ml-2"
+                className="text-blue-700 underline underline-offset-4 ml-3 min-h-11"
                 onClick={() => setAssetId("")}
               >
-                Clear asset filter
+                Clear filter
               </button>
             </p>
           )}
           {visible.length ? (
-            <Gantt rows={visible} all={state.schedule} onEdit={edit} />
+            <>
+              {!mobileTimeline && (
+                <ol
+                  className="md:hidden divide-y border rounded-xl bg-white"
+                  aria-label="Programme activities"
+                >
+                  {visible.map((row) => (
+                    <li key={row.activityId}>
+                      <button
+                        onClick={() => edit(row)}
+                        className="w-full text-left p-4 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700"
+                      >
+                        <span className="text-xs text-slate-600">
+                          {row.activityId}
+                        </span>
+                        <strong className="block text-sm mt-1">
+                          {row.name}
+                        </strong>
+                        <span className="flex flex-wrap justify-between gap-2 text-sm mt-3">
+                          <span>
+                            {row.start
+                              ? formatDate(row.start)
+                              : "Start not set"}{" "}
+                            →{" "}
+                            {row.finish
+                              ? formatDate(row.finish)
+                              : "Finish not set"}
+                          </span>
+                          <span className="text-slate-600">
+                            {row.progress === undefined
+                              ? "Progress not recorded"
+                              : `${row.progress}% complete`}
+                          </span>
+                        </span>
+                        <span className="block text-xs text-blue-700 mt-3">
+                          Edit dates and dependencies →
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              <div className={mobileTimeline ? "block" : "hidden md:block"}>
+                <Gantt rows={visible} all={state.schedule} onEdit={edit} />
+              </div>
+            </>
           ) : (
-            <section className="rounded-xl border bg-white p-6 space-y-3">
-              <CalendarDays className="size-7 text-blue-600" />
+            <section className="border rounded-xl bg-white p-6">
               <h3 className="font-semibold">
-                {selectedAsset
-                  ? "No programme activities linked to this asset"
-                  : query
-                    ? "No activities match this search"
-                    : "Start your project programme"}
+                {query
+                  ? "No activities match your filters"
+                  : selectedAsset
+                    ? "No activities linked to this equipment"
+                    : "No activities found"}
               </h3>
-              <p className="text-sm text-slate-600">
-                {selectedAsset
-                  ? "Choose delivery or phase Activity IDs in the asset register, or link its tasks to programme activities."
-                  : query
-                    ? "Search by a different Activity ID or name."
-                    : "Add a dated activity, then link its successors. Existing programme exports can also be reviewed in Asset register & imports."}
+              <p className="text-sm text-slate-600 mt-2">
+                {query
+                  ? "Try another name or reference, or clear your filters."
+                  : selectedAsset
+                    ? "Choose an activity in the equipment’s delivery or tag settings."
+                    : "Try another name or reference."}
               </p>
+              <Button
+                variant="outline"
+                className="mt-4 min-h-11"
+                onClick={() => {
+                  setQuery("");
+                  setAssetId("");
+                }}
+              >
+                Show all activities
+              </Button>
             </section>
           )}
         </div>
       </div>
       {rows.length > 50 && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3">
           <Button
+            className="min-h-11"
             variant="outline"
             disabled={currentPage === 0}
             onClick={() => setPage(currentPage - 1)}
           >
-            Previous activities
+            Previous
           </Button>
           <span className="text-sm">
             Page {currentPage + 1} of {Math.ceil(rows.length / 50)}
           </span>
           <Button
+            className="min-h-11"
             variant="outline"
             disabled={(currentPage + 1) * 50 >= rows.length}
             onClick={() => setPage(currentPage + 1)}
           >
-            Next activities
+            Next
           </Button>
         </div>
       )}
-      <ProjectAudit projectId={project.id} refreshKey={state.version} />
-    </>
+      <details className="text-sm text-slate-600 border-t pt-4">
+        <summary className="cursor-pointer min-h-11">
+          Calendar and scheduling rules
+        </summary>
+        <p className="max-w-2xl leading-relaxed pb-4">
+          Monday–Friday, without public holidays. Finish-to-start links release
+          successors on the next working day; lag is measured in working days.
+          Baseline dates stay recorded when the programme changes.
+        </p>
+      </details>
+      {history}
+    </div>
   );
 }
 
@@ -351,7 +537,28 @@ function ActivityEditor({
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const editorRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    editorRef.current?.scrollIntoView({
+      block: "start",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+    editorRef.current
+      ?.querySelector<HTMLInputElement>('input[name="name"]')
+      ?.focus({ preventScroll: true });
+  }, []);
   const stale = version !== state.version;
+  let referenceNumber = state.schedule.length + 1;
+  while (
+    state.schedule.some(
+      (row) =>
+        row.activityId === `ACT-${String(referenceNumber).padStart(3, "0")}`,
+    )
+  )
+    referenceNumber++;
+  const suggestedReference = `ACT-${String(referenceNumber).padStart(3, "0")}`;
   async function review(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -439,7 +646,8 @@ function ActivityEditor({
   );
   return (
     <section
-      className="rounded-xl border border-blue-200 bg-white p-4 sm:p-6 space-y-4"
+      ref={editorRef}
+      className="rounded-xl border border-blue-200 bg-white p-4 sm:p-6 space-y-4 scroll-mt-52"
       aria-label="Activity editor"
     >
       <div className="flex items-center justify-between gap-3">
@@ -448,7 +656,13 @@ function ActivityEditor({
             ? `Edit ${activity.activityId}`
             : "New programme activity"}
         </h3>
-        <Button variant="ghost" size="sm" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="min-h-11"
+          disabled={busy}
+          onClick={onClose}
+        >
           Close
         </Button>
       </div>
@@ -460,15 +674,18 @@ function ActivityEditor({
         </p>
       )}
       <form onSubmit={review} onChange={invalidate} className="space-y-4">
-        <fieldset disabled={busy || stale} className="space-y-4">
+        <fieldset
+          disabled={busy || stale}
+          className="space-y-4 [&_input]:min-h-11 [&_select]:min-h-11"
+        >
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <label className="text-sm">
-              Activity ID
+              Reference
               <Input
                 name="activityId"
                 required
                 maxLength={150}
-                defaultValue={activity.activityId}
+                defaultValue={activity.activityId || suggestedReference}
                 readOnly={!!activity.activityId}
                 placeholder="e.g. INSTALL-001"
               />
@@ -518,112 +735,127 @@ function ActivityEditor({
               />
             </label>
           </div>
-          <fieldset className="space-y-3">
-            <legend className="text-sm font-medium mb-2">
-              Finish-to-start predecessors
-            </legend>
-            <p className="text-xs text-slate-600">
-              The latest predecessor finish and this activity’s earliest start
-              determine its calculated start. Earlier and later changes flow
-              through the chain. Actual completion dates remain recorded
-              separately.
-            </p>
-            {links.map((link, index) => (
-              <div key={index} className="flex flex-wrap items-end gap-2">
-                <label className="text-sm grow min-w-48">
-                  Predecessor
-                  <select
-                    aria-label={`Predecessor ${index + 1}`}
-                    className="field-select mt-1"
-                    required
-                    value={link.activityId}
-                    onChange={(e) => {
-                      invalidate();
-                      setLinks(
-                        links.map((p, i) =>
-                          i === index
-                            ? { ...p, activityId: e.target.value }
-                            : p,
-                        ),
-                      );
-                    }}
-                  >
-                    <option value="">Choose activity</option>
-                    {state.schedule
-                      .filter((r) => r.activityId !== activity.activityId)
-                      .map((r) => (
-                        <option key={r.activityId} value={r.activityId}>
-                          {r.activityId} · {r.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-                <label className="text-sm w-32">
-                  Lag (workdays)
-                  <Input
-                    aria-label={`Lag ${index + 1}`}
-                    type="number"
-                    min={0}
-                    max={365}
-                    required
-                    value={link.lagDays}
-                    onChange={(e) => {
-                      invalidate();
-                      setLinks(
-                        links.map((p, i) =>
-                          i === index
-                            ? { ...p, lagDays: Number(e.target.value) }
-                            : p,
-                        ),
-                      );
-                    }}
-                  />
-                </label>
+          {state.schedule.some(
+            (row) => row.activityId !== activity.activityId,
+          ) && (
+            <details open={links.length > 0} className="border-t pt-3">
+              <summary className="cursor-pointer min-h-11 text-sm font-medium">
+                Dependencies
+                {links.length ? ` (${links.length})` : " · optional"}
+              </summary>
+              <fieldset className="space-y-3">
+                <legend className="sr-only">
+                  Finish-to-start predecessors
+                </legend>
+                <p className="text-xs text-slate-600">
+                  Choose work that must finish before this activity can start.
+                  Dates update together when a linked activity moves.
+                </p>
+                {links.map((link, index) => (
+                  <div key={index} className="flex flex-wrap items-end gap-2">
+                    <label className="text-sm grow min-w-48">
+                      Predecessor
+                      <select
+                        aria-label={`Predecessor ${index + 1}`}
+                        className="field-select mt-1"
+                        required
+                        value={link.activityId}
+                        onChange={(e) => {
+                          invalidate();
+                          setLinks(
+                            links.map((p, i) =>
+                              i === index
+                                ? { ...p, activityId: e.target.value }
+                                : p,
+                            ),
+                          );
+                        }}
+                      >
+                        <option value="">Choose activity</option>
+                        {state.schedule
+                          .filter((r) => r.activityId !== activity.activityId)
+                          .map((r) => (
+                            <option key={r.activityId} value={r.activityId}>
+                              {r.activityId} · {r.name}
+                            </option>
+                          ))}
+                      </select>
+                    </label>
+                    <label className="text-sm w-32">
+                      Lag (workdays)
+                      <Input
+                        aria-label={`Lag ${index + 1}`}
+                        type="number"
+                        min={0}
+                        max={365}
+                        required
+                        value={link.lagDays}
+                        onChange={(e) => {
+                          invalidate();
+                          setLinks(
+                            links.map((p, i) =>
+                              i === index
+                                ? { ...p, lagDays: Number(e.target.value) }
+                                : p,
+                            ),
+                          );
+                        }}
+                      />
+                    </label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      aria-label={`Remove predecessor ${index + 1}`}
+                      onClick={() => {
+                        invalidate();
+                        setLinks(links.filter((_, i) => i !== index));
+                      }}
+                    >
+                      <X className="size-4" />
+                    </Button>
+                  </div>
+                ))}
                 <Button
                   type="button"
-                  variant="ghost"
-                  aria-label={`Remove predecessor ${index + 1}`}
+                  variant="outline"
+                  size="sm"
+                  disabled={links.length >= 100 || state.schedule.length === 0}
                   onClick={() => {
                     invalidate();
-                    setLinks(links.filter((_, i) => i !== index));
+                    setLinks([...links, { activityId: "", lagDays: 0 }]);
                   }}
                 >
-                  <X className="size-4" />
+                  Add predecessor
                 </Button>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={links.length >= 100 || state.schedule.length === 0}
-              onClick={() => {
-                invalidate();
-                setLinks([...links, { activityId: "", lagDays: 0 }]);
-              }}
-            >
-              Add predecessor
-            </Button>
-          </fieldset>
+              </fieldset>
+            </details>
+          )}
           <p className="text-xs text-slate-600">
+            Monday–Friday calendar. Finish is calculated from the duration.
             Baseline: {activity.baselineStart ?? "set on first save"} →{" "}
             {activity.baselineFinish ?? "set on first save"}
             {activity.actualFinish
               ? ` · Actual finish: ${activity.actualFinish}`
               : ""}
-            . Programme progress does not approve commissioning tags.
+            . Tag approval is recorded in its test sheet.
           </p>
           <label className="text-sm block">
-            Reason for revision
+            Change note
             <Input
               name="reason"
+              defaultValue={
+                activity.activityId ? "" : "Initial programme activity"
+              }
               required
               minLength={10}
               maxLength={1000}
               placeholder="Explain the programme change"
             />
           </label>
-          <Button disabled={busy || !isOnline || stale}>
+          <Button
+            className="min-h-11 w-full sm:w-auto"
+            disabled={busy || !isOnline || stale}
+          >
             {busy ? "Checking…" : "Preview programme change"}
           </Button>
         </fieldset>
@@ -809,14 +1041,14 @@ function Gantt({
                         className="text-xs text-left w-full hover:text-blue-700 focus-visible:outline-blue-600"
                         onClick={() => onEdit(r)}
                       >
-                        <strong className="block truncate">
-                          {r.activityId}
+                        <strong className="block truncate" title={r.name}>
+                          {r.name}
                         </strong>
                         <span
-                          className="block truncate text-blue-900"
-                          title={r.name}
+                          className="block truncate text-slate-600"
+                          title={r.activityId}
                         >
-                          {r.name}
+                          {r.activityId}
                         </span>
                       </button>
                     </td>

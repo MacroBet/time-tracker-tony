@@ -1,7 +1,13 @@
 "use client";
 import { AssignmentDialog } from "./AssignmentDialog";
 import { TestProgress } from "./CommissioningFields";
-import { dueDateFor, tagReviewLabels } from "@/lib/commissioning";
+import {
+  commissioning,
+  dueDateFor,
+  hasModule,
+  tagReviewLabels,
+} from "@/lib/commissioning";
+import Link from "next/link";
 import { TaskPlan } from "./TaskPlan";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
@@ -33,8 +39,8 @@ export function TaskDetail({ taskId }: { taskId: string }) {
   const task = data.tasks.find((t) => t.id === taskId);
   if (!task)
     return (
-      <AppShell title="Activity unavailable" back={homeFor(data.currentUser)}>
-        <p>This activity does not exist or is not assigned to your team.</p>
+      <AppShell title="Task unavailable" back={homeFor(data.currentUser)}>
+        <p>This task does not exist or is not assigned to your team.</p>
       </AppShell>
     );
   return <TaskContent key={taskId} task={task} />;
@@ -59,6 +65,12 @@ function TaskContent({ task }: { task: Task }) {
     .filter((a) => a.taskId === task.id)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const closed = isClosed(task);
+  const isTag = task.cx?.kind === "tag";
+  const project = projects.find((item) => item.id === task.projectId);
+  const linkedAsset = commissioning(project).assets.find(
+    (asset) => asset.id === task.cx?.assetId,
+  );
+  const canOpenAssets = hasModule(currentUser, "commissioning");
   async function update(status?: TaskStatus) {
     setBusy(true);
     try {
@@ -108,11 +120,42 @@ function TaskContent({ task }: { task: Task }) {
   return (
     <AppShell
       title={
-        task.externalId ? `Activity #${task.externalId}` : "Activity detail"
+        isTag
+          ? `${task.cx?.level ?? "Tag"} test sheet`
+          : task.externalId
+            ? `Task #${task.externalId}`
+            : "Task details"
       }
       subtitle={`${task.discipline} · ${task.priority || "No priority"}`}
-      back={homeFor(currentUser)}
+      back={isTag && canOpenAssets ? "/commissioning" : homeFor(currentUser)}
     >
+      {isTag && (
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600">
+          {canOpenAssets && (
+            <Link
+              href="/commissioning"
+              className="text-blue-700 underline underline-offset-4"
+            >
+              Assets
+            </Link>
+          )}
+          <span>
+            {[
+              linkedAsset?.id ?? task.cx?.assetId,
+              linkedAsset?.name,
+              task.cx?.level,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+          <a
+            href="#test-evidence"
+            className="text-blue-700 underline underline-offset-4"
+          >
+            Test sheet documents ({files.length})
+          </a>
+        </div>
+      )}
       <Card>
         <CardContent className="p-5 space-y-5">
           <div className="flex gap-2 items-center">
@@ -148,7 +191,7 @@ function TaskContent({ task }: { task: Task }) {
               ["Area", task.location || "Not specified"],
               ["Due date", dueDateFor(task) || "Not set"],
               ["Asset", task.cx?.assetId || "Unlinked"],
-              ["P6 Activity ID", task.cx?.activityId || "Unlinked"],
+              ["Programme Activity ID", task.cx?.activityId || "Unlinked"],
               [
                 "Level / tag",
                 [task.cx?.level, task.cx?.qualityTag]
@@ -189,7 +232,104 @@ function TaskContent({ task }: { task: Task }) {
           )}
         </CardContent>
       </Card>
-      {!isClosed(task) && <TestProgress task={task} />}
+      <section
+        id="test-sheet"
+        aria-label={isTag ? "Tag test sheet" : "Test result"}
+        className="scroll-mt-52 space-y-4"
+      >
+        {isTag && (
+          <div>
+            <h2 className="text-lg font-semibold">
+              Test sheet · {task.cx?.level}
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Record this tag’s test result and observations here. Supporting
+              files are attached below; a passed test does not approve the tag.
+            </p>
+          </div>
+        )}
+        {!closed ? (
+          <TestProgress task={task} />
+        ) : (
+          <p className="rounded-xl border bg-white p-5 text-sm text-slate-600">
+            Recorded test result:{" "}
+            <span className="font-medium text-slate-900">
+              {task.cx?.result ?? "untested"}
+            </span>
+            . This task is closed. Its existing records and documents remain
+            available.
+          </p>
+        )}
+        <Card id="test-evidence" className="scroll-mt-52">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {isTag ? "Test sheet documents & evidence" : "Evidence"}{" "}
+              <span className="text-slate-400 text-sm font-normal">
+                ({files.length})
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {isTag && (
+              <p className="text-sm leading-6 text-slate-600">
+                Attach the test sheet or procedure PDF for this tag, together
+                with any test photos or supporting documents. Files stay linked
+                to this tag task.
+              </p>
+            )}
+            {files.length === 0 && (
+              <p className="text-sm text-slate-600">
+                {isTag
+                  ? "No test sheet or evidence attached yet."
+                  : "No evidence attached yet."}
+              </p>
+            )}
+            {files.map((f) => (
+              <a
+                key={f.id}
+                href={`/api/attachments/${f.id}`}
+                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-slate-50"
+              >
+                <FileText className="size-5 text-blue-600 shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="text-sm block truncate">{f.name}</span>
+                  <span className="text-xs text-slate-500">
+                    {Math.ceil(f.size / 1024)} KB
+                  </span>
+                </span>
+                <ArrowUpRight className="size-4 text-slate-400" />
+              </a>
+            ))}
+            {!closed && (
+              <>
+                <input
+                  ref={inputRef}
+                  type="file"
+                  aria-label="Upload activity evidence"
+                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  className="sr-only"
+                  onChange={(e) => upload(e.target.files?.[0])}
+                  disabled={busy || !isOnline}
+                />
+                <Button
+                  variant="outline"
+                  className="w-full h-12"
+                  onClick={() => inputRef.current?.click()}
+                  disabled={busy || !isOnline}
+                >
+                  <Upload className="size-4" />
+                  {isTag
+                    ? "Attach test sheet / evidence"
+                    : "Add photo or document"}
+                </Button>
+                <p className="text-xs text-slate-500">
+                  PNG, JPEG, WebP or PDF · up to 2 MB each.
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </section>
       {currentUser.role !== "worker" && (
         <>
           <AssignmentDialog tasks={[task]} />
@@ -233,62 +373,6 @@ function TaskContent({ task }: { task: Task }) {
           </CardContent>
         </Card>
       )}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">
-            Evidence{" "}
-            <span className="text-slate-400 text-sm font-normal">
-              ({files.length})
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {files.length === 0 && (
-            <p className="text-sm text-slate-500">No evidence attached yet.</p>
-          )}
-          {files.map((f) => (
-            <a
-              key={f.id}
-              href={`/api/attachments/${f.id}`}
-              className="flex items-center gap-3 p-3 border rounded-lg hover:bg-slate-50"
-            >
-              <FileText className="size-5 text-blue-600 shrink-0" />
-              <span className="min-w-0 flex-1">
-                <span className="text-sm block truncate">{f.name}</span>
-                <span className="text-xs text-slate-500">
-                  {Math.ceil(f.size / 1024)} KB
-                </span>
-              </span>
-              <ArrowUpRight className="size-4 text-slate-400" />
-            </a>
-          ))}
-          {!closed && (
-            <>
-              <input
-                ref={inputRef}
-                type="file"
-                aria-label="Upload activity evidence"
-                accept="image/png,image/jpeg,image/webp,application/pdf"
-                className="sr-only"
-                onChange={(e) => upload(e.target.files?.[0])}
-                disabled={busy || !isOnline}
-              />
-              <Button
-                variant="outline"
-                className="w-full h-12"
-                onClick={() => inputRef.current?.click()}
-                disabled={busy || !isOnline}
-              >
-                <Upload className="size-4" />
-                Add photo or document
-              </Button>
-              <p className="text-xs text-slate-500">
-                PNG, JPEG, WebP or PDF · up to 2 MB each.
-              </p>
-            </>
-          )}
-        </CardContent>
-      </Card>
       {task.status === "review" && currentUser.role === "worker" && (
         <p className="rounded-xl border border-purple-200 bg-purple-50 p-5 text-sm">
           Your work is awaiting supervisor review. You can add evidence while

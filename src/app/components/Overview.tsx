@@ -10,6 +10,7 @@ import {
   isOverdue,
   projectDate,
   statusLabels,
+  type Project,
   type TaskStatus,
 } from "@/lib/domain";
 import {
@@ -18,6 +19,7 @@ import {
   tagSummary,
   tagTimeline,
   taskKind,
+  hasModule,
 } from "@/lib/commissioning";
 import { ReportDialog, type ReportRequest } from "./CommissioningReport";
 import { TagProgressMatrix } from "./TagProgressMatrix";
@@ -71,8 +73,11 @@ export function Overview() {
   const [report, setReport] = useState<ReportRequest | null>(null);
   if (!project)
     return (
-      <AppShell title="Dashboard">
-        <p>No project assigned.</p>
+      <AppShell title="Overview">
+        <p className="text-sm text-slate-600">
+          No project access yet. A project administrator can add you to the
+          project team.
+        </p>
       </AppShell>
     );
   const state = commissioning(project),
@@ -113,26 +118,50 @@ export function Overview() {
   const unlinked = tasks.filter(
     (t) => !t.cx?.assetId || !t.cx.activityId,
   ).length;
+  const hasTags = tags.total > 0;
+  const canPlan = hasModule(data.currentUser, "commissioning");
+  const canWork = hasModule(data.currentUser, "tasks");
+  const gettingStarted =
+    !state.assets.length || !state.schedule.length || !tasks.length;
+  if (!state.assets.length && !state.schedule.length && !tasks.length) {
+    return (
+      <AppShell title="Overview" wide>
+        <ProjectGettingStarted
+          project={project}
+          taskCount={0}
+          canPlan={canPlan}
+          canWork={canWork}
+        />
+      </AppShell>
+    );
+  }
   return (
-    <AppShell
-      title="Commissioning dashboard"
-      subtitle="Project progress, readiness and actions."
-      wide
-    >
+    <AppShell title="Overview" wide>
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <h2 className="text-2xl font-semibold">{project.name}</h2>
+          <h2 className="text-xl font-semibold">Project progress</h2>
           <p className="text-sm text-slate-500 mt-1">
             {project.location} · As of {projectDate()} · Schedule revision{" "}
             {state.version}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/supervisor">
-            Open task planner <ArrowUpRight className="size-4" />
-          </Link>
-        </Button>
+        {canPlan && (
+          <Button asChild className="min-h-11">
+            <Link href="/schedule">
+              Open programme <ArrowUpRight className="size-4" />
+            </Link>
+          </Button>
+        )}
       </div>
+      {gettingStarted && (
+        <ProjectGettingStarted
+          project={project}
+          taskCount={tasks.length}
+          canPlan={canPlan}
+          canWork={canWork}
+          compact
+        />
+      )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           {
@@ -166,476 +195,530 @@ export function Overview() {
             color: "text-blue-600",
             view: "tags" as const,
           },
-        ].map((m) => (
-          <button
-            key={m.label}
-            className="rounded-xl border bg-white p-4 text-left hover:border-blue-300"
-            onClick={() => open(m.label, m.filters, m.view)}
-          >
-            <p className="text-xs text-slate-500">{m.label}</p>
-            <p className={`text-2xl font-semibold mt-2 ${m.color}`}>
-              {m.count}
-            </p>
-            <p className="text-xs text-slate-500 mt-2">{m.caption}</p>
-          </button>
-        ))}
+        ]
+          .filter((metric) =>
+            metric.view === "tags" ? hasTags : tasks.length > 0,
+          )
+          .map((m) => (
+            <button
+              key={m.label}
+              className="rounded-xl border bg-white p-4 text-left hover:border-blue-300"
+              onClick={() => open(m.label, m.filters, m.view)}
+            >
+              <p className="text-xs text-slate-500">{m.label}</p>
+              <p className={`text-2xl font-semibold mt-2 ${m.color}`}>
+                {m.count}
+              </p>
+              <p className="text-xs text-slate-500 mt-2">{m.caption}</p>
+            </button>
+          ))}
       </div>
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-600">
-        <button
-          className="hover:text-blue-600"
-          onClick={() => open("Completed activities", { status: "completed" })}
-        >
-          <strong>
-            {tasks.filter((t) => t.status === "completed").length}
-          </strong>{" "}
-          completed activities
-        </button>
-        <button
-          className="hover:text-blue-600"
-          onClick={() =>
-            open("Activities needing assignment", { attention: "unassigned" })
-          }
-        >
-          <strong>
-            {tasks.filter((t) => !t.assignedTo && !isClosed(t)).length}
-          </strong>{" "}
-          need assignment
-        </button>
-        <span>
-          <strong>{state.assets.length}</strong> assets
-        </span>
-        <span>
-          <strong>{unlinked}</strong> activities missing asset or schedule links
-        </span>
-      </div>
-      <div className="grid xl:grid-cols-[1fr_1.35fr] gap-5">
-        <section className="rounded-xl border bg-white p-5">
-          <h3 className="font-semibold text-sm mb-5">Tasks by status</h3>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => open("All project activities")}
-              aria-label="View all project activities"
-              className="size-44 rounded-full grid place-items-center"
-              style={{
-                background: tasks.length
-                  ? `conic-gradient(${gradient})`
-                  : "#edf1f7",
-              }}
-            >
-              <span className="size-28 rounded-full bg-white flex flex-col justify-center">
-                <strong className="text-3xl">{tasks.length}</strong>
-                <span className="text-xs text-slate-500">Activities</span>
-              </span>
-            </button>
-            <div className="w-full max-w-56 min-w-40 space-y-1">
-              {statuses.map((s) => (
-                <button
-                  key={s.status}
-                  onClick={() =>
-                    open(statusLabels[s.status], { status: s.status })
-                  }
-                  className="w-full flex items-center gap-2 p-2 rounded hover:bg-slate-50 text-xs"
-                >
-                  <span
-                    className="size-2 rounded-full"
-                    style={{ background: s.color }}
-                  />
-                  <span className="text-left text-slate-600">
-                    {statusLabels[s.status]}
-                  </span>
-                  <strong className="ml-auto tabular-nums">
-                    {tasks.filter((t) => t.status === s.status).length}
-                  </strong>
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-        <section className="rounded-xl border bg-white p-5">
-          <div className="flex justify-between items-center">
-            <h3 className="font-semibold text-sm">Tag completion by level</h3>
-            <button
-              className="text-xs text-blue-600"
-              onClick={() => open("Asset tag register", {}, "tags")}
-            >
-              View register
-            </button>
-          </div>
-          <div className="flex flex-wrap justify-around mt-3">
-            {state.config.levels.map((level) => {
-              const s = tagSummary(project, tasks, level);
-              return (
-                <Ring
-                  key={level}
-                  percent={s.percent}
-                  label={level}
-                  detail={`${s.completed} / ${s.total} approved`}
-                  onClick={() => open(`${level} tag status`, { level }, "tags")}
-                />
-              );
-            })}
-          </div>
-          {!state.config.levels.length && (
-            <p className="py-10 text-center text-sm text-slate-500">
-              Configure this project’s commissioning levels in project setup.
-            </p>
-          )}
-          <p className="text-xs text-slate-500 mt-3">
-            Approved tags / applicable asset-level records. A counts as explicit
-            approval; tags without review status retain legacy
-            completed-workflow approval. Testing and review are tracked
-            separately.
-          </p>
-        </section>
-      </div>
-      <section className="rounded-xl border bg-white p-5">
-        <h3 className="text-sm font-semibold">Programme overview</h3>
-        <p className="mt-1 text-xs text-slate-600">
-          Approval progress by configured commissioning stage. Stage names and
-          colours are managed in project setup.
-        </p>
-        <div className="mt-5 space-y-4">
-          {state.config.levels.map((level) => {
-            const summary = tagSummary(project, tasks, level);
-            const presentation = state.config.phasePresentation?.[level];
-            return (
-              <button
-                key={level}
-                className="block w-full rounded px-1 py-1 text-left hover:bg-slate-50 focus-visible:outline-blue-600"
-                onClick={() =>
-                  open(
-                    `${presentation?.label || level} tag progress`,
-                    { level },
-                    "tags",
-                  )
-                }
-              >
-                <span className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
-                  <span className="font-medium">
-                    {level}
-                    {presentation?.label && presentation.label !== level
-                      ? ` · ${presentation.label}`
-                      : ""}
-                  </span>
-                  <span className="tabular-nums text-slate-600">
-                    {summary.completed} / {summary.total} approved ·{" "}
-                    <strong className="text-slate-900">
-                      {summary.percent === null ? "—" : `${summary.percent}%`}
-                    </strong>
-                  </span>
-                </span>
-                <span className="block h-2 overflow-hidden rounded-full bg-slate-100">
-                  <span
-                    className="block h-full rounded-full"
-                    style={{
-                      width: `${summary.percent ?? 0}%`,
-                      backgroundColor: presentation?.color ?? "#2563eb",
-                    }}
-                  />
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        {!state.config.levels.length && (
-          <p className="py-6 text-sm text-slate-600">
-            Configure commissioning stages and register applicable assets to
-            show project progress.
-          </p>
-        )}
-        <p className="mt-4 text-xs text-slate-600">
-          Percentages use applicable asset-level tag obligations. Explicit A or
-          legacy completed-workflow approval counts; I, R and AC do not. Passed
-          tests alone do not approve a tag. Missing records remain incomplete.
-        </p>
-      </section>
-      <section className="rounded-xl border bg-white p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-semibold">
-              Construction / general work
-            </h3>
-            <p className="mt-1 max-w-prose text-xs text-slate-600">
-              Activities classified as Task, excluding tags, issues and
-              documentation. Completion is separate from tag approval.
-            </p>
-          </div>
+        {tasks.length > 0 && (
           <button
-            className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 focus-visible:outline-blue-600"
+            className="hover:text-blue-600"
             onClick={() =>
-              open("Construction / general work", { kind: "task" })
+              open("Completed activities", { status: "completed" })
             }
           >
-            View {construction.length} activities
+            <strong>
+              {tasks.filter((t) => t.status === "completed").length}
+            </strong>{" "}
+            completed activities
           </button>
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-4">
-          <strong className="text-xl tabular-nums">
-            {applicableConstruction.length
-              ? `${Math.round((100 * completedConstruction) / applicableConstruction.length)}%`
-              : "—"}
-          </strong>
-          <span className="text-sm text-slate-600">
-            {completedConstruction} / {applicableConstruction.length} applicable
-            activities completed
+        )}
+        {tasks.length > 0 && (
+          <button
+            className="hover:text-blue-600"
+            onClick={() =>
+              open("Activities needing assignment", { attention: "unassigned" })
+            }
+          >
+            <strong>
+              {tasks.filter((t) => !t.assignedTo && !isClosed(t)).length}
+            </strong>{" "}
+            need assignment
+          </button>
+        )}
+        {state.assets.length > 0 && (
+          <span>
+            <strong>{state.assets.length}</strong> assets
           </span>
-          <span className="text-xs text-slate-600">
-            {construction.length - applicableConstruction.length} N/A excluded
+        )}
+        {unlinked > 0 && (
+          <span>
+            <strong>{unlinked}</strong> activities missing asset or schedule
+            links
           </span>
-        </div>
-        <div
-          role="progressbar"
-          aria-label="Construction and general task completion"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={
-            applicableConstruction.length
-              ? Math.round(
-                  (100 * completedConstruction) / applicableConstruction.length,
-                )
-              : 0
-          }
-          aria-valuetext={
-            applicableConstruction.length
-              ? `${completedConstruction} of ${applicableConstruction.length} complete`
-              : "No applicable activities"
-          }
-          className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"
-        >
+        )}
+      </div>
+      <div
+        className={`grid gap-5 ${tasks.length > 0 && hasTags ? "xl:grid-cols-[1fr_1.35fr]" : ""}`}
+      >
+        {tasks.length > 0 && (
+          <section className="rounded-xl border bg-white p-5">
+            <h3 className="font-semibold text-sm mb-5">Tasks by status</h3>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={() => open("All project activities")}
+                aria-label="View all project activities"
+                className="size-44 rounded-full grid place-items-center"
+                style={{
+                  background: tasks.length
+                    ? `conic-gradient(${gradient})`
+                    : "#edf1f7",
+                }}
+              >
+                <span className="size-28 rounded-full bg-white flex flex-col justify-center">
+                  <strong className="text-3xl">{tasks.length}</strong>
+                  <span className="text-xs text-slate-500">Activities</span>
+                </span>
+              </button>
+              <div className="w-full max-w-56 min-w-40 space-y-1">
+                {statuses.map((s) => (
+                  <button
+                    key={s.status}
+                    onClick={() =>
+                      open(statusLabels[s.status], { status: s.status })
+                    }
+                    className="w-full flex items-center gap-2 p-2 rounded hover:bg-slate-50 text-xs"
+                  >
+                    <span
+                      className="size-2 rounded-full"
+                      style={{ background: s.color }}
+                    />
+                    <span className="text-left text-slate-600">
+                      {statusLabels[s.status]}
+                    </span>
+                    <strong className="ml-auto tabular-nums">
+                      {tasks.filter((t) => t.status === s.status).length}
+                    </strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        {hasTags && (
+          <section className="rounded-xl border bg-white p-5">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold text-sm">Tag completion by level</h3>
+              <button
+                className="text-xs text-blue-600"
+                onClick={() => open("Asset tag register", {}, "tags")}
+              >
+                View register
+              </button>
+            </div>
+            <div className="flex flex-wrap justify-around mt-3">
+              {state.config.levels
+                .filter((level) => tagSummary(project, tasks, level).total > 0)
+                .map((level) => {
+                  const s = tagSummary(project, tasks, level);
+                  return (
+                    <Ring
+                      key={level}
+                      percent={s.percent}
+                      label={level}
+                      detail={`${s.completed} / ${s.total} approved`}
+                      onClick={() =>
+                        open(`${level} tag status`, { level }, "tags")
+                      }
+                    />
+                  );
+                })}
+            </div>
+            {!state.config.levels.length && (
+              <p className="py-10 text-center text-sm text-slate-500">
+                Configure this project’s commissioning levels in project setup.
+              </p>
+            )}
+            <p className="text-xs text-slate-500 mt-3">
+              Approved tags / applicable asset-level records. A counts as
+              explicit approval; tags without review status retain legacy
+              completed-workflow approval. Testing and review are tracked
+              separately.
+            </p>
+          </section>
+        )}
+      </div>
+      {hasTags && (
+        <section className="rounded-xl border bg-white p-5">
+          <h3 className="text-sm font-semibold">Programme overview</h3>
+          <p className="mt-1 text-xs text-slate-600">
+            Approval progress by configured commissioning stage. Stage names and
+            colours are managed in project setup.
+          </p>
+          <div className="mt-5 space-y-4">
+            {state.config.levels
+              .filter((level) => tagSummary(project, tasks, level).total > 0)
+              .map((level) => {
+                const summary = tagSummary(project, tasks, level);
+                const presentation = state.config.phasePresentation?.[level];
+                return (
+                  <button
+                    key={level}
+                    className="block w-full rounded px-1 py-1 text-left hover:bg-slate-50 focus-visible:outline-blue-600"
+                    onClick={() =>
+                      open(
+                        `${presentation?.label || level} tag progress`,
+                        { level },
+                        "tags",
+                      )
+                    }
+                  >
+                    <span className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
+                      <span className="font-medium">
+                        {level}
+                        {presentation?.label && presentation.label !== level
+                          ? ` · ${presentation.label}`
+                          : ""}
+                      </span>
+                      <span className="tabular-nums text-slate-600">
+                        {summary.completed} / {summary.total} approved ·{" "}
+                        <strong className="text-slate-900">
+                          {summary.percent === null
+                            ? "—"
+                            : `${summary.percent}%`}
+                        </strong>
+                      </span>
+                    </span>
+                    <span className="block h-2 overflow-hidden rounded-full bg-slate-100">
+                      <span
+                        className="block h-full rounded-full"
+                        style={{
+                          width: `${summary.percent ?? 0}%`,
+                          backgroundColor: presentation?.color ?? "#2563eb",
+                        }}
+                      />
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
+          {!state.config.levels.length && (
+            <p className="py-6 text-sm text-slate-600">
+              Configure commissioning stages and register applicable assets to
+              show project progress.
+            </p>
+          )}
+          <p className="mt-4 text-xs text-slate-600">
+            Percentages use applicable asset-level tag obligations. Explicit A
+            or legacy completed-workflow approval counts; I, R and AC do not.
+            Passed tests alone do not approve a tag. Missing records remain
+            incomplete.
+          </p>
+        </section>
+      )}
+      {construction.length > 0 && (
+        <section className="rounded-xl border bg-white p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold">
+                Construction / general work
+              </h3>
+              <p className="mt-1 max-w-prose text-xs text-slate-600">
+                Activities classified as Task, excluding tags, issues and
+                documentation. Completion is separate from tag approval.
+              </p>
+            </div>
+            <button
+              className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 focus-visible:outline-blue-600"
+              onClick={() =>
+                open("Construction / general work", { kind: "task" })
+              }
+            >
+              View {construction.length} activities
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <strong className="text-xl tabular-nums">
+              {applicableConstruction.length
+                ? `${Math.round((100 * completedConstruction) / applicableConstruction.length)}%`
+                : "—"}
+            </strong>
+            <span className="text-sm text-slate-600">
+              {completedConstruction} / {applicableConstruction.length}{" "}
+              applicable activities completed
+            </span>
+            <span className="text-xs text-slate-600">
+              {construction.length - applicableConstruction.length} N/A excluded
+            </span>
+          </div>
           <div
-            className="h-full bg-emerald-600"
-            style={{
-              width: `${applicableConstruction.length ? (100 * completedConstruction) / applicableConstruction.length : 0}%`,
-            }}
+            role="progressbar"
+            aria-label="Construction and general task completion"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={
+              applicableConstruction.length
+                ? Math.round(
+                    (100 * completedConstruction) /
+                      applicableConstruction.length,
+                  )
+                : 0
+            }
+            aria-valuetext={
+              applicableConstruction.length
+                ? `${completedConstruction} of ${applicableConstruction.length} complete`
+                : "No applicable activities"
+            }
+            className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"
+          >
+            <div
+              className="h-full bg-emerald-600"
+              style={{
+                width: `${applicableConstruction.length ? (100 * completedConstruction) / applicableConstruction.length : 0}%`,
+              }}
+            />
+          </div>
+        </section>
+      )}
+      {hasTags && (
+        <TagProgressMatrix
+          key={`${project.id}-all`}
+          project={project}
+          tasks={tasks}
+          onOpen={setReport}
+        />
+      )}
+      {hasTags &&
+        state.assets.some((asset) => asset.clientSupplied === true) && (
+          <TagProgressMatrix
+            key={`${project.id}-client`}
+            project={project}
+            tasks={tasks}
+            clientSupplied
+            onOpen={setReport}
           />
-        </div>
-      </section>
-      <TagProgressMatrix
-        key={`${project.id}-all`}
-        project={project}
-        tasks={tasks}
-        onOpen={setReport}
-      />
-      <TagProgressMatrix
-        key={`${project.id}-client`}
-        project={project}
-        tasks={tasks}
-        clientSupplied
-        onOpen={setReport}
-      />
-      <div className="grid xl:grid-cols-2 gap-5">
+        )}
+      <div
+        className={`grid gap-5 ${tasks.length > 0 && issues.length > 0 ? "xl:grid-cols-2" : ""}`}
+      >
+        {tasks.length > 0 && (
+          <section className="rounded-xl border bg-white p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-sm flex gap-2 items-center">
+                <CalendarClock className="size-4 text-red-500" />
+                Overdue as of today
+              </h3>
+              <button
+                className="text-xs text-blue-600"
+                onClick={() =>
+                  open("Overdue activities", { attention: "overdue" })
+                }
+              >
+                View all {overdue.length}
+              </button>
+            </div>
+            <div className="divide-y">
+              {overdue.slice(0, 5).map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/tasks/${t.id}`}
+                  className="flex justify-between gap-4 py-3 hover:text-blue-600"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium truncate">
+                      {t.title}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
+                      {t.cx?.level ?? "No level"} ·{" "}
+                      {t.priority ?? "No priority"}
+                    </span>
+                  </span>
+                  <span className="text-xs text-red-600 shrink-0">
+                    {dueDateFor(t)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            {!overdue.length && (
+              <p className="py-6 text-sm text-slate-500">
+                No overdue activities with a recorded deadline.
+              </p>
+            )}
+          </section>
+        )}
+        {issues.length > 0 && (
+          <section className="rounded-xl border bg-white p-5">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-sm">Issues by priority</h3>
+              <button
+                className="text-xs text-blue-600"
+                onClick={() => open("Issue register", { kind: "issue" })}
+              >
+                View all issues
+              </button>
+            </div>
+            <div className="space-y-4">
+              {state.config.priorities.map((priority) => {
+                const items = issues.filter((t) => t.priority === priority),
+                  active = items.filter((t) => !isClosed(t)).length;
+                return (
+                  <button
+                    key={priority}
+                    className="w-full text-left group"
+                    onClick={() =>
+                      open(`${priority} issues`, { kind: "issue", priority })
+                    }
+                  >
+                    <span className="flex justify-between text-xs mb-2">
+                      <span className="font-medium group-hover:text-blue-600">
+                        {priority}
+                      </span>
+                      <span className="text-slate-500">
+                        {active} open · {items.length} total
+                      </span>
+                    </span>
+                    <span className="block h-2 rounded-full bg-slate-100">
+                      <span
+                        className="block h-2 rounded-full bg-blue-500"
+                        style={{
+                          width: `${items.length ? (100 * active) / items.length : 0}%`,
+                        }}
+                      />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-slate-500 mt-4">
+              {issues.filter((t) => !t.priority).length} issues without a
+              priority. Disabled priorities remain in the issue register.
+            </p>
+          </section>
+        )}
+      </div>
+      {blocked.length > 0 && (
         <section className="rounded-xl border bg-white p-5">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-sm flex gap-2 items-center">
-              <CalendarClock className="size-4 text-red-500" />
-              Overdue as of today
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <AlertTriangle className="size-4 text-amber-500" />
+              Blockers & risks
             </h3>
             <button
               className="text-xs text-blue-600"
               onClick={() =>
-                open("Overdue activities", { attention: "overdue" })
+                open("Blockers and impact", { attention: "blocked" })
               }
             >
-              View all {overdue.length}
+              Open report
             </button>
           </div>
-          <div className="divide-y">
-            {overdue.slice(0, 5).map((t) => (
+          <div className="grid md:grid-cols-2 gap-4">
+            {blocked.slice(0, 4).map((t) => (
               <Link
                 key={t.id}
                 href={`/tasks/${t.id}`}
-                className="flex justify-between gap-4 py-3 hover:text-blue-600"
+                className="border-l-2 border-amber-400 pl-3"
               >
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium truncate">
-                    {t.title}
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
-                    {t.cx?.level ?? "No level"} · {t.priority ?? "No priority"}
-                  </span>
-                </span>
-                <span className="text-xs text-red-600 shrink-0">
-                  {dueDateFor(t)}
-                </span>
+                <p className="font-medium text-sm">{t.title}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {t.cx?.blockerRisk || t.notes || "Impact not recorded"}
+                </p>
+                <p className="text-xs text-slate-400 mt-2">
+                  {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
+                  {data.users.find((u) => u.id === t.assignedTo)?.name ??
+                    "Unassigned"}
+                </p>
               </Link>
             ))}
           </div>
-          {!overdue.length && (
-            <p className="py-6 text-sm text-slate-500">
-              No overdue activities with a recorded deadline.
+          {!blocked.length && (
+            <p className="text-sm text-slate-500">
+              No activities currently marked as blocked.
             </p>
           )}
         </section>
-        <section className="rounded-xl border bg-white p-5">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-sm">Issues by priority</h3>
-            <button
-              className="text-xs text-blue-600"
-              onClick={() => open("Issue register", { kind: "issue" })}
-            >
-              View all issues
-            </button>
-          </div>
-          <div className="space-y-4">
-            {state.config.priorities.map((priority) => {
-              const items = issues.filter((t) => t.priority === priority),
-                active = items.filter((t) => !isClosed(t)).length;
-              return (
-                <button
-                  key={priority}
-                  className="w-full text-left group"
-                  onClick={() =>
-                    open(`${priority} issues`, { kind: "issue", priority })
-                  }
-                >
-                  <span className="flex justify-between text-xs mb-2">
-                    <span className="font-medium group-hover:text-blue-600">
-                      {priority}
-                    </span>
-                    <span className="text-slate-500">
-                      {active} open · {items.length} total
-                    </span>
-                  </span>
-                  <span className="block h-2 rounded-full bg-slate-100">
-                    <span
-                      className="block h-2 rounded-full bg-blue-500"
-                      style={{
-                        width: `${items.length ? (100 * active) / items.length : 0}%`,
-                      }}
-                    />
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-slate-500 mt-4">
-            {issues.filter((t) => !t.priority).length} issues without a
-            priority. Disabled priorities remain in the issue register.
-          </p>
-        </section>
-      </div>
-      <section className="rounded-xl border bg-white p-5">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-sm flex items-center gap-2">
-            <AlertTriangle className="size-4 text-amber-500" />
-            Blockers & risks
-          </h3>
-          <button
-            className="text-xs text-blue-600"
-            onClick={() =>
-              open("Blockers and impact", { attention: "blocked" })
-            }
-          >
-            Open report
-          </button>
-        </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {blocked.slice(0, 4).map((t) => (
-            <Link
-              key={t.id}
-              href={`/tasks/${t.id}`}
-              className="border-l-2 border-amber-400 pl-3"
-            >
-              <p className="font-medium text-sm">{t.title}</p>
-              <p className="text-xs text-slate-500 mt-1">
-                {t.cx?.blockerRisk || t.notes || "Impact not recorded"}
-              </p>
-              <p className="text-xs text-slate-400 mt-2">
-                {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
-                {data.users.find((u) => u.id === t.assignedTo)?.name ??
-                  "Unassigned"}
-              </p>
-            </Link>
-          ))}
-        </div>
-        {!blocked.length && (
-          <p className="text-sm text-slate-500">
-            No activities currently marked as blocked.
-          </p>
-        )}
-      </section>
-      <section className="rounded-xl border bg-white p-5">
-        <div className="flex justify-between gap-3">
-          <h3 className="text-sm font-semibold">
-            Tag programme · planned, forecast & approved
-          </h3>
-          <button
-            className="text-xs text-blue-600"
-            onClick={() => open("Tag programme trend", {}, "trend")}
-          >
-            View figures
-          </button>
-        </div>
-        <p className="text-xs text-slate-500 mt-2">
-          {timeline.scheduled} of {timeline.total} applicable tags have forecast
-          dates. {timeline.baselineRecorded} have baseline dates. Approval uses
-          the recorded workflow completion date for approved tags; approvals
-          without that date are not placed on the trend.
-        </p>
-        {timeline.points.length > 1 ? (
-          <>
-            <svg
-              role="img"
-              aria-label="Cumulative tag programme: baseline, forecast and approved tags"
-              viewBox="0 0 800 180"
-              className="w-full h-44 mt-4"
-            >
-              <line x1="20" y1="155" x2="780" y2="155" stroke="#e2e8f0" />
-              {(
-                [
-                  ["baseline", "#94a3b8"],
-                  ["forecast", "#2563eb"],
-                  ["achieved", "#10b981"],
-                ] as const
-              )
-                .filter(([key]) =>
-                  key === "baseline"
-                    ? timeline.baselineRecorded > 0
-                    : key === "forecast"
-                      ? timeline.scheduled > 0
-                      : true,
-                )
-                .map(([key, color]) => (
-                  <polyline
-                    key={key}
-                    fill="none"
-                    stroke={color}
-                    strokeWidth="3"
-                    points={timeline.points
-                      .map(
-                        (p) =>
-                          `${20 + (760 * (Date.parse(p.date) - Date.parse(timeline.points[0].date))) / (Date.parse(timeline.points.at(-1)!.date) - Date.parse(timeline.points[0].date))},${155 - (135 * p[key]) / Math.max(timeline.total, 1)}`,
-                      )
-                      .join(" ")}
-                  />
-                ))}
-              <text x="20" y="178" fontSize="11" fill="#64748b">
-                {timeline.points[0].date}
-              </text>
-              <text
-                x="780"
-                y="178"
-                textAnchor="end"
-                fontSize="11"
-                fill="#64748b"
+      )}
+      {hasTags &&
+        (timeline.scheduled > 0 ||
+          timeline.baselineRecorded > 0 ||
+          timeline.points.some((point) => point.achieved > 0)) && (
+          <section className="rounded-xl border bg-white p-5">
+            <div className="flex justify-between gap-3">
+              <h3 className="text-sm font-semibold">
+                Tag programme · planned, forecast & approved
+              </h3>
+              <button
+                className="text-xs text-blue-600"
+                onClick={() => open("Tag programme trend", {}, "trend")}
               >
-                {timeline.points.at(-1)?.date}
-              </text>
-            </svg>
-            <div className="flex gap-5 text-xs">
-              <span className="text-slate-500">Baseline</span>
-              <span className="text-blue-600">Forecast</span>
-              <span className="text-emerald-600">Approved</span>
+                View figures
+              </button>
             </div>
-          </>
-        ) : (
-          <p className="py-6 text-sm text-slate-500">
-            Link tag activities to dated schedule records to compare the
-            programme with approvals.
-          </p>
+            <p className="text-xs text-slate-500 mt-2">
+              {timeline.scheduled} of {timeline.total} applicable tags have
+              forecast dates. {timeline.baselineRecorded} have baseline dates.
+              Approval uses the recorded workflow completion date for approved
+              tags; approvals without that date are not placed on the trend.
+            </p>
+            {timeline.points.length > 1 ? (
+              <>
+                <svg
+                  role="img"
+                  aria-label="Cumulative tag programme: baseline, forecast and approved tags"
+                  viewBox="0 0 800 180"
+                  className="w-full h-44 mt-4"
+                >
+                  <line x1="20" y1="155" x2="780" y2="155" stroke="#e2e8f0" />
+                  {(
+                    [
+                      ["baseline", "#94a3b8"],
+                      ["forecast", "#2563eb"],
+                      ["achieved", "#10b981"],
+                    ] as const
+                  )
+                    .filter(([key]) =>
+                      key === "baseline"
+                        ? timeline.baselineRecorded > 0
+                        : key === "forecast"
+                          ? timeline.scheduled > 0
+                          : true,
+                    )
+                    .map(([key, color]) => (
+                      <polyline
+                        key={key}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="3"
+                        points={timeline.points
+                          .map(
+                            (p) =>
+                              `${20 + (760 * (Date.parse(p.date) - Date.parse(timeline.points[0].date))) / (Date.parse(timeline.points.at(-1)!.date) - Date.parse(timeline.points[0].date))},${155 - (135 * p[key]) / Math.max(timeline.total, 1)}`,
+                          )
+                          .join(" ")}
+                      />
+                    ))}
+                  <text x="20" y="178" fontSize="11" fill="#64748b">
+                    {timeline.points[0].date}
+                  </text>
+                  <text
+                    x="780"
+                    y="178"
+                    textAnchor="end"
+                    fontSize="11"
+                    fill="#64748b"
+                  >
+                    {timeline.points.at(-1)?.date}
+                  </text>
+                </svg>
+                <div className="flex gap-5 text-xs">
+                  <span className="text-slate-500">Baseline</span>
+                  <span className="text-blue-600">Forecast</span>
+                  <span className="text-emerald-600">Approved</span>
+                </div>
+              </>
+            ) : (
+              <p className="py-6 text-sm text-slate-500">
+                Link tag activities to dated schedule records to compare the
+                programme with approvals.
+              </p>
+            )}
+          </section>
         )}
-      </section>
       <section className="flex flex-wrap gap-2" aria-label="Management reports">
         {[
           ["Tag status", "tags"],
@@ -661,5 +744,112 @@ export function Overview() {
         onClose={() => setReport(null)}
       />
     </AppShell>
+  );
+}
+
+function ProjectGettingStarted({
+  project,
+  taskCount,
+  canPlan,
+  canWork,
+  compact = false,
+}: {
+  project: Project;
+  taskCount: number;
+  canPlan: boolean;
+  canWork: boolean;
+  compact?: boolean;
+}) {
+  const state = commissioning(project);
+  const steps = [
+    {
+      title: "Assets",
+      description:
+        "The equipment in your project, with its location and commissioning stages.",
+      href: "/commissioning",
+      action: state.assets.length ? "Open assets" : "Add equipment",
+      count: state.assets.length,
+      unit: "equipment records",
+      allowed: canPlan,
+    },
+    {
+      title: "Programme",
+      description:
+        "The dates, durations and dependencies that sequence the work.",
+      href: "/schedule",
+      action: state.schedule.length ? "Open programme" : "Plan activities",
+      count: state.schedule.length,
+      unit: "planned activities",
+      allowed: canPlan,
+    },
+    {
+      title: "Tasks",
+      description:
+        "The work and test records assigned to your team, including tag reviews.",
+      href: "/supervisor",
+      action: taskCount ? "Open tasks" : "Create work records",
+      count: taskCount,
+      unit: "work records",
+      allowed: canWork,
+    },
+  ];
+  const Heading = compact ? "h3" : "h2";
+  const nextStep = steps.find((step) => step.allowed && !step.count);
+  return (
+    <section
+      className="rounded-xl border bg-white p-5 sm:p-6"
+      aria-labelledby="project-start-title"
+    >
+      <Heading
+        id="project-start-title"
+        className={`${compact ? "text-base" : "text-xl"} font-semibold`}
+      >
+        {compact ? "Complete project setup" : "Build your project workspace"}
+      </Heading>
+      {!compact && (
+        <p className="mt-2 max-w-prose text-sm text-slate-600">
+          Start with the equipment, plan the programme, then assign work to your
+          team. Your progress will appear here as records are added.
+        </p>
+      )}
+      <ul className="mt-4 divide-y">
+        {steps.map((step) => (
+          <li
+            key={step.title}
+            className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">
+                {step.title}
+                {step.count > 0 && (
+                  <span className="ml-2 text-xs font-normal text-slate-600">
+                    {step.count} {step.unit}
+                  </span>
+                )}
+              </p>
+              <p className="mt-1 max-w-prose text-sm text-slate-600">
+                {step.description}
+              </p>
+            </div>
+            {step.allowed ? (
+              <Button
+                variant={step === nextStep ? "default" : "outline"}
+                asChild
+                className="min-h-11 self-start sm:self-auto"
+              >
+                <Link href={step.href}>
+                  {step.action}
+                  <ArrowUpRight className="size-4" />
+                </Link>
+              </Button>
+            ) : (
+              <span className="text-xs text-slate-600 sm:shrink-0">
+                Managed by your project administrator
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

@@ -93,11 +93,12 @@ export function CommissioningFields({
           </label>
         )}
         <label className="text-sm">
-          Asset / group
+          Asset
           <select
             name="cx-assetId"
             className="field-select"
             value={assetId}
+            required={kind === "tag"}
             onChange={(e) => setAssetId(e.target.value)}
           >
             <option value="">Unlinked</option>
@@ -109,7 +110,7 @@ export function CommissioningFields({
           </select>
         </label>
         <label className="text-sm">
-          P6 Activity ID
+          Programme Activity ID
           <select
             name="cx-activityId"
             className="field-select"
@@ -124,12 +125,13 @@ export function CommissioningFields({
           </select>
         </label>
         <label className="text-sm">
-          Commissioning level
+          {kind === "tag" ? "Required tag level" : "Commissioning level"}
           <select
             key={assetId}
             name="cx-level"
             className="field-select"
             defaultValue={value?.level ?? ""}
+            required={kind === "tag"}
           >
             <option value="">Not specified</option>
             {[
@@ -140,7 +142,7 @@ export function CommissioningFields({
           </select>
         </label>
         <label className="text-sm">
-          Quality tag
+          Tag reference / colour
           <Input
             name="cx-qualityTag"
             defaultValue={value?.qualityTag}
@@ -195,9 +197,9 @@ export function CommissioningFields({
         />
       </label>
       <p className="text-xs text-slate-500">
-        Linked forecast finish determines whether the activity is overdue. Tags
-        require an asset and an applicable level. Upload manuals, test reports
-        and approvals as evidence.
+        Linked programme finish determines whether the task is overdue. A tag
+        belongs to one asset and one applicable level. Its test result,
+        observations and test sheet documents stay on that tag task.
       </p>
     </fieldset>
   );
@@ -234,16 +236,16 @@ export function TestProgress({ task }: { task: Task }) {
       onSubmit={save}
       className="rounded-xl border bg-white p-5 space-y-3"
     >
-      <h3 className="font-semibold">Test result & progress</h3>
+      <h3 className="font-semibold">Record test result</h3>
       <p className="text-xs text-slate-500">
-        Recording a passed test does not approve or close the activity.
+        Recording a passed test does not approve or close the task.
       </p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <label className="text-sm">
           Test result
           <select
             name="result"
-            className="field-select"
+            className="field-select min-h-11"
             defaultValue={task.cx?.result ?? "untested"}
           >
             {["untested", "passed", "failed", "retest"].map((r) => (
@@ -251,22 +253,41 @@ export function TestProgress({ task }: { task: Task }) {
             ))}
           </select>
         </label>
-        <label className="text-sm">
-          Progress (%)
-          <Input
-            name="progress"
-            type="number"
-            min={0}
-            max={100}
-            defaultValue={task.cx?.progress}
-          />
-        </label>
+        <details className="self-start text-sm">
+          <summary className="cursor-pointer font-medium py-2">
+            Execution progress · optional
+          </summary>
+          <label className="mt-2 block text-sm">
+            Progress (%)
+            <Input
+              name="progress"
+              type="number"
+              min={0}
+              max={100}
+              defaultValue={task.cx?.progress}
+              className="mt-1 h-11"
+            />
+          </label>
+        </details>
       </div>
       <label className="block text-sm">
-        Result / retest note
-        <Textarea name="note" required minLength={10} maxLength={5000} />
+        Test observations / retest note
+        <Textarea
+          className="mt-2"
+          rows={3}
+          name="note"
+          required
+          minLength={10}
+          maxLength={5000}
+          placeholder="Record what was tested, the outcome and any follow-up needed."
+        />
+        <span className="mt-1 block text-xs font-normal text-slate-600">
+          At least 10 characters. Saved in this task’s history.
+        </span>
       </label>
-      <Button disabled={busy || !isOnline}>Record progress</Button>
+      <Button className="h-11 w-full sm:w-auto" disabled={busy || !isOnline}>
+        {busy ? "Saving…" : "Record test result"}
+      </Button>
     </form>
   );
 }
