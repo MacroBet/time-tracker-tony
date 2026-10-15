@@ -94,18 +94,34 @@ L’interfaccia si aggiorna quando torna in primo piano e ogni 20 secondi mentre
 ## Commissioning: feedback Tony
 
 Il piano e la lettura delle fonti sono in [Piano di sviluppo](docs/tony-development-plan.md).
+La gestione dei nuovi messaggi, delle attività e delle bozze per Marco è descritta
+in [Assistente operativo Tony](docs/tony-feedback/README.md), con
+[registro aggiornabile](docs/tony-feedback/register.md). Nessun controllo periodico
+di WhatsApp è attivo.
 
-- `/overview`: dashboard per progetto, task/issue, arretrati, blockers, esiti test, tag per livello e andamento baseline/forecast/approvazioni. Ogni riepilogo apre un report filtrabile.
-- `/commissioning`: registro asset/gruppi, livelli applicabili, collegamenti P6 per livello e consegna, revisione del programma con baseline protetta, import con anteprima e storico. **Create missing tag activities** genera task non assegnati, uno per asset/livello; non duplica quelli già esistenti. Oltre 1.000 nuovi task, ripetere il comando per i successivi.
+- `/overview`: dashboard per progetto con costruzione distinta dai tag, barre per fase, matrice categoria/località, Client Supplied e review I/R/AC/A. Le colonne completamente approvate si richiudono e i riepiloghi aprono i record filtrati.
+- `/schedule`: Gantt compatto con albero asset per categoria/fase/piano/area, date e durata lavorativa, predecessori Finish-to-Start e lag. Anteprima degli impatti, salvataggio versionato, baseline protetta e aggiornamento delle scadenze task collegate. Calendario lunedì–venerdì senza festività; nessun calcolo critical path o altro tipo di legame.
+- `/commissioning`: tabella asset ricercabile, Client Supplied esplicito, gerarchia/metadati, livelli applicabili e collegamenti attività. Import asset CSV o registro JSON con anteprima, export CSV/JSON e storico progetto con ultimi tre eventi/dettaglio paginato. **Create missing tag activities** genera task non assegnati, uno per asset/livello; non duplica quelli già esistenti. Oltre 1.000 nuovi task, ripetere il comando per i successivi.
+- Team: ricerca persona/azienda, filtri ruolo, tipo e stato lavoro, schede/lista e dettaglio dei record assegnati.
 - `/reports`: tag, riepilogo per tipo di attrezzatura, andamento, programma, issue/task, documentazione O&M/formazione/garanzie/sign-off e conformità. CSV di tutti i risultati filtrati; stampa della pagina visualizzata, fino a 50 righe.
 - `/admin`: il ruolo `admin` configura L1/L2/L2A/L2B/L3/L4/L5/L6 e P1–P5 per progetto e abilita i moduli per persona. **Task-only profile** mantiene task e impostazioni. Nella demo è disponibile **Project Administrator**; nessun account amministratore reale viene creato automaticamente. Membership e ruolo limitano sempre l'accesso ai dati.
 - Dettaglio task: collegamenti asset/P6, livello/tag, rischio, tipo documento e conteggi di conformità; registrazione separata di esito e avanzamento. Passare un test non approva automaticamente il tag; un esito fallito/retest impedisce la chiusura finché non viene risolto.
+
+Le review esplicite dei tag contano come approvate solo in A; AC resta distinto.
+I tag precedenti senza review mantengono il conteggio da workflow completato,
+esposto come legacy. Le regole specifiche degli approvatori restano da confermare;
+si applicano i permessi di gestione già esistenti. Lo storico registra la
+preparazione server di export/download, senza attestare la ricezione nel browser.
+Il ciclo del 15 ottobre non aggiunge migrazioni; restano necessari i prerequisiti
+database descritti sotto per installazioni non ancora aggiornate.
 
 Applicare `npm run db:migrate` sul database di destinazione **prima** di distribuire questa versione. Le nuove migrazioni aggiungono P4/P5, metadati commissioning, configurazioni per progetto, moduli per utente e unicità dei tag asset/livello. Lo sviluppo e i test usano una demo isolata e PostgreSQL in memoria, non il DB reale.
 
 ### Conversione degli Excel
 
-Il browser importa un registro JSON validato. Il convertitore Python legge gli Excel forniti (richiede `openpyxl`) senza modificarli:
+Il browser importa asset CSV o un registro JSON validato; esportare prima offre
+un modello compatibile. XLSX non viene importato direttamente. Il convertitore
+Python legge gli Excel forniti (richiede `openpyxl`) senza modificarli:
 
 ```sh
 python3 scripts/extract-commissioning.py 'HGB1A SPC CX Schedule _WIP - WW44.xlsx' output/hgb1a-register.json
