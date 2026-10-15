@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
@@ -15,10 +16,9 @@ import {
   type Asset,
   type ScheduleActivity,
 } from "@/lib/commissioning";
-import {
-  registerImportSchema,
-  type RegisterImport,
-} from "@/lib/commissioning-import";
+import { type RegisterImport } from "@/lib/commissioning-import";
+import { parseRegisterFile } from "@/lib/asset-transfer";
+import { ProjectAudit } from "./ProjectAudit";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
 import { type Project, type User, projectDate } from "@/lib/domain";
 
@@ -166,7 +166,7 @@ function ProjectWorkspace({
   admin: boolean;
   reports: boolean;
 }) {
-  const { mutate, isOnline, currentUser, tasks } = useApp(),
+  const { mutate, isOnline, currentUser, tasks, refreshData } = useApp(),
     state = commissioning(project);
   const [view, setView] = useState<ReportView>("tags"),
     [asset, setAsset] = useState<Asset | null>(null),
@@ -176,7 +176,9 @@ function ProjectWorkspace({
     [previewVersion, setPreviewVersion] = useState<number | null>(null),
     [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false),
-    [assetQuery, setAssetQuery] = useState("");
+    [assetQuery, setAssetQuery] = useState(""),
+    [supplyFilter, setSupplyFilter] = useState("all"),
+    [assetPage, setAssetPage] = useState(0);
   const canEdit =
     currentUser.role !== "worker" && hasModule(currentUser, "commissioning");
   const stale = previewVersion !== state.version;
@@ -227,8 +229,23 @@ function ProjectWorkspace({
       await run({
         action: "configure",
         config: {
+          ...state.config,
           levels: f.getAll("levels"),
           priorities: f.getAll("priorities"),
+          projectType: String(f.get("projectType") || "").trim() || undefined,
+          location: String(f.get("projectLocation") || "").trim() || undefined,
+          capacityMw: f.get("capacityMw")
+            ? Number(f.get("capacityMw"))
+            : undefined,
+          phasePresentation: Object.fromEntries(
+            LEVELS.map((level) => [
+              level,
+              {
+                label: String(f.get(`label-${level}`) || level),
+                color: String(f.get(`color-${level}`) || "#2563eb"),
+              },
+            ]),
+          ),
         },
       });
       toast.success("Project setup saved");
@@ -244,18 +261,32 @@ function ProjectWorkspace({
     void stage({
       assets: [
         {
+          ...asset,
           id: String(f.get("id")),
           name: String(f.get("name")),
           equipmentType: String(f.get("equipmentType")),
           location: String(f.get("location")),
+          phase: String(f.get("phase") || ""),
+          floor: String(f.get("floor") || ""),
+          area: String(f.get("area") || ""),
+          clientSupplied:
+            f.get("clientSupplied") === ""
+              ? null
+              : f.get("clientSupplied") === "true",
+          discipline: String(f.get("discipline") || ""),
+          parentAssetId: String(f.get("parentAssetId") || ""),
+          serialNumber: String(f.get("serialNumber") || ""),
+          owner: String(f.get("owner") || ""),
           levels: f.getAll("levels") as Asset["levels"],
           deliveryActivityId:
             String(f.get("deliveryActivityId") || "") || undefined,
           expectedDelivery:
             String(f.get("expectedDelivery") || "") || undefined,
           levelActivities: Object.fromEntries(
-            state.config.levels.flatMap((l) =>
-              f.get(`activity-${l}`)
+            [
+              ...new Set([...state.config.levels, ...(asset?.levels ?? [])]),
+            ].flatMap((l) =>
+              f.getAll("levels").includes(l) && f.get(`activity-${l}`)
                 ? [[l, String(f.get(`activity-${l}`))]]
                 : [],
             ),
@@ -283,10 +314,47 @@ function ProjectWorkspace({
       ],
     });
   }
-  const assetRows = state.assets.filter((a) =>
-    `${a.id} ${a.name} ${a.equipmentType}`
-      .toLowerCase()
-      .includes(assetQuery.toLowerCase()),
+  async function downloadRegister(format: "json" | "csv") {
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}/audit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "export", format }),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(
+          error?.error ?? "Export failed. Refresh the project and try again.",
+        );
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `asset-register-${project.id}.${format}`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      toast.success(`${format.toUpperCase()} export downloaded`);
+      void refreshData().catch(() => {});
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+  const assetRows = state.assets.filter(
+    (a) =>
+      `${a.id} ${a.name} ${a.equipmentType} ${a.location} ${a.phase ?? ""} ${a.floor ?? ""} ${a.area ?? ""} ${a.discipline ?? ""} ${a.parentAssetId ?? ""} ${a.serialNumber ?? ""} ${a.owner ?? ""} ${a.deliveryActivityId ?? ""}`
+        .toLowerCase()
+        .includes(assetQuery.trim().toLowerCase()) &&
+      (supplyFilter === "all" ||
+        (supplyFilter === "unknown"
+          ? a.clientSupplied == null
+          : String(a.clientSupplied) === supplyFilter)),
+  );
+  const page = Math.min(
+    assetPage,
+    Math.max(0, Math.ceil(assetRows.length / 50) - 1),
   );
   return (
     <div className="space-y-5">
@@ -296,6 +364,14 @@ function ProjectWorkspace({
           {state.assets.length} assets · {state.schedule.length} schedule
           activities · Revision {state.version}
         </p>
+        {!admin && !reports && (
+          <Link
+            href="/schedule"
+            className="inline-flex mt-3 text-sm font-medium text-blue-700 underline underline-offset-4 hover:text-blue-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
+          >
+            Open programme Gantt
+          </Link>
+        )}
       </div>
       {canEdit && !reports && (
         <section className="rounded-xl border bg-white p-5 space-y-3">
@@ -323,6 +399,41 @@ function ProjectWorkspace({
           className="rounded-xl border bg-white p-5 space-y-4"
         >
           <h3 className="font-semibold">Project setup</h3>
+          <p className="text-sm text-slate-500">
+            Configure project details and the phases used by this programme.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label className="text-sm">
+              Project type
+              <Input
+                name="projectType"
+                maxLength={100}
+                defaultValue={state.config.projectType ?? ""}
+                placeholder="e.g. Data centre"
+              />
+            </label>
+            <label className="text-sm">
+              Project location
+              <Input
+                name="projectLocation"
+                maxLength={250}
+                defaultValue={state.config.location ?? ""}
+                placeholder="Site / city"
+              />
+            </label>
+            <label className="text-sm">
+              Capacity (MW)
+              <Input
+                name="capacityMw"
+                type="number"
+                min="0.001"
+                max="1000000"
+                step="any"
+                defaultValue={state.config.capacityMw ?? ""}
+                placeholder="Optional"
+              />
+            </label>
+          </div>
           <fieldset>
             <legend className="text-sm mb-2">
               Commissioning levels used by this project
@@ -338,6 +449,47 @@ function ProjectWorkspace({
                   />
                   {l}
                 </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="border-t pt-4">
+            <legend className="text-sm font-medium">
+              Phase names and colours
+            </legend>
+            <p className="text-xs text-slate-500 my-2">
+              Display labels keep their stable level IDs. L2, L2A and L2B remain
+              independent.
+            </p>
+            <div className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+              {LEVELS.map((level) => (
+                <div className="flex items-center gap-3" key={level}>
+                  <label
+                    htmlFor={`phase-label-${level}`}
+                    className="text-sm w-10 shrink-0"
+                  >
+                    {level}
+                  </label>
+                  <Input
+                    id={`phase-label-${level}`}
+                    name={`label-${level}`}
+                    maxLength={80}
+                    required
+                    defaultValue={
+                      state.config.phasePresentation?.[level]?.label ?? level
+                    }
+                    aria-label={`${level} display label`}
+                  />
+                  <input
+                    type="color"
+                    name={`color-${level}`}
+                    aria-label={`${level} colour`}
+                    defaultValue={
+                      state.config.phasePresentation?.[level]?.color ??
+                      "#2563eb"
+                    }
+                    className="h-9 w-12 shrink-0 cursor-pointer rounded border border-slate-200 bg-white p-1"
+                  />
+                </div>
               ))}
             </div>
           </fieldset>
@@ -371,50 +523,117 @@ function ProjectWorkspace({
         <section className="rounded-xl border bg-white p-5 space-y-4">
           <div className="flex flex-wrap justify-between items-center gap-3">
             <h3 className="font-semibold">Asset register</h3>
-            {canEdit && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setAsset({
-                    id: "",
-                    name: "",
-                    equipmentType: "",
-                    location: "",
-                    levels: [...state.config.levels],
-                  });
-                  setSchedule(null);
+            <div className="flex flex-wrap gap-2">
+              {canEdit && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={busy || !isOnline || !state.assets.length}
+                    onClick={() => void downloadRegister("csv")}
+                  >
+                    Export assets CSV
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={
+                      busy ||
+                      !isOnline ||
+                      !(state.assets.length + state.schedule.length)
+                    }
+                    onClick={() => void downloadRegister("json")}
+                  >
+                    Export register JSON
+                  </Button>
+                </>
+              )}
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setAsset({
+                      id: "",
+                      name: "",
+                      equipmentType: "",
+                      location: "",
+                      levels: [...state.config.levels],
+                    });
+                    setSchedule(null);
+                  }}
+                >
+                  Add asset / group
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Input
+              className="min-w-48 flex-1"
+              aria-label="Search asset register"
+              value={assetQuery}
+              onChange={(e) => {
+                setAssetQuery(e.target.value);
+                setAssetPage(0);
+              }}
+              placeholder="Search ID, name, equipment, location or activity"
+            />
+            <label className="flex items-center gap-2 text-sm">
+              Supply
+              <select
+                className="field-select"
+                value={supplyFilter}
+                onChange={(e) => {
+                  setSupplyFilter(e.target.value);
+                  setAssetPage(0);
                 }}
               >
-                Add asset / group
-              </Button>
-            )}
+                <option value="all">All assets</option>
+                <option value="true">Client supplied</option>
+                <option value="false">Contractor supplied</option>
+                <option value="unknown">Not classified</option>
+              </select>
+            </label>
           </div>
-          <Input
-            aria-label="Search asset register"
-            value={assetQuery}
-            onChange={(e) => setAssetQuery(e.target.value)}
-            placeholder="Find asset, group or equipment type"
-          />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
+          <div
+            className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-blue-700"
+            role="region"
+            aria-label="Scrollable asset register"
+            tabIndex={0}
+          >
+            <table className="w-full min-w-[1100px] text-sm text-left tabular-nums">
+              <caption className="sr-only">
+                Asset register with stable asset IDs, supply classification,
+                applicable phases and delivery programme links
+              </caption>
               <thead>
                 <tr>
                   {[
                     "Asset tag",
                     "Equipment type",
+                    "Location",
+                    "Discipline",
+                    "Parent tag",
+                    "Serial number",
+                    "Owner",
+                    "Supply",
                     "Levels",
                     "Delivery",
                     "Linked tasks",
                     "",
                   ].map((h, i) => (
-                    <th key={i} className="p-2 text-xs text-slate-500">
+                    <th
+                      scope="col"
+                      key={i}
+                      className="p-2 text-xs text-slate-500"
+                    >
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {assetRows.slice(0, 100).map((a) => {
+                {assetRows.slice(page * 50, (page + 1) * 50).map((a) => {
                   const delivery = state.schedule.find(
                     (s) => s.activityId === a.deliveryActivityId,
                   );
@@ -428,7 +647,56 @@ function ProjectWorkspace({
                       </td>
                       <td className="p-2">{a.equipmentType}</td>
                       <td className="p-2 text-xs">
-                        {a.levels.join(", ") || "No levels"}
+                        {a.location || "—"}
+                        {(a.phase || a.floor || a.area) && (
+                          <span className="block text-slate-500">
+                            {[
+                              a.phase && `Phase ${a.phase}`,
+                              a.floor && `Floor ${a.floor}`,
+                              a.area && `Area ${a.area}`,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-2 text-xs">{a.discipline || "—"}</td>
+                      <td className="p-2 text-xs">{a.parentAssetId || "—"}</td>
+                      <td className="p-2 text-xs">{a.serialNumber || "—"}</td>
+                      <td className="p-2 text-xs">{a.owner || "—"}</td>
+                      <td className="p-2 text-xs">
+                        {a.clientSupplied == null
+                          ? "Not classified"
+                          : a.clientSupplied
+                            ? "Client supplied"
+                            : "Contractor supplied"}
+                      </td>
+                      <td className="p-2 text-xs">
+                        <div className="flex flex-wrap gap-1">
+                          {a.levels.length
+                            ? a.levels.map((level) => (
+                                <span
+                                  key={level}
+                                  className="inline-flex items-center gap-1 whitespace-nowrap"
+                                  title={
+                                    state.config.phasePresentation?.[level]
+                                      ?.label ?? level
+                                  }
+                                >
+                                  <span
+                                    className="h-2 w-2 shrink-0 rounded-full"
+                                    aria-hidden="true"
+                                    style={{
+                                      backgroundColor:
+                                        state.config.phasePresentation?.[level]
+                                          ?.color ?? "#2563eb",
+                                    }}
+                                  />
+                                  {level}
+                                </span>
+                              ))
+                            : "No levels"}
+                        </div>
                       </td>
                       <td className="p-2 text-xs">
                         {delivery?.actualFinish
@@ -439,6 +707,11 @@ function ProjectWorkspace({
                         {a.expectedDelivery && (
                           <span className="block text-slate-500">
                             Expected {a.expectedDelivery}
+                          </span>
+                        )}
+                        {a.deliveryActivityId && (
+                          <span className="block text-slate-500">
+                            {a.deliveryActivityId}
                           </span>
                         )}
                       </td>
@@ -468,15 +741,59 @@ function ProjectWorkspace({
                     </tr>
                   );
                 })}
+                {!assetRows.length && (
+                  <tr>
+                    <td colSpan={12} className="p-6 text-center text-slate-500">
+                      {state.assets.length
+                        ? "No assets match these filters."
+                        : "No assets yet. Add an asset or import a register to start."}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+            <p>
+              {assetRows.length
+                ? `${page * 50 + 1}–${Math.min((page + 1) * 50, assetRows.length)}`
+                : "0"}{" "}
+              of {assetRows.length} assets ·{" "}
+              {state.assets.filter((a) => a.clientSupplied === true).length}{" "}
+              client supplied
+            </p>
+            {assetRows.length > 50 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={page === 0}
+                  onClick={() => setAssetPage(page - 1)}
+                >
+                  Previous
+                </Button>
+                <span>
+                  Page {page + 1} of {Math.ceil(assetRows.length / 50)}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={(page + 1) * 50 >= assetRows.length}
+                  onClick={() => setAssetPage(page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
           <p className="text-xs text-slate-500">
-            Showing {Math.min(assetRows.length, 100)} of {assetRows.length}.
-            Search to narrow the list. An expected delivery date does not revise
-            the linked programme.
+            An expected delivery date does not revise the linked programme.
+            Unclassified supply is excluded from the client-supplied group.
           </p>
         </section>
+      )}
+      {canEdit && !admin && !reports && (
+        <ProjectAudit projectId={project.id} refreshKey={state.version} />
       )}
       {canEdit && !reports && !admin && (
         <section className="rounded-xl border bg-white p-5 space-y-3">
@@ -514,11 +831,12 @@ function ProjectWorkspace({
             </label>
           </div>
           <label className="block text-sm">
-            Import asset / P6 register (JSON)
+            Import asset CSV or complete register JSON
             <Input
               className="mt-2"
               type="file"
-              accept=".json,application/json"
+              accept=".json,.csv,application/json,text/csv"
+              disabled={busy || !isOnline}
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -526,7 +844,11 @@ function ProjectWorkspace({
                   if (file.size > 8 * 1024 * 1024)
                     throw new Error("Maximum file size is 8 MB.");
                   await stage(
-                    registerImportSchema.parse(JSON.parse(await file.text())),
+                    parseRegisterFile(
+                      file.name,
+                      await file.text(),
+                      state.assets,
+                    ),
                   );
                 } catch (err) {
                   toast.error(
@@ -538,9 +860,14 @@ function ProjectWorkspace({
             />
           </label>
           <p className="text-xs text-slate-500">
-            Import uses asset tags and P6 Activity IDs to update existing
-            records. Review the preview before saving. Ask your planner for a
-            register export in the supported format.
+            Export first to get a supported template. CSV columns: id, name,
+            equipmentType, location, phase, floor, area, discipline,
+            parentAssetId, serialNumber, owner, clientSupplied, levels,
+            deliveryActivityId, expectedDelivery, levelActivities. Separate
+            levels with semicolons; use true / false / blank for supply. JSON
+            includes the programme and baseline. Stable IDs update existing
+            records. Review every change before saving; existing baseline dates
+            are protected.
           </p>
         </section>
       )}
@@ -592,7 +919,18 @@ function ProjectWorkspace({
             {asset.id ? "Edit asset" : "New asset / group"}
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
-            {["id", "name", "equipmentType", "location"].map((k) => (
+            {[
+              "id",
+              "name",
+              "equipmentType",
+              "location",
+              "phase",
+              "floor",
+              "area",
+              "discipline",
+              "serialNumber",
+              "owner",
+            ].map((k) => (
               <label key={k} className="text-sm">
                 {
                   {
@@ -600,16 +938,56 @@ function ProjectWorkspace({
                     name: "Name",
                     equipmentType: "Equipment type",
                     location: "Location",
+                    phase: "Project phase",
+                    floor: "Floor",
+                    area: "Area",
+                    discipline: "Discipline",
+                    serialNumber: "Serial number",
+                    owner: "Owner / responsible person",
                   }[k]
                 }
                 <Input
                   name={k}
                   defaultValue={String(asset[k as keyof Asset] ?? "")}
-                  required={k !== "location"}
+                  required={["id", "name", "equipmentType"].includes(k)}
+                  maxLength={k === "location" ? 250 : 150}
                   readOnly={k === "id" && !!asset.id}
                 />
               </label>
             ))}
+            <label className="text-sm">
+              Parent asset tag
+              <select
+                name="parentAssetId"
+                className="field-select"
+                defaultValue={asset.parentAssetId ?? ""}
+              >
+                <option value="">No parent</option>
+                {state.assets
+                  .filter((parent) => parent.id !== asset.id)
+                  .map((parent) => (
+                    <option key={parent.id} value={parent.id}>
+                      {parent.id} · {parent.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Supply classification
+              <select
+                name="clientSupplied"
+                className="field-select"
+                defaultValue={
+                  asset.clientSupplied == null
+                    ? ""
+                    : String(asset.clientSupplied)
+                }
+              >
+                <option value="">Not classified</option>
+                <option value="true">Client supplied</option>
+                <option value="false">Contractor supplied</option>
+              </select>
+            </label>
             <label className="text-sm">
               Delivery Activity ID
               <select
@@ -651,23 +1029,25 @@ function ProjectWorkspace({
             </div>
           </fieldset>
           <div className="grid sm:grid-cols-2 gap-3">
-            {state.config.levels.map((l) => (
-              <label className="text-sm" key={l}>
-                {l} P6 Activity ID
-                <select
-                  className="field-select"
-                  name={`activity-${l}`}
-                  defaultValue={asset.levelActivities?.[l] ?? ""}
-                >
-                  <option value="">Unlinked</option>
-                  {state.schedule.map((s) => (
-                    <option key={s.activityId} value={s.activityId}>
-                      {s.activityId}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            ))}
+            {[...new Set([...state.config.levels, ...asset.levels])].map(
+              (l) => (
+                <label className="text-sm" key={l}>
+                  {l} programme Activity ID
+                  <select
+                    className="field-select"
+                    name={`activity-${l}`}
+                    defaultValue={asset.levelActivities?.[l] ?? ""}
+                  >
+                    <option value="">Unlinked</option>
+                    {state.schedule.map((s) => (
+                      <option key={s.activityId} value={s.activityId}>
+                        {s.activityId}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ),
+            )}
           </div>
           <p className="text-xs text-slate-500">
             Level links are used when generating missing tag tasks. Existing
@@ -727,7 +1107,9 @@ function ProjectWorkspace({
                   }
                   min={k === "progress" ? 0 : undefined}
                   max={k === "progress" ? 100 : undefined}
-                  defaultValue={schedule[k as keyof ScheduleActivity]}
+                  defaultValue={String(
+                    schedule[k as keyof ScheduleActivity] ?? "",
+                  )}
                   readOnly={k === "activityId" && !!schedule.activityId}
                   required={["activityId", "name"].includes(k)}
                 />

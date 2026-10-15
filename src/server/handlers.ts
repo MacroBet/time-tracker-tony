@@ -402,6 +402,9 @@ export async function getAttachment(_request: Request, id: string) {
   );
   const file = await repo.attachment(id);
   requireCondition(file, 404, "Evidence not found.");
+  await repo.insertTaskActivity(
+    activity(file.taskId, user, "Evidence download prepared", file.name),
+  );
   return new Response(Buffer.from(file.data, "base64"), {
     headers: {
       "Content-Type": file.contentType,

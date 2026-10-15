@@ -1,6 +1,11 @@
 import { assignmentQuery } from "./db/assignment";
 import { attachmentInsertQuery } from "./db/attachment-insert";
 import { taskUpdateQuery } from "./db/task-update";
+import {
+  appendProjectAuditQuery,
+  commissioningWithAudit,
+} from "./db/project-audit";
+import type { ProjectAuditEvent } from "@/lib/project-audit";
 import "server-only";
 import { and, eq, inArray, getTableColumns, sql } from "drizzle-orm";
 import { db } from "./db/client";
@@ -73,12 +78,13 @@ export async function saveCommissioning(
       409,
       "Project changed. Refresh before saving.",
     );
-    project.commissioning = state;
+    const recorded = (project.commissioning as AuditState | undefined)?._audit;
+    project.commissioning = { ...state, _audit: recorded ?? [] } as AuditState;
     return;
   }
   const result = await db()
     .update(tables.projects)
-    .set({ commissioning: state })
+    .set({ commissioning: commissioningWithAudit(state) })
     .where(
       and(
         eq(tables.projects.id, projectId),
@@ -185,6 +191,7 @@ export async function loadData(user: User): Promise<AppData> {
     return structuredClone(
       scopeData(user, {
         ...demo().data,
+        projects: demo().data.projects.map(withoutProjectAudit),
         attachments: demo().files.map((file) => ({
           id: file.id,
           taskId: file.taskId,
@@ -277,7 +284,7 @@ export async function loadData(user: User): Promise<AppData> {
   return scopeData(
     user,
     clean<AppData>({
-      projects,
+      projects: projects.map(withoutProjectAudit),
       users,
       companies,
       tasks,
@@ -620,4 +627,79 @@ export async function setProjectAccess(
         .values(projectIds.map((projectId) => ({ userId, projectId }))),
     ]);
   else await db().batch([...queries]);
+}
+
+type AuditState = import("@/lib/commissioning").Commissioning & {
+  _audit?: ProjectAuditEvent[];
+};
+function withoutProjectAudit<
+  T extends {
+    commissioning?: import("@/lib/commissioning").Commissioning | null;
+  },
+>(project: T): T {
+  if (!project.commissioning) return project;
+  const state = { ...project.commissioning } as AuditState;
+  delete state._audit;
+  return { ...project, commissioning: state };
+}
+
+// Only the authorized audit endpoint reads these; bootstrap never exposes private audit JSON.
+export async function loadProjectAudit(
+  projectId: string,
+  userId: string,
+): Promise<ProjectAuditEvent[]> {
+  if (usingDemo()) {
+    requireCondition(
+      demo().data.memberships.some(
+        (m) => m.userId === userId && m.projectId === projectId,
+      ),
+      404,
+      "Project not found.",
+    );
+    return structuredClone(
+      (
+        demo().data.projects.find((p) => p.id === projectId)?.commissioning as
+          AuditState | undefined
+      )?._audit ?? [],
+    );
+  }
+  const result = await db().execute(
+    sql`SELECT coalesce(commissioning->'_audit', '[]'::jsonb) AS events FROM projects WHERE id = ${projectId} AND EXISTS (SELECT 1 FROM project_memberships WHERE project_id = ${projectId} AND user_id = ${userId})`,
+  );
+  requireCondition(result.rows.length, 404, "Project not found.");
+  return result.rows[0].events as ProjectAuditEvent[];
+}
+export async function appendProjectAudit(
+  projectId: string,
+  userId: string,
+  event: ProjectAuditEvent,
+  fallback: import("@/lib/commissioning").Commissioning,
+) {
+  if (usingDemo()) {
+    requireCondition(
+      demo().data.memberships.some(
+        (m) => m.userId === userId && m.projectId === projectId,
+      ),
+      404,
+      "Project not found.",
+    );
+    const project = demo().data.projects.find((p) => p.id === projectId);
+    requireCondition(project, 404, "Project not found.");
+    const state = (project.commissioning ??
+      structuredClone(fallback)) as AuditState;
+    state._audit = [...(state._audit ?? []), event];
+    project.commissioning = state;
+    return;
+  }
+  const result = await db().execute(
+    appendProjectAuditQuery(projectId, userId, event, fallback),
+  );
+  requireCondition(result.rows.length, 404, "Project not found.");
+}
+export async function insertTaskActivity(event: Activity) {
+  if (usingDemo()) {
+    demo().data.activities.push(event);
+    return;
+  }
+  await db().insert(tables.activities).values(event);
 }

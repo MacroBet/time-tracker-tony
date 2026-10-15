@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
-import { commissioning, type CommissioningTask } from "@/lib/commissioning";
+import {
+  commissioning,
+  TAG_REVIEWS,
+  tagReviewLabels,
+  type CommissioningTask,
+} from "@/lib/commissioning";
 import type { Project, Task } from "@/lib/domain";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -23,6 +28,10 @@ export function cxFromForm(
     activityId: text("activityId"),
     level: text("level") as CommissioningTask["level"],
     qualityTag: text("qualityTag"),
+    tagReview:
+      text("kind") === "tag"
+        ? (text("tagReview") as CommissioningTask["tagReview"])
+        : undefined,
     blockerRisk: text("blockerRisk"),
     handoverType: text("handoverType") as CommissioningTask["handoverType"],
     conforming: number("conforming"),
@@ -37,6 +46,7 @@ export function CommissioningFields({
   value?: CommissioningTask;
 }) {
   const state = commissioning(project),
+    [kind, setKind] = useState(value?.kind ?? "task"),
     [assetId, setAssetId] = useState(value?.assetId ?? "");
   const asset = state.assets.find((a) => a.id === assetId);
   const levels = state.config.levels.filter(
@@ -51,13 +61,37 @@ export function CommissioningFields({
           <select
             name="cx-kind"
             className="field-select"
-            defaultValue={value?.kind ?? "task"}
+            value={kind}
+            onChange={(event) =>
+              setKind(event.target.value as CommissioningTask["kind"])
+            }
           >
             {["task", "issue", "tag", "documentation"].map((k) => (
               <option key={k}>{k}</option>
             ))}
           </select>
         </label>
+        {kind === "tag" && (
+          <label className="text-sm">
+            Tag review status
+            <select
+              name="cx-tagReview"
+              className="field-select"
+              defaultValue={value?.tagReview ?? ""}
+            >
+              <option value="">Not recorded (legacy workflow approval)</option>
+              {TAG_REVIEWS.map((review) => (
+                <option key={review} value={review}>
+                  {tagReviewLabels[review]}
+                </option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs font-normal text-slate-600">
+              Separate from workflow and test result. Only A counts as explicit
+              approval; AC requires further review.
+            </span>
+          </label>
+        )}
         <label className="text-sm">
           Asset / group
           <select

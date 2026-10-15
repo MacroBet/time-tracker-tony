@@ -15,7 +15,7 @@
     "db:seed": "node --import tsx scripts/seed.ts",
     "db:set-password": "node --import tsx scripts/set-password.ts",
     "db:provision": "node --import tsx scripts/provision.ts",
-    "test:api": "node --import tsx --test tests/api.integration.ts",
+    "test:api": "node --import tsx --test --test-concurrency=1 tests/*.integration.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

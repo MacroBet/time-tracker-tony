@@ -2,6 +2,7 @@ node_modules
 .next
 output
 .playwright-cli
+.impeccable
 package-lock.json
 drizzle/meta
 src/app/components/ui

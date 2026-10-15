@@ -1,7 +1,7 @@
 "use client";
 import { AssignmentDialog } from "./AssignmentDialog";
 import { TestProgress } from "./CommissioningFields";
-import { dueDateFor } from "@/lib/commissioning";
+import { dueDateFor, tagReviewLabels } from "@/lib/commissioning";
 import { TaskPlan } from "./TaskPlan";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
@@ -156,6 +156,16 @@ function TaskContent({ task }: { task: Task }) {
                   .join(" · ") || "Not set",
               ],
               ["Test result", task.cx?.result || "untested"],
+              ...(task.cx?.kind === "tag"
+                ? [
+                    [
+                      "Tag review",
+                      task.cx.tagReview
+                        ? tagReviewLabels[task.cx.tagReview]
+                        : "Not recorded · Legacy workflow approval",
+                    ],
+                  ]
+                : []),
               [
                 "Source",
                 task.source === "manual"

@@ -465,6 +465,9 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
   let data = await load(admin),
     project = data.projects.find((p: { id: string }) => p.id === "p1");
   const endpoint = "/api/projects/p1/commissioning";
+  const runId = Date.now();
+  const assetId = `TEST-ASSET-${runId}`,
+    activityId = `P6-INTEGRATION-${runId}`;
   const config = {
     action: "configure",
     version: project.commissioning.version,
@@ -483,16 +486,16 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
   const register = {
     assets: [
       {
-        id: "TEST-ASSET",
+        id: assetId,
         name: "Integration pump",
         equipmentType: "Pump",
         location: "Test room",
         levels: ["L3"],
-        levelActivities: { L3: "P6-INTEGRATION" },
+        levelActivities: { L3: activityId },
       },
     ],
     schedule: [
-      { activityId: "P6-INTEGRATION", name: "Pump test", finish: "2020-01-01" },
+      { activityId: activityId, name: "Pump test", finish: "2020-01-01" },
     ],
   };
   let input = {
@@ -534,9 +537,9 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
   );
   data = await load(manager);
   let task = data.tasks.find(
-    (t: { cx?: { assetId: string } }) => t.cx?.assetId === "TEST-ASSET",
+    (t: { cx?: { assetId: string } }) => t.cx?.assetId === assetId,
   );
-  assert.equal(task.cx.activityId, "P6-INTEGRATION");
+  assert.equal(task.cx.activityId, activityId);
   assert.equal(task.scheduleDueDate, "2020-01-01");
   assert.equal(
     (
@@ -597,7 +600,7 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
       assets: [],
       schedule: [
         {
-          activityId: "P6-INTEGRATION",
+          activityId: activityId,
           name: "Pump test",
           finish: "2099-01-01",
         },
@@ -610,7 +613,7 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
   assert.equal(task.scheduleDueDate, "2099-01-01");
   assert.equal(
     data.projects[0].commissioning.schedule.find(
-      (s: { activityId: string }) => s.activityId === "P6-INTEGRATION",
+      (s: { activityId: string }) => s.activityId === activityId,
     ).baselineFinish,
     "2020-01-01",
   );

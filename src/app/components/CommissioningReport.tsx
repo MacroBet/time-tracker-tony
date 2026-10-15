@@ -11,9 +11,13 @@ import {
   tagTimeline,
   taskAsset,
   taskKind,
+  isTagApproved,
+  TAG_REVIEWS,
+  tagReviewLabels,
   type TaskFilters,
 } from "@/lib/commissioning";
 import { isOverdue, statusLabels, type Project } from "@/lib/domain";
+import { filterTagProgress, type TagProgressFilter } from "@/lib/tag-progress";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -35,7 +39,7 @@ export type ReportView =
 export type ReportRequest = {
   view: ReportView;
   title: string;
-  filters?: TaskFilters;
+  filters?: TaskFilters & TagProgressFilter;
 };
 export function downloadReport(name: string, rows: (string | number)[][]) {
   const csv = rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
@@ -91,7 +95,9 @@ export function CommissioningReport({
 }) {
   const { tasks, users } = useApp();
   const [page, setPage] = useState(0);
-  const [filters, setFilters] = useState<TaskFilters>(request.filters ?? {});
+  const [filters, setFilters] = useState<TaskFilters & TagProgressFilter>(
+    request.filters ?? {},
+  );
   const state = commissioning(project);
   const projectTasks = tasks.filter((t) => t.projectId === project.id);
   const matches = filterTasks(projectTasks, project, filters).sort((a, b) =>
@@ -136,6 +142,7 @@ export function CommissioningReport({
             "Priority",
             "Status",
             "Test result",
+            "Tag review",
             "Due",
             "Responsible",
             "Progress",
@@ -163,6 +170,11 @@ export function CommissioningReport({
             t.priority ?? "Unspecified",
             statusLabels[t.status],
             t.cx?.result ?? "untested",
+            t.cx?.tagReview
+              ? tagReviewLabels[t.cx.tagReview]
+              : taskKind(t) === "tag"
+                ? "Not recorded (legacy workflow)"
+                : "—",
             `${dueDateFor(t) ?? "No date"}${isOverdue(t) ? " · Overdue" : ""}`,
             owner(t.assignedTo),
             t.status === "completed"
@@ -180,7 +192,10 @@ export function CommissioningReport({
     );
     links = items.map((t) => `/tasks/${t.id}`);
   } else if (request.view === "tags") {
-    const items = tagRows(project, projectTasks).filter(
+    const items = filterTagProgress(
+      tagRows(project, projectTasks),
+      filters,
+    ).filter(
       (r) =>
         (!filters.level || r.level === filters.level) &&
         (!filters.equipmentType ||
@@ -194,9 +209,12 @@ export function CommissioningReport({
     headers = [
       "Asset",
       "Equipment type",
+      "Location",
       "Level",
       "Quality tag",
       "Status",
+      "Tag review",
+      "Counted approval",
       "Test result",
       "P6 Activity ID",
       "Due",
@@ -204,9 +222,18 @@ export function CommissioningReport({
     rows = items.map((r) => [
       r.asset.id,
       r.asset.equipmentType,
+      r.asset.location || "Not recorded",
       r.level,
       r.task?.cx?.qualityTag ?? "—",
       r.task ? statusLabels[r.task.status] : "Not recorded",
+      r.task?.cx?.tagReview
+        ? tagReviewLabels[r.task.cx.tagReview]
+        : "Not recorded",
+      isTagApproved(r.task)
+        ? r.task?.cx?.tagReview === "approved"
+          ? "A · Explicit approval"
+          : "Legacy · Completed workflow"
+        : "No",
       r.task?.cx?.result ?? "untested",
       r.task?.cx?.activityId ?? "Unlinked",
       r.task ? (dueDateFor(r.task) ?? "No date") : "No date",
@@ -231,7 +258,7 @@ export function CommissioningReport({
             r.asset.equipmentType === type && r.level === level && r.applicable,
         );
         return items.length
-          ? `${items.filter((r) => r.status === "completed").length} / ${items.length}`
+          ? `${items.filter((r) => isTagApproved(r.task)).length} / ${items.length}`
           : "N/A";
       }),
     ]);
@@ -331,6 +358,26 @@ export function CommissioningReport({
                 [...new Set(state.assets.map((a) => a.equipmentType))].sort(),
               )}
               {select("Status", "status", Object.keys(statusLabels))}
+              {request.view === "tags" && (
+                <label className="text-xs text-slate-600">
+                  Tag review
+                  <select
+                    className="field-select mt-1"
+                    value={filters.tagReview ?? ""}
+                    onChange={(event) => {
+                      setPage(0);
+                      setFilters({ ...filters, tagReview: event.target.value });
+                    }}
+                  >
+                    <option value="">All review states</option>
+                    {TAG_REVIEWS.map((review) => (
+                      <option key={review} value={review}>
+                        {tagReviewLabels[review]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </>
           )}
           {request.view === "tasks" && (
@@ -400,7 +447,15 @@ export function CommissioningReport({
       {request.view === "tags" && (
         <p className="text-xs text-slate-500">
           One row per applicable asset and level. Missing tag records remain
-          incomplete; N/A records are excluded from completion percentages.
+          incomplete; N/A records are excluded from completion percentages. I =
+          Issued; R = Rejected; AC = Approved with comments; A = Approved.
+          Approval counts use A when recorded; legacy tags without a review
+          status retain completed-workflow approval. Workflow and test result
+          remain separate.
+          {filters.supply === "client" &&
+            " Showing only explicitly marked Client Supplied assets."}
+          {filters.assetLocation !== undefined &&
+            ` Location: ${filters.assetLocation || "No location recorded"}.`}
         </p>
       )}
       <div className="overflow-x-auto rounded-xl border bg-white">

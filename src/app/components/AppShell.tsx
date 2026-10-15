@@ -18,6 +18,7 @@ import {
   Boxes,
   ShieldCheck,
   FileBarChart,
+  GanttChart,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -87,7 +88,7 @@ export function AppShell({
           ? "feedback"
           : href === "/overview"
             ? "dashboard"
-            : href === "/commissioning"
+            : href === "/commissioning" || href === "/schedule"
               ? "commissioning"
               : href === "/reports"
                 ? "reports"
@@ -95,6 +96,9 @@ export function AppShell({
   const nav = [
     ...baseNav,
     { label: "Assets & schedule", href: "/commissioning", icon: Boxes },
+    ...(!worker
+      ? [{ label: "Programme & Gantt", href: "/schedule", icon: GanttChart }]
+      : []),
     ...(!worker
       ? [{ label: "Reports", href: "/reports", icon: FileBarChart }]
       : []),

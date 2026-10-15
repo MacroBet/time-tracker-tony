@@ -20,6 +20,7 @@ import {
   taskKind,
 } from "@/lib/commissioning";
 import { ReportDialog, type ReportRequest } from "./CommissioningReport";
+import { TagProgressMatrix } from "./TagProgressMatrix";
 
 const statuses: { status: TaskStatus; color: string }[] = [
   { status: "pending", color: "#ffb347" },
@@ -85,6 +86,13 @@ export function Overview() {
       (t) => !isClosed(t) && ["failed", "retest"].includes(t.cx?.result ?? ""),
     );
   const tags = tagSummary(project, tasks);
+  const construction = tasks.filter((task) => taskKind(task) === "task");
+  const applicableConstruction = construction.filter(
+    (task) => task.status !== "not-applicable",
+  );
+  const completedConstruction = applicableConstruction.filter(
+    (task) => task.status === "completed",
+  ).length;
   const timeline = tagTimeline(project, tasks);
   const open = (
     title: string,
@@ -113,10 +121,7 @@ export function Overview() {
     >
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
-          <p className="text-xs uppercase tracking-wider text-blue-600 font-medium">
-            Executive summary
-          </p>
-          <h2 className="text-2xl font-semibold mt-1">{project.name}</h2>
+          <h2 className="text-2xl font-semibold">{project.name}</h2>
           <p className="text-sm text-slate-500 mt-1">
             {project.location} · As of {projectDate()} · Schedule revision{" "}
             {state.version}
@@ -206,7 +211,7 @@ export function Overview() {
       <div className="grid xl:grid-cols-[1fr_1.35fr] gap-5">
         <section className="rounded-xl border bg-white p-5">
           <h3 className="font-semibold text-sm mb-5">Tasks by status</h3>
-          <div className="flex flex-wrap items-center justify-center gap-7">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => open("All project activities")}
               aria-label="View all project activities"
@@ -222,7 +227,7 @@ export function Overview() {
                 <span className="text-xs text-slate-500">Activities</span>
               </span>
             </button>
-            <div className="flex-1 min-w-40 space-y-1">
+            <div className="w-full max-w-56 min-w-40 space-y-1">
               {statuses.map((s) => (
                 <button
                   key={s.status}
@@ -235,10 +240,10 @@ export function Overview() {
                     className="size-2 rounded-full"
                     style={{ background: s.color }}
                   />
-                  <span className="flex-1 text-left text-slate-600">
+                  <span className="text-left text-slate-600">
                     {statusLabels[s.status]}
                   </span>
-                  <strong>
+                  <strong className="ml-auto tabular-nums">
                     {tasks.filter((t) => t.status === s.status).length}
                   </strong>
                 </button>
@@ -276,11 +281,148 @@ export function Overview() {
             </p>
           )}
           <p className="text-xs text-slate-500 mt-3">
-            Approved tags / applicable asset-level records. Testing and approval
-            are tracked separately.
+            Approved tags / applicable asset-level records. A counts as explicit
+            approval; tags without review status retain legacy
+            completed-workflow approval. Testing and review are tracked
+            separately.
           </p>
         </section>
       </div>
+      <section className="rounded-xl border bg-white p-5">
+        <h3 className="text-sm font-semibold">Programme overview</h3>
+        <p className="mt-1 text-xs text-slate-600">
+          Approval progress by configured commissioning stage. Stage names and
+          colours are managed in project setup.
+        </p>
+        <div className="mt-5 space-y-4">
+          {state.config.levels.map((level) => {
+            const summary = tagSummary(project, tasks, level);
+            const presentation = state.config.phasePresentation?.[level];
+            return (
+              <button
+                key={level}
+                className="block w-full rounded px-1 py-1 text-left hover:bg-slate-50 focus-visible:outline-blue-600"
+                onClick={() =>
+                  open(
+                    `${presentation?.label || level} tag progress`,
+                    { level },
+                    "tags",
+                  )
+                }
+              >
+                <span className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
+                  <span className="font-medium">
+                    {level}
+                    {presentation?.label && presentation.label !== level
+                      ? ` · ${presentation.label}`
+                      : ""}
+                  </span>
+                  <span className="tabular-nums text-slate-600">
+                    {summary.completed} / {summary.total} approved ·{" "}
+                    <strong className="text-slate-900">
+                      {summary.percent === null ? "—" : `${summary.percent}%`}
+                    </strong>
+                  </span>
+                </span>
+                <span className="block h-2 overflow-hidden rounded-full bg-slate-100">
+                  <span
+                    className="block h-full rounded-full"
+                    style={{
+                      width: `${summary.percent ?? 0}%`,
+                      backgroundColor: presentation?.color ?? "#2563eb",
+                    }}
+                  />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {!state.config.levels.length && (
+          <p className="py-6 text-sm text-slate-600">
+            Configure commissioning stages and register applicable assets to
+            show project progress.
+          </p>
+        )}
+        <p className="mt-4 text-xs text-slate-600">
+          Percentages use applicable asset-level tag obligations. Explicit A or
+          legacy completed-workflow approval counts; I, R and AC do not. Passed
+          tests alone do not approve a tag. Missing records remain incomplete.
+        </p>
+      </section>
+      <section className="rounded-xl border bg-white p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold">
+              Construction / general work
+            </h3>
+            <p className="mt-1 max-w-prose text-xs text-slate-600">
+              Activities classified as Task, excluding tags, issues and
+              documentation. Completion is separate from tag approval.
+            </p>
+          </div>
+          <button
+            className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 focus-visible:outline-blue-600"
+            onClick={() =>
+              open("Construction / general work", { kind: "task" })
+            }
+          >
+            View {construction.length} activities
+          </button>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <strong className="text-xl tabular-nums">
+            {applicableConstruction.length
+              ? `${Math.round((100 * completedConstruction) / applicableConstruction.length)}%`
+              : "—"}
+          </strong>
+          <span className="text-sm text-slate-600">
+            {completedConstruction} / {applicableConstruction.length} applicable
+            activities completed
+          </span>
+          <span className="text-xs text-slate-600">
+            {construction.length - applicableConstruction.length} N/A excluded
+          </span>
+        </div>
+        <div
+          role="progressbar"
+          aria-label="Construction and general task completion"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={
+            applicableConstruction.length
+              ? Math.round(
+                  (100 * completedConstruction) / applicableConstruction.length,
+                )
+              : 0
+          }
+          aria-valuetext={
+            applicableConstruction.length
+              ? `${completedConstruction} of ${applicableConstruction.length} complete`
+              : "No applicable activities"
+          }
+          className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100"
+        >
+          <div
+            className="h-full bg-emerald-600"
+            style={{
+              width: `${applicableConstruction.length ? (100 * completedConstruction) / applicableConstruction.length : 0}%`,
+            }}
+          />
+        </div>
+      </section>
+      <TagProgressMatrix
+        key={`${project.id}-all`}
+        project={project}
+        tasks={tasks}
+        onOpen={setReport}
+      />
+      <TagProgressMatrix
+        key={`${project.id}-client`}
+        project={project}
+        tasks={tasks}
+        clientSupplied
+        onOpen={setReport}
+      />
       <div className="grid xl:grid-cols-2 gap-5">
         <section className="rounded-xl border bg-white p-5">
           <div className="flex justify-between items-center mb-4">
@@ -428,7 +570,8 @@ export function Overview() {
         <p className="text-xs text-slate-500 mt-2">
           {timeline.scheduled} of {timeline.total} applicable tags have forecast
           dates. {timeline.baselineRecorded} have baseline dates. Approval uses
-          the recorded completion date.
+          the recorded workflow completion date for approved tags; approvals
+          without that date are not placed on the trend.
         </p>
         {timeline.points.length > 1 ? (
           <>
@@ -497,7 +640,7 @@ export function Overview() {
         {[
           ["Tag status", "tags"],
           ["Tags by equipment type", "equipment"],
-          ["P6 schedule", "schedule"],
+          ["Programme schedule", "schedule"],
           ["O&M, training & sign-off", "handover"],
           ["Checklist conformance", "conformance"],
         ].map(([title, view]) => (
