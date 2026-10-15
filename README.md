@@ -2,6 +2,14 @@
 
 App per attività di costruzione e commissioning, migrata dal prototipo Figma/Vite a **Next.js 16 App Router, React 19 e TypeScript**. UI mobile per operatori, dashboard per supervisori e manager, backend Next.js e PostgreSQL su Neon tramite Drizzle.
 
+## Riprendere l'agente progetto
+
+Leggere [Agente progetto FieldTrack](docs/tony-feedback/README.md) e lo
+[stato corrente](docs/tony-feedback/register.md). Il heartbeat **Agente progetto Tony**
+è ACTIVE ogni 15 minuti nella chat locale: non crearne un duplicato. Il protocollo
+contiene autorizzazioni, backlog, prove e gate DB/API; la chiave AI verrà fornita
+più avanti da Marco. In questa fase nessuna scrittura su database remoto.
+
 ## Avvio locale
 
 Richiede Node.js 22 o superiore (consigliato 24 LTS).

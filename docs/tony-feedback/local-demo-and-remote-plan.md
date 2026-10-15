@@ -46,27 +46,88 @@ le modifiche della demo. Non eseguire seed o provisioning contro un DB remoto.
 - Nella lettura autenticata riferita dalla chat vocale, Marco vedeva FieldTrack Test,
   progetto **AMS16 · Test**, zero asset/programma e 329 eventi. Non è un inventario
   completo del database e non identifica il branch Neon.
-- Nessuna credenziale o connection string letta per questo piano. Project ID Neon,
-  branch ID, nome database, ruolo SQL e corrispondenza con l'ambiente Vercel
-  **non sono verificati**. Il progetto AMS16 · Test non è un target di popolamento.
+- Nella verifica successiva sono stati estratti soltanto hostname e database della
+  configurazione locale: la URL completa e i segreti non sono stati mostrati o
+  riportati nel piano. Project ID Neon, branch ID, database e ruolo SQL effettivi
+  di Production **non sono verificati**. Il progetto AMS16 · Test non è un target
+  di popolamento.
+
+## Verifica di identità del 15 ottobre — esito e intervento necessario
+
+| Perimetro          | Evidenza verificata                                                                                                   | Conclusione                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Production         | Sito time-tracker-tony.vercel.app, endpoint sessione HTTP 200 con mode neon; nessuna sessione nella richiesta anonima | Configurazione Neon presente; endpoint, project ID e branch non esposti                 |
+| Locale             | .env.local, DATABASE_URL: host ep-winter-meadow-b2rukpmo-pooler.c-6.eu-central-1.aws.neon.tech; database neondb       | Solo target della configurazione locale; non prova alcuna corrispondenza con Production |
+| Accesso CLI        | Nessun eseguibile/sessione Vercel o Neon rilevato, nessun .vercel/project.json                                        | Nessuna identità Production verificabile tramite CLI già autenticata                    |
+| Accesso connettori | Vercel e Neon disponibili ma non installati/collegati al controllo                                                    | Nessun accesso ai loro metadati privati in questa sessione                              |
+
+Nessuna connessione SQL effettuata e nessuna query al database locale o remoto;
+nessun browser visibile o WhatsApp mosso. Non è stata tentata estrazione di cookie,
+accesso a profili browser o esposizione di variabili nel frontend.
+
+**Intervento minimo:** al termine dell'operazione WhatsApp corrente, aprire la
+[dashboard Vercel del progetto time-tracker-tony](https://vercel.com/macrobets-projects/time-tracker-tony),
+selezionare **Storage** e il database Neon **già collegato**, quindi la sua console
+Neon per leggere project ID, branch ed endpoint. Non creare o collegare un database
+nuovo. Verificare anche **Settings → Environment Variables**, scope **Production**,
+per attestare il collegamento di DATABASE_URL senza copiare o mostrare la URI con
+password. Se Neon è stato configurato manualmente e non compare in Storage, serve
+la console Neon del progetto esistente e l'accesso ai metadati della configurazione
+Production per confrontare soltanto l'hostname.
+
+Questi percorsi sono documentati da [Vercel Environment Variables](https://vercel.com/docs/environment-variables)
+e dalla [scheda Neon per Vercel](https://vercel.com/marketplace/neon/neon).
+In alternativa sono stati individuati gli accessi Vercel/Neon disponibili:
+finché non risultano effettivamente collegati non vengono usati o considerati accessibili.
+Non è richiesto incollare password, token o connection string in chat.
+
+## Payload concreto di revisione, non importabile
+
+Il [manifest](demo-payload-manifest.json) fissa un progetto applicativo proposto:
+**DEMO · Northbank commissioning**, ID **demo-northbank-20261015**. L'ID è proposto,
+non riservato o verificato assente sul remoto. Il payload è salvato localmente in
+output/demo-review/northbank.review-only.unmapped.json, escluso da Git, con flag
+reviewOnly=true ed executionAllowed=false e target remoto nullo. L'hash SHA-256
+nel manifest permette di verificare esattamente il contenuto sottoposto a revisione.
+
+Contenuto: **1 riga progetto, 120 task e 120 eventi**; dentro il JSON progetto:
+**28 asset, 100 attività programma e 2 revisioni**. Le 100 attività non sono 100
+righe SQL aggiuntive. Nessun allegato, turno o feedback. I 120 task comprendono
+96 tag, 12 costruzione, 8 issue e 4 documentazione. Il progetto vuoto resta solo
+una fixture QA locale e non fa parte del payload remoto proposto.
+
+Il payload richiede **5 mappature account e 3 mappature azienda** esplicite. Non
+inserisce utenti o aziende, non riusa password e non attribuisce ruoli. Il numero
+esatto di membership verrà fissato con account e accessi approvati; se nel target
+isolato mancano gli account test necessari, fermarsi e proporne separatamente la
+preparazione. Nessuna creazione implicita viene delegata all'importatore.
+
+Dry run locale completata: schemi, gerarchia, grafo delle dipendenze, riferimenti
+task/asset/programma, ID proposti unici ed eventi collegati sono validi. **Dry run
+remota non eseguita**: mancano target e mappature; non si dichiara quindi pronto
+all'esecuzione. Task ed eventi hanno namespace dedicato; la futura riconciliazione
+richiederà identità completa del manifest e dei contenuti. Una corrispondenza
+completa è no-op; qualsiasi applicazione parziale o collisione diversa interrompe
+l'operazione, senza upsert sui record trovati.
 
 ## Target proposto e isolamento
 
 Proposta da rivedere: creare un **branch Neon dedicato alla dimostrazione**,
+nome proposto **demo-northbank-20261015** (non creato),
 collegato esclusivamente a un deployment preview separato. Nessuna modifica alle
 variabili Production e nessuna importazione nel progetto AMS16 · Test.
 
 Il futuro verbale di approvazione deve riportare questi valori esatti, ottenuti
 in sola lettura dalle console/API autorizzate, senza copiare segreti:
 
-| Identità da verificare                                  | Stato attuale                                                                              |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Neon project ID, branch ID/nome, database, ruolo        | Non verificati: importazione bloccata                                                      |
-| Origine del branch e assenza di dati cliente nella demo | Da decidere; preferire database vuoto con schema verificato                                |
-| Vercel progetto/deployment preview e dominio            | Non creato né collegato                                                                    |
-| Progetto applicativo demo dedicato                      | Nome proposto: DEMO · Northbank commissioning; ID remoto da riservare e verificare assente |
-| Account autorizzati e relative membership               | Da mappare esplicitamente; gli ID u1–u6 locali non sono account reali                      |
-| Responsabile, data di scadenza e approvazione del piano | Marco; da confermare dopo la verifica del target                                           |
+| Identità da verificare                                  | Stato attuale                                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Neon project ID, branch ID/nome, database, ruolo        | Non verificati: importazione bloccata                                                                    |
+| Origine del branch e assenza di dati cliente nella demo | Da decidere; preferire database vuoto con schema verificato                                              |
+| Vercel progetto/deployment preview e dominio            | Non creato né collegato                                                                                  |
+| Progetto applicativo demo dedicato                      | Nome: DEMO · Northbank commissioning; ID proposto demo-northbank-20261015, assenza remota non verificata |
+| Account autorizzati e relative membership               | 5 account e 3 aziende da mappare; nessun ID locale vale come identità remota                             |
+| Responsabile, data di scadenza e approvazione del piano | Marco; da confermare dopo la verifica del target                                                         |
 
 Se il desiderio è mostrare la demo nel sito Production, occorre una proposta
 separata con progetto dedicato, account e visibilità esatti e nuovo esame di

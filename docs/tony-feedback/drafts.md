@@ -1,4 +1,4 @@
-# Bozze per Marco — non inviate
+# Bozze per Marco — invii attualmente sospesi
 
 Ogni nuovo messaggio richiede conferma esplicita di Marco sul testo concreto.
 Le bozze restano in Codex salvo richiesta esplicita di Marco di preparare il testo
@@ -6,10 +6,14 @@ nel composer, lasciando a lui il click Invia. Nessun invio autonomo.
 Gli invii delle 19:12 e 19:23 sono registrati nel registro e nell'intake; questa
 bozza non è stata inviata.
 
-## Chiarimento successivo proposto
+## Chiarimento archiviato — non inviare ora
 
 Fonte: MSG-20261015-1913/1914; manca ancora la risposta sui permessi.
 
 > Who should be allowed to set a tag to AC or A?
 
 Non aggiungere annunci di disponibilità finché il deploy non è verificato.
+
+Marco ha chiuso la conversazione con il saluto delle 20:23, riferito come inviato
+e letto. Non preparare o inviare nuovi messaggi durante il heartbeat senza una
+nuova richiesta. Lo storico degli invii manuali e dei resoconti è nel registro.

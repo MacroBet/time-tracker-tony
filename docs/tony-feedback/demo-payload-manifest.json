@@ -1,0 +1,46 @@
+{
+  "reviewOnly": true,
+  "executionAllowed": false,
+  "asOf": "2026-10-15T12:00:00.000Z",
+  "payloadPath": "output/demo-review/northbank.review-only.unmapped.json",
+  "sha256": "425de7a8aee4f4b5ad0709e4da90c33210886858f4c33b3723ea8ae8d104de70",
+  "proposedProjectId": "demo-northbank-20261015",
+  "proposedProjectName": "DEMO · Northbank commissioning",
+  "sqlRows": {
+    "projects": 1,
+    "tasks": 120,
+    "activities": 120,
+    "memberships": "unresolved until account mapping is reviewed",
+    "attachments": 0,
+    "shifts": 0,
+    "feedback": 0,
+    "users": 0,
+    "companies": 0
+  },
+  "projectJson": {
+    "assets": 28,
+    "scheduleActivities": 100,
+    "revisions": 2
+  },
+  "taskKinds": {
+    "tag": 96,
+    "task": 12,
+    "issue": 8,
+    "documentation": 4
+  },
+  "accountMappingsRequired": 5,
+  "blockers": [
+    "Production Neon project/branch/database/role mapping not verified",
+    "Dedicated preview target not created or authorized",
+    "Account mapping not supplied",
+    "Remote ID absence and schema not checked",
+    "Company references must be mapped to reviewed test companies; no implicit user/company provisioning"
+  ],
+  "rollback": "No remote execution. Future transaction rollback before commit; restore/remove only the authorized isolated demo branch after verifying its consumers. Manifest-scoped deletion requires separate review.",
+  "dryRun": {
+    "offlineValidation": "passed: schemas, hierarchy, dependency graph, task references and unique proposed IDs",
+    "remoteValidation": "NOT RUN: target and account mappings unknown",
+    "retryPolicy": "A fully matching applied manifest must be a verified no-op; any partial or different collision aborts without upsert"
+  },
+  "companyMappingsRequired": 3
+}

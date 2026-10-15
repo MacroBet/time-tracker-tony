@@ -1,8 +1,58 @@
 # Registro operativo — Tony
 
 Ultimo aggiornamento: 15 ottobre 2026. Lettura diretta fino alle **19:20**;
-aggiornamenti riferiti dalla chat vocale fino alle **20:16**.
+aggiornamenti riferiti dalla chat vocale fino alle **20:23**, più la risposta successiva senza ora rilevata.
 Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
+
+## Stato corrente per ripresa
+
+**Missione:** far avanzare FieldTrack con autonomia nel perimetro di Marco. Punto
+operativo: [README agente](README.md). Heartbeat **Agente progetto Tony**, ACTIVE
+ogni 15 minuti in questa chat locale; non creare duplicati. Nessun altro messaggio
+a Tony adesso. Se desktop occupato/inaccessibile, registrare la copertura e
+continuare il lavoro indipendente, senza prendere il primo piano ripetutamente.
+
+**Consegnato:** Gantt persistente, asset CSV/JSON, storico, review I/R/AC/A,
+Client Supplied e UX desktop/mobile. Codice UX aa8e67e, fixture locale 865315a;
+push fino a c591e78 verificati e deploy UX 108042a riuscito. Ultimo ciclo: 56 test
+unitari/PostgreSQL, 7 API, statici/build e UI superati. Rileggere git per HEAD
+corrente. Preservare next-env.d.ts preesistente, non committarlo.
+
+**Copertura Tony:** lettura diretta root fino 19:20; resoconti verificati dalla
+chat vocale fino a saluto 20:23 letto e risposta successiva senza ora rilevata.
+13 allegati locali nel manifest. Lista asset di esempio offerta alle 20:21, non
+ancora ricevuta o acquisita: non inventarla. Invii sono loggati sotto; non inviare
+più nulla, non alterare bozze o messaggi. Riprendere con sovrapposizione 20:19–20:23
+quando la sessione lo consente. Tony sarà via 10 giorni dalla prossima settimana,
+lavorando da remoto: resoconto, non calendario o consegna concordati.
+
+**Gate DB:** Production dichiara mode neon, ma endpoint/project/branch effettivi
+non identificati. Solo host/database locali estratti; nessuna query SQL. Accessi
+Vercel/Neon non collegati, browser lasciato all'utente. [Piano e intervento minimo](local-demo-and-remote-plan.md)
+e [manifest payload](demo-payload-manifest.json) pronti per revisione; nessuna
+scrittura remota, seed o creazione branch autorizzata in questa fase.
+
+**Gate AI:** Marco ha scelto chiave fornita più avanti e autorizzato esplicitamente
+l'impalcatura utile **ora**, prima della chiave, con esempi e proposte controllabili.
+Discovery sicura: nessuna OPENAI_API_KEY nell'ambiente/.env.local; nessun valore
+mostrato. Non riproporre la decisione a ogni ciclo, non creare/riusare segreti,
+nessuna chiamata live/a pagamento. Copilot onesto "da configurare"; mock solo
+nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattivato.
+I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
+
+| Priorità / ID                       | Stato                                | Prossima unità concreta                                                                                                          | Accettazione / gate                                                                                                    |
+| ----------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/heartbeat        | in corso                             | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                                          | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                                     |
+| AI-001 copilot utile senza live API | pronta                               | Documentazione OpenAI aggiornata, contratti/strumenti su dati progetto, provider configurabile server-side e UI con esempi reali | Chiave assente=>stato configurazione, zero richieste provider; scope/permessi verificati                               |
+| AI-002 proposte controllabili       | pronta                               | Preparare aggiornamenti task con anteprima, conferma umana esplicita e controllo versione                                        | Il provider non esegue operazioni; senza conferma/permesso nessuna modifica; test con mock solo nella suite            |
+| CX-009 tag/gruppi/check sheet       | da definire nel dettaglio            | Valutare relazione task/check sheet per asset tag o gruppo, usando gerarchia esistente; acquisire la lista offerta se arriva     | Non fingere che uno stesso task copra già un gruppo; chiarire identità, membri e stato condiviso prima di nuove regole |
+| UX-002 chiarezza continua           | pronta                               | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                             | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                                     |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                             | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                                         |
+| AI-003 attivazione provider         | in attesa di Marco                   | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                                | Nessuna spesa implicita; prima live call solo dopo completamento del gate                                              |
+| AI-004 autopilot                    | futuro                               | Definire dashboard, regole, ambiti, audit e approvazioni                                                                         | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                                       |
+
+Quando una voce è bloccata, scegliere la prossima pronta. Dopo ogni unità annotare
+file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostante.
 
 ## Copertura e punto di ripresa
 
@@ -19,7 +69,7 @@ Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verifica
 - Stato locale iniziale: ramo corrente, HEAD `fabd1ba`; modifica preesistente a
   `next-env.d.ts` (riferimenti generati da `.next/types` a `.next/dev/types`).
   Preservata. Nessun segreto esposto e nessuna operazione sul database remoto effettuata.
-- Monitoraggio periodico: non attivo; frequenza non concordata.
+- Heartbeat **Agente progetto Tony** ACTIVE ogni 15 minuti, creazione confermata dalla chat vocale; non duplicare. La lettura WhatsApp dipende da accesso e finestra disponibile.
 
 ## Contesto storico, da non confondere con nuovi feedback
 
@@ -62,9 +112,9 @@ le virgolette riportano citazioni brevi. Riferimenti stabili per le prossime ses
 
 ### Ciclo di implementazione autorizzato da Marco
 
-**Rettifica più recente:** comunicazioni di nuovo solo in bozza, brevissime, mai
-nel campo WhatsApp; invio soltanto dopo conferma esplicita di Marco sul messaggio
-concreto. Non correggere messaggi già inviati. La precedente autorizzazione
+**Regola corrente:** nessun altro messaggio a Tony ora. Per il futuro, bozze
+brevissime in Codex; nel composer solo su richiesta esplicita e Invia a Marco.
+Ogni eventuale invio richiede conferma sul testo concreto. Non correggere gli invii. La precedente autorizzazione
 all'invio autonomo è superata; subagenti e push main restano autorizzati.
 
 Per questo ciclo Marco ha autorizzato subagenti e commit/push progressivi su main,
@@ -293,3 +343,53 @@ aiuto su gestione/ritardi/task e uso in riunione. Prima chiarire comportamento,
 accessi e modifiche proposte; approccio copilot con controllo, prima di eventuale
 automazione. Nessuna integrazione AI/API avviata, nessun segreto creato e nessuna
 scrittura remota autorizzata da questo scambio. Punto di ripresa riferito: 20:16.
+
+### Identificazione database Production — verifica in sola lettura
+
+Confermato di nuovo mode neon dall’endpoint pubblico. Estratti dalla sola
+configurazione locale hostname Neon e database neondb, senza mostrare o salvare
+URL completa/password; **nessuna prova che siano il target Production**.
+Nessun collegamento/sessione CLI Vercel/Neon disponibile e nessun connettore già
+collegato. Nessun browser visibile mosso e nessuna query SQL effettuata.
+
+Il [piano](local-demo-and-remote-plan.md) ora contiene evidenza locale/Production
+separata, intervento minimo nella dashboard Vercel/console Neon e un
+[manifest concreto](demo-payload-manifest.json). Payload solo revisione, target
+nullo: progetto proposto demo-northbank-20261015, 120 task e 120 eventi, JSON
+progetto con 28 asset/100 attività/2 revisioni. Cinque account e tre aziende da
+mappare, nessun provisioning implicito. Validazione offline superata; verifica
+remota, target esatto e assenza ID ancora pendenti. Nessuna scrittura remota.
+
+### Chiusura comunicazione e agente persistente — resoconto della chat vocale
+
+- **OUT-20261015-06 / 20:19:** messaggi copilot/autopilot inviati secondo il
+  resoconto; testo integrale non fornito al root, quindi non ricostruito o citato.
+- **MSG-20261015-2021 / 20:21:** task collegati a check sheet tramite asset tag o
+  gruppi asset; un task può applicarsi al gruppo. Tony offre una lista asset di
+  esempio. Nessun nuovo file acquisito; requisito registrato come CX-009, non
+  equiparato automaticamente al parentAssetId o ai tag per livello già esistenti.
+- **OUT-20261015-07 / 20:23:** saluto finale unico inviato e letto, verifica
+  riferita dalla chat vocale; testo non fornito, nessuna ricostruzione.
+- Risposta successiva di Tony, **ora non rilevata** nel resoconto: dalla prossima
+  settimana sarà via 10 giorni ma lavorerà da remoto. Nessuna data di consegna
+  o disponibilità continuativa dedotta da questo messaggio.
+
+Marco ha chiesto di non scrivere altro, di rendere persistente l'agente e di far
+avanzare il progetto mentre Codex resta aperto. La chat vocale conferma creazione
+**ACTIVE** del heartbeat **Agente progetto Tony** ogni 15 minuti in questa chat.
+Questo root non crea automazioni duplicate. README/AGENTS/stato sono il protocollo
+per la ripresa; avvisi solo per cambiamenti utili o interventi necessari.
+
+Marco autorizza esplicitamente l'impalcatura copilot ora, con esempi, prima della
+chiave. La decisione credential gate è **chiave fornita più avanti dall'utente**;
+nessuna richiesta ripetuta, creazione, riuso silenzioso, proxy Codex o chiamata a
+pagamento. Discovery solo presenza: processo e .env.local senza OPENAI_API_KEY.
+Nessun backend AI attivo dichiarato. La skill chiave resta applicabile al setup
+futuro; questa istruzione utente autorizza scaffold senza live API.
+
+Protocollo persistente verificato: heartbeat locale agente-progetto-tony di tipo
+heartbeat, status ACTIVE, target chat 01a1407b-ee5f-72a0-bc3e-f883cdd78130.
+Link locali dei documenti verificati, 13 originali riconciliati per dimensione e
+SHA-256 e hash del payload di revisione verificato. Nessuna automazione creata
+o modificata dal root. Prossima unità: AI-001/002, scaffold copilot autorizzato
+con provider disabilitato e nessuna chiave/chiamata live.

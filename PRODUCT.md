@@ -18,7 +18,11 @@ FieldTrack joins project schedules, assets, commissioning tags, issues and evide
 Marco confirmed on 15 October 2026 that the authoritative programme must live in
 the app. The working Gantt persists dates and dependencies. The next priority is a clear
 first-use path through Assets (equipment and required tags), Programme (dates and
-dependencies) and Tasks (assigned work and test sheets).
+dependencies) and Tasks (assigned work and test sheets). Tony also needs task/check-sheet links
+for individual asset tags and asset groups. A project copilot is the next build:
+chat/text with useful examples, scoped data and reviewable operation proposals.
+The user explicitly authorized scaffolding before supplying an API key later;
+no live provider calls or autonomous operations are enabled by that authorization.
 
 ## Operating Context
 
