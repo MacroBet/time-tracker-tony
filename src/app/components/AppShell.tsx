@@ -20,6 +20,7 @@ import {
   FileBarChart,
   GanttChart,
   MoreHorizontal,
+  MessageSquareText,
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -147,6 +148,10 @@ export function AppShell({
           icon: FileBarChart,
           module: "reports",
         },
+        ...(hasModule(currentUser, "tasks") &&
+        hasModule(currentUser, "commissioning")
+          ? [{ label: "Copilot", href: "/copilot", icon: MessageSquareText }]
+          : []),
       ];
   const utilities: NavigationItem[] = [
     ...(!worker

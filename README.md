@@ -31,6 +31,41 @@ spiega il perimetro e l'eventuale proposta remota, non eseguita.
 
 La demo conserva temporaneamente i dati nella memoria del server locale. Non scrive JSON o dati applicativi nel browser e non simula persistenza su Vercel. Un riavvio del processo li azzera. Con `DATABASE_URL` impostata, tutti i salvataggi usano Neon, il selettore demo viene disabilitato e l’accesso richiede email/password. Un errore del DB non attiva mai la demo come fallback.
 
+## Copilot di progetto
+
+Aprire **Copilot** dalla navigazione secondaria (More su mobile), con un account
+manager, supervisor o admin abilitato a Tasks e Commissioning. I **Project checks**
+leggono subito i dati salvati del progetto attivo: lavoro scaduto, test mancanti,
+test non registrati e tag in attesa di approvazione, con collegamenti ai record.
+Sono disponibili anche i gruppi ricavati dalle relazioni padre/figlio degli asset;
+un task/check sheet condiviso da un gruppo non è ancora implementato.
+
+La chat mostra esempi pronti da inserire, ma resta **Not configured** senza
+provider. Non produce risposte simulate. Senza chiave si può già scegliere un
+task e preparare una modifica a titolo, descrizione o priorità: prima anteprima
+prima/dopo e motivo, poi **conferma esplicita**. La proposta scade dopo 10 minuti;
+se cambiano task, configurazione del progetto o sessione occorre rifarla. Il
+salvataggio usa gli stessi permessi, controllo versione e storico delle modifiche
+ordinarie. Il modello può solo leggere o proporre, mai confermare.
+
+Marco fornirà la chiave più avanti. Per il setup successivo, configurare sul
+server `OPENAI_API_KEY` e un `OPENAI_MODEL` disponibile nell'account; lasciare
+`COPILOT_ENABLED=false` fino all'autorizzazione d'uso. Nessun modello a pagamento
+è scelto automaticamente. Solo dopo il completamento del setup e l'autorizzazione,
+impostare `COPILOT_ENABLED=true` e riavviare/ridistribuire l'ambiente appropriato.
+Usare `.env.local` ignorato da Git in locale o le variabili server dell'ambiente
+Vercel; mai `NEXT_PUBLIC_`, chat, browser o credenziali della sessione Codex.
+
+Il trasporto server usa OpenAI Responses con `store:false`, strumenti limitati al
+progetto, massimo quattro richieste/sei tool call per turno e timeout complessivo
+di 20 secondi. La conversazione resta nella pagina e si azzera al cambio progetto;
+il flag `store:false` non costituisce una promessa di assenza di ogni conservazione
+da parte del provider. I test del provider usano soltanto trasporti mock: nessuna
+chiamata live o verifica di compatibilità di un modello è stata eseguita.
+Autopilot e operazioni pianificate dall'AI non sono attivi.
+
+Riferimento del protocollo implementato: [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling).
+
 ## Collegamento a Neon
 
 1. Crea un progetto e un branch Neon dedicato. Inserisci la connection string pooled in `DATABASE_URL` in `.env.local`. È un segreto **solo server**, senza prefisso `NEXT_PUBLIC_`.
@@ -111,8 +146,9 @@ L’interfaccia si aggiorna quando torna in primo piano e ogni 20 secondi mentre
 Il piano e la lettura delle fonti sono in [Piano di sviluppo](docs/tony-development-plan.md).
 La gestione dei nuovi messaggi, delle attività e delle bozze per Marco è descritta
 in [Assistente operativo Tony](docs/tony-feedback/README.md), con
-[registro aggiornabile](docs/tony-feedback/register.md). Nessun controllo periodico
-di WhatsApp è attivo.
+[registro aggiornabile](docs/tony-feedback/register.md). Il heartbeat riprende il
+lavoro di progetto; la lettura di WhatsApp dipende dall'accesso disponibile e non
+deve interferire con l'utente. Nessun altro messaggio a Tony è autorizzato ora.
 
 - `/overview`: dashboard per progetto con costruzione distinta dai tag, barre per fase, matrice categoria/località, Client Supplied e review I/R/AC/A. Le colonne completamente approvate si richiudono e i riepiloghi aprono i record filtrati.
 - Navigazione: Overview, Programme, Assets e Tasks sono i percorsi principali; People, Time e Reports sono secondari. Su mobile le quattro destinazioni e More restano sempre raggiungibili senza scorrimento orizzontale.
