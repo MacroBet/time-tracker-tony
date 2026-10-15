@@ -19,10 +19,12 @@ Marco confirmed on 15 October 2026 that the authoritative programme must live in
 the app. The working Gantt persists dates and dependencies. The next priority is a clear
 first-use path through Assets (equipment and required tags), Programme (dates and
 dependencies) and Tasks (assigned work and test sheets). Tony also needs task/check-sheet links
-for individual asset tags and asset groups. A project copilot is the next build:
-chat/text with useful examples, scoped data and reviewable operation proposals.
-The user explicitly authorized scaffolding before supplying an API key later;
-no live provider calls or autonomous operations are enabled by that authorization.
+for individual asset tags and asset groups. The project copilot scaffold is delivered:
+saved-data checks, example questions, scoped tools and task proposals with separate
+preview and human confirmation. Chat requires an explicitly configured and enabled
+server provider; Marco will supply the API key later. No live provider calls or
+autonomous operations have been enabled. Recorded parent/child asset groups can be
+consulted; a shared task/check sheet for a group still requires its rules to be defined.
 
 ## Operating Context
 

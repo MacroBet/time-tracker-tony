@@ -447,3 +447,17 @@ indicato nel piano; non eseguire import. Per CX-009 acquisire l'esempio asset se
 diventa disponibile senza interferenza e chiarire identità/membri/stato condiviso
 prima di implementare task di gruppo. Nessun nuovo messaggio Tony. Se non emergono
 nuove prove o richieste, heartbeat silenzioso: non rifare UI/test appena conclusi.
+
+### Heartbeat — 15 ottobre 2026, 21:24 Europe/Rome
+
+Protocollo, PRODUCT e stato riletti; HEAD d7d78b3, unica modifica preesistente
+next-env.d.ts preservata. Vercel `success / Deployment has completed` verificato
+anche per d7d78b3. Nessuna attività implementativa rimasta in corso; nessuna suite
+o QA ripetuta. PRODUCT allineato alla consegna Copilot già verificata.
+
+Computer use segnala **Mac bloccato, sblocco automatico non disponibile**:
+WhatsApp non accessibile, nessuna nuova lettura o acquisizione, copertura invariata
+(diretta 19:20; resoconti 20:23 e risposta successiva). Nessuna finestra/tab mosso,
+nessun messaggio composto/inviato. Non richiedere lo sblocco a ogni ciclo: riprovare
+solo all'occasione consentita. Prossimi passi restano chiave/autorizzazione AI-003,
+metadati DB e lista/regole gruppi CX-009; nessuna scrittura remota o live API.
