@@ -167,3 +167,20 @@ Riprendere dopo le 19:23 con sovrapposizione ai messaggi delle 19:20.
 - Screenshot locali in output/playwright, esclusi da Git. Dati di test solo demo,
   reset al riavvio; nessun contenuto degli ZIP eseguito e nessuna migrazione remota.
 - Modifica preesistente next-env.d.ts preservata. Nessun monitoraggio periodico.
+
+### Verifica deploy successiva ai test locali
+
+L’API pubblica GitHub/Vercel segnala **success / Deployment has completed** per
+il commit applicativo `3929285` (Production, 17:41 UTC) e per `084c272`
+(Production, 17:44 UTC). Il repository dichiara come homepage
+https://time-tracker-tony.vercel.app. Il deployment specifico di `3929285`
+è https://time-tracker-tony-roaorrlpw-macrobets-projects.vercel.app;
+il suo percorso /schedule richiede autenticazione Vercel. La riuscita del deploy
+è verificata. Il dominio principale risponde HTTP 200 a /schedule, senza
+redirect a Vercel; il collaudo autenticato sui dati reali non è stato effettuato.
+
+Marco ha chiesto un giro in Chrome visibile. È stata aperta una tab demo locale
+http://127.0.0.1:3107/schedule; l’ultimo stato del subagente era Loading your
+workspace, quindi non viene attestato il Gantt visibile o il foreground.
+Il controllo UI è poi passato al subagente della chat vocale, evitando
+navigazioni concorrenti. Nessun ulteriore messaggio a Tony autorizzato o inviato.
