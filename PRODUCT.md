@@ -16,7 +16,9 @@ with Marco using WhatsApp feedback, Excel schedules and annotated screenshots.
 
 FieldTrack joins project schedules, assets, commissioning tags, issues and evidence.
 Marco confirmed on 15 October 2026 that the authoritative programme must live in
-the app. A working Gantt with persisted dates and dependencies is the first priority.
+the app. The working Gantt persists dates and dependencies. The next priority is a clear
+first-use path through Assets (equipment and required tags), Programme (dates and
+dependencies) and Tasks (assigned work and test sheets).
 
 ## Operating Context
 
@@ -35,7 +37,8 @@ are reference material, not a replacement app. Raw attachments remain private.
 
 Thirteen supplied files in docs/tony-feedback/attachments, with a manifest; existing
 application and commissioning tests. UI must use real authorized project records;
-synthetic demo mode stays visibly labelled and isolated from remote data.
+synthetic demo mode stays visibly labelled and isolated from remote data. Local
+showcase fixtures are opt-in and must never seed a remote environment implicitly.
 
 ## Product Principles
 

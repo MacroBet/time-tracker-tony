@@ -20,7 +20,9 @@ Per il lavoro sui feedback di Tony McIntyre, leggere prima
 - Ultima istruzione di Marco del 15/10/2026: **non inviare mai autonomamente**
   messaggi a Tony. Preparare soltanto bozze brevissime in Codex, una o due frasi,
   una domanda concreta alla volta, e attendere conferma esplicita sul testo concreto.
-  Non inserire bozze nel campo WhatsApp. Non alterare messaggi già inviati.
+  Non inserire bozze nel campo WhatsApp salvo richiesta esplicita di Marco di
+  preparare quel testo nel composer: in tal caso lasciare a lui il click Invia.
+  Non alterare messaggi già inviati.
   Registrare comunicazioni e risposte; distinguere test locali, push e disponibilità
   verificata sul sito, senza impegni commerciali, costi o scadenze non autorizzati.
 - Distinguere richieste esplicite, interpretazioni, decisioni di Marco e verifiche
@@ -39,3 +41,9 @@ Per il lavoro sui feedback di Tony McIntyre, leggere prima
 - Nuova autorizzazione esplicita di Marco: usare subagenti per blocchi indipendenti,
   con integrazione centrale e responsabilità chiare. Primo ciclo di circa un'ora;
   eseguire tutti i test disponibili e le verifiche statiche/build/UI pertinenti.
+
+- Nuova fase UX del 15/10/2026: primo utilizzo guidato con una sola azione primaria,
+  navigazione gerarchica e mobile strutturale. Usare le fixture solo nella demo
+  locale. **Nessuna scrittura su database remoto** in questa fase: preparare prima
+  un piano con target esatto verificato, isolamento e rollback da sottoporre a Marco.
+  Non aggirare il precedente rifiuto automatico; push UX autorizzati restano validi.

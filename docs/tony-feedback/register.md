@@ -1,6 +1,7 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: 15 ottobre 2026, lettura di Tony fino alle **19:20**, invio singolo approvato alle **19:23**.
+Ultimo aggiornamento: 15 ottobre 2026. Lettura diretta fino alle **19:20**;
+aggiornamenti riferiti dalla chat vocale fino alle **20:07**.
 Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
 
 ## Copertura e punto di ripresa
@@ -184,3 +185,85 @@ http://127.0.0.1:3107/schedule; l’ultimo stato del subagente era Loading your
 workspace, quindi non viene attestato il Gantt visibile o il foreground.
 Il controllo UI è poi passato al subagente della chat vocale, evitando
 navigazioni concorrenti. Nessun ulteriore messaggio a Tony autorizzato o inviato.
+
+### Seconda fase — UX e demo locale
+
+Marco ha richiesto percorsi comprensibili senza manuale, navigazione gerarchica,
+stati vuoti utili e interfaccia mobile progettata. Autorizzati subagenti, test e
+push UX; **esclusa qualsiasi scrittura su database remoto**. La precedente
+revisione automatica ha rifiutato la possibilità di scrittura Production senza
+target/isolamento/rollback verificati. Il [piano separato](local-demo-and-remote-plan.md)
+prepara quei controlli e non viene eseguito.
+
+**MSG-20261015-1953**, fonte riferita dalla chat vocale: il subagente ha letto un
+nuovo messaggio di Tony delle 19:53; nell’asset setup i tag vanno definiti secondo
+la tabella e ciascuno deve avere stato e scheda di test collegata. Questa è una
+parafrasi del resoconto ricevuto, non una nuova lettura diretta del root; nessun
+nuovo allegato segnalato. Le sigle/mappature ambigue rimangono da chiarire.
+
+Risposta implementativa: dalla scelta dei tag richiesti per asset si apre la
+scheda task del singolo tag, con stato del lavoro, review, risultato test, note ed
+evidenze distinti. I task esistenti sono mantenuti; nessuna checklist cliente o
+modello di test esterno viene inventato. Generazione dei tag mancanti esplicita
+per l’intero progetto, senza duplicare gli obblighi già creati.
+
+La demo locale opt-in aggiunge p-demo-rich e p-demo-empty. Nessun Excel di Tony
+importato e nessun seed remoto eseguito. Le quantità e le regole sono nel piano.
+La gestione dei feedback resta in questo registro e nelle istruzioni persistenti;
+nessuna automazione/frequenza futura concordata e nessun invio WhatsApp autonomo.
+
+### Comunicazione riferita dalla chat vocale — 20:07
+
+**OUT-20261015-03**: la chat vocale riferisce invio del solo testo approvato
+“Tony, the main part is done. I’m making a few improvements now.” alle 20:07,
+con bolla e successivamente doppia spunta verificate dal suo subagente.
+Questo root non ha effettuato l’invio né una nuova lettura WhatsApp.
+
+Marco ora consente la preparazione nel composer **quando la chiede espressamente**,
+lasciando a lui il click Invia. Non autorizza invii autonomi o compilazione generica.
+Al controllo riferito, la bozza seguente era nel composer e **non inviata**:
+“The next big thing is an AI assistant inside the app, helping you manage the
+project, spot delays and update tasks just by chatting.” Il precedente secondo
+messaggio rifiutato era stato sostituito; non risulta inviato. Terza bozza sul
+compenso gestita dalla chat vocale, non da questo root.
+
+La ricerca storica riferita ha trovato proposta time-tracker del 4 settembre a
+1.500 €, tono colloquiale e accettazione di Tony. Il presunto primo versamento da
+1.000 € ricordato da Marco non è stato verificato e non viene registrato come
+pagamento avvenuto. Una bozza su un futuro assistente AI non implica funzionalità
+consegnata o autorizzazione a implementare ora API/chat AI.
+
+### Consegna della seconda fase
+
+Fixture locale: commit `865315a`. UX: commit `aa8e67e`, navigazione principale Overview/Programme/
+Assets/Tasks, More mobile, guida al primo utilizzo, liste mobile per programma e
+asset, impostazioni/import/storico progressivi, risultato test separato dalla
+review. La voce Online indica la rete del browser, non lo stato del database.
+
+Verifiche effettive:
+
+- 56 test unitari/PostgreSQL PGlite superati; cinque verificano fixture, riferimenti,
+  grafo, idempotenza e separazione review/esecuzione. Test fixture ripetuti dopo
+  l’allineamento dei progressi e dei nomi, con esito positivo.
+- Tutti i 7 test API superati su 127.0.0.1:3107 in modalità demo, con DATABASE_URL
+  e DATABASE_URL_UNPOOLED vuote. Assert multi-progetto aggiornato alle membership,
+  mantenendo i controlli 403/404. Nessun test API puntato alla produzione.
+- Typecheck, ESLint, Prettier, diff check e produzione build superati. Detector
+  Impeccable finale sui sette componenti modificati: nessun finding.
+- Un batch desktop/mobile di stati vuoti e popolati, correzioni raccolte e una
+  conferma. Nessun overflow pagina a 390 o 1440 px. Menu More, import via hash,
+  primo programma salvato e primo asset/tag/scheda test provati nella sola demo.
+- ID asset duplicato rifiutato; controlli bloccati durante l’anteprima; nuovo editor
+  non chiuso dalla risposta precedente; scheda tag portata in vista e ancore sotto
+  l’intestazione correttamente distanziate. Navigazione worker preservata.
+
+I dati creati durante le prove sono stati azzerati riavviando soltanto il server
+demo locale. Gli screenshot in output/playwright restano esclusi da Git.
+La modifica next-env.d.ts preesistente è preservata. Nessun dato remoto importato,
+nessuna credenziale letta per il piano e nessun WhatsApp mosso da questo root.
+
+Prossimo punto di ripresa: feedback riferito delle 19:53 e comunicazione approvata
+riferita delle 20:07; eventuali messaggi successivi non sono coperti. L’eventuale
+popolamento remoto rimane subordinato a target esatto, isolamento e rollback
+verificati e approvazione esplicita del piano. Non attivare API/chat AI sulla base
+delle sole bozze commerciali.

@@ -12,6 +12,8 @@ quando viene avviata una sessione in Codex; non è attivo un controllo periodico
   segnare una bozza come inviata senza conferma di Marco.
 - [Prima analisi](analysis.md): ultimi messaggi, struttura e limiti verificati degli
   ZIP, lettura degli allegati e confronto iniziale con il codice corrente.
+- [Demo locale e piano remoto](local-demo-and-remote-plan.md): fixture sintetica,
+  isolamento e controlli necessari prima di un eventuale popolamento remoto.
 - [Manifest allegati](attachments/manifest.md): messaggio di provenienza, file locale,
   integrità, contenuto analizzato e limiti. I file privati sono esclusi da Git.
 - [Piano di settembre](../tony-development-plan.md): contesto storico e stato
@@ -46,7 +48,7 @@ quando viene avviata una sessione in Codex; non è attivo un controllo periodico
    `pronta`, `in corso`, `completata`, `bloccata`, `superata`. Chiudere un'attività
    solo con evidenza; distinguere verifica locale, pubblicazione e conferma di Tony.
 9. Preparare una bozza separata per Marco, con domande precise e senza promettere
-   tempi o consegne non concordati. Non toccare il campo di composizione WhatsApp.
+   tempi o consegne non concordati. Preparare il testo nel composer soltanto su richiesta esplicita di Marco e lasciare a lui il click Invia.
 10. Aggiornare la copertura della lettura e il riepilogo di fine sessione: fatto,
     salvato, verificato, incerto, prossimo passo. Non creare automazioni finché
     Marco non richiede un controllo futuro e non ne viene definita la cadenza.

@@ -14,6 +14,13 @@ npm run dev
 
 Apri [localhost:3000](http://localhost:3000). Senza `DATABASE_URL`, in sviluppo è disponibile la demo con dati sintetici. Per Tony: azienda **alternativeHEAT**, utente **Tony McIntyre · manager**. Marco Rossi è l’operatore; Anna Bianchi è il supervisore.
 
+La demo apre **DEMO · Northbank commissioning**, un esempio sintetico con 28 asset,
+100 attività programma e 120 task; dal selettore Project è disponibile anche
+**DEMO · Start a project**, vuoto, per provare i primi passi. Le fixture sono
+attivate solo dal repository della demo locale: non vengono aggiunte ai seed
+preesistenti né caricate su Neon. Il [piano di demo e isolamento](docs/tony-feedback/local-demo-and-remote-plan.md)
+spiega il perimetro e l'eventuale proposta remota, non eseguita.
+
 La demo conserva temporaneamente i dati nella memoria del server locale. Non scrive JSON o dati applicativi nel browser e non simula persistenza su Vercel. Un riavvio del processo li azzera. Con `DATABASE_URL` impostata, tutti i salvataggi usano Neon, il selettore demo viene disabilitato e l’accesso richiede email/password. Un errore del DB non attiva mai la demo come fallback.
 
 ## Collegamento a Neon
@@ -100,11 +107,14 @@ in [Assistente operativo Tony](docs/tony-feedback/README.md), con
 di WhatsApp è attivo.
 
 - `/overview`: dashboard per progetto con costruzione distinta dai tag, barre per fase, matrice categoria/località, Client Supplied e review I/R/AC/A. Le colonne completamente approvate si richiudono e i riepiloghi aprono i record filtrati.
+- Navigazione: Overview, Programme, Assets e Tasks sono i percorsi principali; People, Time e Reports sono secondari. Su mobile le quattro destinazioni e More restano sempre raggiungibili senza scorrimento orizzontale.
+- Primo utilizzo: Overview spiega il percorso; Assets e Programme vuoti mostrano la prima azione, senza filtri o grafici inutili. Nel programma mobile la lista delle attività è la vista iniziale, con timeline a scelta.
 - `/schedule`: Gantt compatto con albero asset per categoria/fase/piano/area, date e durata lavorativa, predecessori Finish-to-Start e lag. Anteprima degli impatti, salvataggio versionato, baseline protetta e aggiornamento delle scadenze task collegate. Calendario lunedì–venerdì senza festività; nessun calcolo critical path o altro tipo di legame.
 - `/commissioning`: tabella asset ricercabile, Client Supplied esplicito, gerarchia/metadati, livelli applicabili e collegamenti attività. Import asset CSV o registro JSON con anteprima, export CSV/JSON e storico progetto con ultimi tre eventi/dettaglio paginato. **Create missing tag activities** genera task non assegnati, uno per asset/livello; non duplica quelli già esistenti. Oltre 1.000 nuovi task, ripetere il comando per i successivi.
 - Team: ricerca persona/azienda, filtri ruolo, tipo e stato lavoro, schede/lista e dettaglio dei record assegnati.
 - `/reports`: tag, riepilogo per tipo di attrezzatura, andamento, programma, issue/task, documentazione O&M/formazione/garanzie/sign-off e conformità. CSV di tutti i risultati filtrati; stampa della pagina visualizzata, fino a 50 righe.
 - `/admin`: il ruolo `admin` configura L1/L2/L2A/L2B/L3/L4/L5/L6 e P1–P5 per progetto e abilita i moduli per persona. **Task-only profile** mantiene task e impostazioni. Nella demo è disponibile **Project Administrator**; nessun account amministratore reale viene creato automaticamente. Membership e ruolo limitano sempre l'accesso ai dati.
+- Asset → tag → test sheet: scegliere i tag richiesti nell'asset, aprire il singolo record e registrarvi risultato, note e documenti. La scheda è il task del tag; eventuali PDF/procedure cliente vanno allegati, non vengono inventati.
 - Dettaglio task: collegamenti asset/P6, livello/tag, rischio, tipo documento e conteggi di conformità; registrazione separata di esito e avanzamento. Passare un test non approva automaticamente il tag; un esito fallito/retest impedisce la chiusura finché non viene risolto.
 
 Le review esplicite dei tag contano come approvate solo in A; AC resta distinto.

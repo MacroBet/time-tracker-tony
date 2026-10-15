@@ -1,7 +1,8 @@
 # Bozze per Marco — non inviate
 
 Ogni nuovo messaggio richiede conferma esplicita di Marco sul testo concreto.
-Le bozze restano in Codex: non inserirle nel campo WhatsApp.
+Le bozze restano in Codex salvo richiesta esplicita di Marco di preparare il testo
+nel composer, lasciando a lui il click Invia. Nessun invio autonomo.
 Gli invii delle 19:12 e 19:23 sono registrati nel registro e nell'intake; questa
 bozza non è stata inviata.
 
