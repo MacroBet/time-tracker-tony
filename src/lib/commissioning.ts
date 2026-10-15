@@ -30,6 +30,19 @@ export const MODULES = [
 export type Level = (typeof LEVELS)[number];
 export type Priority = (typeof PRIORITIES)[number];
 export type Module = (typeof MODULES)[number];
+export const TAG_REVIEWS = [
+  "issued",
+  "rejected",
+  "approved-comments",
+  "approved",
+] as const;
+export type TagReview = (typeof TAG_REVIEWS)[number];
+export const tagReviewLabels: Record<TagReview, string> = {
+  issued: "I · Issued",
+  rejected: "R · Rejected",
+  "approved-comments": "AC · Approved with comments",
+  approved: "A · Approved",
+};
 const key = z.string().trim().min(1).max(150);
 const date = z.iso.date().optional();
 const levels = z
@@ -42,6 +55,14 @@ export const assetSchema = z
     name: key,
     equipmentType: key,
     location: z.string().trim().max(250).default(""),
+    phase: z.string().trim().max(150).optional(),
+    floor: z.string().trim().max(150).optional(),
+    area: z.string().trim().max(150).optional(),
+    clientSupplied: z.boolean().nullable().optional(),
+    discipline: z.string().trim().max(150).optional(),
+    parentAssetId: z.string().trim().max(150).optional(),
+    serialNumber: z.string().trim().max(150).optional(),
+    owner: z.string().trim().max(150).optional(),
     levels,
     deliveryActivityId: key.optional(),
     expectedDelivery: date,
@@ -57,6 +78,19 @@ export const scheduleSchema = z
     start: date,
     finish: date,
     actualFinish: date,
+    notBefore: date,
+    durationDays: z.number().int().min(1).max(3650).optional(),
+    predecessors: z
+      .array(
+        z
+          .object({
+            activityId: key,
+            lagDays: z.number().int().min(0).max(365).default(0),
+          })
+          .strict(),
+      )
+      .max(100)
+      .optional(),
     progress: z.number().min(0).max(100).optional(),
     source: z.string().max(300).optional(),
   })
@@ -64,10 +98,37 @@ export const scheduleSchema = z
   .refine(
     (v) => !v.start || !v.finish || v.start <= v.finish,
     "Finish precedes start",
+  )
+  .refine(
+    (v) => !v.start || !v.actualFinish || v.actualFinish >= v.start,
+    "Actual finish precedes start",
+  )
+  .refine(
+    (v) =>
+      !v.baselineStart ||
+      !v.baselineFinish ||
+      v.baselineFinish >= v.baselineStart,
+    "Baseline finish precedes baseline start",
   );
 export const configSchema = z
   .object({
     levels,
+    projectType: z.string().trim().max(100).optional(),
+    location: z.string().trim().max(250).optional(),
+    capacityMw: z.number().finite().positive().max(1000000).optional(),
+    phasePresentation: z
+      .partialRecord(
+        z.enum(LEVELS),
+        z
+          .object({
+            label: z.string().trim().min(1).max(80),
+            color: z
+              .string()
+              .regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hex colour"),
+          })
+          .strict(),
+      )
+      .optional(),
     priorities: z
       .array(z.enum(PRIORITIES))
       .min(1)
@@ -82,6 +143,7 @@ export const cxSchema = z
     activityId: key.optional(),
     level: z.enum(LEVELS).optional(),
     qualityTag: z.string().trim().max(100).optional(),
+    tagReview: z.enum(TAG_REVIEWS).optional(),
     progress: z.number().min(0).max(100).optional(),
     result: z
       .enum(["untested", "passed", "failed", "retest"])
@@ -97,6 +159,10 @@ export const cxSchema = z
   .refine(
     (v) => v.kind !== "tag" || (!!v.assetId && !!v.level),
     "Tags require an asset and level",
+  )
+  .refine(
+    (v) => v.tagReview === undefined || v.kind === "tag",
+    "Tag review is only available for tag records",
   );
 export type Asset = z.infer<typeof assetSchema>;
 export type ScheduleActivity = z.infer<typeof scheduleSchema>;
@@ -107,7 +173,13 @@ export interface Commissioning {
   config: ProjectConfig;
   assets: Asset[];
   schedule: ScheduleActivity[];
-  revisions: { at: string; actor: string; reason: string; changes: string[] }[];
+  revisions: {
+    at: string;
+    actor: string;
+    action?: "edit" | "upload";
+    reason: string;
+    changes: string[];
+  }[];
 }
 export function commissioning(project?: Project): Commissioning {
   return (
@@ -205,6 +277,14 @@ export function tagRows(project: Project, tasks: Task[]) {
   );
 }
 
+export function isTagApproved(task?: Task) {
+  if (!task || task.cx?.kind !== "tag" || task.status === "not-applicable")
+    return false;
+  return task.cx.tagReview === undefined
+    ? task.status === "completed"
+    : task.cx.tagReview === "approved";
+}
+
 export function tagTimeline(project: Project, tasks: Task[]) {
   const state = commissioning(project),
     schedule = new Map(state.schedule.map((s) => [s.activityId, s]));
@@ -217,10 +297,9 @@ export function tagTimeline(project: Project, tasks: Task[]) {
       return {
         baseline: activity?.baselineFinish,
         forecast: activity?.finish,
-        achieved:
-          r.task?.status === "completed"
-            ? r.task.completedAt?.slice(0, 10)
-            : undefined,
+        achieved: isTagApproved(r.task)
+          ? r.task?.completedAt?.slice(0, 10)
+          : undefined,
       };
     });
   const dates = [
@@ -246,7 +325,7 @@ export function tagSummary(project: Project, tasks: Task[], level?: Level) {
   const rows = tagRows(project, tasks).filter(
     (r) => (!level || r.level === level) && r.applicable,
   );
-  const completed = rows.filter((r) => r.status === "completed").length;
+  const completed = rows.filter((r) => isTagApproved(r.task)).length;
   return {
     total: rows.length,
     completed,

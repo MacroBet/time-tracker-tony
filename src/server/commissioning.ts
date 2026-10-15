@@ -17,6 +17,7 @@ import {
   configSchema,
   hasModule,
   MODULES,
+  scheduleSchema,
 } from "@/lib/commissioning";
 import {
   mergeRegister,
@@ -52,6 +53,14 @@ export async function updateRegister(request: Request, projectId: string) {
         })
         .strict(),
       z.object({ ...base, action: z.literal("generate-tags") }).strict(),
+      z
+        .object({
+          ...base,
+          action: z.literal("schedule"),
+          activity: scheduleSchema,
+          preview: z.boolean().default(false),
+        })
+        .strict(),
     ])
     .parse(await readJson(request, 8 * 1024 * 1024));
   const data = await loadData(user);
@@ -121,9 +130,13 @@ export async function updateRegister(request: Request, projectId: string) {
     ];
     next.config = input.config;
   } else {
-    const result = mergeRegister(state, input.data);
+    const registerData =
+      input.action === "schedule"
+        ? { assets: [], schedule: [input.activity] }
+        : input.data;
+    const result = mergeRegister(state, registerData);
     // Retain the applicability of existing records. Disabling project display is a separate setup action.
-    for (const asset of input.data.assets) {
+    for (const asset of registerData.assets) {
       if (
         data.tasks.some(
           (t) =>
@@ -143,6 +156,7 @@ export async function updateRegister(request: Request, projectId: string) {
         errors: result.errors,
         assets: result.assets.length,
         schedule: result.schedule.length,
+        activities: input.action === "schedule" ? result.schedule : undefined,
       });
     requireCondition(!result.errors.length, 400, result.errors.join(" "));
     changes = result.changes;
@@ -157,6 +171,8 @@ export async function updateRegister(request: Request, projectId: string) {
       {
         at: new Date().toISOString(),
         actor: user.name,
+        action:
+          input.action === "import" ? ("upload" as const) : ("edit" as const),
         reason: input.reason,
         changes,
       },
