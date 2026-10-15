@@ -1,7 +1,7 @@
 # Registro operativo — Tony
 
 Ultimo aggiornamento: 15 ottobre 2026. Lettura diretta fino alle **19:20**;
-aggiornamenti riferiti dalla chat vocale fino alle **20:07**.
+aggiornamenti riferiti dalla chat vocale fino alle **20:16**.
 Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
 
 ## Copertura e punto di ripresa
@@ -267,3 +267,29 @@ riferita delle 20:07; eventuali messaggi successivi non sono coperti. L’eventu
 popolamento remoto rimane subordinato a target esatto, isolamento e rollback
 verificati e approvazione esplicita del piano. Non attivare API/chat AI sulla base
 delle sole bozze commerciali.
+
+### Aggiornamento comunicazioni riferito — 20:13–20:16
+
+Fonte: verifica riferita dalla chat vocale; nessuna nuova azione WhatsApp del root.
+
+- **OUT-20261015-04, 20:13:** Marco ha inviato manualmente “The next big thing is
+  an AI assistant inside the app, helping you manage the project, spot delays
+  and update tasks just by chatting.” Doppia spunta blu riferita come verificata.
+  La bozza annotata prima come non inviata risulta quindi superata dall’invio.
+- **MSG-20261015-2014, 20:14:** Tony conferma che è ciò che vuole, AI o casella
+  testo, e aggiunge l’utilizzo durante una riunione. Parafrasi del resoconto.
+- **OUT-20261015-05, 20:16:** Marco ha inviato manualmente “If you want to add AI,
+  I’ll need to work on that a bit more. Shall we say another €1,000 for that?”
+- **MSG-20261015-2016, 20:16:** risposta di Tony “No probs”. Registrata come
+  assenso alla proposta economica, **non pagamento ricevuto** e **non perimetro
+  tecnico definitivamente concordato**.
+
+Al controllo riferito esiste una nuova bozza copilot → autopilot nel composer,
+non inviata. Nessun permesso di inviarla per l’assistente. Ogni testo resta sotto
+controllo di Marco; non muovere WhatsApp o alterare le bozze.
+
+Backlog da definire in una fase separata: chat sui dati autorizzati del progetto,
+aiuto su gestione/ritardi/task e uso in riunione. Prima chiarire comportamento,
+accessi e modifiche proposte; approccio copilot con controllo, prima di eventuale
+automazione. Nessuna integrazione AI/API avviata, nessun segreto creato e nessuna
+scrittura remota autorizzata da questo scambio. Punto di ripresa riferito: 20:16.
