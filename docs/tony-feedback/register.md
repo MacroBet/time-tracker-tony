@@ -23,6 +23,10 @@ e UI desktop/mobile superati. **Deploy Copilot Vercel success** verificato il
 deploy UX 108042a già riuscito. Rileggere git per HEAD corrente. Modifica
 next-env.d.ts preesistente preservata e non committata.
 
+**DATA-002 consegnata:** preflight XLSX locale con provenienza e rapporto privato
+non importabile. Sette test Python sintetici e riconciliazione su ATT-014 superati;
+nessun nuovo collaudo applicativo, import, DB o provider. [Uso e prove](asset-preflight.md).
+
 **Copertura Tony:** lettura diretta root fino 20:56 del 15 ottobre, verificata
 il 16 ottobre nella chat già aperta con sovrapposizione da 20:14. Nessun messaggio
 del 16 ottobre visibile in fondo alla chat in quel momento. **14 allegati** nel
@@ -49,18 +53,18 @@ nessuna chiamata live/a pagamento. Copilot onesto "da configurare"; mock solo
 nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattivato.
 I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
 
-| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                                                |
-| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| OPS-004 protocollo/heartbeat        | completata (cc14c07)                   | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                             | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                                 |
-| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                                   |
-| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato                     |
-| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                                  |
-| DATA-002 preflight Excel asset      | pronta, solo locale                    | Estrarre Simplified list con provenienza, esclusione note/righe vuote, duplicati e campi mancanti; nessun DB        | 1.354 righe candidate riconciliate, niente deduplica per nome o payload importabile con identità/livelli inventati |
-| CX-010 riferimenti asset esterni    | analisi pronta, mapping da chiarire    | Separare ID interno, cliente e programma; chiarire Schedule ID nella risposta proposta                              | Reimport stabile senza duplicati e senza rinominare ID già collegati a task                                        |
-| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                                 |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                                     |
-| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                                          |
-| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                                   |
+| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
+| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/heartbeat        | completata (cc14c07)                   | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                             | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                |
+| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
+| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
+| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
+| DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
+| CX-010 riferimenti asset esterni    | analisi pronta, mapping da chiarire    | Separare ID interno, cliente e programma; chiarire Schedule ID nella risposta proposta                              | Reimport stabile senza duplicati e senza rinominare ID già collegati a task                       |
+| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
+| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
+| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
 
 Quando una voce è bloccata, scegliere la prossima pronta. Dopo ogni unità annotare
 file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostante.
@@ -189,6 +193,32 @@ esplicitato nell'interfaccia; non è una sincronizzazione P6.
    non dimostra che il sito abbia completato il rilascio.
 
 ## Esito delle sessioni
+
+### 16 ottobre 2026 — DATA-002, preflight locale
+
+Heartbeat coordinato con **Find login instructions**, che ha completato
+acquisizione e analisi senza implementare DATA-002. Nessun accesso desktop o
+WhatsApp ripetuto da questo ciclo; copertura aggiornata dalle evidenze di quella
+chat, non da una nuova lettura del heartbeat. Nessun invio effettuato.
+
+Intake già completato versionato separatamente in d4da66a, senza cambiare la
+bozza o gli originali. Implementati `scripts/preflight-assets-xlsx.py`, sette
+test sintetici Python e [guida](asset-preflight.md). Rapporto privato ignorato
+`output/asset-preflight/att-014.review.json`: 1.354 candidate, 1.164 nomi distinti,
+179 nomi ripetuti, 190 righe eccedenti, nessun duplicato esatto; nota A705 esclusa
+e conservata. Provenienza, metadati originali, formule/cache separate e campi
+mancanti conservati. FR e Design phase restano separati.
+
+PASS: sette test, conteggi indipendenti riconciliati, hash sorgente invariato,
+due report byte-identici, riconciliazione di tutte le 25.465 righe dopo l'header,
+rifiuto di sovrascrittura, formato documenti e diff. Export Google Sheets senza
+dimensioni gestito calcolando l'estensione in sola lettura. Nessuna macro,
+formula o collegamento eseguito, nessun ID/livello/gruppo inventato.
+
+Questa è una utility locale e non cambia l'app: suite Next/API/UI già passate non
+ripetute, nessuna migrazione, DB remoto o live API. Prossimi passi: chiarire
+Schedule ID e regole/identità dei gruppi prima di CX-010/CX-009; attivazione AI
+ancora rinviata a Marco. Non usare il rapporto come payload di importazione.
 
 ### 16 ottobre 2026 — nuovi messaggi ed Excel asset
 

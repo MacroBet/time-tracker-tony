@@ -9,6 +9,7 @@ output/
 .playwright-cli/
 .DS_Store
 tmp/
+__pycache__/
 
 # Materiale privato ricevuto da Tony; il manifest resta versionabile.
 docs/tony-feedback/attachments/*

@@ -173,6 +173,11 @@ Applicare `npm run db:migrate` sul database di destinazione **prima** di distrib
 
 ### Conversione degli Excel
 
+Per la lista asset BIM/ACC con foglio `Simplified list`, il [preflight locale](docs/tony-feedback/asset-preflight.md)
+produce un rapporto privato di provenienza, nomi ripetuti, note e campi mancanti.
+Non genera ID o livelli e non produce un file importabile; nessun collegamento al
+database. Usarlo prima di definire la mappatura degli identificativi e dei gruppi.
+
 Il browser importa asset CSV o un registro JSON validato; esportare prima offre
 un modello compatibile. XLSX non viene importato direttamente. Il convertitore
 Python legge gli Excel forniti (richiede `openpyxl`) senza modificarli:
