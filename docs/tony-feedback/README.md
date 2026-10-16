@@ -14,6 +14,13 @@ Non riattivarlo o crearne altri senza richiesta. Nessun polling o continuazione
 in background dopo il turno. L'aggiornamento periodico dei dati nell'app aperta
 è una funzione diversa e non avvia l'assistente di sviluppo.
 
+Checkpoint successivo del16ott: progetto **in pausa**, consegna app f7ed997 e
+intake540aa54/88705f8 già pubblicati. File dell’automazione nuovamente verificato
+**PAUSED** dopo la pausa eseguita dalla coordinatrice. Trigger: richiesta umana
+**«Riprendi Tony»**, per una sola ripresa manuale; nessuna riattivazione implicita
+leggendo vecchi heartbeat ACTIVE. Copertura acquisita14:14, ultimo tentativo
+parziale circa14:22; il tempo trascorso in pausa non estende la copertura.
+
 ## Come viene recuperato il contesto
 
 [AGENTS.md](../../AGENTS.md) è l'ingresso delle istruzioni di progetto. Indirizza

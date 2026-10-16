@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "projectId": "bd6c50d4-8a6d-43e3-b535-fc3dc538df8e",
-  "assignmentId": "tony-intake-20261016-1414",
+  "assignmentId": "tony-pause-checkpoint-20261016",
   "status": "completed",
-  "observedAt": "2026-10-16T12:26:33.499234+00:00",
-  "outcome": "Analizzate10bolle già acquisite12:28–14:14; requisiti riconciliati, URL playlist recuperato, V3 riferita consegnata. Project Health attende Tony. Fresh check circa14:22 interrotto al primo errore tecnico; Excel non acquisito, oltre14:14 non verificato.",
+  "observedAt": "2026-10-16T13:10:53.897427+00:00",
+  "outcome": "Checkpoint pausa registrato. Configurazione esistente PAUSED verificata in sola lettura; ripresa solo su richiesta umana. Nessuna nuova lettura WhatsApp, acquisizione, codice o invio. Copertura resta14:14.",
   "evidence": [
     {
       "kind": "file",
@@ -35,6 +35,13 @@
       "ref": "https://vercel.com/macrobets-projects/time-tracker-tony/HbhyMAWLmRKqYLVdzygjqUDx1Pau",
       "verifiedAt": "2026-10-16T11:30:50Z",
       "verifiedBy": "root: prova precedente Vercel successf7ed997, non rieseguita"
+    },
+    {
+      "kind": "file",
+      "ref": "/Users/marcobellia/.codex/automations/agente-progetto-tony/automation.toml",
+      "verifiedAt": "2026-10-16T13:10:53.897427+00:00",
+      "verifiedBy": "root: rg status PAUSED in sola lettura; coordinatrice riferisce pausa già eseguita",
+      "configurationUpdatedAt": "2026-10-16T15:07:11.062000+02:00"
     }
   ],
   "sourceCoverage": {
@@ -74,27 +81,9 @@
       "newMessageCountAfterCoverage": null,
       "after1414Verified": false
     },
-    "nextOverlap": "14:14, soltanto delta successivo; Excel12:41 distinto"
+    "nextOverlap": "14:14, soltanto delta successivo; Excel12:41 distinto",
+    "checkPerformedThisCycle": false
   },
-  "messagesAcquiredThisCycle": [
-    {
-      "sourceRange": "12:28–13:04",
-      "kind": "incoming-summary",
-      "delta": "Conferma richieste UX003/004 e GROUP/ADD DATA incerti; URL playlist recuperato, nessuna nuova regola certa"
-    },
-    {
-      "sourceId": "OUT-20261016-02",
-      "kind": "outgoing-reported",
-      "time": "14:14",
-      "version": "V3",
-      "scope": "Popup pubblicato, prossimo esame Excel, domanda calcolo Project Health",
-      "textSha256": "157d68ce93da1ad015a2a43235208bb652a17edd4ba879eea7e9d11ceaec550d",
-      "approval": "puntuale Marco riferita dalla coordinatrice; singolo invio concluso",
-      "delivery": "due spunte grigie riferite, delivered",
-      "readReceiptVerified": false,
-      "newReplyVisibleAt1414": false
-    }
-  ],
   "attachments": {
     "verifiedTotal": 17,
     "newReceivedFilesThisCycle": 0,
@@ -115,14 +104,15 @@
     "applicationChangesThisCycle": false,
     "applicationCommit": "f7ed9977fca32d4ebf6834453016bc4a1f19f3a7",
     "priorDocumentationCommit": "96f03f963eb66bfe1799850e1814c1d6cd5780d8",
-    "gitFetch": "success",
+    "gitFetch": "success,0/0 a88705f8 prima degli edit",
     "headVsOriginBeforeEdits": "0/0",
     "pull": "non necessario, checkout modificato preservato",
-    "currentDocumentationCommit": "540aa54bfa464da98e991b5e234c105e0a1a443f",
-    "validation": "Byte/hash/ignore, JSON/contratto, 63 link locali, formato/diff passati; nessun test app ripetuto",
-    "pushThisCycle": true,
-    "pushVerifiedAgainstRemoteRef": true,
-    "newApplicationDeploymentVerified": false
+    "currentDocumentationCommit": "checkpoint pausa: vedere git log/output/agent-heartbeat-state.json",
+    "validation": "Coerenza PAUSED/copertura invariata, JSON,70 link locali,formato/diff passati; nessun test app",
+    "pushThisCycle": false,
+    "pushVerifiedAgainstRemoteRef": false,
+    "newApplicationDeploymentVerified": false,
+    "previousIntakeDocumentationCommit": "540aa54bfa464da98e991b5e234c105e0a1a443f"
   },
   "blockers": [
     {
@@ -148,9 +138,9 @@
     }
   ],
   "nextActions": [
-    "Recuperare nuovo Excel e delta oltre14:14 se CUA disponibile; non dichiarare zero nuovi senza lettura",
-    "Analizzare eventuale risposta Tony su Project Health e materiali nuovi prima di nuove proposte",
-    "Nessun nuovo messaggio/composer: v1/v2 superate e autorizzazione V3 conclusa"
+    "Nessuna azione automatica mentre il progetto è in pausa",
+    "Attendere richiesta umana Riprendi Tony o incarico manuale esplicito; non riattivare heartbeat implicitamente",
+    "Alla ripresa: usare copertura14:14 e lacune note, acquisire Excel/delta solo se richiesto e sessione disponibile"
   ],
   "usage": {
     "measuredTokens": null,
@@ -161,22 +151,23 @@
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "Fonte acquisita14:14, controllo successivo parziale14:22, Excel mancante; attesa cliente distinta da tecnica"
+    "resumeFrom": "PAUSA: solo trigger umano Riprendi Tony; copertura14:14 invariata, ultimo tentativo parziale14:22, attese cliente/tecniche note"
   },
   "automation": {
     "id": "agente-progetto-tony",
-    "status": "ACTIVE",
-    "intervalMinutes": 10,
+    "status": "PAUSED",
+    "verifiedAt": "2026-10-16T13:10:53.897427+00:00",
+    "configurationUpdatedAt": "2026-10-16T15:07:11.062000+02:00",
+    "source": "fileconfig letto da root; pausa tramite tool ufficiale riferita dalla coordinatrice",
     "createdOrModifiedThisCycle": false,
-    "duplicateCycleStarted": false,
-    "effectiveProjectInstructions": "PAUSED: AGENTS precedente ripristinato",
-    "configurationConflictsWithInstructions": true,
-    "authorizationToPersist": "direct-human-confirmation-required-by-auto-review"
+    "effectiveProjectInstructions": "PAUSED, trigger umano manuale",
+    "configurationConflictsWithInstructions": false,
+    "resumeTrigger": "richiesta umana Riprendi Tony, non riattivazione automatica"
   },
   "policyPersistence": {
-    "status": "precedente auto-review non risolto, nessuna modifica istruzioni/scheduler in questo intake",
+    "status": "Pausa corrente coerente con AGENTS e fileconfig. Vecchia proposta ACTIVE superata, nessuna richiesta di riattivazione pendente.",
     "reviewRejectionRef": "docs/tony-feedback/register.md#ciclo-16-ottobre-1153-utc--riconciliazione-in-attesa-di-approvazione",
-    "doesNotBlockThisAuthorizedIntake": true
+    "pendingReactivationApproval": false
   },
   "outgoingDrafts": [],
   "archivedDrafts": [
@@ -199,6 +190,27 @@
     "externalRepositoryModified": false,
     "interchatCallbackSent": false,
     "rawPrivateAttachmentsIncluded": false,
-    "reportPublication": "main, intake540aa54; nessuna prova di adapter automatico o callback"
-  }
+    "reportPublication": "checkpoint versionato nella cronologiaGit; esito push in output/agent-heartbeat-state.json, nessun callback"
+  },
+  "executionState": "paused",
+  "previousAcquiredMessages": [
+    {
+      "sourceRange": "12:28–13:04",
+      "kind": "incoming-summary",
+      "delta": "Conferma richieste UX003/004 e GROUP/ADD DATA incerti; URL playlist recuperato, nessuna nuova regola certa"
+    },
+    {
+      "sourceId": "OUT-20261016-02",
+      "kind": "outgoing-reported",
+      "time": "14:14",
+      "version": "V3",
+      "scope": "Popup pubblicato, prossimo esame Excel, domanda calcolo Project Health",
+      "textSha256": "157d68ce93da1ad015a2a43235208bb652a17edd4ba879eea7e9d11ceaec550d",
+      "approval": "puntuale Marco riferita dalla coordinatrice; singolo invio concluso",
+      "delivery": "due spunte grigie riferite, delivered",
+      "readReceiptVerified": false,
+      "newReplyVisibleAt1414": false
+    }
+  ],
+  "messagesAcquiredThisCycle": []
 }

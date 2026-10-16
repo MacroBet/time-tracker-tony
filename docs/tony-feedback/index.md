@@ -25,6 +25,9 @@ spiegano il percorso, non sostituiscono lo stato. Nessuna dipendenza da una chat
 Fonti dashboard del 16 ottobre: [intake 12:24–12:31](intake-20261016-dashboard.md),
 con tre PNG salvati e due soltanto visualizzati da Show Chrome.
 
+**Stato operativo: progetto in pausa, heartbeat PAUSED confermato; ripresa solo
+su richiesta umana «Riprendi Tony».** Il checkpoint non è una nuova lettura WhatsApp.
+
 Ultimo intake: [dieci bolle acquisite fino14:14 e fresh check parziale](intake-20261016-1414.md).
 Project Health attende Tony; nuovo Excel è un'attesa tecnica distinta.
 [Report esecutore per la regia](regia-status.json), senza adapter automatico attestato.

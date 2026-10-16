@@ -16,12 +16,21 @@ Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
 Una domanda non autorizza sviluppo indiscriminato; «Riprendi Tony» ricostruisce
 il punto e porta avanti solo lavoro già chiaramente autorizzato.
 
-**Modalità corrente:** Marco ha richiesto il 16 ottobre la pausa del heartbeat
-**Agente progetto Tony**, ID `agente-progetto-tony`, ora **PAUSED**. Pausa eseguita
-tramite strumento ufficiale nella chat operativa e confermata qui in sola lettura
-nei metadati locali. Non riattivarlo o creare altre automazioni senza richiesta.
-Nessun polling o continuazione dopo il turno. La precedente modalità ACTIVE ogni
-15 minuti è storica e superata. Nuove chat manuali sono previste.
+**Modalità corrente: PROGETTO TONY IN PAUSA.** La coordinatrice riferisce l’ultima
+istruzione di Marco di fermare i controlli automatici mentre si attende il cliente.
+Pausa eseguita dalla coordinatrice tramite strumento ufficiale; verifica diretta
+qui del file `automation.toml`: **PAUSED**, aggiornato **2026-10-16T15:07:11.062000+02:00**.
+Nessuna modifica dell’automazione effettuata da questa chat. AGENTS e configurazione
+ora concordano; le vecchie modalità ACTIVE15/10min e la proposta non applicata
+sono storiche. La precedente domanda di conferma per riattivare è **superata dalla
+pausa**, non una decisione ancora richiesta. Non riattivare o creare scheduler.
+
+**Trigger di ripresa:** richiesta umana **«Riprendi Tony»** o incarico manuale
+esplicito di Marco; una ripresa manuale non riattiva il heartbeat. Fino ad allora
+nessun nuovo controllo WhatsApp, download o sviluppo. Questo checkpoint registra
+stato e lacune, non legge nuove fonti: copertura acquisita **14:14**, ultimo tentativo
+parziale **circa14:22**, periodo successivo non verificato. Project Health attende
+Tony; Excel ancora non acquisito. Nessuna bozza pendente o messaggio autorizzato.
 
 **Consegnato:** Gantt persistente, asset CSV/JSON, storico, review I/R/AC/A,
 Client Supplied e UX desktop/mobile. Protocollo persistente cc14c07 consegnato
@@ -148,6 +157,23 @@ attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi e
 Dopo ogni unità annotare file/prove/commit e passo successivo qui, senza riscrivere
 lo storico sottostante.
 
+## Checkpoint di pausa e ripresa manuale — 16 ottobre 2026
+
+Solo registrazione della pausa richiesta dalla coordinatrice e già coerente con
+le istruzioni di Marco in AGENTS. Verificato file automazione PAUSED in sola lettura;
+nessuna chiamata per modificarla, CUA, nuova acquisizione, download, codice o invio.
+Consegna applicativa f7ed997 e intake540aa54/88705f8 restano le ultime prove.
+Report regia riallineato a pausa e attese note, senza estendere copertura14:14;
+nessun adapter API o aggiornamento dashboard attestato qui. Vecchia proposta ACTIVE
+archiviata/non applicata; non chiedere di nuovo di approvarla mentre il progetto è
+in pausa. Prossima unità solo manuale: acquisire il contesto e poi l’incarico preciso.
+
+Controlli superati: coerenza pausa/copertura, JSON, 70 link locali e formato/diff;
+nessuna suite o deploy app richiesti. Il commit che contiene questo checkpoint
+e la verifica push sono identificati in `output/agent-heartbeat-state.json` e
+nella cronologia Git; il report regia ne rimanda allo stesso riferimento.
+next-env.d.ts preesistente preservato e fuori commit.
+
 ## Intake consolidato 14:14 e fresh check circa14:22 — 16 ottobre 2026
 
 Un blocco indipendente di sola lettura CUA delegato; root ha analizzato i materiali
@@ -170,10 +196,13 @@ Verifiche documentali superate: provenienza/byte/hash/ignore, contratto JSON,
 byte-identici a HEAD. **Intake540aa54bfa464da98e991b5e234c105e0a1a443f**,
 normale push main verificato contro la ref remota; chiusura successiva solo
 documentale. Nessun nuovo codice/test/deploy applicativo verificato: le prove
-app restano quelle di f7ed997. Prossimo lavoro utile: acquisire nuovo Excel e delta oltre14:14 quando
-CUA disponibile; valutare eventuale risposta Tony. Nessun invio autonomo.
+app restano quelle di f7ed997. Prossimo lavoro utile **solo dopo ripresa manuale**: acquisire nuovo Excel e delta
+oltre14:14 quando CUA disponibile; valutare eventuale risposta Tony. Nessun invio autonomo.
 
 ## Ciclo 16 ottobre 11:53 UTC — riconciliazione in attesa di approvazione
+
+Stato storico: proposta ACTIVE successivamente superata dalla pausa corrente;
+nessuna richiesta di riattivazione rimane aperta.
 
 Configurazione osservata: automazione esistente `agente-progetto-tony` ACTIVE ogni
 10 minuti, scheda ufficiale e file letti; nessuna modifica scheduler eseguita qui.

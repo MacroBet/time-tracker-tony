@@ -24,6 +24,8 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   **PAUSED** dal 16/10/2026 per scelta di Marco. Non riattivarlo né creare scheduler,
   polling, nuove automazioni o processi di continuazione dopo la chiusura del turno.
   Nuove chat manuali nella stessa cartella sono previste, senza legame a questa chat.
+  Progetto ora in pausa: «Riprendi Tony» autorizzato da Marco avvia una ripresa
+  manuale, non riattiva lo scheduler. Ignorare i vecchi prompt ACTIVE per l’avvio.
 - Prima degli edit: `git status --short`, controllare attività in corso ed evitare
   duplicazioni; eseguire `git fetch origin` e confrontare HEAD con origin/main.
   `git pull --ff-only` soltanto su main con checkout pulito e aggiornamento necessario.
