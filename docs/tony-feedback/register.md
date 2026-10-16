@@ -45,7 +45,7 @@ nel ciclo implementativo CX-010. Tre blocchi indipendenti integrati: modello/imp
 
 Fonte MSG-20261016-IDs: risposta riferita inizialmente da Marco senza ora; successivo
 resoconto Show Chrome la colloca alle **10:01 del 16 ottobre**. La domanda Schedule ID
-è risolta; non riproporla. Ultima consegna: **86 test unitari/PostgreSQL, 10 API**,
+è risolta; non riproporla. Prove CX-010: **86 test unitari/PostgreSQL, 10 API**,
 statici/build e desktop/mobile passati; app `77b74d7`, Vercel success; chiusura
 documentale `58a548f` su main. Prova autenticata esclusivamente locale.
 
@@ -110,7 +110,7 @@ verificato, budget API o prezzo universale. Primo pagamento storico non verifica
 | CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
 | DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
 | CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
-| UX-003 dashboard compatta           | implementata, verifiche in chiusura    | Pubblicare/verificare dashboard e pagina overdue; Project Health resta da definire                                  | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
+| UX-003 dashboard compatta           | consegnata (699d019)                   | Dashboard e overdue separati pubblicati; prossimo: chiarire ambito/regole Project Health                            | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
 | UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
 | DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
 | AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
@@ -137,8 +137,16 @@ clear, paginazione, progetto vuoto. Worker reindirizzato dalla nuova route. Ness
 overflow mobile; una correzione batch di compattezza fasi/contatori e una conferma
 finale, poi stop. Catture private `output/playwright/dashboard-20261016-*`. Log
 dev con warning preload CSS/HMR, nessun errore applicativo rilevato. Detector UI
-senza rilievi. Build finale dopo correzione UI passata. Commit/push e deploy
-ancora da verificare in chiusura; non confonderli con i test locali.
+senza rilievi. Build finale dopo correzione UI passata.
+
+**Commit applicativo 699d019f7320db72d8b5e7f5d562a8019c93e17d**, normale push main
+verificato contro la ref remota. **Deploy Vercel success / Deployment has completed**
+verificato il 16 ottobre alle **12:50 Europe/Rome** (10:50 UTC):
+[deploy del commit](https://vercel.com/macrobets-projects/time-tracker-tony/Anfra3S7SpLqeU9ZB3Xd39ghRYVj).
+Nuova route `/overdue` raggiungibile anonimamente, HTTP 200 con redirect Next al
+login; nessun dato progetto esposto. Prove autenticate soltanto nella demo locale,
+nessuna verifica autenticata o scrittura su Production. La chiusura documentale
+successiva non cambia il codice applicativo.
 
 Nessun dato cliente importato, migrazione, DB remoto, chiamata provider o messaggio
 esterno. Heartbeat PAUSED; nessun riavvio automatico. `next-env.d.ts` preesistente
