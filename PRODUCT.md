@@ -41,10 +41,13 @@ are reference material, not a replacement app. Raw attachments remain private.
 
 ## Evidence on Hand
 
-Thirteen supplied files in docs/tony-feedback/attachments, with a manifest; existing
+Fourteen supplied files in docs/tony-feedback/attachments, with a manifest; existing
 application and commissioning tests. UI must use real authorized project records;
 synthetic demo mode stays visibly labelled and isolated from remote data. Local
 showcase fixtures are opt-in and must never seed a remote environment implicitly.
+The latest asset example has 1,354 candidate rows and repeated names. Tony requests
+separate internal/client/programme references and named groups for IST, phase, area
+and floor. Intake and unresolved mappings: docs/tony-feedback/intake-20261016.md.
 
 ## Product Principles
 

@@ -1,7 +1,8 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: 15 ottobre 2026. Lettura diretta fino alle **19:20**;
-aggiornamenti riferiti dalla chat vocale fino alle **20:23**, più la risposta successiva senza ora rilevata.
+Ultimo aggiornamento: 16 ottobre 2026. Lettura diretta fino alle **20:56 del
+15 ottobre**, inclusi Excel asset e richieste successive. I precedenti
+resoconti vocali restano distinti dalla nuova lettura diretta.
 Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
 
 ## Stato corrente per ripresa
@@ -22,13 +23,17 @@ e UI desktop/mobile superati. **Deploy Copilot Vercel success** verificato il
 deploy UX 108042a già riuscito. Rileggere git per HEAD corrente. Modifica
 next-env.d.ts preesistente preservata e non committata.
 
-**Copertura Tony:** lettura diretta root fino 19:20; resoconti verificati dalla
-chat vocale fino a saluto 20:23 letto e risposta successiva senza ora rilevata.
-13 allegati locali nel manifest. Lista asset di esempio offerta alle 20:21, non
-ancora ricevuta o acquisita: non inventarla. Invii sono loggati sotto; non inviare
-più nulla, non alterare bozze o messaggi. Riprendere con sovrapposizione 20:19–20:23
-quando la sessione lo consente. Tony sarà via 10 giorni dalla prossima settimana,
-lavorando da remoto: resoconto, non calendario o consegna concordati.
+**Copertura Tony:** lettura diretta root fino 20:56 del 15 ottobre, verificata
+il 16 ottobre nella chat già aperta con sovrapposizione da 20:14. Nessun messaggio
+del 16 ottobre visibile in fondo alla chat in quel momento. **14 allegati** nel
+manifest: lista di esempio acquisita come ATT-014 (20:41), 1.354 righe candidate,
+nomi ripetuti e campi richiesti ancora assenti. [Analisi e mappatura](intake-20261016.md).
+Marco ha richiesto una risposta e ribadito la conferma del testo prima dell'invio:
+[bozza](drafts.md) successivamente inserita nel composer su richiesta esplicita
+di Marco, testo completo verificato; nessun invio, click Invia lasciato a Marco.
+Riprendere con sovrapposizione 20:41–20:56 quando desktop/sessione lo consentono.
+Tony sarà via 10 giorni dalla prossima settimana, lavorando da remoto: resoconto,
+non calendario o consegna concordati.
 
 **Gate DB:** Production dichiara mode neon, ma endpoint/project/branch effettivi
 non identificati. Solo host/database locali estratti; nessuna query SQL. Accessi
@@ -44,16 +49,18 @@ nessuna chiamata live/a pagamento. Copilot onesto "da configurare"; mock solo
 nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattivato.
 I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
 
-| Priorità / ID                       | Stato                                | Prossima unità concreta                                                                                                      | Accettazione / gate                                                                                                    |
-| ----------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/heartbeat        | completata (cc14c07)                 | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                                      | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                                     |
-| AI-001 copilot utile senza live API | completata (0f80a4e)                 | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003          | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                                       |
-| AI-002 proposte controllabili       | completata (0f80a4e)                 | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro                    | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato                         |
-| CX-009 tag/gruppi/check sheet       | da definire nel dettaglio            | Valutare relazione task/check sheet per asset tag o gruppo, usando gerarchia esistente; acquisire la lista offerta se arriva | Non fingere che uno stesso task copra già un gruppo; chiarire identità, membri e stato condiviso prima di nuove regole |
-| UX-002 chiarezza continua           | pronta                               | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                         | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                                     |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                         | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                                         |
-| AI-003 attivazione provider         | in attesa di Marco                   | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                            | Nessuna spesa implicita; prima live call solo dopo completamento del gate                                              |
-| AI-004 autopilot                    | futuro                               | Definire dashboard, regole, ambiti, audit e approvazioni                                                                     | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                                       |
+| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                                                |
+| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| OPS-004 protocollo/heartbeat        | completata (cc14c07)                   | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                             | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                                 |
+| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                                   |
+| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato                     |
+| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                                  |
+| DATA-002 preflight Excel asset      | pronta, solo locale                    | Estrarre Simplified list con provenienza, esclusione note/righe vuote, duplicati e campi mancanti; nessun DB        | 1.354 righe candidate riconciliate, niente deduplica per nome o payload importabile con identità/livelli inventati |
+| CX-010 riferimenti asset esterni    | analisi pronta, mapping da chiarire    | Separare ID interno, cliente e programma; chiarire Schedule ID nella risposta proposta                              | Reimport stabile senza duplicati e senza rinominare ID già collegati a task                                        |
+| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                                 |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                                     |
+| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                                          |
+| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                                   |
 
 Quando una voce è bloccata, scegliere la prossima pronta. Dopo ogni unità annotare
 file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostante.
@@ -64,7 +71,7 @@ file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostant
   Letti i messaggi di progetto del 13–15 ottobre fino alle 19:20 del 15 ottobre;
   consultato anche il contesto login del 12 ottobre. Lo storico precedente non è
   stato riletto integralmente. Contenuti estranei al progetto esclusi dal registro.
-- Salvati 13 allegati: dimensioni, SHA-256 e limiti di analisi nel
+- Salvati 14 allegati: dimensioni, SHA-256 e limiti di analisi nel
   [manifest](attachments/manifest.md). Analisi dello ZIP in [analysis.md](analysis.md).
 - Contesto già letto nel repository: `AGENTS.md`, `README.md`,
   `docs/tony-development-plan.md`, `docs/architecture.md`, `docs/use-cases.md`,
@@ -182,6 +189,44 @@ esplicitato nell'interfaccia; non è una sincronizzazione P6.
    non dimostra che il sito abbia completato il rilascio.
 
 ## Esito delle sessioni
+
+### 16 ottobre 2026 — nuovi messaggi ed Excel asset
+
+Marco ha chiesto elaborazione e risposta WhatsApp e ha ribadito la conferma
+personale dell'invio. Lettura diretta della chat Tony già aperta, senza aprire
+chat estranee, fino al messaggio 20:56 del 15 ottobre. Acquisiti i nuovi
+MSG-20261015-2041/2054a/2054b/2056 e ATT-014. Dettagli e mappatura in
+[intake-20261016.md](intake-20261016.md).
+
+Originale privato salvato senza risalvarlo, 1.417.083 byte, SHA-256 verificato;
+ignorato da Git. Lettura con Python bundled/openpyxl e confronto del codice
+delegato in sola lettura, integrazione centrale. Quattro fogli, 1.354 righe
+candidate e 1.164 nomi distinti; 179 nomi ripetuti, nessuna riga candidata
+completamente identica. Escluse nota libera e righe vuote/template. Le cache
+non dimostrano il ricalcolo; nessuna macro o collegamento esterno eseguiti.
+
+Chiarite le differenze tra fonte e modello: ID interno separato dai riferimenti
+cliente/programma, FR distinto da Design phase numerica, gruppi nominati distinti
+dalla gerarchia parentAssetId. Nessuna deduplica per nome, livello dedotto o
+propagazione di stato. Nuove unità DATA-002/CX-010 e CX-009 aggiornate.
+
+Aggiornati PRODUCT, manifest, registro e bozza brevissima in drafts.md. Non
+modificata l'app e non importati dati in FieldTrack. Nessuna query/scrittura DB
+remota, chiamata AI o nuova spesa. Composer lasciato vuoto, nessun messaggio
+inviato. La bozza non dichiara funzioni nuove implementate. next-env.d.ts
+preesistente preservato. Test applicativi non ripetuti per questa unità
+documentale; controlli pertinenti: hash/ignore originale, coerenza conteggi e
+riferimenti, formato documenti e diff. Commit/push non eseguiti in questa unità.
+
+**Aggiornamento successivo della stessa sessione:** Marco ha chiesto di scrivere
+la bozza su WhatsApp per inviarla personalmente. Inserito il solo testo di
+drafts.md nella chat Tony McIntyre già aperta. Testo integrale verificato nel
+composer, pulsante Send disponibile, nessun click Invia e nessun tasto Return.
+
+**Prossimo passo:** invio manuale di Marco della bozza in WhatsApp. Lavoro tecnico
+indipendente pronto: preflight XLSX soltanto locale con provenienza e anomalie,
+senza payload importabile o DB. Chiarimento da Tony: Schedule ID di programma o
+Activity ID della singola attività. Regole schede di gruppo ancora aperte.
 
 ### Aggiornamento acquisizione e comunicazione
 

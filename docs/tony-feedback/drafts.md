@@ -6,6 +6,19 @@ nel composer, lasciando a lui il click Invia. Nessun invio autonomo.
 Gli invii delle 19:12 e 19:23 sono registrati nel registro e nell'intake; questa
 bozza non è stata inviata.
 
+## 16 ottobre — risposta all'esempio asset, da confermare
+
+Marco ha chiesto una risposta e ribadito che conferma lui l'invio. Fonte:
+MSG-20261015-2041/2054a/2054b; analisi in intake-20261016.md. Su successiva
+richiesta esplicita di Marco, il testo seguente è stato inserito nel composer
+della chat Tony McIntyre e verificato integralmente. Non inviato: Invia a Marco.
+
+> Thanks Tony, I’ve reviewed the asset list and noted the separate IDs and named groups for IST, phase, area and floor. By schedule ID, do you mean the programme ID or an individual activity ID?
+
+Non dichiara implementazione, import o rilascio delle nuove funzioni. L'unità
+ha acquisito e analizzato l'allegato; i duplicati e le regole di gruppo restano
+nel registro tecnico. Marco ha chiesto di lasciargli l'invio manuale.
+
 ## Chiarimento archiviato — non inviare ora
 
 Fonte: MSG-20261015-1913/1914; manca ancora la risposta sui permessi.
