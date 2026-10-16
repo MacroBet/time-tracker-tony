@@ -65,6 +65,13 @@ GROUP and ADD DATA semantics remain undefined. The new ADD PROJECT.xlsx was not
 acquired; the old ATT-007 is not a substitute. The Microsoft Project playlist
 URL/content remains unverified. Source: docs/tony-feedback/intake-20261016-asset-popup.md.
 
+Evidence reconciliation through 14:14 on 16 October confirms the existing requests
+and recovers the exact Microsoft Project playlist URL; lesson contents remain
+unverified. Marco-approved outgoing V3 was reported delivered, with no read receipt
+attested. Project Health calculation now awaits Tony’s reply. The new Excel and
+GROUP/ADD DATA remain unresolved; acquisition after 14:14 is not verified.
+Source: docs/tony-feedback/intake-20261016-1414.md.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.

@@ -1,12 +1,35 @@
-# Bozze archiviate e regola per i futuri invii
+# Bozze versionate e regola per i futuri invii
 
 Ogni nuovo messaggio richiede conferma esplicita di Marco sul testo concreto.
 Le bozze restano in Codex salvo richiesta esplicita di Marco di preparare il testo
 nel composer, lasciando a lui il click Invia. Nessun invio autonomo.
-Nessuna bozza pendente da inviare adesso. Gli invii singoli approvati sono conclusi.
-Stato aggiornato nel [registro](register.md#stato-corrente-per-ripresa): resoconto Show Chrome
-del 16 ottobre, invio unico 12:10 della consegna CX-010 richiesto da Marco.
-Il composer attuale non è stato ispezionato da questa unità; le note sotto sono storiche.
+**Nessuna bozza pendente da approvare ora.** La proposta localev2 e la v1 della
+regia sono superate dalla **V3 inviata dalla coordinatrice alle14:14 del16ott**,
+con approvazione puntuale di Marco riferita. Non riutilizzarle né ripetere l'invio.
+Il composer non è stato modificato dal responsabile in questa unità.
+
+## 16 ottobre — V3 consegnata, attesa risposta Tony
+
+**OUT-20261016-02**, destinatario Tony McIntyre, canale WhatsApp. Ambito riferito:
+comunicare popup pubblicato, prossimo esame del nuovo Excel e domanda sul calcolo
+Project Health. Approvazione umana e unico invio riferiti dalla coordinatrice;
+root non ha effettuato l'invio. Una bolla14:14 nella CAP-001 privata, hash del testo
+UTF-8 `157d68ce93da1ad015a2a43235208bb652a17edd4ba879eea7e9d11ceaec550d`.
+Nessuna trascrizione raw copiata qui; [provenienza e limiti](intake-20261016-1414.md).
+Due spunte grigie nella fonte: **consegnato, non letto attestato**. Nessuna risposta
+visibile alla verifica14:14. Fresh check delegato circa14:22 conferma solo la riga
+lista Delivered; corpo dopo14:14 non verificato. Attendere Tony sulla formula,
+senza inventarla o chiedere a Marco una decisione già affidata al cliente.
+
+| Versione             | Stato                                                    | Regola                                                                                              |
+| -------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| v1 · regia           | superata                                                 | Bozza italiana locale precedente, non riutilizzare.                                                 |
+| v2 · responsabile    | superata, mai approvata/inviata qui                      | Proposta precedente conservata solo nella patch privata di revisione; nessuna approvazione attuale. |
+| V3 · OUT-20261016-02 | inviata una volta dalla coordinatrice; consegna riferita | Autorizzazione singola conclusa, nessun nuovo invio o composer.                                     |
+
+Ogni futura bozza richiede testo/versione/destinatario/canale/ambito correnti e
+conferma puntuale; nuove fonti possono cambiare il contenuto. Nessuna risposta
+preparata per Tony in questo ciclo di sola acquisizione.
 
 ## 16 ottobre — domanda sugli ID, archiviata e risolta
 

@@ -1,12 +1,11 @@
 # Registro operativo — Tony
 
 Ultimo aggiornamento: 16 ottobre 2026. **Avvio solo manuale, heartbeat PAUSED.**
-Fonti dirette della precedente acquisizione fino alle **20:56 del 15 ottobre**;
-resoconto successivo Show Chrome: Tony «Both required» 16 ottobre 10:01 e invio
-approvato unico 12:10, otto nuovi messaggi Tony 12:24–12:31 e successivo intake
-12:41–13:04 (popup asset/tag, nuovo Excel e riferimento Microsoft Project).
-Questi eventi sono riferiti da Show Chrome, non letti qui sul desktop.
-Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
+Copertura acquisita successiva: **10 bolle visibili 12:28–14:14 del 16 ottobre**,
+fonte CUA della coordinatrice, JSON privato letto e riconciliato qui. Ultimo incoming
+nella fonte13:04; unico outgoing V3 delle14:14 riferito consegnato, non letto attestato.
+Fresh check delegato circa14:22 parziale: **oltre14:14 non verificato**. Orari fonte
+Europe/Rome dichiarati, non prova di lettura root dell'intera conversazione.
 
 ## Stato corrente per ripresa
 
@@ -50,22 +49,29 @@ resoconto Show Chrome la colloca alle **10:01 del 16 ottobre**. La domanda Sched
 statici/build e desktop/mobile passati; app `77b74d7`, Vercel success; chiusura
 documentale `58a548f` su main. Prova autenticata esclusivamente locale.
 
-**Copertura Tony e comunicazioni:** 17 allegati privati verificati nel [manifest](attachments/manifest.md);
-Excel ATT-014 analizzato, 1.354 righe candidate, non importato automaticamente.
-[Acquisizione diretta precedente](intake-20261016.md): fino alle 20:56 del 15 ottobre.
-**Resoconto successivo della chat operativa (Show Chrome), non nuova lettura qui:**
-ultimo Tony visibile «Both required», **16 ottobre 10:01**, in risposta agli ID;
-**OUT-20261016-01, 12:10**, invio unico richiesto esplicitamente da Marco e verificato:
-«Done Tony, both IDs are in now, programme and activity, separate and linked.
-Tested and deployed.» Nessuna ricevuta/lettura successiva attestata da questo resoconto.
-L'autorizzazione di quel singolo invio è conclusa. Nessun'altra bozza attuale o
-messaggio da inviare; domanda ID archiviata, stato composer attuale non ispezionato.
-Ogni invio futuro richiede approvazione puntuale sul testo concreto; composer solo
-se chiesto. Nessun accesso desktop in questa unità. Copertura successiva riferita fino alle 13:04, dettagli sotto;
-per una futura lettura usare quella copertura, senza fingere intervalli letti. Non ripetere
-controlli desktop già rifiutati dall'auto-review né interferire con l'utente.
-Tony sarà via 10 giorni dalla prossima settimana lavorando da remoto: resoconto,
-non calendario o consegna concordati.
+**Copertura Tony e comunicazioni:** 17 allegati privati nel [manifest](attachments/manifest.md);
+Excel ATT-014 analizzato, 1.354 righe candidate, non importato. Nuova **CAP-001**:
+trascrizione privata della coordinatrice di10bolle12:28–14:14, 2.963byte e SHA
+verificati; non è un nuovo allegato ATT. [Intake e limiti](intake-20261016-1414.md).
+Le richieste fino13:04 confermano UX-003/004; nessuna nuova formula o regola gruppi.
+
+**OUT-20261016-02, V3, 14:14:** coordinatrice riferisce approvazione puntuale di Marco
+e un unico invio relativo al popup, al prossimo esame Excel e alla domanda sul
+calcolo **Project Health**. Bolla presente nella trascrizione; due spunte grigie
+riferite = **consegnato, non letto attestato**. Nessuna risposta Tony visibile nel
+controllo della fonte14:14. **Project Health attende Tony**, non una formula da Marco.
+Invio12:10 OUT-20261016-01 precedente e concluso. Le bozze v1/v2 sono superate dalla
+V3 inviata; nessuna bozza attuale da approvare/ripetere. [Stato versioni](drafts.md).
+
+**Ultimo controllo reale:** lettore delegato `tony_delta`, circa14:22 Europe/Rome.
+Lista chat con V3 delle14:14 Delivered; corpo soltanto due bolle già note12:24/12:28.
+Unico scroll fallito **noWindowsAvailable -10005**, nessun retry/focus/SaveAs.
+Dopo14:14 resta non verificato: non dichiarare zero nuovi messaggi. Nuovo Excel12:41
+non raggiunto/scaricato, nessun nuovo file. Nessun invio/composer in questa unità.
+Prossimo eventuale controllo: piccola sovrapposizione a14:14 e solo delta successivo,
+Excel12:41 distinto; sessione disponibile e tentativo bounded. Il blocco tecnico
+CUA è separato dalla risposta cliente attesa. Nessun callback interchat; report
+file leggibile dalla coordinatrice, integrazione API regia ancora non attestata.
 
 **Dashboard UX-003:** nuova richiesta di Marco «Tony continua a gestirlo»,
 «prendere tutti i messaggi» e «porta avanti tutto», trasmessa dalla chat operativa.
@@ -76,7 +82,7 @@ e drill-down; overdue separato in `/overdue` con ricerca, priorità e paginazion
 esistenti preservati. Completamento workflow separato da approvazione tag; programma
 precede deadline task, oggi non late, N/A esclusi dalla percentuale. Nessun mapping
 di fase o formula health inventati. Project Health resta da definire (ambito e
-On/At/Off Track), esplicitamente indicato nella UI.
+On/At/Off Track), esplicitamente indicato nella UI. Domanda inviata14:14, attesa Tony.
 
 **Copertura visuale dashboard riferita:** Show Chrome ha letto otto messaggi nuovi
 dalle **12:24 alle 12:31 del 16 ottobre** e visto cinque screenshot. Qui ispezionati
@@ -96,9 +102,11 @@ La modifica degli asset esistenti resta inline. Nessuna nuova semantica per GROU
 o ADD DATA; nessuna equivalenza gruppo/padre. Nuovo `ADD PROJECT.xlsx` delle 12:41
 **non scaricato/analizzato**, un tentativo fallito riferito, nessun dialogo pendente;
 ATT-007 resta l'originale del 14 ottobre e il totale resta 17. Playlist Microsoft
-Project delle 13:02: URL e contenuti non verificati, nessuna replica integrale dedotta.
-Nessun accesso WhatsApp, composer o invio in questa unità; nessun nuovo tentativo
-sul desktop occupato. Prossima eventuale lettura: sovrapposizione **12:41–13:04**.
+Project delle13:02: URL ora recuperato nell’intake14:14, lezioni non leggibili dal
+web; nessuna replica integrale dedotta.
+Nella consegna UX-004 nessun accesso WhatsApp o invio; copertura successiva e
+controllo parziale ora aggiornati sopra. La fonte14:14 ha recuperato l’URL playlist,
+contenuti delle lezioni ancora non verificati.
 
 **Sincronizzazione prima del lavoro:** nuova regola esplicita di Marco acquisita
 in AGENTS/README e L-13. `git fetch origin` riuscito, HEAD/origin/main **0/0**
@@ -128,7 +136,7 @@ verificato, budget API o prezzo universale. Primo pagamento storico non verifica
 | CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
 | DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
 | CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
-| UX-003 dashboard compatta           | consegnata (699d019)                   | Dashboard e overdue separati pubblicati; prossimo: chiarire ambito/regole Project Health                            | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
+| UX-003 dashboard compatta           | consegnata (699d019)                   | Dashboard e overdue pubblicati; Project Health attende risposta Tony alla domanda14:14                              | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
 | UX-004 popup aggiunta asset/tag     | consegnata (f7ed997)                   | Nuovo asset con tag/Project ID/Phase e anteprima nel popup; conservare edit inline e permessi                       | 91 unitari, 10 API, statici/build e desktop/mobile; GROUP/ADD DATA non dedotti                    |
 | UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
 | DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
@@ -139,6 +147,56 @@ Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossim
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
 Dopo ogni unità annotare file/prove/commit e passo successivo qui, senza riscrivere
 lo storico sottostante.
+
+## Intake consolidato 14:14 e fresh check circa14:22 — 16 ottobre 2026
+
+Un blocco indipendente di sola lettura CUA delegato; root ha analizzato i materiali
+già acquisiti, recuperato/verificato l'URL playlist e distinto richiesta esplicita,
+interpretazioni e attese nel [nuovo intake](intake-20261016-1414.md). Nessuna nuova
+funzione chiaramente specificata rispetto alle consegne già concluse: non ripetute
+implementazioni o suite applicative. Richiesta pagina progetto simile al riferimento
+esplicita, comportamento/percorso ancora indefiniti; playlist leggibile solo come
+titolo/footer, nessuna lezione o video analizzato.
+
+Fetch riuscito, HEAD/origin/main **0/0** a96f03f9 all’avvio; checkout con modifiche
+locali precedenti e next-env.d.ts preservati, nessun pull/reset/stash. Nuovi dati
+solo documentali: copertura14:14, invio V3 riferito, bozze superate, attesa Tony vs
+limite tecnico CUA, metadati CAP-001. Nessuna scrittura DB, provider o spesa.
+AGENTS/README e scheduler non modificati: il precedente rifiuto sulla persistenza
+ACTIVE è distinto dall’intake già autorizzato e non viene aggirato.
+
+Verifiche documentali superate: provenienza/byte/hash/ignore, contratto JSON,
+63 link locali, formato e diff. Raw V3 non copiato nei documenti; AGENTS/README
+byte-identici a HEAD. Commit/push di questo solo intake in preparazione, nessun
+nuovo deploy app attestato. Prossimo lavoro utile: acquisire nuovo Excel e delta oltre14:14 quando
+CUA disponibile; valutare eventuale risposta Tony. Nessun invio autonomo.
+
+## Ciclo 16 ottobre 11:53 UTC — riconciliazione in attesa di approvazione
+
+Configurazione osservata: automazione esistente `agente-progetto-tony` ACTIVE ogni
+10 minuti, scheda ufficiale e file letti; nessuna modifica scheduler eseguita qui.
+Le istruzioni persistenti restano quelle precedenti PAUSED: **due rifiuti auto-review**
+hanno bloccato il commit che proponeva ACTIVE. Anche la verifica della richiesta
+umana riferita via read_thread della coordinatrice è stata rifiutata come prova
+non affidabile per sovrascrivere AGENTS. Serve conferma diretta di Marco in questa
+chat prima di applicare/pubblicare quella modifica. Nessun workaround, commit o
+push di questo ciclo. Proposta completa conservata localmente in
+`output/review/tony-monitoring-proposal-20261016.patch`, non versionata né operativa.
+
+Lettura CUA diretta parziale della sola chat Tony: lista ultimo messaggio **13:04**,
+corpo con allegati già noti12:24/12:28; scroll successivo fallito **noWindowsAvailable
+(-10005)**, nessun retry. Copertura completa resta13:04 riferita dalla coordinatrice;
+intervallo successivo **non verificato**, non zero nuovi. Allegati nuovi zero,
+totale17; nuovo Excel non acquisito. Nessun invio o modifica del composer.
+
+[Report locale per la regia](regia-status.json) nello schema esecutore letto da Mea:
+fonti e lacune, prove precedenti distinte, proposta inglese popupv2 da riconciliare
+con la v1 della dashboard. Non approvata/inviata; nessun adapter automatico o
+aggiornamento TV attestati. Nessun file Mea modificato o callback interchat.
+JSON/contratto e binding verificati, link/formato/diff passati sulla proposta;
+nessun codice, test applicativo, DB remoto, provider live o nuovo deploy.
+Alla chiusura di quel ciclo note e report erano locali. La proposta ACTIVE nella
+patch resta non applicata: il nuovo intake14:14 è un’attività distinta.
 
 ## Popup asset e tag UX-004 — 16 ottobre 2026
 

@@ -13,7 +13,7 @@ spiegano il percorso, non sostituiscono lo stato. Nessuna dipendenza da una chat
 | Correzioni e preferenze da applicare, con ambito e prove             | [Registro degli insegnamenti](working-lessons.md)                                                                                                                                                                                                          |
 | Obiettivo prodotto, utenti, invarianti                               | [PRODUCT](../../PRODUCT.md)                                                                                                                                                                                                                                |
 | Uso dell'app, quattro percorsi e setup tecnico                       | [README principale](../../README.md), [casi d'uso](../use-cases.md), [architettura](../architecture.md)                                                                                                                                                    |
-| Requisiti Tony e cosa mostrano davvero ZIP/Excel                     | [Prima analisi e delta](analysis.md), [intake 19:12](intake-1912.md), [intake Excel e ID 16 ottobre](intake-20261016.md), [popup asset 12:41–13:04](intake-20261016-asset-popup.md)                                                                        |
+| Requisiti Tony e cosa mostrano davvero ZIP/Excel                     | [Prima analisi e delta](analysis.md), [intake 19:12](intake-1912.md), [intake Excel e ID 16 ottobre](intake-20261016.md), [popup asset 12:41–13:04](intake-20261016-asset-popup.md), [riconciliazione fino14:14](intake-20261016-1414.md)                  |
 | Allegati: nomi, provenienza, dimensioni, hash, limiti                | [Manifest degli originali privati](attachments/manifest.md)                                                                                                                                                                                                |
 | Programme ID / Activity ID / Client asset ID, CSV/JSON               | [Contratto identificativi](../programme-identifiers.md)                                                                                                                                                                                                    |
 | Preflight Excel locale, anomalie e dati non importabili              | [DATA-002](asset-preflight.md)                                                                                                                                                                                                                             |
@@ -24,6 +24,10 @@ spiegano il percorso, non sostituiscono lo stato. Nessuna dipendenza da una chat
 
 Fonti dashboard del 16 ottobre: [intake 12:24–12:31](intake-20261016-dashboard.md),
 con tre PNG salvati e due soltanto visualizzati da Show Chrome.
+
+Ultimo intake: [dieci bolle acquisite fino14:14 e fresh check parziale](intake-20261016-1414.md).
+Project Health attende Tony; nuovo Excel è un'attesa tecnica distinta.
+[Report esecutore per la regia](regia-status.json), senza adapter automatico attestato.
 
 ## Orientamento al codice, solo quando serve
 

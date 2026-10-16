@@ -46,3 +46,16 @@ Il locale `2026-10-14_1529_ADD_PROJECT.xlsx` è soltanto **ATT-007** del
 senza aprire l'Excel. Non dimostra l'acquisizione del nuovo invio e non va
 reattribuito. Il totale resta 17 originali verificati. Dettagli e interpretazioni
 separate in [intake popup asset](../intake-20261016-asset-popup.md).
+
+## Evidenza di conversazione CAP-001 — 16 ottobre 14:14
+
+Trascrizione privata fornita dalla coordinatrice, riferita a dieci bolle visibili
+12:28–14:14 acquisite via computer use. Root ha verificato copia, JSON e impronta:
+`2026-10-16_1414_conversation-cua.json`, **2.963 byte**, SHA-256
+`a8b38809624a1e439056020054c8a127ed9f5d702e784163082b34294edab636`.
+File ignorato da Git, nessun raw incorporato nei documenti. **CAP-001 non è un
+allegato ricevuto da Tony**: totale ATT invariato a17, nuovo Excel ancora mancante.
+Etichette di file nella trascrizione non provano acquisizione o analisi.
+[Analisi, playlist e copertura](../intake-20261016-1414.md). Fresh check del lettore
+circa14:22 interrotto al primo noWindowsAvailable: oltre14:14 non verificato,
+allegato12:41 non raggiunto, nessun nuovo file o retry.
