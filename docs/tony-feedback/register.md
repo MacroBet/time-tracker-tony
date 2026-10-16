@@ -167,8 +167,10 @@ ACTIVE è distinto dall’intake già autorizzato e non viene aggirato.
 
 Verifiche documentali superate: provenienza/byte/hash/ignore, contratto JSON,
 63 link locali, formato e diff. Raw V3 non copiato nei documenti; AGENTS/README
-byte-identici a HEAD. Commit/push di questo solo intake in preparazione, nessun
-nuovo deploy app attestato. Prossimo lavoro utile: acquisire nuovo Excel e delta oltre14:14 quando
+byte-identici a HEAD. **Intake540aa54bfa464da98e991b5e234c105e0a1a443f**,
+normale push main verificato contro la ref remota; chiusura successiva solo
+documentale. Nessun nuovo codice/test/deploy applicativo verificato: le prove
+app restano quelle di f7ed997. Prossimo lavoro utile: acquisire nuovo Excel e delta oltre14:14 quando
 CUA disponibile; valutare eventuale risposta Tony. Nessun invio autonomo.
 
 ## Ciclo 16 ottobre 11:53 UTC — riconciliazione in attesa di approvazione

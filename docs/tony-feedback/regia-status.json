@@ -118,8 +118,11 @@
     "gitFetch": "success",
     "headVsOriginBeforeEdits": "0/0",
     "pull": "non necessario, checkout modificato preservato",
-    "currentDocumentationCommit": "vedere git log/output/agent-heartbeat-state.json alla chiusura",
-    "validation": "documenti e JSON soltanto; nessun test app ripetuto o deploy nuovo"
+    "currentDocumentationCommit": "540aa54bfa464da98e991b5e234c105e0a1a443f",
+    "validation": "Byte/hash/ignore, JSON/contratto, 63 link locali, formato/diff passati; nessun test app ripetuto",
+    "pushThisCycle": true,
+    "pushVerifiedAgainstRemoteRef": true,
+    "newApplicationDeploymentVerified": false
   },
   "blockers": [
     {
@@ -195,6 +198,7 @@
     "apiContractStatus": "riferito ancora in lavorazione, nessuna chiamata API eseguita",
     "externalRepositoryModified": false,
     "interchatCallbackSent": false,
-    "rawPrivateAttachmentsIncluded": false
+    "rawPrivateAttachmentsIncluded": false,
+    "reportPublication": "main, intake540aa54; nessuna prova di adapter automatico o callback"
   }
 }
