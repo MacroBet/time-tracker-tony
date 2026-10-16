@@ -89,9 +89,9 @@ registrata nel nuovo intake seguente; i due originali mancanti restano tali.
 
 **Popup asset/tag UX-004:** Marco ha autorizzato la richiesta chiara riferita da
 Show Chrome fino alle **13:04 del 16 ottobre**: popup nella creazione asset con tag,
-Asset name/ID, Project ID in sola lettura e Phase esistente. Implementato e
-verificato localmente; commit/push/deploy in chiusura, non ancora attestati per
-questa versione. [Fonti, interpretazioni e limiti](intake-20261016-asset-popup.md).
+Asset name/ID, Project ID in sola lettura e Phase esistente. **Consegnato in
+f7ed997**, normale push main verificato e **Vercel success** il 16 ottobre alle
+**13:30 Europe/Rome** (11:30 UTC); prove autenticate soltanto locali. [Fonti, interpretazioni e limiti](intake-20261016-asset-popup.md).
 La modifica degli asset esistenti resta inline. Nessuna nuova semantica per GROUP
 o ADD DATA; nessuna equivalenza gruppo/padre. Nuovo `ADD PROJECT.xlsx` delle 12:41
 **non scaricato/analizzato**, un tentativo fallito riferito, nessun dialogo pendente;
@@ -120,20 +120,20 @@ nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattiva
 I 1.000 € aggiuntivi sono compenso commerciale accettato («No probs»), non pagamento
 verificato, budget API o prezzo universale. Primo pagamento storico non verificato con certezza.
 
-| Priorità / ID                       | Stato                                    | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
-| ----------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED       | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
-| AI-001 copilot utile senza live API | completata (0f80a4e)                     | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
-| AI-002 proposte controllabili       | completata (0f80a4e)                     | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
-| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire   | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
-| DATA-002 preflight Excel asset      | completata, solo locale                  | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
-| CX-010 riferimenti asset esterni    | completata nel perimetro                 | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
-| UX-003 dashboard compatta           | consegnata (699d019)                     | Dashboard e overdue separati pubblicati; prossimo: chiarire ambito/regole Project Health                            | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
-| UX-004 popup aggiunta asset/tag     | verificata localmente, chiusura in corso | Nuovo asset con tag/Project ID/Phase e anteprima nel popup; conservare edit inline e permessi                       | 91 unitari, 10 API, statici/build e desktop/mobile; GROUP/ADD DATA non dedotti                    |
-| UX-002 chiarezza continua           | pronta                                   | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa     | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
-| AI-003 attivazione provider         | in attesa di Marco                       | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
-| AI-004 autopilot                    | futuro                                   | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
+| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
+| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED     | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
+| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
+| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
+| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
+| DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
+| CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
+| UX-003 dashboard compatta           | consegnata (699d019)                   | Dashboard e overdue separati pubblicati; prossimo: chiarire ambito/regole Project Health                            | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
+| UX-004 popup aggiunta asset/tag     | consegnata (f7ed997)                   | Nuovo asset con tag/Project ID/Phase e anteprima nel popup; conservare edit inline e permessi                       | 91 unitari, 10 API, statici/build e desktop/mobile; GROUP/ADD DATA non dedotti                    |
+| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
+| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
+| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
 
 Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossima
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
@@ -173,8 +173,14 @@ difetto da correggere: niente ulteriore giro di polish. Catture private
 chiusa/non più aperta, desktop utente non coinvolto. next-env.d.ts originale
 ripristinato dalla copia preesistente, escluso dalla consegna.
 
-Commit/push/deploy di UX-004 in chiusura; le verifiche autenticate riguardano
-esclusivamente la demo locale. Non attestare il deploy prima del controllo Vercel.
+**Commit applicativo f7ed9977fca32d4ebf6834453016bc4a1f19f3a7**, normale push main
+verificato contro la ref remota. **Vercel success / Deployment has completed**
+verificato il 16 ottobre alle **13:30 Europe/Rome** (11:30 UTC):
+[deploy del commit](https://vercel.com/macrobets-projects/time-tracker-tony/HbhyMAWLmRKqYLVdzygjqUDx1Pau).
+`/commissioning` anonimo risponde HTTP 200 con meta redirect alla pagina iniziale
+`/`; nessun collaudo autenticato o salvataggio su Production. Le verifiche
+autenticate riguardano esclusivamente la demo locale. La successiva chiusura
+documentale non cambia il codice applicativo.
 Nessun DB remoto, seed, provider live o messaggio esterno. Nuovi allegati acquisiti
 **zero**, totale 17; nuovo Excel, GROUP/ADD DATA, playlist e Project Health restano
 punti aperti. Prossima unità solo su richiesta manuale di Marco, heartbeat PAUSED.
