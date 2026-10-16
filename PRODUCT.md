@@ -58,6 +58,13 @@ counters with task drilldowns by recorded stage and issue priority, and a separa
 overdue list. Project Health scope and On/At/Off Track rules remain undefined.
 Screenshot figures are examples only; no production data is inferred.
 
+Tony’s later feedback through 13:04 on 16 October requests tag configuration in
+a popup when adding an asset. The delivered UI uses the current project ID as
+read-only context and the existing Phase field, with preview and confirmation.
+GROUP and ADD DATA semantics remain undefined. The new ADD PROJECT.xlsx was not
+acquired; the old ATT-007 is not a substitute. The Microsoft Project playlist
+URL/content remains unverified. Source: docs/tony-feedback/intake-20261016-asset-popup.md.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.

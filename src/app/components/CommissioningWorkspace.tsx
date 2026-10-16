@@ -9,6 +9,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
+import {
   commissioning,
   LEVELS,
   PRIORITIES,
@@ -200,6 +207,7 @@ function ProjectWorkspace({
     transferHeading = useRef<HTMLHeadingElement>(null),
     tagsHeading = useRef<HTMLHeadingElement>(null);
   const generateDetails = useRef<HTMLDetailsElement>(null);
+  const assetTrigger = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
     const revealImport = () => {
       if (window.location.hash === "#import-register") setTransferOpen(true);
@@ -212,7 +220,7 @@ function ProjectWorkspace({
     };
   }, []);
   useEffect(() => {
-    if (asset) {
+    if (asset?.id) {
       editorHeading.current?.scrollIntoView({ block: "start" });
       editorHeading.current?.focus({ preventScroll: true });
     }
@@ -455,7 +463,8 @@ function ProjectWorkspace({
     setSchedule(row);
     setAsset(null);
   }
-  function addAsset() {
+  function addAsset(event: React.MouseEvent<HTMLButtonElement>) {
+    assetTrigger.current = event.currentTarget;
     openAsset({
       id: "",
       name: "",
@@ -490,6 +499,403 @@ function ProjectWorkspace({
       setBusy(false);
     }
   }
+  const newAssetOpen = !!asset && !asset.id && canEdit;
+  const assetEditor =
+    asset && canEdit ? (
+      <form
+        key={asset.id}
+        onSubmit={assetForm}
+        onChange={() => {
+          if (preview) {
+            setPreview(null);
+            setPayload(null);
+          }
+        }}
+        className={
+          asset.id
+            ? "rounded-xl border bg-white p-4 sm:p-5 space-y-5"
+            : "space-y-5"
+        }
+      >
+        {asset.id && (
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3
+                ref={editorHeading}
+                tabIndex={-1}
+                className="text-lg font-semibold focus:outline-none scroll-mt-52"
+              >
+                {asset.id ? `Edit ${asset.id}` : "Add an asset"}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Enter equipment details and tick the tags this asset needs.
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => openAsset(null)}
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+        <fieldset disabled={busy} className="space-y-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              ["name", "Asset name"],
+              ["id", asset.id ? "Internal ID" : "Asset ID"],
+              ["equipmentType", "Equipment type"],
+              ["location", "Location"],
+            ].map(([key, label]) => (
+              <label className="text-sm font-medium" key={key}>
+                {label}
+                <Input
+                  className="mt-1 h-11"
+                  name={key}
+                  defaultValue={String(asset[key as keyof Asset] ?? "")}
+                  required={key !== "location"}
+                  maxLength={key === "location" ? 250 : 150}
+                  readOnly={key === "id" && !!asset.id}
+                  autoComplete="off"
+                />
+                {key === "id" && (
+                  <span className="mt-1 block text-xs font-normal text-slate-600">
+                    {asset.id
+                      ? "Stable ID: existing links keep this reference."
+                      : "Choose a stable ID for links inside this app. Client and programme references are separate."}
+                  </span>
+                )}
+              </label>
+            ))}
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="text-sm font-medium">
+              Project ID
+              <Input className="mt-1 h-11" value={project.id} readOnly />
+              <span className="mt-1 block text-xs font-normal text-slate-600">
+                {project.name}. The asset will be saved in this project.
+              </span>
+            </label>
+            <label className="text-sm font-medium">
+              Phase{" "}
+              <span className="font-normal text-slate-600">· optional</span>
+              <Input
+                name="phase"
+                className="mt-1 h-11"
+                maxLength={150}
+                defaultValue={asset.phase ?? ""}
+              />
+              <span className="mt-1 block text-xs font-normal text-slate-600">
+                Use the recorded project phase; this does not select
+                commissioning tags.
+              </span>
+            </label>
+          </div>
+          <fieldset className="border-t pt-4">
+            <legend className="text-sm font-semibold">Required tags</legend>
+            <p className="mb-3 mt-1 text-sm text-slate-600">
+              Select only the tags that apply. After saving, use Create missing
+              tag activities to generate the separate task and test records.
+            </p>
+            {asset.id && (
+              <p className="mb-3 text-xs text-slate-600">
+                Tags already linked to tasks are retained to preserve their
+                records.
+              </p>
+            )}
+            <div className="grid gap-2 sm:grid-cols-2">
+              {[...new Set([...state.config.levels, ...asset.levels])].map(
+                (level) => (
+                  <label
+                    key={level}
+                    className="flex min-h-11 items-center gap-3 rounded-md border border-slate-200 p-3 text-sm"
+                  >
+                    <input
+                      name="levels"
+                      value={level}
+                      type="checkbox"
+                      className="size-4 accent-blue-600"
+                      defaultChecked={asset.levels.includes(level)}
+                    />
+                    <span>
+                      <span className="font-medium">{level}</span>
+                      {state.config.phasePresentation?.[level]?.label &&
+                      state.config.phasePresentation[level]?.label !== level
+                        ? ` · ${state.config.phasePresentation[level]?.label}`
+                        : ""}
+                    </span>
+                  </label>
+                ),
+              )}
+            </div>
+            {!state.config.levels.length && (
+              <p className="text-sm text-amber-800">
+                No tag levels are enabled for this project.{" "}
+                {currentUser.role === "admin" ? (
+                  <Link href="/admin" className="underline underline-offset-4">
+                    Enable levels in Project setup.
+                  </Link>
+                ) : (
+                  "Ask your administrator to enable levels in Project setup."
+                )}
+              </p>
+            )}
+          </fieldset>
+          <details className="border-t pt-4 space-y-4">
+            <summary className="min-h-11 cursor-pointer text-sm font-semibold">
+              Client & programme references
+            </summary>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-sm font-medium">
+                Client asset ID{" "}
+                <span className="font-normal text-slate-600">· optional</span>
+                <Input
+                  name="clientAssetId"
+                  className="mt-1 h-11"
+                  maxLength={150}
+                  defaultValue={asset.clientAssetId ?? ""}
+                  placeholder="No reference"
+                />
+              </label>
+              <label className="text-sm font-medium">
+                Programme ID
+                <Input
+                  className="mt-1 h-11"
+                  value={state.programmeId ?? ""}
+                  readOnly
+                  placeholder="No reference"
+                />
+                <Link
+                  className="mt-1 inline-flex min-h-11 items-center text-xs font-normal text-blue-700 underline underline-offset-4"
+                  href="/schedule"
+                >
+                  Manage the project’s programme reference
+                </Link>
+              </label>
+              <label className="text-sm font-medium sm:col-span-2">
+                Programme Activity ID{" "}
+                <span className="font-normal text-slate-600">· optional</span>
+                <select
+                  name="programmeActivityId"
+                  className="field-select mt-1 min-h-11"
+                  defaultValue={asset.programmeActivityId ?? ""}
+                >
+                  <option value="">No reference</option>
+                  {state.schedule.map((activity) => (
+                    <option
+                      key={activity.activityId}
+                      value={activity.activityId}
+                    >
+                      {activity.activityId} · {activity.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-xs font-normal text-slate-600">
+                  Primary programme reference for this asset. Delivery and
+                  individual tag links are configured separately below.
+                </span>
+              </label>
+            </div>
+          </details>
+          <details className="border-t pt-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              Location, supply & equipment details · optional
+            </summary>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {[
+                ["floor", "Floor"],
+                ["area", "Area"],
+                ["discipline", "Discipline"],
+                ["serialNumber", "Serial number"],
+                ["owner", "Owner / responsible person"],
+              ].map(([key, label]) => (
+                <label className="text-sm" key={key}>
+                  {label}
+                  <Input
+                    name={key}
+                    className="mt-1 h-11"
+                    defaultValue={String(asset[key as keyof Asset] ?? "")}
+                    maxLength={150}
+                  />
+                </label>
+              ))}
+              <label className="text-sm">
+                Parent asset · hierarchy
+                <select
+                  name="parentAssetId"
+                  className="field-select min-h-11 mt-1"
+                  defaultValue={asset.parentAssetId ?? ""}
+                >
+                  <option value="">No parent</option>
+                  {state.assets
+                    .filter((row) => row.id !== asset.id)
+                    .map((row) => (
+                      <option key={row.id} value={row.id}>
+                        {row.id} · {row.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label className="text-sm">
+                Supply classification
+                <select
+                  name="clientSupplied"
+                  className="field-select min-h-11 mt-1"
+                  defaultValue={
+                    asset.clientSupplied == null
+                      ? ""
+                      : String(asset.clientSupplied)
+                  }
+                >
+                  <option value="">Not classified</option>
+                  <option value="true">Client supplied</option>
+                  <option value="false">Contractor supplied</option>
+                </select>
+              </label>
+            </div>
+          </details>
+          <details className="border-t pt-4">
+            <summary className="cursor-pointer text-sm font-medium">
+              Delivery & programme links · optional
+            </summary>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <label className="text-sm">
+                Delivery Activity ID
+                <select
+                  name="deliveryActivityId"
+                  className="field-select min-h-11 mt-1"
+                  defaultValue={asset.deliveryActivityId ?? ""}
+                >
+                  <option value="">No link</option>
+                  {state.schedule.map((activity) => (
+                    <option
+                      key={activity.activityId}
+                      value={activity.activityId}
+                    >
+                      {activity.activityId} · {activity.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm">
+                Expected delivery
+                <Input
+                  name="expectedDelivery"
+                  className="mt-1 h-11"
+                  type="date"
+                  defaultValue={asset.expectedDelivery}
+                />
+              </label>
+              {[...new Set([...state.config.levels, ...asset.levels])].map(
+                (level) => (
+                  <label className="text-sm" key={level}>
+                    {level} programme activity
+                    <select
+                      name={`activity-${level}`}
+                      className="field-select min-h-11 mt-1"
+                      defaultValue={asset.levelActivities?.[level] ?? ""}
+                    >
+                      <option value="">Unlinked</option>
+                      {state.schedule.map((activity) => (
+                        <option
+                          key={activity.activityId}
+                          value={activity.activityId}
+                        >
+                          {activity.activityId} · {activity.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ),
+              )}
+            </div>
+            <p className="mt-3 text-xs text-slate-600">
+              Expected delivery does not change the programme. Level links are
+              used when creating missing tags; existing task links are edited in
+              Tasks.
+            </p>
+          </details>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button className="h-11" disabled={busy || !isOnline}>
+              {busy ? "Preparing preview…" : "Review asset & tags"}
+              <ArrowRight className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              className="h-11"
+              variant="ghost"
+              onClick={() => openAsset(null)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </fieldset>
+      </form>
+    ) : null;
+  const previewPanel = preview ? (
+    <section className="rounded-xl border border-blue-200 bg-blue-50 p-5 space-y-3">
+      <h3
+        ref={previewHeading}
+        tabIndex={-1}
+        className="font-semibold focus:outline-none scroll-mt-52"
+      >
+        Review changes before saving
+      </h3>
+      <p className="text-sm">
+        {preview.assets} assets · {preview.schedule} schedule activities after
+        import · {preview.changes.length} changes
+      </p>
+      <p className="text-sm">
+        Programme ID after this change: {preview.programmeId || "No reference"}
+      </p>
+      {preview.errors.map((e, i) => (
+        <p className="text-sm text-red-700" key={i}>
+          {e}
+        </p>
+      ))}
+      <ul className="text-xs max-h-48 overflow-auto space-y-1">
+        {preview.changes.slice(0, 100).map((c, i) => (
+          <li key={i}>{c}</li>
+        ))}
+      </ul>
+      {preview.changes.length > 100 && (
+        <p className="text-xs">First 100 changes shown.</p>
+      )}
+      {stale && (
+        <p className="text-sm text-amber-800">
+          The register changed. Preview again before saving.
+        </p>
+      )}
+      <RevisionReason value={reason} onChange={setReason} />
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button
+          className="h-11"
+          disabled={
+            busy ||
+            !isOnline ||
+            !!preview.errors.length ||
+            stale ||
+            !preview.changes.length ||
+            reason.trim().length < 10
+          }
+          onClick={commit}
+        >
+          Save {preview.changes.length} changes
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setPayload(null);
+            setPreview(null);
+          }}
+        >
+          Discard preview
+        </Button>
+      </div>
+    </section>
+  ) : null;
   return (
     <fieldset disabled={busy} className="min-w-0 space-y-5">
       {(admin || reports) && (
@@ -1354,314 +1760,38 @@ function ProjectWorkspace({
           </div>
         </details>
       )}
-      {asset && canEdit && (
-        <form
-          key={asset.id}
-          onSubmit={assetForm}
-          onChange={() => {
-            if (preview) {
-              setPreview(null);
-              setPayload(null);
-            }
+      {asset?.id ? assetEditor : null}
+      <Dialog
+        open={newAssetOpen}
+        onOpenChange={(open) => {
+          if (!open && !busy) openAsset(null);
+        }}
+      >
+        <DialogContent
+          className="!max-w-3xl max-h-[calc(100dvh-2rem)] overflow-y-auto p-4 sm:p-6 [&>button:last-child]:size-11 [&>button:last-child]:top-2 [&>button:last-child]:right-2"
+          onInteractOutside={(event) => event.preventDefault()}
+          onEscapeKeyDown={(event) => {
+            if (busy) event.preventDefault();
           }}
-          className="rounded-xl border bg-white p-4 sm:p-5 space-y-5"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (tagsAssetId) {
+              tagsHeading.current?.scrollIntoView({ block: "start" });
+              tagsHeading.current?.focus({ preventScroll: true });
+            } else assetTrigger.current?.focus();
+          }}
         >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h3
-                ref={editorHeading}
-                tabIndex={-1}
-                className="text-lg font-semibold focus:outline-none scroll-mt-52"
-              >
-                {asset.id ? `Edit ${asset.id}` : "Add an asset"}
-              </h3>
-              <p className="mt-1 text-sm text-slate-600">
-                Enter equipment details and tick the tags this asset needs.
-              </p>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => openAsset(null)}
-            >
-              Cancel
-            </Button>
-          </div>
-          <fieldset disabled={busy} className="space-y-5">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                ["id", "Internal ID"],
-                ["name", "Asset name"],
-                ["equipmentType", "Equipment type"],
-                ["location", "Location"],
-              ].map(([key, label]) => (
-                <label className="text-sm font-medium" key={key}>
-                  {label}
-                  <Input
-                    className="mt-1 h-11"
-                    name={key}
-                    defaultValue={String(asset[key as keyof Asset] ?? "")}
-                    required={key !== "location"}
-                    maxLength={key === "location" ? 250 : 150}
-                    readOnly={key === "id" && !!asset.id}
-                    autoComplete="off"
-                  />
-                  {key === "id" && (
-                    <span className="mt-1 block text-xs font-normal text-slate-600">
-                      {asset.id
-                        ? "Stable ID: existing links keep this reference."
-                        : "Choose a stable ID for links inside this app. Client and programme references are separate."}
-                    </span>
-                  )}
-                </label>
-              ))}
-            </div>
-            <fieldset className="border-t pt-4 space-y-4">
-              <legend className="text-sm font-semibold">
-                Client & programme references
-              </legend>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="text-sm font-medium">
-                  Client asset ID{" "}
-                  <span className="font-normal text-slate-600">· optional</span>
-                  <Input
-                    name="clientAssetId"
-                    className="mt-1 h-11"
-                    maxLength={150}
-                    defaultValue={asset.clientAssetId ?? ""}
-                    placeholder="No reference"
-                  />
-                </label>
-                <label className="text-sm font-medium">
-                  Programme ID
-                  <Input
-                    className="mt-1 h-11"
-                    value={state.programmeId ?? ""}
-                    readOnly
-                    placeholder="No reference"
-                  />
-                  <Link
-                    className="mt-1 inline-flex min-h-11 items-center text-xs font-normal text-blue-700 underline underline-offset-4"
-                    href="/schedule"
-                  >
-                    Manage the project’s programme reference
-                  </Link>
-                </label>
-                <label className="text-sm font-medium sm:col-span-2">
-                  Programme Activity ID{" "}
-                  <span className="font-normal text-slate-600">· optional</span>
-                  <select
-                    name="programmeActivityId"
-                    className="field-select mt-1 min-h-11"
-                    defaultValue={asset.programmeActivityId ?? ""}
-                  >
-                    <option value="">No reference</option>
-                    {state.schedule.map((activity) => (
-                      <option
-                        key={activity.activityId}
-                        value={activity.activityId}
-                      >
-                        {activity.activityId} · {activity.name}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="mt-1 block text-xs font-normal text-slate-600">
-                    Primary programme reference for this asset. Delivery and
-                    individual tag links are configured separately below.
-                  </span>
-                </label>
-              </div>
-            </fieldset>
-            <fieldset className="border-t pt-4">
-              <legend className="text-sm font-semibold">Required tags</legend>
-              <p className="mb-3 mt-1 text-sm text-slate-600">
-                Select only the tags that apply to this asset. Each selected
-                level gets its own task and test record.
-              </p>
-              {asset.id && (
-                <p className="mb-3 text-xs text-slate-600">
-                  Tags already linked to tasks are retained to preserve their
-                  records.
-                </p>
-              )}
-              <div className="grid gap-2 sm:grid-cols-2">
-                {[...new Set([...state.config.levels, ...asset.levels])].map(
-                  (level) => (
-                    <label
-                      key={level}
-                      className="flex min-h-11 items-center gap-3 rounded-md border border-slate-200 p-3 text-sm"
-                    >
-                      <input
-                        name="levels"
-                        value={level}
-                        type="checkbox"
-                        className="size-4 accent-blue-600"
-                        defaultChecked={asset.levels.includes(level)}
-                      />
-                      <span>
-                        <span className="font-medium">{level}</span>
-                        {state.config.phasePresentation?.[level]?.label &&
-                        state.config.phasePresentation[level]?.label !== level
-                          ? ` · ${state.config.phasePresentation[level]?.label}`
-                          : ""}
-                      </span>
-                    </label>
-                  ),
-                )}
-              </div>
-              {!state.config.levels.length && (
-                <p className="text-sm text-amber-800">
-                  No tag levels are enabled for this project.{" "}
-                  {currentUser.role === "admin" ? (
-                    <Link
-                      href="/admin"
-                      className="underline underline-offset-4"
-                    >
-                      Enable levels in Project setup.
-                    </Link>
-                  ) : (
-                    "Ask your administrator to enable levels in Project setup."
-                  )}
-                </p>
-              )}
-            </fieldset>
-            <details className="border-t pt-4">
-              <summary className="cursor-pointer text-sm font-medium">
-                Location, supply & equipment details · optional
-              </summary>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {[
-                  ["phase", "Project phase"],
-                  ["floor", "Floor"],
-                  ["area", "Area"],
-                  ["discipline", "Discipline"],
-                  ["serialNumber", "Serial number"],
-                  ["owner", "Owner / responsible person"],
-                ].map(([key, label]) => (
-                  <label className="text-sm" key={key}>
-                    {label}
-                    <Input
-                      name={key}
-                      className="mt-1 h-11"
-                      defaultValue={String(asset[key as keyof Asset] ?? "")}
-                      maxLength={150}
-                    />
-                  </label>
-                ))}
-                <label className="text-sm">
-                  Parent asset
-                  <select
-                    name="parentAssetId"
-                    className="field-select min-h-11 mt-1"
-                    defaultValue={asset.parentAssetId ?? ""}
-                  >
-                    <option value="">No parent</option>
-                    {state.assets
-                      .filter((row) => row.id !== asset.id)
-                      .map((row) => (
-                        <option key={row.id} value={row.id}>
-                          {row.id} · {row.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-                <label className="text-sm">
-                  Supply classification
-                  <select
-                    name="clientSupplied"
-                    className="field-select min-h-11 mt-1"
-                    defaultValue={
-                      asset.clientSupplied == null
-                        ? ""
-                        : String(asset.clientSupplied)
-                    }
-                  >
-                    <option value="">Not classified</option>
-                    <option value="true">Client supplied</option>
-                    <option value="false">Contractor supplied</option>
-                  </select>
-                </label>
-              </div>
-            </details>
-            <details className="border-t pt-4">
-              <summary className="cursor-pointer text-sm font-medium">
-                Delivery & programme links · optional
-              </summary>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <label className="text-sm">
-                  Delivery Activity ID
-                  <select
-                    name="deliveryActivityId"
-                    className="field-select min-h-11 mt-1"
-                    defaultValue={asset.deliveryActivityId ?? ""}
-                  >
-                    <option value="">No link</option>
-                    {state.schedule.map((activity) => (
-                      <option
-                        key={activity.activityId}
-                        value={activity.activityId}
-                      >
-                        {activity.activityId} · {activity.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="text-sm">
-                  Expected delivery
-                  <Input
-                    name="expectedDelivery"
-                    className="mt-1 h-11"
-                    type="date"
-                    defaultValue={asset.expectedDelivery}
-                  />
-                </label>
-                {[...new Set([...state.config.levels, ...asset.levels])].map(
-                  (level) => (
-                    <label className="text-sm" key={level}>
-                      {level} programme activity
-                      <select
-                        name={`activity-${level}`}
-                        className="field-select min-h-11 mt-1"
-                        defaultValue={asset.levelActivities?.[level] ?? ""}
-                      >
-                        <option value="">Unlinked</option>
-                        {state.schedule.map((activity) => (
-                          <option
-                            key={activity.activityId}
-                            value={activity.activityId}
-                          >
-                            {activity.activityId} · {activity.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  ),
-                )}
-              </div>
-              <p className="mt-3 text-xs text-slate-600">
-                Expected delivery does not change the programme. Level links are
-                used when creating missing tags; existing task links are edited
-                in Tasks.
-              </p>
-            </details>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button className="h-11" disabled={busy || !isOnline}>
-                {busy ? "Preparing preview…" : "Review asset & tags"}
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                className="h-11"
-                variant="ghost"
-                onClick={() => openAsset(null)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </fieldset>
-        </form>
-      )}
+          <DialogHeader className="pr-10 text-left">
+            <DialogTitle>Add asset & tags</DialogTitle>
+            <DialogDescription>
+              Enter the asset details and choose its required tags. Review the
+              changes before saving to this project.
+            </DialogDescription>
+          </DialogHeader>
+          {assetEditor}
+          {previewPanel}
+        </DialogContent>
+      </Dialog>
       {schedule && canEdit && (
         <form
           key={schedule.activityId}
@@ -1739,69 +1869,7 @@ function ProjectWorkspace({
           </div>
         </form>
       )}
-      {preview && (
-        <section className="rounded-xl border border-blue-200 bg-blue-50 p-5 space-y-3">
-          <h3
-            ref={previewHeading}
-            tabIndex={-1}
-            className="font-semibold focus:outline-none scroll-mt-52"
-          >
-            Review changes before saving
-          </h3>
-          <p className="text-sm">
-            {preview.assets} assets · {preview.schedule} schedule activities
-            after import · {preview.changes.length} changes
-          </p>
-          <p className="text-sm">
-            Programme ID after this change:{" "}
-            {preview.programmeId || "No reference"}
-          </p>
-          {preview.errors.map((e, i) => (
-            <p className="text-sm text-red-700" key={i}>
-              {e}
-            </p>
-          ))}
-          <ul className="text-xs max-h-48 overflow-auto space-y-1">
-            {preview.changes.slice(0, 100).map((c, i) => (
-              <li key={i}>{c}</li>
-            ))}
-          </ul>
-          {preview.changes.length > 100 && (
-            <p className="text-xs">First 100 changes shown.</p>
-          )}
-          {stale && (
-            <p className="text-sm text-amber-800">
-              The register changed. Preview again before saving.
-            </p>
-          )}
-          <RevisionReason value={reason} onChange={setReason} />
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button
-              className="h-11"
-              disabled={
-                busy ||
-                !isOnline ||
-                !!preview.errors.length ||
-                stale ||
-                !preview.changes.length ||
-                reason.trim().length < 10
-              }
-              onClick={commit}
-            >
-              Save {preview.changes.length} changes
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setPayload(null);
-                setPreview(null);
-              }}
-            >
-              Discard preview
-            </Button>
-          </div>
-        </section>
-      )}
+      {!newAssetOpen && previewPanel}
       {!admin &&
         (reports || state.assets.length > 0 || state.schedule.length > 0) && (
           <details

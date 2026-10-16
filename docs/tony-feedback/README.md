@@ -35,7 +35,10 @@ la verifica di questa unità è documentale e tramite revisione indipendente.
    Per «Riprendi Tony», ricostruire risultato corrente, backlog, vincoli e lavoro
    già autorizzato senza far rispiegare tutto a Marco.
 2. Controllare `git status --short`, HEAD e attività in corso prima di modificare.
-   La modifica preesistente next-env.d.ts va preservata e non committata.
+   Eseguire `git fetch origin` e confrontare HEAD con origin/main; fare
+   `git pull --ff-only` solo su main, con checkout pulito e aggiornamento necessario.
+   Se già allineati non serve pull. Preservare modifiche e divergenze senza reset,
+   stash o sovrascritture automatiche; next-env.d.ts preesistente non va committato.
    Coordinarsi senza duplicare; non creare nuove chat o scheduler per continuare.
 3. Eseguire solo il compito richiesto o il prossimo lavoro chiaramente autorizzato.
    Se servono regole dei gruppi, accesso DB o setup chiave già segnalati, riportare

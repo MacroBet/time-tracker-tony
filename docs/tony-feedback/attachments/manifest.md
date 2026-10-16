@@ -31,3 +31,18 @@ visualizzati da Show Chrome ma non risultano salvati localmente: il possibile fi
 2026-10-16_1228_tony_programme-overview_original.png non esiste al controllo.
 Nessun originale Overdue verificato. Salvataggi interrotti per errore ripetuto di
 cattura schermo; desktop in uso da Marco. Non riprovare UI per completarli ora.
+
+## Acquisizione pendente — ADD PROJECT.xlsx, 16 ottobre 12:41
+
+Fonte riferita dalla chat Show Chrome, lettura fino alle 13:04 del 16 ottobre:
+Tony ha inviato `ADD PROJECT.xlsx`, indicato dall'interfaccia come 10 KB e un
+foglio, insieme alla richiesta di un popup per configurare i tag aggiungendo un
+asset. **Non scaricato, non analizzato, nessun nuovo ATT assegnato.** Byte esatti,
+percorso locale e SHA-256 non disponibili. Un solo tentativo UI riferito, finestra
+non disponibile; nessun dialogo rimasto pendente e nessun nuovo tentativo qui.
+
+Il locale `2026-10-14_1529_ADD_PROJECT.xlsx` è soltanto **ATT-007** del
+14 ottobre 15:29, 10.061 byte: presenza e dimensione controllate in sola lettura,
+senza aprire l'Excel. Non dimostra l'acquisizione del nuovo invio e non va
+reattribuito. Il totale resta 17 originali verificati. Dettagli e interpretazioni
+separate in [intake popup asset](../intake-20261016-asset-popup.md).

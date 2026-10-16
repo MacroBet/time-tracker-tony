@@ -25,7 +25,10 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   polling, nuove automazioni o processi di continuazione dopo la chiusura del turno.
   Nuove chat manuali nella stessa cartella sono previste, senza legame a questa chat.
 - Prima degli edit: `git status --short`, controllare attività in corso ed evitare
-  duplicazioni. Preservare modifiche altrui; next-env.d.ts preesistente non va committato.
+  duplicazioni; eseguire `git fetch origin` e confrontare HEAD con origin/main.
+  `git pull --ff-only` soltanto su main con checkout pulito e aggiornamento necessario.
+  Se già allineati, procedere senza pull; con modifiche/divergenze preservarle, senza
+  reset, stash o sovrascritture automatiche. next-env.d.ts preesistente non va committato.
   Subagenti per blocchi indipendenti con ownership chiaro e verifica centrale.
   Test pertinenti e normali commit/push su main autorizzati per il lavoro richiesto;
   mai force push. Distinguere prove locali, push e deploy effettivamente verificato.
