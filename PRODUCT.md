@@ -41,7 +41,7 @@ are reference material, not a replacement app. Raw attachments remain private.
 
 ## Evidence on Hand
 
-Fourteen supplied files in docs/tony-feedback/attachments, with a manifest; existing
+Seventeen supplied files in docs/tony-feedback/attachments, with a manifest; existing
 application and commissioning tests. UI must use real authorized project records;
 synthetic demo mode stays visibly labelled and isolated from remote data. Local
 showcase fixtures are opt-in and must never seed a remote environment implicitly.
@@ -52,6 +52,11 @@ programme ID and individual activity ID must both be recorded separately and lin
 The app currently holds one programme per project; existing task/asset/activity IDs
 must remain stable. Group workflow rules remain unresolved. Source context:
 docs/tony-feedback/intake-20261016.md.
+
+Tony's 16 October dashboard feedback asks for status at the top, completion/late
+counters with task drilldowns by recorded stage and issue priority, and a separate
+overdue list. Project Health scope and On/At/Off Track rules remain undefined.
+Screenshot figures are examples only; no production data is inferred.
 
 ## Product Principles
 

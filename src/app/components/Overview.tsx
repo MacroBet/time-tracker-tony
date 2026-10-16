@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, AlertTriangle, CalendarClock } from "lucide-react";
+import { ArrowUpRight, AlertTriangle } from "lucide-react";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { Button } from "./ui/button";
@@ -23,6 +23,8 @@ import {
 } from "@/lib/commissioning";
 import { ReportDialog, type ReportRequest } from "./CommissioningReport";
 import { TagProgressMatrix } from "./TagProgressMatrix";
+import { taskProgress } from "@/lib/dashboard-progress";
+import { filterTasks, type TaskFilters } from "@/lib/commissioning";
 
 const statuses: { status: TaskStatus; color: string }[] = [
   { status: "pending", color: "#ffb347" },
@@ -162,6 +164,95 @@ export function Overview() {
           compact
         />
       )}
+      <div className="grid gap-4 xl:grid-cols-2">
+        {tasks.length > 0 && (
+          <section
+            aria-label="Tasks by status"
+            className="rounded-xl border bg-white p-4"
+          >
+            <h3 className="font-semibold text-sm mb-3">Tasks by status</h3>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={() => open("All project activities")}
+                aria-label="View all project activities"
+                className="size-28 shrink-0 rounded-full grid place-items-center"
+                style={{
+                  background: tasks.length
+                    ? `conic-gradient(${gradient})`
+                    : "#edf1f7",
+                }}
+              >
+                <span className="size-20 rounded-full bg-white flex flex-col justify-center">
+                  <strong className="text-2xl">{tasks.length}</strong>
+                  <span className="text-xs text-slate-500">Activities</span>
+                </span>
+              </button>
+              <div className="grid w-full max-w-80 min-w-0 grid-cols-2 gap-x-2 gap-y-1">
+                {statuses.map((s) => (
+                  <button
+                    key={s.status}
+                    onClick={() =>
+                      open(statusLabels[s.status], { status: s.status })
+                    }
+                    className="w-full flex items-center gap-2 min-h-11 px-2 rounded hover:bg-slate-50 text-xs"
+                  >
+                    <span
+                      className="size-2 shrink-0 rounded-full"
+                      style={{ background: s.color }}
+                    />
+                    <span className="text-left text-slate-600">
+                      {statusLabels[s.status]}
+                    </span>
+                    <strong className="ml-auto tabular-nums">
+                      {tasks.filter((t) => t.status === s.status).length}
+                    </strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+        <section
+          aria-label="Project summary"
+          className="rounded-xl border bg-white p-4"
+        >
+          <h3 className="text-sm font-semibold">Project summary</h3>
+          <p className="mt-1 text-xs text-slate-600">
+            {project.name} · saved task records
+          </p>
+          <div className="mt-4">
+            <ProgressCounters
+              label="Project"
+              summary={taskProgress(tasks)}
+              onOpen={(metric) =>
+                open(
+                  `Project · ${metric === "total" ? "all" : metric} activities`,
+                  metricFilters(metric),
+                )
+              }
+            />
+          </div>
+          <p className="mt-3 text-xs text-slate-600">
+            Completion excludes N/A. Late means open and due before today, using
+            the programme date where recorded, otherwise the task deadline.
+          </p>
+          <Link
+            href="/overdue"
+            className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
+          >
+            Open overdue list <ArrowUpRight className="size-4" />
+          </Link>
+          <details className="mt-2 border-t pt-2 text-xs text-slate-600">
+            <summary className="min-h-11 cursor-pointer py-3">
+              Project Health · awaiting definition
+            </summary>
+            <p className="pb-2">
+              On Track, At Risk and Off Track criteria and project scope still
+              need to be agreed. No health rating has been calculated.
+            </p>
+          </details>
+        </section>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           {
@@ -199,19 +290,35 @@ export function Overview() {
           .filter((metric) =>
             metric.view === "tags" ? hasTags : tasks.length > 0,
           )
-          .map((m) => (
-            <button
-              key={m.label}
-              className="rounded-xl border bg-white p-4 text-left hover:border-blue-300"
-              onClick={() => open(m.label, m.filters, m.view)}
-            >
-              <p className="text-xs text-slate-500">{m.label}</p>
-              <p className={`text-2xl font-semibold mt-2 ${m.color}`}>
-                {m.count}
-              </p>
-              <p className="text-xs text-slate-500 mt-2">{m.caption}</p>
-            </button>
-          ))}
+          .map((m) =>
+            m.label === "Overdue activities" ? (
+              <Link
+                key={m.label}
+                href="/overdue"
+                className="rounded-xl border bg-white p-4 text-left hover:border-blue-300 focus-visible:outline-blue-600"
+              >
+                <p className="text-xs text-slate-500">{m.label}</p>
+                <p className={`mt-2 text-2xl font-semibold ${m.color}`}>
+                  {m.count}
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Open separate list
+                </p>
+              </Link>
+            ) : (
+              <button
+                key={m.label}
+                className="rounded-xl border bg-white p-4 text-left hover:border-blue-300"
+                onClick={() => open(m.label, m.filters, m.view)}
+              >
+                <p className="text-xs text-slate-500">{m.label}</p>
+                <p className={`text-2xl font-semibold mt-2 ${m.color}`}>
+                  {m.count}
+                </p>
+                <p className="text-xs text-slate-500 mt-2">{m.caption}</p>
+              </button>
+            ),
+          )}
       </div>
       <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-600">
         {tasks.length > 0 && (
@@ -252,53 +359,7 @@ export function Overview() {
           </span>
         )}
       </div>
-      <div
-        className={`grid gap-5 ${tasks.length > 0 && hasTags ? "xl:grid-cols-[1fr_1.35fr]" : ""}`}
-      >
-        {tasks.length > 0 && (
-          <section className="rounded-xl border bg-white p-5">
-            <h3 className="font-semibold text-sm mb-5">Tasks by status</h3>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <button
-                onClick={() => open("All project activities")}
-                aria-label="View all project activities"
-                className="size-44 rounded-full grid place-items-center"
-                style={{
-                  background: tasks.length
-                    ? `conic-gradient(${gradient})`
-                    : "#edf1f7",
-                }}
-              >
-                <span className="size-28 rounded-full bg-white flex flex-col justify-center">
-                  <strong className="text-3xl">{tasks.length}</strong>
-                  <span className="text-xs text-slate-500">Activities</span>
-                </span>
-              </button>
-              <div className="w-full max-w-56 min-w-40 space-y-1">
-                {statuses.map((s) => (
-                  <button
-                    key={s.status}
-                    onClick={() =>
-                      open(statusLabels[s.status], { status: s.status })
-                    }
-                    className="w-full flex items-center gap-2 p-2 rounded hover:bg-slate-50 text-xs"
-                  >
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ background: s.color }}
-                    />
-                    <span className="text-left text-slate-600">
-                      {statusLabels[s.status]}
-                    </span>
-                    <strong className="ml-auto tabular-nums">
-                      {tasks.filter((t) => t.status === s.status).length}
-                    </strong>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+      <div className="grid gap-5">
         {hasTags && (
           <section className="rounded-xl border bg-white p-5">
             <div className="flex justify-between items-center">
@@ -342,71 +403,82 @@ export function Overview() {
           </section>
         )}
       </div>
-      {hasTags && (
-        <section className="rounded-xl border bg-white p-5">
+      {(hasTags || tasks.some((task) => task.cx?.level)) && (
+        <section
+          aria-label="Programme overview"
+          className="rounded-xl border bg-white p-5"
+        >
           <h3 className="text-sm font-semibold">Programme overview</h3>
           <p className="mt-1 text-xs text-slate-600">
-            Approval progress by configured commissioning stage. Stage names and
-            colours are managed in project setup.
+            Task completion by recorded commissioning stage. Tag approval is
+            shown separately above.
           </p>
-          <div className="mt-5 space-y-4">
+          <div className="mt-4 divide-y">
             {state.config.levels
-              .filter((level) => tagSummary(project, tasks, level).total > 0)
+              .filter(
+                (level) =>
+                  tasks.some((task) => task.cx?.level === level) ||
+                  tagSummary(project, tasks, level).total > 0,
+              )
               .map((level) => {
-                const summary = tagSummary(project, tasks, level);
                 const presentation = state.config.phasePresentation?.[level];
+                const label =
+                  presentation?.label && presentation.label !== level
+                    ? `${level} · ${presentation.label}`
+                    : level;
+                const filters = { level };
+                const summary = taskProgress(
+                  filterTasks(tasks, project, filters),
+                );
                 return (
-                  <button
+                  <div
                     key={level}
-                    className="block w-full rounded px-1 py-1 text-left hover:bg-slate-50 focus-visible:outline-blue-600"
-                    onClick={() =>
-                      open(
-                        `${presentation?.label || level} tag progress`,
-                        { level },
-                        "tags",
-                      )
-                    }
+                    className="grid items-center gap-x-4 py-2 first:pt-0 sm:grid-cols-[minmax(12rem,1fr)_minmax(20rem,1.5fr)]"
                   >
-                    <span className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
-                      <span className="font-medium">
-                        {level}
-                        {presentation?.label && presentation.label !== level
-                          ? ` · ${presentation.label}`
-                          : ""}
-                      </span>
-                      <span className="tabular-nums text-slate-600">
-                        {summary.completed} / {summary.total} approved ·{" "}
-                        <strong className="text-slate-900">
-                          {summary.percent === null
-                            ? "—"
-                            : `${summary.percent}%`}
-                        </strong>
-                      </span>
-                    </span>
-                    <span className="block h-2 overflow-hidden rounded-full bg-slate-100">
-                      <span
-                        className="block h-full rounded-full"
+                    <button
+                      className="min-h-11 text-left text-sm font-medium hover:text-blue-700 focus-visible:outline-blue-600"
+                      onClick={() => open(`${label} activities`, filters)}
+                    >
+                      {label}
+                    </button>
+                    <ProgressCounters
+                      label={label}
+                      summary={summary}
+                      onOpen={(metric) =>
+                        open(
+                          `${label} · ${metric === "total" ? "all" : metric} activities`,
+                          { ...filters, ...metricFilters(metric) },
+                        )
+                      }
+                    />
+                    <div
+                      className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100 sm:col-span-2"
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="h-full rounded-full"
                         style={{
                           width: `${summary.percent ?? 0}%`,
                           backgroundColor: presentation?.color ?? "#2563eb",
                         }}
                       />
-                    </span>
-                  </button>
+                    </div>
+                  </div>
                 );
               })}
           </div>
-          {!state.config.levels.length && (
-            <p className="py-6 text-sm text-slate-600">
-              Configure commissioning stages and register applicable assets to
-              show project progress.
-            </p>
-          )}
-          <p className="mt-4 text-xs text-slate-600">
-            Percentages use applicable asset-level tag obligations. Explicit A
-            or legacy completed-workflow approval counts; I, R and AC do not.
-            Passed tests alone do not approve a tag. Missing records remain
-            incomplete.
+          <p className="mt-3 text-xs text-slate-600">
+            TOTAL includes N/A; completion % excludes N/A. Only saved tasks with
+            an explicit stage are counted; missing tag records are not tasks.{" "}
+            {
+              tasks.filter(
+                (task) =>
+                  !task.cx?.level ||
+                  !state.config.levels.includes(task.cx.level),
+              ).length
+            }{" "}
+            activities have no enabled stage. No Energisation Gate or IST
+            mapping is inferred.
           </p>
         </section>
       )}
@@ -492,55 +564,7 @@ export function Overview() {
             onOpen={setReport}
           />
         )}
-      <div
-        className={`grid gap-5 ${tasks.length > 0 && issues.length > 0 ? "xl:grid-cols-2" : ""}`}
-      >
-        {tasks.length > 0 && (
-          <section className="rounded-xl border bg-white p-5">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-sm flex gap-2 items-center">
-                <CalendarClock className="size-4 text-red-500" />
-                Overdue as of today
-              </h3>
-              <button
-                className="text-xs text-blue-600"
-                onClick={() =>
-                  open("Overdue activities", { attention: "overdue" })
-                }
-              >
-                View all {overdue.length}
-              </button>
-            </div>
-            <div className="divide-y">
-              {overdue.slice(0, 5).map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/tasks/${t.id}`}
-                  className="flex justify-between gap-4 py-3 hover:text-blue-600"
-                >
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium truncate">
-                      {t.title}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
-                      {t.cx?.level ?? "No level"} ·{" "}
-                      {t.priority ?? "No priority"}
-                    </span>
-                  </span>
-                  <span className="text-xs text-red-600 shrink-0">
-                    {dueDateFor(t)}
-                  </span>
-                </Link>
-              ))}
-            </div>
-            {!overdue.length && (
-              <p className="py-6 text-sm text-slate-500">
-                No overdue activities with a recorded deadline.
-              </p>
-            )}
-          </section>
-        )}
+      <div className="grid gap-5">
         {issues.length > 0 && (
           <section className="rounded-xl border bg-white p-5">
             <div className="flex justify-between items-center mb-4">
@@ -552,41 +576,50 @@ export function Overview() {
                 View all issues
               </button>
             </div>
-            <div className="space-y-4">
-              {state.config.priorities.map((priority) => {
-                const items = issues.filter((t) => t.priority === priority),
-                  active = items.filter((t) => !isClosed(t)).length;
+            <div className="divide-y">
+              {[
+                ...new Set([
+                  ...state.config.priorities,
+                  ...issues.flatMap((task) =>
+                    task.priority ? [task.priority] : [],
+                  ),
+                ]),
+              ].map((priority) => {
+                const filters = { kind: "issue", priority };
+                const summary = taskProgress(
+                  filterTasks(tasks, project, filters),
+                );
                 return (
-                  <button
+                  <div
                     key={priority}
-                    className="w-full text-left group"
-                    onClick={() =>
-                      open(`${priority} issues`, { kind: "issue", priority })
-                    }
+                    className="grid gap-2 py-2 sm:grid-cols-[5rem_1fr] sm:items-center"
                   >
-                    <span className="flex justify-between text-xs mb-2">
-                      <span className="font-medium group-hover:text-blue-600">
-                        {priority}
-                      </span>
-                      <span className="text-slate-500">
-                        {active} open · {items.length} total
-                      </span>
-                    </span>
-                    <span className="block h-2 rounded-full bg-slate-100">
-                      <span
-                        className="block h-2 rounded-full bg-blue-500"
-                        style={{
-                          width: `${items.length ? (100 * active) / items.length : 0}%`,
-                        }}
-                      />
-                    </span>
-                  </button>
+                    <button
+                      className="min-h-11 text-left text-sm font-medium hover:text-blue-700 focus-visible:outline-blue-600"
+                      onClick={() => open(`${priority} issues`, filters)}
+                    >
+                      {priority}
+                    </button>
+                    <ProgressCounters
+                      label={`${priority} issues`}
+                      summary={summary}
+                      onOpen={(metric) =>
+                        open(
+                          `${priority} · ${metric === "total" ? "all" : metric} issues`,
+                          { ...filters, ...metricFilters(metric) },
+                        )
+                      }
+                    />
+                  </div>
                 );
               })}
             </div>
-            <p className="text-xs text-slate-500 mt-4">
-              {issues.filter((t) => !t.priority).length} issues without a
-              priority. Disabled priorities remain in the issue register.
+            <p className="mt-3 text-xs text-slate-600">
+              Completion counts completed issues, excluding N/A. Late uses the
+              recorded programme date or task deadline.{" "}
+              {issues.filter((task) => !task.priority).length} issues have no
+              priority and remain in the issue register. No stage is inferred
+              from priority.
             </p>
           </section>
         )}
@@ -851,5 +884,54 @@ function ProjectGettingStarted({
         ))}
       </ul>
     </section>
+  );
+}
+
+type ProgressMetric = "total" | "completed" | "late";
+function metricFilters(metric: ProgressMetric): TaskFilters {
+  return metric === "completed"
+    ? { status: "completed" }
+    : metric === "late"
+      ? { attention: "overdue" }
+      : {};
+}
+function ProgressCounters({
+  label,
+  summary,
+  onOpen,
+}: {
+  label: string;
+  summary: ReturnType<typeof taskProgress>;
+  onOpen: (metric: ProgressMetric) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      {(
+        [
+          ["total", "TOTAL", summary.total],
+          ["completed", "COMP", summary.completed],
+          ["late", "LATE", summary.late],
+        ] as const
+      ).map(([metric, text, value]) => (
+        <button
+          key={metric}
+          title={`${label}: ${value} ${metric === "total" ? "records, including N/A" : metric === "completed" ? "completed records" : "open records due before today"}. Open list.`}
+          aria-label={`${label}: ${value} ${text}. View activities`}
+          onClick={() => onOpen(metric)}
+          className={`inline-flex min-h-11 items-center gap-1.5 rounded px-1 text-xs hover:bg-slate-50 focus-visible:outline-blue-600 ${metric === "late" && value > 0 ? "text-red-700" : "text-slate-600"}`}
+        >
+          {text} <strong className="text-sm tabular-nums">{value}</strong>
+        </button>
+      ))}
+      <button
+        className="ml-auto inline-flex min-h-11 items-center gap-1 rounded px-1 text-sm font-semibold tabular-nums text-slate-900 hover:bg-slate-50 focus-visible:outline-blue-600"
+        onClick={() => onOpen("completed")}
+        aria-label={`${label}: ${summary.percent === null ? "no applicable tasks" : `${summary.percent}% completed`}. View completed activities`}
+        title={`${summary.completed} completed / ${summary.applicable} applicable. ${summary.notApplicable} N/A excluded.`}
+      >
+        {summary.percent === null ? "—" : `${summary.percent}%`}
+        <span className="text-xs font-normal text-slate-600">complete</span>
+      </button>
+    </div>
   );
 }

@@ -14,13 +14,16 @@ spiegano il percorso, non sostituiscono lo stato. Nessuna dipendenza da una chat
 | Obiettivo prodotto, utenti, invarianti                               | [PRODUCT](../../PRODUCT.md)                                                                                                      |
 | Uso dell'app, quattro percorsi e setup tecnico                       | [README principale](../../README.md), [casi d'uso](../use-cases.md), [architettura](../architecture.md)                          |
 | Requisiti Tony e cosa mostrano davvero ZIP/Excel                     | [Prima analisi e delta](analysis.md), [intake 19:12](intake-1912.md), [intake Excel e ID 16 ottobre](intake-20261016.md)         |
-| Allegati: nomi, provenienza, dimensioni, hash, limiti                | [Manifest dei 14 originali privati](attachments/manifest.md)                                                                     |
+| Allegati: nomi, provenienza, dimensioni, hash, limiti                | [Manifest degli originali privati](attachments/manifest.md)                                                                      |
 | Programme ID / Activity ID / Client asset ID, CSV/JSON               | [Contratto identificativi](../programme-identifiers.md)                                                                          |
 | Preflight Excel locale, anomalie e dati non importabili              | [DATA-002](asset-preflight.md)                                                                                                   |
 | Demo locale ricca/vuota e piano DB remoto ancora bloccato            | [Piano isolamento](local-demo-and-remote-plan.md), [manifest di revisione](demo-payload-manifest.json)                           |
 | Testo storico di messaggi e stato delle bozze                        | [Bozze archiviate](drafts.md), [copertura corrente](register.md#stato-corrente-per-ripresa)                                      |
 | Piano iniziale di settembre                                          | [Piano storico](../tony-development-plan.md), non stato corrente                                                                 |
 | Metodo riutilizzabile fuori da FieldTrack                            | [Skill portabile](../../tools/skills/capture-working-lessons/SKILL.md); dettagli Tony restano qui                                |
+
+Fonti dashboard del 16 ottobre: [intake 12:24–12:31](intake-20261016-dashboard.md),
+con tre PNG salvati e due soltanto visualizzati da Show Chrome.
 
 ## Orientamento al codice, solo quando serve
 

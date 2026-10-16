@@ -3,7 +3,8 @@
 Ultimo aggiornamento: 16 ottobre 2026. **Avvio solo manuale, heartbeat PAUSED.**
 Fonti dirette della precedente acquisizione fino alle **20:56 del 15 ottobre**;
 resoconto successivo Show Chrome: Tony «Both required» 16 ottobre 10:01 e invio
-approvato unico 12:10. Questi ultimi eventi sono riferiti, non letti qui sul desktop.
+approvato unico 12:10 e otto nuovi messaggi Tony 12:24–12:31. Questi eventi sono
+riferiti da Show Chrome, non letti qui sul desktop.
 Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
 
 ## Stato corrente per ripresa
@@ -48,7 +49,7 @@ resoconto Show Chrome la colloca alle **10:01 del 16 ottobre**. La domanda Sched
 statici/build e desktop/mobile passati; app `77b74d7`, Vercel success; chiusura
 documentale `58a548f` su main. Prova autenticata esclusivamente locale.
 
-**Copertura Tony e comunicazioni:** 14 allegati privati nel [manifest](attachments/manifest.md);
+**Copertura Tony e comunicazioni:** 17 allegati privati verificati nel [manifest](attachments/manifest.md);
 Excel ATT-014 analizzato, 1.354 righe candidate, non importato automaticamente.
 [Acquisizione diretta precedente](intake-20261016.md): fino alle 20:56 del 15 ottobre.
 **Resoconto successivo della chat operativa (Show Chrome), non nuova lettura qui:**
@@ -66,18 +67,25 @@ controlli desktop già rifiutati dall'auto-review né interferire con l'utente.
 Tony sarà via 10 giorni dalla prossima settimana lavorando da remoto: resoconto,
 non calendario o consegna concordati.
 
-**Nuovo feedback visuale, acquisizione in corso altrove:** resoconto Show Chrome del
-16 ottobre: due PNG Tony delle **12:24**, dopo l'invio 12:10. Richiesta esplicita:
-**Tasks by status in alto pagina, affiancato a un riepilogo come Project Health**.
-Nelle figure: 305 task e ciambella 12 Projects (8 On Track, 3 At Risk, 1 Off Track),
-**esclusivamente dati di esempio**, non da importare o copiare nell'app. Non sono
-definiti ambito multi-progetto vs progetto corrente e regole On/At/Off Track.
-Nessuna implementazione ora, nessun nuovo invio autorizzato. La chat che acquisisce
-sta completando primo salvataggio e messaggi 12:28: non duplicare computer use o
-download. Secondo originale riferito salvato privatamente in
-`attachments/2026-10-16_1224_tony_project-health_original.png`; manifest completo e
-hash ancora da ricevere/verificare, nessun nuovo ATT assegnato qui.
-La copertura diretta di questa unità resta invariata; questa è fonte riferita.
+**Dashboard UX-003:** nuova richiesta di Marco «Tony continua a gestirlo»,
+«prendere tutti i messaggi» e «porta avanti tutto», trasmessa dalla chat operativa.
+Implementate le parti chiare: Tasks by status compatto in alto accanto al riepilogo
+progetto; Programme overview e Issues by priority con TOTAL/COMP/LATE, percentuale
+e drill-down; overdue separato in `/overdue` con ricerca, priorità e paginazione.
+[Fonti e contratto](intake-20261016-dashboard.md). Appartenenza ai progetti e permessi
+esistenti preservati. Completamento workflow separato da approvazione tag; programma
+precede deadline task, oggi non late, N/A esclusi dalla percentuale. Nessun mapping
+di fase o formula health inventati. Project Health resta da definire (ambito e
+On/At/Off Track), esplicitamente indicato nella UI.
+
+**Copertura visuale finale riferita:** Show Chrome ha letto otto messaggi nuovi
+dalle **12:24 alle 12:31 del 16 ottobre** e visto cinque screenshot. Qui ispezionati
+e verificati soltanto tre originali locali (ATT-015/016/017); Programme overview
+e Overdue risultano letti ma non salvati, file Programme assente al controllo.
+Salvataggi fermati per errore ripetuto di cattura e desktop occupato da Marco:
+nessun nuovo tentativo UI o browser visibile da questa unità, nessun invio/bozza.
+Eventuale futura richiesta di lettura: sovrapposizione da 12:24–12:31, rispettando
+accesso e lavoro dell'utente. Le cifre dei PNG sono esempi, mai importate.
 
 **Gate DB:** Production dichiara mode neon, ma endpoint/project/branch effettivi
 non identificati. Solo host/database locali estratti; nessuna query SQL. Accessi
@@ -94,24 +102,49 @@ nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattiva
 I 1.000 € aggiuntivi sono compenso commerciale accettato («No probs»), non pagamento
 verificato, budget API o prezzo universale. Primo pagamento storico non verificato con certezza.
 
-| Priorità / ID                       | Stato                                             | Prossima unità concreta                                                                                             | Accettazione / gate                                                                                   |
-| ----------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED                | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                    |
-| AI-001 copilot utile senza live API | completata (0f80a4e)                              | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                      |
-| AI-002 proposte controllabili       | completata (0f80a4e)                              | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato        |
-| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire            | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                     |
-| DATA-002 preflight Excel asset      | completata, solo locale                           | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati     |
-| CX-010 riferimenti asset esterni    | completata nel perimetro                          | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto                 |
-| UX-003 grafici stato/health         | nuovo requisito riferito, acquisizione incompleta | Attendere manifest/report di Show Chrome; chiarire ambito e regole health                                           | Stato task in alto affiancato al riepilogo; numeri screenshot solo esempio, nessuna formula inventata |
-| UX-002 chiarezza continua           | pronta                                            | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                    |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa              | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                        |
-| AI-003 attivazione provider         | in attesa di Marco                                | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                             |
-| AI-004 autopilot                    | futuro                                            | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                      |
+| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
+| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED     | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
+| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
+| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
+| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
+| DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
+| CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
+| UX-003 dashboard compatta           | implementata, verifiche in chiusura    | Pubblicare/verificare dashboard e pagina overdue; Project Health resta da definire                                  | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
+| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
+| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
+| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
 
 Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossima
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
 Dopo ogni unità annotare file/prove/commit e passo successivo qui, senza riscrivere
 lo storico sottostante.
+
+## Dashboard UX-003 — 16 ottobre 2026
+
+Stima iniziale comunicata: **18.000–30.000 token** per blocco delimitato, senza
+tetto concordato o costo monetario dedotto. Consuntivo puntuale token non disponibile,
+non presentato come misurato. Un solo blocco helper/test delegato, integrazione/UI
+e verifica centrali; nessun lavoro sulla piattaforma aziendale degli agenti.
+
+Implementazione e semantica nel [contratto dashboard](intake-20261016-dashboard.md).
+Prove: **91 test unitari/PostgreSQL, 10 API demo**, typecheck/lint e build passati.
+QA locale headless 1440×1000 e 390×844: nove TOTAL/COMP/LATE confrontati con il
+numero di record nei drill-down di progetto, L2A e P1 issue; hint hover e apertura
+con tastiera/touch; overdue spostato fuori dashboard, accesso da More, ricerca,
+clear, paginazione, progetto vuoto. Worker reindirizzato dalla nuova route. Nessun
+overflow mobile; una correzione batch di compattezza fasi/contatori e una conferma
+finale, poi stop. Catture private `output/playwright/dashboard-20261016-*`. Log
+dev con warning preload CSS/HMR, nessun errore applicativo rilevato. Detector UI
+senza rilievi. Build finale dopo correzione UI passata. Commit/push e deploy
+ancora da verificare in chiusura; non confonderli con i test locali.
+
+Nessun dato cliente importato, migrazione, DB remoto, chiamata provider o messaggio
+esterno. Heartbeat PAUSED; nessun riavvio automatico. `next-env.d.ts` preesistente
+preservato. Successiva unità su richiesta: regole Project Health (ambito e criteri),
+e CX-009 gruppi; nessuna nuova domanda sugli ID. Due screenshot restano senza originale
+salvato: non riprovare acquisizione mentre Marco usa il desktop.
 
 ## Passaggio all'avvio manuale e backup della conoscenza — 16 ottobre 2026
 
@@ -136,8 +169,8 @@ nessuna nuova chat di prova aperta per Marco.
 I 14 originali privati sono presenti e corrispondono per byte/SHA-256 al manifest
 (controllo indipendente di questa unità); non sono inclusi nel backup Git.
 
-Prossima ripresa **manuale**: rispondere al compito concreto di Marco; recuperare
-il report completo dei PNG 12:24/12:28 senza duplicare acquisizioni. Per CX-009
+Prossima ripresa **manuale**: rispondere al compito concreto di Marco; usare
+il report completo 12:24–12:31 già registrato, senza duplicare acquisizioni. Per CX-009
 mancano ancora regole di gruppo, AI-003 attende setup chiave e DATA-001 target e
 piano approvato. Non proseguire in background né riproporre la domanda sugli ID.
 

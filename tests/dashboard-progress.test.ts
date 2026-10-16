@@ -15,6 +15,8 @@ import {
   tagProgressGroups,
 } from "../src/lib/tag-progress";
 import { filterTeamWork, teamWorkload } from "../src/lib/team-workload";
+import { taskProgress } from "../src/lib/dashboard-progress";
+import { filterTasks } from "../src/lib/commissioning";
 
 const now = new Date("2026-10-15T12:00:00Z");
 const task = (id: string, fields: Partial<Task> = {}): Task => ({
@@ -292,4 +294,229 @@ test("team open and closed issue filters use workflow closure and preserve impor
     ["na"],
   );
   assert.equal(teamWorkload([], now).percent, null);
+});
+
+test("task progress excludes N/A from completion percentage and uses the governing deadline for open work", () => {
+  const tasks = [
+    task("completed", { status: "completed", scheduleDueDate: "2026-10-01" }),
+    task("not-applicable", { status: "not-applicable", dueDate: "2026-10-01" }),
+    task("due-today", { dueDate: "2026-10-15" }),
+    task("blocked-late", { status: "blocked", dueDate: "2026-10-14" }),
+    task("review-undated", { status: "review" }),
+    task("schedule-late", {
+      dueDate: "2026-12-01",
+      scheduleDueDate: "2026-10-14",
+    }),
+    task("schedule-future", {
+      dueDate: "2026-10-01",
+      scheduleDueDate: "2026-10-20",
+    }),
+  ];
+  const snapshot = structuredClone(tasks);
+  assert.deepEqual(taskProgress(tasks, now), {
+    total: 7,
+    applicable: 6,
+    completed: 1,
+    notApplicable: 1,
+    percent: 17,
+    late: 2,
+    undated: 1,
+    scheduled: 3,
+  });
+  assert.deepEqual(
+    tasks,
+    snapshot,
+    "Summarizing a subset does not modify its records or dates.",
+  );
+});
+test("workflow completion and tag approval remain independent in task progress", () => {
+  const completedButRejected = tag("client", {
+    status: "completed",
+    cx: {
+      kind: "tag",
+      assetId: "client",
+      level: "L1",
+      result: "passed",
+      tagReview: "rejected",
+    },
+  });
+  const approvedButInReview = tag("other", {
+    status: "review",
+    cx: {
+      kind: "tag",
+      assetId: "other",
+      level: "L1",
+      result: "passed",
+      tagReview: "approved",
+    },
+  });
+  assert(!isTagApproved(completedButRejected));
+  assert(isTagApproved(approvedButInReview));
+  assert.equal(taskProgress([completedButRejected], now).completed, 1);
+  assert.equal(taskProgress([approvedButInReview], now).completed, 0);
+  assert.equal(
+    taskProgress([completedButRejected, approvedButInReview], now).percent,
+    50,
+  );
+});
+test("task progress matches project, level, issue and priority drilldowns without including foreign work", () => {
+  const p = project();
+  const tasks = [
+    task("construction-done", {
+      status: "completed",
+      dueDate: "2026-10-14",
+      cx: { kind: "task", level: "L1", result: "untested" },
+    }),
+    task("construction-late", {
+      dueDate: "2026-10-14",
+      cx: { kind: "task", level: "L1", result: "untested" },
+    }),
+    task("construction-other-level", {
+      cx: { kind: "task", level: "L2", result: "untested" },
+    }),
+    task("issue-today", {
+      priority: "P1",
+      status: "blocked",
+      dueDate: "2026-10-14",
+      scheduleDueDate: "2026-10-15",
+      cx: { kind: "issue", level: "L1", result: "failed" },
+    }),
+    task("issue-undated", {
+      priority: "P1",
+      status: "review",
+      cx: { kind: "issue", level: "L1", result: "retest" },
+    }),
+    task("issue-done", {
+      priority: "P1",
+      status: "completed",
+      dueDate: "2026-10-01",
+      cx: { kind: "issue", level: "L1", result: "passed" },
+    }),
+    task("issue-na", {
+      priority: "P1",
+      status: "not-applicable",
+      dueDate: "2026-10-01",
+      cx: { kind: "issue", level: "L1", result: "untested" },
+    }),
+    task("issue-other-priority", {
+      priority: "P2",
+      dueDate: "2026-10-01",
+      cx: { kind: "issue", level: "L1", result: "failed" },
+    }),
+    task("foreign-done", {
+      projectId: "foreign",
+      priority: "P1",
+      status: "completed",
+      cx: { kind: "issue", level: "L1", result: "passed" },
+    }),
+    task("foreign-late", {
+      projectId: "foreign",
+      dueDate: "2026-10-01",
+      cx: { kind: "task", level: "L1", result: "untested" },
+    }),
+  ];
+  const constructionFilter = { level: "L1", kind: "task" };
+  const construction = taskProgress(
+    filterTasks(tasks, p, constructionFilter, now),
+    now,
+  );
+  assert.deepEqual(construction, {
+    total: 2,
+    applicable: 2,
+    completed: 1,
+    notApplicable: 0,
+    percent: 50,
+    late: 1,
+    undated: 0,
+    scheduled: 0,
+  });
+  assert.equal(
+    construction.completed,
+    filterTasks(tasks, p, { ...constructionFilter, status: "completed" }, now)
+      .length,
+  );
+  assert.equal(
+    construction.late,
+    filterTasks(tasks, p, { ...constructionFilter, attention: "overdue" }, now)
+      .length,
+  );
+  const issueFilter = { level: "L1", kind: "issue", priority: "P1" };
+  const issues = taskProgress(filterTasks(tasks, p, issueFilter, now), now);
+  assert.deepEqual(issues, {
+    total: 4,
+    applicable: 3,
+    completed: 1,
+    notApplicable: 1,
+    percent: 33,
+    late: 0,
+    undated: 1,
+    scheduled: 1,
+  });
+  assert.equal(
+    issues.completed,
+    filterTasks(tasks, p, { ...issueFilter, status: "completed" }, now).length,
+  );
+  assert.equal(
+    issues.notApplicable,
+    filterTasks(tasks, p, { ...issueFilter, status: "not-applicable" }, now)
+      .length,
+  );
+  assert.equal(
+    issues.late,
+    filterTasks(tasks, p, { ...issueFilter, attention: "overdue" }, now).length,
+  );
+  assert(
+    !filterTasks(tasks, p, issueFilter, now).some(
+      (item) => item.projectId === "foreign",
+    ),
+  );
+});
+test("empty and wholly N/A subsets retain an unknown percentage rather than a fabricated zero", () => {
+  assert.deepEqual(taskProgress([], now), {
+    total: 0,
+    applicable: 0,
+    completed: 0,
+    notApplicable: 0,
+    percent: null,
+    late: 0,
+    undated: 0,
+    scheduled: 0,
+  });
+  assert.deepEqual(
+    taskProgress(
+      [
+        task("na-undated", { status: "not-applicable" }),
+        task("na-scheduled", {
+          status: "not-applicable",
+          scheduleDueDate: "2026-10-01",
+        }),
+      ],
+      now,
+    ),
+    {
+      total: 2,
+      applicable: 0,
+      completed: 0,
+      notApplicable: 2,
+      percent: null,
+      late: 0,
+      undated: 0,
+      scheduled: 1,
+    },
+  );
+});
+test("late work uses the existing project calendar date, including around UTC midnight", () => {
+  const localToday = new Date("2026-10-14T23:30:00Z");
+  const tasks = [
+    task("yesterday", { dueDate: "2026-10-14" }),
+    task("today", { dueDate: "2026-10-15" }),
+    task("missing"),
+  ];
+  const result = taskProgress(tasks, localToday);
+  assert.equal(result.late, 1);
+  assert.equal(result.undated, 1);
+  assert.equal(
+    result.late,
+    filterTasks(tasks, project(), { attention: "overdue" }, localToday).length,
+  );
 });

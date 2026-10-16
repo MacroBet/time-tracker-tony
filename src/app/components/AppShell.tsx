@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
+  CalendarClock,
   HardHat,
   LogOut,
   Settings,
@@ -141,6 +142,12 @@ export function AppShell({
           href: "/supervisor?view=timesheets",
           icon: Clock3,
           module: "time",
+        },
+        {
+          label: "Overdue",
+          href: "/overdue",
+          icon: CalendarClock,
+          module: "dashboard",
         },
         {
           label: "Reports",

@@ -110,3 +110,9 @@ Il riferimento ad altri progetti è contesto della proposta, non lavoro affidato
 Nessun costo monetario dedotto dai token, nessun runtime globale o polling implicito;
 la scelta corrente resta avvio manuale con heartbeat PAUSED. Il metodo di cattura
 conserva questa distinzione senza imporre stime o orchestrazione a ogni domanda.
+
+Aggiornamento successivo della richiesta dashboard: Marco ha autorizzato a proseguire
+le parti chiare; otto messaggi fino alle 12:31 e tre PNG locali verificati, due non
+salvati. Dashboard compatta e overdue separato implementati, Project Health ancora
+da definire; [contratto e prove](intake-20261016-dashboard.md). La richiesta concreta
+apre questo blocco manuale e non riattiva l'heartbeat o la piattaforma agenti.

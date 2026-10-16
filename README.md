@@ -153,7 +153,8 @@ in [Assistente operativo Tony](docs/tony-feedback/README.md), con
 WhatsApp si consulta solo quando utile al compito e senza interferire con l'utente.
 Ogni futuro messaggio richiede approvazione puntuale di Marco.
 
-- `/overview`: dashboard per progetto con costruzione distinta dai tag, barre per fase, matrice categoria/località, Client Supplied e review I/R/AC/A. Le colonne completamente approvate si richiudono e i riepiloghi aprono i record filtrati.
+- `/overdue`: lista separata dei task aperti con scadenza precedente a oggi, ricerca/priorità e paginazione; accesso dalla dashboard e da More su mobile. Usa la data programma registrata, altrimenti la scadenza task.
+- `/overview`: grafico stato task in alto con riepilogo del progetto; TOTAL/COMP/LATE e percentuali aprono i record per fase registrata e priorità issue. Completamento task distinto da approvazione tag, N/A escluso dalla percentuale; Project Health ancora da definire. Dashboard per progetto con costruzione distinta dai tag, barre per fase, matrice categoria/località, Client Supplied e review I/R/AC/A. Le colonne completamente approvate si richiudono e i riepiloghi aprono i record filtrati.
 - Navigazione: Overview, Programme, Assets e Tasks sono i percorsi principali; People, Time e Reports sono secondari. Su mobile le quattro destinazioni e More restano sempre raggiungibili senza scorrimento orizzontale.
 - Primo utilizzo: Overview spiega il percorso; Assets e Programme vuoti mostrano la prima azione, senza filtri o grafici inutili. Nel programma mobile la lista delle attività è la vista iniziale, con timeline a scelta.
 - `/schedule`: Gantt compatto con albero asset per categoria/fase/piano/area, date e durata lavorativa, predecessori Finish-to-Start e lag. Anteprima degli impatti, salvataggio versionato, baseline protetta e aggiornamento delle scadenze task collegate. Calendario lunedì–venerdì senza festività; nessun calcolo critical path o altro tipo di legame.
