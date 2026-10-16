@@ -1,23 +1,32 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: 16 ottobre 2026. Lettura diretta fino alle **20:56 del
-15 ottobre**, inclusi Excel asset e richieste successive. I precedenti
-resoconti vocali restano distinti dalla nuova lettura diretta.
+Ultimo aggiornamento: 16 ottobre 2026. **Avvio solo manuale, heartbeat PAUSED.**
+Fonti dirette della precedente acquisizione fino alle **20:56 del 15 ottobre**;
+resoconto successivo Show Chrome: Tony «Both required» 16 ottobre 10:01 e invio
+approvato unico 12:10. Questi ultimi eventi sono riferiti, non letti qui sul desktop.
 Le ore sono quelle visualizzate da WhatsApp; il fuso della fonte non è verificato.
 
 ## Stato corrente per ripresa
 
-**Missione:** far avanzare FieldTrack con autonomia nel perimetro di Marco. Punto
-operativo: [README agente](README.md). Heartbeat **Agente progetto Tony**, ACTIVE
-ogni 15 minuti in questa chat locale; non creare duplicati. Nessun altro messaggio
-a Tony adesso. Se desktop occupato/inaccessibile, registrare la copertura e
-continuare il lavoro indipendente, senza prendere il primo piano ripetutamente.
+**Missione e avvio:** FieldTrack per Tony McIntyre, gestione su richiesta di Marco.
+Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
+[indice](index.md) e stato essenziale, senza dipendere da una vecchia conversazione.
+[Procedura](README.md), [recap](collaboration-recap.md), [insegnamenti](working-lessons.md).
+Una domanda non autorizza sviluppo indiscriminato; «Riprendi Tony» ricostruisce
+il punto e porta avanti solo lavoro già chiaramente autorizzato.
+
+**Modalità corrente:** Marco ha richiesto il 16 ottobre la pausa del heartbeat
+**Agente progetto Tony**, ID `agente-progetto-tony`, ora **PAUSED**. Pausa eseguita
+tramite strumento ufficiale nella chat operativa e confermata qui in sola lettura
+nei metadati locali. Non riattivarlo o creare altre automazioni senza richiesta.
+Nessun polling o continuazione dopo il turno. La precedente modalità ACTIVE ogni
+15 minuti è storica e superata. Nuove chat manuali sono previste.
 
 **Consegnato:** Gantt persistente, asset CSV/JSON, storico, review I/R/AC/A,
 Client Supplied e UX desktop/mobile. Protocollo persistente cc14c07 consegnato
 prima del Copilot. **Copilot 0f80a4e su main remoto verificato:** controlli reali,
 esempi, provider server disabilitato e proposte task con anteprima/conferma.
-Ultimo ciclo: **76 test unitari/PostgreSQL, 9 API**, typecheck/lint/format/build
+Ciclo Copilot: **76 test unitari/PostgreSQL, 9 API**, typecheck/lint/format/build
 e UI desktop/mobile superati. **Deploy Copilot Vercel success** verificato il
 15 ottobre alle 19:22 UTC (21:22 Europe/Rome), collaudo autenticato solo locale;
 deploy UX 108042a già riuscito. Rileggere git per HEAD corrente. Modifica
@@ -30,22 +39,31 @@ nessun nuovo collaudo applicativo, import, DB o provider. [Uso e prove](asset-pr
 **CX-010 consegnata (77b74d7):** Marco ha riferito il 16 ottobre la risposta verificata di
 Tony **«Both required»** alla domanda Programme ID / individual Activity ID.
 Implementazione autorizzata: entrambi distinti e collegati, riferimenti esistenti
-preservati. Coordinamento centrale in questa chat; nessuna nuova lettura/invio
-WhatsApp. Tre blocchi indipendenti integrati: modello/import/API, Assets UI, Programme/task/report UI. Programme ID per progetto e Activity ID individuali sono distinti; il nuovo riferimento primario asset resta separato da consegna e tag. [Contratto e uso](../programme-identifiers.md).
+preservati. Coordinamento centrale della consegna; nessuna lettura/invio WhatsApp
+nel ciclo implementativo CX-010. Tre blocchi indipendenti integrati: modello/import/API, Assets UI, Programme/task/report UI. Programme ID per progetto e Activity ID individuali sono distinti; il nuovo riferimento primario asset resta separato da consegna e tag. [Contratto e uso](../programme-identifiers.md).
 
-Fonte MSG-20261016-IDs: ora WhatsApp non fornita, evidenza riferita direttamente
-da Marco tramite chat vocale. La domanda Schedule ID è risolta; non riproporla.
+Fonte MSG-20261016-IDs: risposta riferita inizialmente da Marco senza ora; successivo
+resoconto Show Chrome la colloca alle **10:01 del 16 ottobre**. La domanda Schedule ID
+è risolta; non riproporla. Ultima consegna: **86 test unitari/PostgreSQL, 10 API**,
+statici/build e desktop/mobile passati; app `77b74d7`, Vercel success; chiusura
+documentale `58a548f` su main. Prova autenticata esclusivamente locale.
 
-**Copertura Tony:** lettura diretta root fino 20:56 del 15 ottobre, verificata
-il 16 ottobre nella chat già aperta con sovrapposizione da 20:14. Nessun messaggio
-del 16 ottobre visibile in fondo alla chat in quel momento. **14 allegati** nel
-manifest: lista di esempio acquisita come ATT-014 (20:41), 1.354 righe candidate,
-nomi ripetuti e campi richiesti ancora assenti. [Analisi e mappatura](intake-20261016.md).
-Marco ha richiesto una risposta e ribadito la conferma del testo prima dell'invio:
-[bozza](drafts.md) successivamente inserita nel composer su richiesta esplicita
-di Marco, testo completo verificato; nessun invio, click Invia lasciato a Marco.
-Riprendere con sovrapposizione 20:41–20:56 quando desktop/sessione lo consentono.
-Tony sarà via 10 giorni dalla prossima settimana, lavorando da remoto: resoconto,
+**Copertura Tony e comunicazioni:** 14 allegati privati nel [manifest](attachments/manifest.md);
+Excel ATT-014 analizzato, 1.354 righe candidate, non importato automaticamente.
+[Acquisizione diretta precedente](intake-20261016.md): fino alle 20:56 del 15 ottobre.
+**Resoconto successivo della chat operativa (Show Chrome), non nuova lettura qui:**
+ultimo Tony visibile «Both required», **16 ottobre 10:01**, in risposta agli ID;
+**OUT-20261016-01, 12:10**, invio unico richiesto esplicitamente da Marco e verificato:
+«Done Tony, both IDs are in now, programme and activity, separate and linked.
+Tested and deployed.» Nessuna ricevuta/lettura successiva attestata da questo resoconto.
+L'autorizzazione di quel singolo invio è conclusa. Nessun'altra bozza attuale o
+messaggio da inviare; domanda ID archiviata, stato composer attuale non ispezionato.
+Ogni invio futuro richiede approvazione puntuale sul testo concreto; composer solo
+se chiesto. Nessun accesso desktop in questa unità documentale. Per una futura
+richiesta di lettura, ripartire con piccola sovrapposizione dal chiarimento 10:01 e
+dall'invio 12:10, senza fingere copertura dell'intervallo non letto. Non ripetere
+controlli desktop già rifiutati dall'auto-review né interferire con l'utente.
+Tony sarà via 10 giorni dalla prossima settimana lavorando da remoto: resoconto,
 non calendario o consegna concordati.
 
 **Gate DB:** Production dichiara mode neon, ma endpoint/project/branch effettivi
@@ -60,11 +78,12 @@ Discovery sicura: nessuna OPENAI_API_KEY nell'ambiente/.env.local; nessun valore
 mostrato. Non riproporre la decisione a ogni ciclo, non creare/riusare segreti,
 nessuna chiamata live/a pagamento. Copilot onesto "da configurare"; mock solo
 nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattivato.
-I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
+I 1.000 € aggiuntivi sono compenso commerciale accettato («No probs»), non pagamento
+verificato, budget API o prezzo universale. Primo pagamento storico non verificato con certezza.
 
 | Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
 | ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/heartbeat        | completata (cc14c07)                   | Consegnare e verificare link di README, AGENTS, registro; commit/push prima del copilot                             | Ripresa da documenti senza ricostruire chat; heartbeat esistente, nessun duplicato                |
+| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED     | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
 | AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
 | AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
 | CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
@@ -75,8 +94,37 @@ I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
 | AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
 | AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
 
-Quando una voce è bloccata, scegliere la prossima pronta. Dopo ogni unità annotare
-file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostante.
+Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossima
+attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
+Dopo ogni unità annotare file/prove/commit e passo successivo qui, senza riscrivere
+lo storico sottostante.
+
+## Passaggio all'avvio manuale e backup della conoscenza — 16 ottobre 2026
+
+Richiesta esplicita di Marco, trasmessa dalla chat operativa: fermare il consumo
+periodico e recuperare la collaborazione da qualsiasi nuova chat del progetto.
+Aggiornati AGENTS, README, indice, stato, recap e lezioni; cronologia preservata e
+ACTIVE qualificato come storico. La skill generale portabile conserva solo il
+metodo di apprendimento, senza dati Tony o nuove autorizzazioni.
+
+Unità esclusivamente documentale/configurazione: link e bootstrap sottoposti a
+revisione mirata indipendente, skill validata con quick_validate; nessuna nuova
+suite applicativa, implementazione, migrazione, scrittura DB, chiamata live,
+lettura WhatsApp o deploy richiesto. Le prove applicative restano quelle di CX-010.
+Controlli di questa unità: 81 link Markdown locali con destinazioni/ancore validi,
+formato e diff; revisione indipendente del bootstrap e dei casi di routing della
+skill. `capture-working-lessons` installata in `~/.codex/skills` con discovery
+automatica normale; copia personale fuori Git, sorgente portabile versionato in
+`tools/skills/capture-working-lessons`, identico byte per byte. Nessuna istruzione
+globale modificata. Il nuovo catalogo skill richiede una nuova chat/sessione;
+nessuna nuova chat di prova aperta per Marco.
+
+I 14 originali privati sono presenti e corrispondono per byte/SHA-256 al manifest
+(controllo indipendente di questa unità); non sono inclusi nel backup Git.
+
+Prossima ripresa **manuale**: rispondere al compito concreto di Marco; per CX-009
+mancano ancora regole di gruppo, AI-003 attende setup chiave e DATA-001 target e
+piano approvato. Non proseguire in background né riproporre la domanda sugli ID.
 
 ## Consegna CX-010 — 16 ottobre 2026
 
@@ -111,7 +159,7 @@ risultati condivisi, effetti delle modifiche ai membri) prima di implementare
 propagazioni. AI-003 e DATA-001 mantengono i gate già registrati; non ripetere la
 domanda sui riferimenti programma/attività, risolta.
 
-## Copertura e punto di ripresa
+## Copertura iniziale storica — 15 ottobre (superata dallo stato corrente)
 
 - Chat Tony McIntyre identificata nella sessione WhatsApp desktop esistente.
   Letti i messaggi di progetto del 13–15 ottobre fino alle 19:20 del 15 ottobre;
@@ -126,9 +174,13 @@ domanda sui riferimenti programma/attività, risolta.
 - Stato locale iniziale: ramo corrente, HEAD `fabd1ba`; modifica preesistente a
   `next-env.d.ts` (riferimenti generati da `.next/types` a `.next/dev/types`).
   Preservata. Nessun segreto esposto e nessuna operazione sul database remoto effettuata.
-- Heartbeat **Agente progetto Tony** ACTIVE ogni 15 minuti, creazione confermata dalla chat vocale; non duplicare. La lettura WhatsApp dipende da accesso e finestra disponibile.
+- Storico: heartbeat creato ACTIVE ogni 15 minuti il 15 ottobre; dal 16 ottobre è PAUSED per scelta di Marco. Usare lo stato corrente per la ripresa manuale.
 
 ## Contesto storico, da non confondere con nuovi feedback
+
+Da qui in avanti sono conservate le fasi precedenti. «Prossimo passo», ACTIVE,
+bozze e autorizzazioni descrivono il momento indicato, non istruzioni correnti.
+Prevalgono sempre lo Stato corrente sopra e AGENTS; le domande ID sono risolte.
 
 Il piano di settembre descrive dashboard commissioning, registro asset/P6,
 baseline/forecast, livelli configurabili, workflow e report. Il codice locale
@@ -205,11 +257,11 @@ esplicitato nell'interfaccia; non è una sincronizzazione P6.
 
 ## Decisioni e interpretazioni
 
-- Ultima regola per WhatsApp: bozze brevissime esclusivamente in Codex, mai nel
-  campo di composizione. Ogni invio richiede conferma esplicita sul testo preciso.
+- Regola corrente per WhatsApp: bozze brevissime in Codex; composer solo su richiesta
+  esplicita. Ogni invio richiede conferma di Marco sul testo preciso.
   Non alterare gli invii già effettuati.
-- La precedente revoca della delega è stata superata dall'autorizzazione di Marco:
-  quattro subagenti hanno lavorato su asset, audit, dashboard/team e intake Tony,
+- La delega tecnica a implementare è stata autorizzata da Marco (non quella a inviare
+  messaggi autonomamente): quattro subagenti hanno lavorato su asset, audit, dashboard/team e intake Tony,
   con integrazione e controllo centrale.
 - Tony ha precisato **I/R/AC/A** (19:14), chiesto checkbox asset/tag (19:16), Gantt
   compatto e albero categoria/fase/piano/area (19:18), preferito la nostra versione
@@ -231,8 +283,8 @@ esplicitato nell'interfaccia; non è una sincronizzazione P6.
 3. Confermare W1/W2/W3, L21, i2/i3 e significato di L5 prima di nuove tassonomie.
    Matrice disciplina/onsite-offsite e amministratore per team restano da definire.
 4. Se occorrono altri legami, festività o critical path, definirne le regole.
-5. Verificare il deploy e poi il collaudo di Tony sui dati autorizzati. Il push
-   non dimostra che il sito abbia completato il rilascio.
+5. Deploy applicativo CX-010 riuscito; eventuale collaudo autenticato di Tony sui dati
+   autorizzati non attestato. Il push non dimostra da solo un deploy riuscito.
 
 ## Esito delle sessioni
 
@@ -497,7 +549,8 @@ remota, target esatto e assenza ID ancora pendenti. Nessuna scrittura remota.
 
 Marco ha chiesto di non scrivere altro, di rendere persistente l'agente e di far
 avanzare il progetto mentre Codex resta aperto. La chat vocale conferma creazione
-**ACTIVE** del heartbeat **Agente progetto Tony** ogni 15 minuti in questa chat.
+**ACTIVE** del heartbeat **Agente progetto Tony** ogni 15 minuti in questa chat
+(stato storico del 15 ottobre, superato da PAUSED il 16 ottobre).
 Questo root non crea automazioni duplicate. README/AGENTS/stato sono il protocollo
 per la ripresa; avvisi solo per cambiamenti utili o interventi necessari.
 
@@ -509,7 +562,8 @@ Nessun backend AI attivo dichiarato. La skill chiave resta applicabile al setup
 futuro; questa istruzione utente autorizza scaffold senza live API.
 
 Protocollo persistente verificato: heartbeat locale agente-progetto-tony di tipo
-heartbeat, status ACTIVE, target chat 01a1407b-ee5f-72a0-bc3e-f883cdd78130.
+heartbeat, status ACTIVE al controllo del 15 ottobre, target storico
+01a1407b-ee5f-72a0-bc3e-f883cdd78130; ora PAUSED, nessuna dipendenza da quel target per la ripresa.
 Link locali dei documenti verificati, 13 originali riconciliati per dimensione e
 SHA-256 e hash del payload di revisione verificato. Nessuna automazione creata
 o modificata dal root. Prossima unità: AI-001/002, scaffold copilot autorizzato

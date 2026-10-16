@@ -2,13 +2,16 @@
 
 App per attività di costruzione e commissioning, migrata dal prototipo Figma/Vite a **Next.js 16 App Router, React 19 e TypeScript**. UI mobile per operatori, dashboard per supervisori e manager, backend Next.js e PostgreSQL su Neon tramite Drizzle.
 
-## Riprendere l'agente progetto
+## Riprendere il progetto con Tony
 
-Leggere [Agente progetto FieldTrack](docs/tony-feedback/README.md) e lo
-[stato corrente](docs/tony-feedback/register.md). Il heartbeat **Agente progetto Tony**
-è ACTIVE ogni 15 minuti nella chat locale: non crearne un duplicato. Il protocollo
-contiene autorizzazioni, backlog, prove e gate DB/API; la chiave AI verrà fornita
-più avanti da Marco. In questa fase nessuna scrittura su database remoto.
+Apri una nuova chat **in questa cartella/progetto** e scrivi **«Riprendi Tony»**.
+Puoi anche chiedere solo lo stato, la lettura dei nuovi messaggi o un lavoro preciso.
+[Guida per Marco e procedura](docs/tony-feedback/README.md),
+[indice della conoscenza](docs/tony-feedback/index.md), [stato corrente](docs/tony-feedback/register.md#stato-corrente-per-ripresa).
+`AGENTS.md` indirizza la nuova chat a questi documenti; non serve la vecchia conversazione.
+
+L'heartbeat **Agente progetto Tony è PAUSED** dal 16 ottobre per scelta di Marco:
+solo avvio manuale, nessun polling o riavvio automatico. Non riattivarlo senza richiesta.
 
 ## Avvio locale
 
@@ -146,9 +149,9 @@ L’interfaccia si aggiorna quando torna in primo piano e ogni 20 secondi mentre
 Il piano e la lettura delle fonti sono in [Piano di sviluppo](docs/tony-development-plan.md).
 La gestione dei nuovi messaggi, delle attività e delle bozze per Marco è descritta
 in [Assistente operativo Tony](docs/tony-feedback/README.md), con
-[registro aggiornabile](docs/tony-feedback/register.md). Il heartbeat riprende il
-lavoro di progetto; la lettura di WhatsApp dipende dall'accesso disponibile e non
-deve interferire con l'utente. Nessun altro messaggio a Tony è autorizzato ora.
+[registro aggiornabile](docs/tony-feedback/register.md). La ripresa è manuale;
+WhatsApp si consulta solo quando utile al compito e senza interferire con l'utente.
+Ogni futuro messaggio richiede approvazione puntuale di Marco.
 
 - `/overview`: dashboard per progetto con costruzione distinta dai tag, barre per fase, matrice categoria/località, Client Supplied e review I/R/AC/A. Le colonne completamente approvate si richiudono e i riepiloghi aprono i record filtrati.
 - Navigazione: Overview, Programme, Assets e Tasks sono i percorsi principali; People, Time e Reports sono secondari. Su mobile le quattro destinazioni e More restano sempre raggiungibili senza scorrimento orizzontale.

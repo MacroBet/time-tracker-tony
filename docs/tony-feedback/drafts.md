@@ -1,12 +1,14 @@
-# Bozze per Marco — invii attualmente sospesi
+# Bozze archiviate e regola per i futuri invii
 
 Ogni nuovo messaggio richiede conferma esplicita di Marco sul testo concreto.
 Le bozze restano in Codex salvo richiesta esplicita di Marco di preparare il testo
 nel composer, lasciando a lui il click Invia. Nessun invio autonomo.
-Gli invii delle 19:12 e 19:23 sono registrati nel registro e nell'intake; questa
-bozza non è stata inviata.
+Nessuna bozza pendente da inviare adesso. Gli invii singoli approvati sono conclusi.
+Stato aggiornato nel [registro](register.md#stato-corrente-per-ripresa): resoconto Show Chrome
+del 16 ottobre, invio unico 12:10 della consegna CX-010 richiesto da Marco.
+Il composer attuale non è stato ispezionato da questa unità; le note sotto sono storiche.
 
-## 16 ottobre — risposta all'esempio asset, da confermare
+## 16 ottobre — domanda sugli ID, archiviata e risolta
 
 Aggiornamento successivo, MSG-20261016-IDs: Marco ha riferito la risposta
 verificata di Tony «Both required». La domanda Programme ID / Activity ID del
@@ -33,5 +35,5 @@ Fonte: MSG-20261015-1913/1914; manca ancora la risposta sui permessi.
 Non aggiungere annunci di disponibilità finché il deploy non è verificato.
 
 Marco ha chiuso la conversazione con il saluto delle 20:23, riferito come inviato
-e letto. Non preparare o inviare nuovi messaggi durante il heartbeat senza una
+e letto. Non preparare o inviare nuovi messaggi in una futura sessione senza una
 nuova richiesta. Lo storico degli invii manuali e dei resoconti è nel registro.

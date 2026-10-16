@@ -1,5 +1,9 @@
 # Prima analisi — 15 ottobre 2026
 
+Fotografia storica: per consegne e decisioni successive usare lo
+[stato corrente](register.md#stato-corrente-per-ripresa). Marco ha poi scelto
+il programma autorevole dentro l’app, P6 solo riferimento e ripresa manuale.
+
 ## Ultimi messaggi: cosa vuole Tony
 
 Alle **19:01** Tony chiarisce che il punto principale è un **Gantt simile a
