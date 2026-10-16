@@ -170,8 +170,9 @@ in pausa. Prossima unità solo manuale: acquisire il contesto e poi l’incarico
 
 Controlli superati: coerenza pausa/copertura, JSON, 70 link locali e formato/diff;
 nessuna suite o deploy app richiesti. Il commit che contiene questo checkpoint
-e la verifica push sono identificati in `output/agent-heartbeat-state.json` e
-nella cronologia Git; il report regia ne rimanda allo stesso riferimento.
+è **990df2e45b89c1dec1807c3123da2bdd10c4832d**, normale push main verificato.
+La chiusura documentale successiva e il suo push sono in
+`output/agent-heartbeat-state.json` e nella cronologia Git.
 next-env.d.ts preesistente preservato e fuori commit.
 
 ## Intake consolidato 14:14 e fresh check circa14:22 — 16 ottobre 2026

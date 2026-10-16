@@ -107,10 +107,10 @@
     "gitFetch": "success,0/0 a88705f8 prima degli edit",
     "headVsOriginBeforeEdits": "0/0",
     "pull": "non necessario, checkout modificato preservato",
-    "currentDocumentationCommit": "checkpoint pausa: vedere git log/output/agent-heartbeat-state.json",
+    "currentDocumentationCommit": "990df2e45b89c1dec1807c3123da2bdd10c4832d",
     "validation": "Coerenza PAUSED/copertura invariata, JSON,70 link locali,formato/diff passati; nessun test app",
-    "pushThisCycle": false,
-    "pushVerifiedAgainstRemoteRef": false,
+    "pushThisCycle": true,
+    "pushVerifiedAgainstRemoteRef": true,
     "newApplicationDeploymentVerified": false,
     "previousIntakeDocumentationCommit": "540aa54bfa464da98e991b5e234c105e0a1a443f"
   },
