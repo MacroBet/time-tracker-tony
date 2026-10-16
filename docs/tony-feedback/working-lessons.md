@@ -22,6 +22,15 @@ Le righe seguenti non concedono nuove autorizzazioni.
 | L-11 · E    | Dopo processi significativi conservare soltanto nuovi insegnamenti dimostrati, risultato tangibile, prove, limiti e ripresa.           | Questa unità salva bootstrap, indice, recap e skill portabile; non trasformare complimenti in regole o prove tecniche.            |
 | L-12 · H    | Modelli diversi avranno memoria perfetta/identica; importo Tony valido come prezzo standard; gruppo padre equivale a scheda condivisa. | Ipotesi respinte: documenti verificabili, prezzi contestuali e semantica gruppi ancora da definire.                               |
 
+## Proposta trasversale ancora da definire — 16 ottobre
+
+Resoconto della chat operativa: Marco vuole coordinamento tra progetti semplice
+da usare, protocollo/eventi/stato agenti, stime in intervalli di token e budget con
+consuntivi. **T/H**: esigenza in discussione, non architettura consegnata o incarico
+di modificare repository. La lezione applicabile è conservare la differenza tra
+visione, autorizzazione concreta ed evidenza; niente costi inventati o oneri di
+orchestrazione/stima a ogni domanda. La skill generale resta priva di nomi cliente.
+
 ## Aggiornamento
 
 Aggiungere o correggere una riga solo quando c'è un insegnamento nuovo e fondato;

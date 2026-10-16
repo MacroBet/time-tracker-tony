@@ -66,6 +66,19 @@ controlli desktop già rifiutati dall'auto-review né interferire con l'utente.
 Tony sarà via 10 giorni dalla prossima settimana lavorando da remoto: resoconto,
 non calendario o consegna concordati.
 
+**Nuovo feedback visuale, acquisizione in corso altrove:** resoconto Show Chrome del
+16 ottobre: due PNG Tony delle **12:24**, dopo l'invio 12:10. Richiesta esplicita:
+**Tasks by status in alto pagina, affiancato a un riepilogo come Project Health**.
+Nelle figure: 305 task e ciambella 12 Projects (8 On Track, 3 At Risk, 1 Off Track),
+**esclusivamente dati di esempio**, non da importare o copiare nell'app. Non sono
+definiti ambito multi-progetto vs progetto corrente e regole On/At/Off Track.
+Nessuna implementazione ora, nessun nuovo invio autorizzato. La chat che acquisisce
+sta completando primo salvataggio e messaggi 12:28: non duplicare computer use o
+download. Secondo originale riferito salvato privatamente in
+`attachments/2026-10-16_1224_tony_project-health_original.png`; manifest completo e
+hash ancora da ricevere/verificare, nessun nuovo ATT assegnato qui.
+La copertura diretta di questa unità resta invariata; questa è fonte riferita.
+
 **Gate DB:** Production dichiara mode neon, ma endpoint/project/branch effettivi
 non identificati. Solo host/database locali estratti; nessuna query SQL. Accessi
 Vercel/Neon non collegati, browser lasciato all'utente. [Piano e intervento minimo](local-demo-and-remote-plan.md)
@@ -81,18 +94,19 @@ nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattiva
 I 1.000 € aggiuntivi sono compenso commerciale accettato («No probs»), non pagamento
 verificato, budget API o prezzo universale. Primo pagamento storico non verificato con certezza.
 
-| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
-| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED     | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
-| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
-| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
-| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
-| DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
-| CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
-| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
-| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
-| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
+| Priorità / ID                       | Stato                                             | Prossima unità concreta                                                                                             | Accettazione / gate                                                                                   |
+| ----------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED                | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                    |
+| AI-001 copilot utile senza live API | completata (0f80a4e)                              | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                      |
+| AI-002 proposte controllabili       | completata (0f80a4e)                              | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato        |
+| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire            | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                     |
+| DATA-002 preflight Excel asset      | completata, solo locale                           | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati     |
+| CX-010 riferimenti asset esterni    | completata nel perimetro                          | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto                 |
+| UX-003 grafici stato/health         | nuovo requisito riferito, acquisizione incompleta | Attendere manifest/report di Show Chrome; chiarire ambito e regole health                                           | Stato task in alto affiancato al riepilogo; numeri screenshot solo esempio, nessuna formula inventata |
+| UX-002 chiarezza continua           | pronta                                            | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                    |
+| DATA-001 dati rappresentativi       | locale completata / remoto in attesa              | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                        |
+| AI-003 attivazione provider         | in attesa di Marco                                | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                             |
+| AI-004 autopilot                    | futuro                                            | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                      |
 
 Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossima
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
@@ -122,7 +136,8 @@ nessuna nuova chat di prova aperta per Marco.
 I 14 originali privati sono presenti e corrispondono per byte/SHA-256 al manifest
 (controllo indipendente di questa unità); non sono inclusi nel backup Git.
 
-Prossima ripresa **manuale**: rispondere al compito concreto di Marco; per CX-009
+Prossima ripresa **manuale**: rispondere al compito concreto di Marco; recuperare
+il report completo dei PNG 12:24/12:28 senza duplicare acquisizioni. Per CX-009
 mancano ancora regole di gruppo, AI-003 attende setup chiave e DATA-001 target e
 piano approvato. Non proseguire in background né riproporre la domanda sugli ID.
 

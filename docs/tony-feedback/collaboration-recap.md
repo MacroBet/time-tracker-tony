@@ -90,3 +90,23 @@ restano necessari prima di qualsiasi popolamento; il precedente blocco auto-revi
 non va aggirato. Il sito è [time-tracker-tony.vercel.app](https://time-tracker-tony.vercel.app),
 ma il dominio non identifica il branch Neon. Setup chiave AI rinviato a Marco,
 nessuna chiamata live o a pagamento autorizzata ora.
+
+## Aggiornamenti riferiti durante questa unità
+
+Show Chrome riferisce due PNG Tony ricevuti il 16 ottobre alle 12:24: Tasks by
+status da mettere in alto affiancato a un riepilogo come Project Health. 305 task
+e 12 progetti (8/3/1) sono numeri delle figure, non dati reali né valori da replicare.
+Ambito tra progetti o progetto corrente e calcolo dello stato di salute non definiti.
+Acquisizione di primo file e messaggi 12:28 ancora in corso nell'altra chat; fonte
+riferita, nessun nuovo download/lettura o manifest completato da questa unità.
+
+Marco sta proponendo una chat centrale che coordini più progetti, scambio tra
+agenti con protocollo/eventi/stato chiari, una vista dello stato degli agenti e
+budget per incarico con stime in intervalli di token e consuntivi. Vuole apprendimento
+dai processi insegnati e risultati concreti, con uso plug and play senza gestire
+personalmente l'orchestrazione. È un'esigenza trasversale in definizione, **non un
+sistema già realizzato né incarico di costruirlo in FieldTrack o altri repository**.
+Il riferimento ad altri progetti è contesto della proposta, non lavoro affidato.
+Nessun costo monetario dedotto dai token, nessun runtime globale o polling implicito;
+la scelta corrente resta avvio manuale con heartbeat PAUSED. Il metodo di cattura
+conserva questa distinzione senza imporre stime o orchestrazione a ogni domanda.
