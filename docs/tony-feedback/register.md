@@ -27,7 +27,7 @@ next-env.d.ts preesistente preservata e non committata.
 non importabile. Sette test Python sintetici e riconciliazione su ATT-014 superati;
 nessun nuovo collaudo applicativo, import, DB o provider. [Uso e prove](asset-preflight.md).
 
-**CX-010 implementata e verificata localmente:** Marco ha riferito il 16 ottobre la risposta verificata di
+**CX-010 consegnata (77b74d7):** Marco ha riferito il 16 ottobre la risposta verificata di
 Tony **«Both required»** alla domanda Programme ID / individual Activity ID.
 Implementazione autorizzata: entrambi distinti e collegati, riferimenti esistenti
 preservati. Coordinamento centrale in questa chat; nessuna nuova lettura/invio
@@ -97,7 +97,11 @@ output/playwright/cx010-*.png. Un avviso hydration iniziale durante HMR/cattura
 riguarda lo stile caret iniettato dalla cattura; nessun errore applicativo nuovo
 osservato nei percorsi successivi. Controllo detector UI: nessuna segnalazione.
 
-Commit/push e deploy: in chiusura; verificare i riferimenti aggiunti qui dopo il push.
+Commit applicativo **77b74d75104dcdb21e681a84d1381f12358df7f9**; normale push main
+verificato contro SHA remoto. **Vercel success**: «Deployment has completed»,
+controllato il 16 ottobre alle 10:07 UTC. [Deploy del commit](https://vercel.com/macrobets-projects/time-tracker-tony/429Eg2e8qhasfVSLhUGEW55TCY1D).
+Collaudo autenticato solo locale; nessuna prova di salvataggio su Production.
+La successiva chiusura del registro è documentale e non cambia il codice applicativo.
 Nessuna migrazione, scrittura DB remota, chiamata provider o attività WhatsApp
 in questo ciclo. La risposta «Both required» resta fonte riferita da Marco,
 non una nuova lettura diretta di questa chat. next-env.d.ts preesistente preservato.
