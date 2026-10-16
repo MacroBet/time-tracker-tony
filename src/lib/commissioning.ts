@@ -54,6 +54,8 @@ export const assetSchema = z
     id: key,
     name: key,
     equipmentType: key,
+    clientAssetId: z.string().trim().max(150).optional(),
+    programmeActivityId: z.string().trim().max(150).optional(),
     location: z.string().trim().max(250).default(""),
     phase: z.string().trim().max(150).optional(),
     floor: z.string().trim().max(150).optional(),
@@ -170,6 +172,7 @@ export type CommissioningTask = z.infer<typeof cxSchema>;
 export type ProjectConfig = z.infer<typeof configSchema>;
 export interface Commissioning {
   version: number;
+  programmeId?: string;
   config: ProjectConfig;
   assets: Asset[];
   schedule: ScheduleActivity[];

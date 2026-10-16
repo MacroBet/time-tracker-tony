@@ -154,13 +154,19 @@ export async function updateRegister(request: Request, projectId: string) {
       return json({
         changes: result.changes,
         errors: result.errors,
+        programmeId: result.programmeId,
         assets: result.assets.length,
         schedule: result.schedule.length,
         activities: input.action === "schedule" ? result.schedule : undefined,
       });
     requireCondition(!result.errors.length, 400, result.errors.join(" "));
     changes = result.changes;
-    next = { ...next, assets: result.assets, schedule: result.schedule };
+    next = {
+      ...next,
+      programmeId: result.programmeId,
+      assets: result.assets,
+      schedule: result.schedule,
+    };
   }
   if (!changes.length) return json({ updated: false, version: state.version });
   next = {

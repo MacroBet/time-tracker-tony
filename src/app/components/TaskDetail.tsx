@@ -191,6 +191,10 @@ function TaskContent({ task }: { task: Task }) {
               ["Area", task.location || "Not specified"],
               ["Due date", dueDateFor(task) || "Not set"],
               ["Asset", task.cx?.assetId || "Unlinked"],
+              [
+                "Programme ID",
+                commissioning(project).programmeId || "Not recorded",
+              ],
               ["Programme Activity ID", task.cx?.activityId || "Unlinked"],
               [
                 "Level / tag",

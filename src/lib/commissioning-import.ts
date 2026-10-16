@@ -14,13 +14,15 @@ import {
 
 export const registerImportSchema = z
   .object({
+    programmeId: z.string().trim().max(150).optional(),
     assets: z.array(assetSchema).max(10000).default([]),
     schedule: z.array(scheduleSchema).max(15000).default([]),
   })
   .strict()
   .refine(
-    (v) => v.assets.length + v.schedule.length > 0,
-    "No records to import",
+    (v) =>
+      v.assets.length + v.schedule.length > 0 || v.programmeId !== undefined,
+    "No records or programme metadata to import",
   );
 export type RegisterImport = z.infer<typeof registerImportSchema>;
 function equivalent(a: unknown, b: unknown): boolean {
@@ -40,6 +42,27 @@ function equivalent(a: unknown, b: unknown): boolean {
 export function mergeRegister(state: Commissioning, input: RegisterImport) {
   const errors: string[] = [],
     changes: string[] = [];
+  const programmeId =
+    input.programmeId === undefined
+      ? state.programmeId
+      : input.programmeId.trim();
+  if (
+    input.programmeId !== undefined &&
+    (state.programmeId ?? "") !== programmeId
+  )
+    changes.push(
+      `Programme ID: ${state.programmeId || "not set"} → ${programmeId || "not set"}`,
+    );
+  // A programme label is metadata only: do not normalise or recalculate any
+  // legacy activity, baseline or asset while changing that label.
+  if (!input.assets.length && !input.schedule.length)
+    return {
+      errors,
+      changes,
+      programmeId,
+      assets: state.assets,
+      schedule: state.schedule,
+    };
   for (const [name, keys] of [
     ["Asset", input.assets.map((a) => a.id)],
     ["Activity ID", input.schedule.map((s) => s.activityId)],
@@ -120,6 +143,8 @@ export function mergeRegister(state: Commissioning, input: RegisterImport) {
     // null (supply) and an empty string (metadata) explicitly clear them.
     for (const field of [
       "clientSupplied",
+      "clientAssetId",
+      "programmeActivityId",
       "discipline",
       "parentAssetId",
       "serialNumber",
@@ -140,6 +165,10 @@ export function mergeRegister(state: Commissioning, input: RegisterImport) {
       )
     )
       errors.push(`${row.id}: enable its levels in project setup first.`);
+    if (next.programmeActivityId && !schedule.has(next.programmeActivityId))
+      errors.push(
+        `${row.id}: primary programme Activity ID not found in this project.`,
+      );
     if (row.deliveryActivityId && !schedule.has(row.deliveryActivityId))
       errors.push(`${row.id}: delivery Activity ID not found.`);
     for (const [level, id] of Object.entries(row.levelActivities ?? {})) {
@@ -157,12 +186,17 @@ export function mergeRegister(state: Commissioning, input: RegisterImport) {
     }
   }
   errors.push(...validateAssetHierarchy([...assets.values()]));
-  const calculated = recalculateSchedule([...schedule.values()]);
+  // Asset metadata edits do not authorize a schedule recalculation. Validate
+  // their references above against the saved programme, preserving legacy dates.
+  const calculated = input.schedule.length
+    ? recalculateSchedule([...schedule.values()])
+    : { schedule: [...schedule.values()], errors: [], changes: [] };
   errors.push(...calculated.errors);
   changes.push(...calculated.changes);
   return {
     errors,
     changes,
+    programmeId,
     assets: [...assets.values()],
     schedule: calculated.schedule,
   };

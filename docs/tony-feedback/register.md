@@ -27,6 +27,15 @@ next-env.d.ts preesistente preservata e non committata.
 non importabile. Sette test Python sintetici e riconciliazione su ATT-014 superati;
 nessun nuovo collaudo applicativo, import, DB o provider. [Uso e prove](asset-preflight.md).
 
+**CX-010 implementata e verificata localmente:** Marco ha riferito il 16 ottobre la risposta verificata di
+Tony **«Both required»** alla domanda Programme ID / individual Activity ID.
+Implementazione autorizzata: entrambi distinti e collegati, riferimenti esistenti
+preservati. Coordinamento centrale in questa chat; nessuna nuova lettura/invio
+WhatsApp. Tre blocchi indipendenti integrati: modello/import/API, Assets UI, Programme/task/report UI. Programme ID per progetto e Activity ID individuali sono distinti; il nuovo riferimento primario asset resta separato da consegna e tag. [Contratto e uso](../programme-identifiers.md).
+
+Fonte MSG-20261016-IDs: ora WhatsApp non fornita, evidenza riferita direttamente
+da Marco tramite chat vocale. La domanda Schedule ID è risolta; non riproporla.
+
 **Copertura Tony:** lettura diretta root fino 20:56 del 15 ottobre, verificata
 il 16 ottobre nella chat già aperta con sovrapposizione da 20:14. Nessun messaggio
 del 16 ottobre visibile in fondo alla chat in quel momento. **14 allegati** nel
@@ -60,7 +69,7 @@ I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
 | AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
 | CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
 | DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
-| CX-010 riferimenti asset esterni    | analisi pronta, mapping da chiarire    | Separare ID interno, cliente e programma; chiarire Schedule ID nella risposta proposta                              | Reimport stabile senza duplicati e senza rinominare ID già collegati a task                       |
+| CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
 | UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
 | DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
 | AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
@@ -68,6 +77,35 @@ I 1.000 € sono proposta commerciale accettata, non pagamento o budget API.
 
 Quando una voce è bloccata, scegliere la prossima pronta. Dopo ogni unità annotare
 file/prove/commit e passo successivo qui, senza riscrivere lo storico sottostante.
+
+## Consegna CX-010 — 16 ottobre 2026
+
+Programme ID opzionale nel progetto, Client asset ID e attività primaria dell'asset:
+UI Programme con anteprima/motivo/conferma, ricerca e form Assets, contesto nelle
+schede task e nei report, import/export CSV/JSON e contesto dati Copilot. ID interni
+immutati, vecchie importazioni compatibili; riferimenti estranei al progetto rifiutati.
+Modifiche dei soli metadati conservano date e baseline esattamente. Il modello resta
+un programma per progetto; nessuna associazione dedotta sugli asset reali. Esempi
+nuovi solo nella demo sintetica Northbank.
+
+Prove centrali: **86 test unitari/PostgreSQL, 10 API demo**, typecheck, lint, build
+e formato superati. Browser isolato locale: 1440×1000 e 390×844, programma pieno
+/vuoto, anteprima senza mutazioni e conferma Programme ID, modifica Client ID e
+attività primaria con consegna/tag/task/date invariati, ricerca Client ID, scheda
+test con entrambi i riferimenti e assenza di overflow mobile. Catture private in
+output/playwright/cx010-*.png. Un avviso hydration iniziale durante HMR/cattura
+riguarda lo stile caret iniettato dalla cattura; nessun errore applicativo nuovo
+osservato nei percorsi successivi. Controllo detector UI: nessuna segnalazione.
+
+Commit/push e deploy: in chiusura; verificare i riferimenti aggiunti qui dopo il push.
+Nessuna migrazione, scrittura DB remota, chiamata provider o attività WhatsApp
+in questo ciclo. La risposta «Both required» resta fonte riferita da Marco,
+non una nuova lettura diretta di questa chat. next-env.d.ts preesistente preservato.
+
+Prossimo passo: definire CX-009 (identità dei gruppi, membri espliciti, schede e
+risultati condivisi, effetti delle modifiche ai membri) prima di implementare
+propagazioni. AI-003 e DATA-001 mantengono i gate già registrati; non ripetere la
+domanda sui riferimenti programma/attività, risolta.
 
 ## Copertura e punto di ripresa
 

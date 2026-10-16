@@ -118,6 +118,8 @@ export function withDemoShowcase(data: AppData, now: Date): AppData {
       );
       assets.push({
         id,
+        clientAssetId: `DEMO-CLIENT-${area.id}-${code}-01`,
+        programmeActivityId: levelActivities.L2A,
         name: `${equipmentType} ${area.id}01`,
         equipmentType,
         discipline,
@@ -335,6 +337,7 @@ export function withDemoShowcase(data: AppData, now: Date): AppData {
     companyId: "c1",
     commissioning: {
       version: 1,
+      programmeId: "DEMO-NB-MASTER",
       config,
       assets,
       schedule: programme,

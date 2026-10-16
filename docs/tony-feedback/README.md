@@ -109,6 +109,12 @@ build e desktop/mobile (1440×1000/390×844), progetto pieno/vuoto e flusso
 anteprima→conferma locale. Provider verificato solo con mock, mai con chiave live.
 Non ripetere lo stesso collaudo a ogni heartbeat senza cambiamenti o nuove prove.
 
+## Programme ID e Activity ID
+
+CX-010 implementa entrambi i riferimenti, distinti e collegati, con Client asset ID
+separato e ID interni preservati. [Uso, CSV/JSON e compatibilità](../programme-identifiers.md).
+Gruppi condivisi CX-009 ancora da definire; nessuna importazione remota autorizzata.
+
 ## Verifica locale e chiusura
 
 Per test API/browser avviare esclusivamente una demo isolata:

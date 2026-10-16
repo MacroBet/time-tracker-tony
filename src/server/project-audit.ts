@@ -58,7 +58,7 @@ export async function exportProjectRegister(
   // Prepare the real response before recording; this attests preparation, not browser receipt.
   const content =
     input.format === "csv"
-      ? exportAssetCsv(state.assets)
+      ? exportAssetCsv(state.assets, state.programmeId)
       : exportRegisterJson(state);
   const filename = `fieldtrack-${projectId.replace(/[^a-zA-Z0-9_-]/g, "_")}-register.${input.format}`;
   const event: ProjectAuditEvent = {

@@ -34,6 +34,7 @@ type Preview = {
   errors: string[];
   assets: number;
   schedule: number;
+  programmeId?: string;
 };
 export function CommissioningWorkspace({
   admin = false,
@@ -340,6 +341,10 @@ function ProjectWorkspace({
         {
           ...asset,
           id: assetId,
+          clientAssetId: String(f.get("clientAssetId") || "").trim(),
+          programmeActivityId: String(
+            f.get("programmeActivityId") || "",
+          ).trim(),
           name: String(f.get("name")),
           equipmentType: String(f.get("equipmentType")),
           location: String(f.get("location")),
@@ -421,7 +426,7 @@ function ProjectWorkspace({
   }
   const assetRows = state.assets.filter(
     (a) =>
-      `${a.id} ${a.name} ${a.equipmentType} ${a.location} ${a.phase ?? ""} ${a.floor ?? ""} ${a.area ?? ""} ${a.discipline ?? ""} ${a.parentAssetId ?? ""} ${a.serialNumber ?? ""} ${a.owner ?? ""} ${a.deliveryActivityId ?? ""}`
+      `${a.id} ${a.clientAssetId ?? ""} ${state.programmeId ?? ""} ${a.programmeActivityId ?? ""} ${a.name} ${a.equipmentType} ${a.location} ${a.phase ?? ""} ${a.floor ?? ""} ${a.area ?? ""} ${a.discipline ?? ""} ${a.parentAssetId ?? ""} ${a.serialNumber ?? ""} ${a.owner ?? ""} ${a.deliveryActivityId ?? ""}`
         .toLowerCase()
         .includes(assetQuery.trim().toLowerCase()) &&
       (supplyFilter === "all" ||
@@ -671,6 +676,9 @@ function ProjectWorkspace({
                 <div>
                   <h3 className="font-semibold">Asset register</h3>
                   <p className="mt-1 text-xs text-slate-600">
+                    Programme ID: {state.programmeId || "No reference"}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-600">
                     {state.assets.length} assets · {state.schedule.length}{" "}
                     programme activities · Revision {state.version}
                   </p>
@@ -729,7 +737,7 @@ function ProjectWorkspace({
                 aria-label="Scrollable asset register"
                 tabIndex={0}
               >
-                <table className="w-full min-w-[760px] text-sm text-left tabular-nums">
+                <table className="w-full min-w-[900px] text-sm text-left tabular-nums">
                   <caption className="sr-only">
                     Asset register. Open an asset to review required tags, test
                     sheets and equipment details.
@@ -739,6 +747,7 @@ function ProjectWorkspace({
                       {[
                         "Asset",
                         "Equipment / location",
+                        "Programme Activity ID",
                         "Tags",
                         "Delivery",
                         "Supply",
@@ -778,12 +787,18 @@ function ProjectWorkspace({
                             <span className="mt-1 block text-xs text-slate-600">
                               {row.name}
                             </span>
+                            <span className="mt-1 block text-xs text-slate-600">
+                              Client ID: {row.clientAssetId || "No reference"}
+                            </span>
                           </td>
                           <td className="p-3">
                             {row.equipmentType}
                             <span className="mt-1 block text-xs text-slate-600">
                               {assetLocationLabel(row) || "Location not set"}
                             </span>
+                          </td>
+                          <td className="p-3 text-xs">
+                            {row.programmeActivityId || "No reference"}
                           </td>
                           <td className="p-3">
                             <button
@@ -849,6 +864,22 @@ function ProjectWorkspace({
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
+                      <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                        <div>
+                          <dt className="text-slate-600">Client asset ID</dt>
+                          <dd className="mt-1 break-words">
+                            {row.clientAssetId || "No reference"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-slate-600">
+                            Programme Activity ID
+                          </dt>
+                          <dd className="mt-1 break-words">
+                            {row.programmeActivityId || "No reference"}
+                          </dd>
+                        </div>
+                      </dl>
                     </div>
                     <p className="text-xs text-slate-600">
                       Required tags: {row.levels.join(", ") || "Not selected"}
@@ -1049,6 +1080,10 @@ function ProjectWorkspace({
             </summary>
             <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
               {[
+                ["Internal ID", inspectedAsset.id],
+                ["Client asset ID", inspectedAsset.clientAssetId],
+                ["Programme ID", state.programmeId],
+                ["Programme Activity ID", inspectedAsset.programmeActivityId],
                 ["Equipment", inspectedAsset.equipmentType],
                 ["Location", inspectedAsset.location],
                 ["Phase", inspectedAsset.phase],
@@ -1071,7 +1106,14 @@ function ProjectWorkspace({
                 <div key={label}>
                   <dt className="text-xs text-slate-600">{label}</dt>
                   <dd className="mt-1 break-words">
-                    {value || "Not recorded"}
+                    {value ||
+                      ([
+                        "Client asset ID",
+                        "Programme ID",
+                        "Programme Activity ID",
+                      ].includes(label ?? "")
+                        ? "No reference"
+                        : "Not recorded")}
                   </dd>
                 </div>
               ))}
@@ -1190,7 +1232,8 @@ function ProjectWorkspace({
                 disabled={
                   busy ||
                   !isOnline ||
-                  !(state.assets.length + state.schedule.length)
+                  (!(state.assets.length + state.schedule.length) &&
+                    !state.programmeId)
                 }
                 onClick={() => void downloadRegister("json")}
               >
@@ -1202,13 +1245,17 @@ function ProjectWorkspace({
                 Supported columns & import rules
               </summary>
               <p className="mt-2 text-xs leading-5 text-slate-600">
-                CSV columns: id, name, equipmentType, location, phase, floor,
-                area, discipline, parentAssetId, serialNumber, owner,
+                CSV columns: id, clientAssetId, programmeId,
+                programmeActivityId, name, equipmentType, location, phase,
+                floor, area, discipline, parentAssetId, serialNumber, owner,
                 clientSupplied, levels, deliveryActivityId, expectedDelivery,
                 levelActivities. Separate required levels with semicolons; use
                 true / false / blank for supply. Stable IDs update existing
                 records. Existing baseline dates are protected. Start from the
-                CSV template for the correct headers.
+                CSV template for the correct headers. Programme ID applies to
+                this project. Programme Activity ID is a primary link to an
+                existing activity in this project; delivery and individual tag
+                links are separate.
               </p>
             </details>
           </div>
@@ -1344,7 +1391,7 @@ function ProjectWorkspace({
           <fieldset disabled={busy} className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               {[
-                ["id", "Asset ID"],
+                ["id", "Internal ID"],
                 ["name", "Asset name"],
                 ["equipmentType", "Equipment type"],
                 ["location", "Location"],
@@ -1364,12 +1411,68 @@ function ProjectWorkspace({
                     <span className="mt-1 block text-xs font-normal text-slate-600">
                       {asset.id
                         ? "Stable ID: existing links keep this reference."
-                        : "Use the equipment tag or another unique, stable ID."}
+                        : "Choose a stable ID for links inside this app. Client and programme references are separate."}
                     </span>
                   )}
                 </label>
               ))}
             </div>
+            <fieldset className="border-t pt-4 space-y-4">
+              <legend className="text-sm font-semibold">
+                Client & programme references
+              </legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-medium">
+                  Client asset ID{" "}
+                  <span className="font-normal text-slate-600">· optional</span>
+                  <Input
+                    name="clientAssetId"
+                    className="mt-1 h-11"
+                    maxLength={150}
+                    defaultValue={asset.clientAssetId ?? ""}
+                    placeholder="No reference"
+                  />
+                </label>
+                <label className="text-sm font-medium">
+                  Programme ID
+                  <Input
+                    className="mt-1 h-11"
+                    value={state.programmeId ?? ""}
+                    readOnly
+                    placeholder="No reference"
+                  />
+                  <Link
+                    className="mt-1 inline-flex min-h-11 items-center text-xs font-normal text-blue-700 underline underline-offset-4"
+                    href="/schedule"
+                  >
+                    Manage the project’s programme reference
+                  </Link>
+                </label>
+                <label className="text-sm font-medium sm:col-span-2">
+                  Programme Activity ID{" "}
+                  <span className="font-normal text-slate-600">· optional</span>
+                  <select
+                    name="programmeActivityId"
+                    className="field-select mt-1 min-h-11"
+                    defaultValue={asset.programmeActivityId ?? ""}
+                  >
+                    <option value="">No reference</option>
+                    {state.schedule.map((activity) => (
+                      <option
+                        key={activity.activityId}
+                        value={activity.activityId}
+                      >
+                        {activity.activityId} · {activity.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="mt-1 block text-xs font-normal text-slate-600">
+                    Primary programme reference for this asset. Delivery and
+                    individual tag links are configured separately below.
+                  </span>
+                </label>
+              </div>
+            </fieldset>
             <fieldset className="border-t pt-4">
               <legend className="text-sm font-semibold">Required tags</legend>
               <p className="mb-3 mt-1 text-sm text-slate-600">
@@ -1648,6 +1751,10 @@ function ProjectWorkspace({
           <p className="text-sm">
             {preview.assets} assets · {preview.schedule} schedule activities
             after import · {preview.changes.length} changes
+          </p>
+          <p className="text-sm">
+            Programme ID after this change:{" "}
+            {preview.programmeId || "No reference"}
           </p>
           {preview.errors.map((e, i) => (
             <p className="text-sm text-red-700" key={i}>

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { ProjectAudit } from "./ProjectAudit";
+import { ProgrammeReference } from "./ProgrammeReference";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -27,6 +28,7 @@ import type { Asset } from "@/lib/commissioning";
 function assetActivityIds(asset: Asset, tasks: Task[]) {
   return new Set(
     [
+      asset.programmeActivityId,
       asset.deliveryActivityId,
       ...Object.values(asset.levelActivities ?? {}),
       ...tasks
@@ -135,6 +137,7 @@ function Programme({ project }: { project: Project }) {
   if (!state.schedule.length)
     return (
       <div className="space-y-8">
+        <ProgrammeReference key={project.id} project={project} />
         {editing ? (
           <ActivityEditor
             key={editing.activity.activityId || "new"}
@@ -215,6 +218,7 @@ function Programme({ project }: { project: Project }) {
     );
   return (
     <div className="space-y-6">
+      <ProgrammeReference key={project.id} project={project} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="font-semibold text-lg">Programme activities</h2>

@@ -73,7 +73,11 @@ export function scopeData(user: User, data: AppData): AppData {
             schedule: state.schedule.filter(
               (s) =>
                 mine.some((t) => t.cx?.activityId === s.activityId) ||
-                assets.some((a) => a.deliveryActivityId === s.activityId),
+                assets.some(
+                  (a) =>
+                    a.deliveryActivityId === s.activityId ||
+                    a.programmeActivityId === s.activityId,
+                ),
             ),
           },
         };

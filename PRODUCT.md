@@ -47,7 +47,11 @@ synthetic demo mode stays visibly labelled and isolated from remote data. Local
 showcase fixtures are opt-in and must never seed a remote environment implicitly.
 The latest asset example has 1,354 candidate rows and repeated names. Tony requests
 separate internal/client/programme references and named groups for IST, phase, area
-and floor. Intake and unresolved mappings: docs/tony-feedback/intake-20261016.md.
+and floor. Marco relayed Tony's verified answer “Both required” on 16 October:
+programme ID and individual activity ID must both be recorded separately and linked.
+The app currently holds one programme per project; existing task/asset/activity IDs
+must remain stable. Group workflow rules remain unresolved. Source context:
+docs/tony-feedback/intake-20261016.md.
 
 ## Product Principles
 

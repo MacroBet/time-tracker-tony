@@ -21,6 +21,9 @@ export const ASSET_CSV_COLUMNS = [
   "deliveryActivityId",
   "expectedDelivery",
   "levelActivities",
+  "programmeId",
+  "clientAssetId",
+  "programmeActivityId",
 ] as const;
 
 // Excel interprets leading formula characters even in quoted cells. Prefix them
@@ -36,12 +39,12 @@ function decodeCell(value: string): string {
     : value;
 }
 
-export function exportAssetCsv(assets: Asset[]): string {
+export function exportAssetCsv(assets: Asset[], programmeId?: string): string {
   return [
     ASSET_CSV_COLUMNS.join(","),
     ...assets.map((asset) =>
       ASSET_CSV_COLUMNS.map((column) => {
-        const value = asset[column];
+        const value = column === "programmeId" ? programmeId : asset[column];
         return encodeCell(
           column === "levels"
             ? asset.levels.join(";")
@@ -59,10 +62,14 @@ export function exportAssetCsv(assets: Asset[]): string {
 }
 
 export function exportRegisterJson(
-  state: Pick<Commissioning, "assets" | "schedule">,
+  state: Pick<Commissioning, "assets" | "schedule" | "programmeId">,
 ): string {
   return JSON.stringify(
-    { assets: state.assets, schedule: state.schedule },
+    {
+      assets: state.assets,
+      schedule: state.schedule,
+      programmeId: state.programmeId,
+    },
     null,
     2,
   );
@@ -141,6 +148,7 @@ export function parseAssetCsv(
     if (!headers.includes(required))
       throw new Error(`Missing required CSV column: ${required}.`);
   const existing = new Map(existingAssets.map((a) => [a.id, a]));
+  const programmeIds = new Set<string>();
   const assets = rows.map((row, index) => {
     if (row.length !== headers.length)
       throw new Error(
@@ -148,9 +156,15 @@ export function parseAssetCsv(
       );
     const fields = Object.fromEntries(headers.map((h, i) => [h, row[i]]));
     const id = fields.id.trim();
+    const { programmeId, ...assetFields } = fields;
+    if (programmeId?.trim()) programmeIds.add(programmeId.trim());
+    if (programmeIds.size > 1)
+      throw new Error(
+        "CSV contains more than one programme ID. A project currently has one programme; import one programme at a time.",
+      );
     const asset: Record<string, unknown> = {
       ...existing.get(id),
-      ...fields,
+      ...assetFields,
       id,
     };
     asset.levels = fields.levels
@@ -158,6 +172,8 @@ export function parseAssetCsv(
       .map((v) => v.trim())
       .filter(Boolean);
     for (const optional of [
+      "clientAssetId",
+      "programmeActivityId",
       "discipline",
       "parentAssetId",
       "serialNumber",
@@ -211,7 +227,11 @@ export function parseAssetCsv(
     throw new Error(
       "Duplicate asset IDs in CSV. Each asset tag must be unique.",
     );
-  return registerImportSchema.parse({ assets, schedule: [] });
+  return registerImportSchema.parse({
+    assets,
+    schedule: [],
+    ...(programmeIds.size ? { programmeId: [...programmeIds][0] } : {}),
+  });
 }
 
 export function parseRegisterFile(

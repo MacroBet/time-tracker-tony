@@ -53,6 +53,7 @@ export type CopilotTask = Pick<
   dueDate?: string;
   assetId?: string;
   activityId?: string;
+  programmeId?: string;
   result?: string;
   tagReview?: string;
 };
@@ -90,6 +91,7 @@ export type CopilotContext = {
     id: string;
     name: string;
     version: number;
+    programmeId?: string;
     priorities: Priority[];
   };
   summary: CopilotSummary;
@@ -99,6 +101,8 @@ export type CopilotContext = {
   assets: {
     id: string;
     name: string;
+    clientAssetId?: string;
+    programmeActivityId?: string;
     parentAssetId?: string;
     equipmentType: string;
     location: string;
@@ -202,6 +206,7 @@ export function buildCopilotContext(
       id: project.id,
       name: project.name,
       version: state.version,
+      programmeId: state.programmeId,
       priorities: [...state.config.priorities],
     },
     summary,
@@ -250,12 +255,15 @@ export function buildCopilotContext(
       dueDate: due(task),
       assetId: task.cx?.assetId,
       activityId: task.cx?.activityId,
+      programmeId: task.cx?.activityId ? state.programmeId : undefined,
       result: task.cx?.result,
       tagReview: task.cx?.tagReview,
     })),
     assets: state.assets.map((asset) => ({
       id: asset.id,
       name: asset.name,
+      clientAssetId: asset.clientAssetId,
+      programmeActivityId: asset.programmeActivityId,
       parentAssetId: asset.parentAssetId,
       equipmentType: asset.equipmentType,
       location: asset.location,

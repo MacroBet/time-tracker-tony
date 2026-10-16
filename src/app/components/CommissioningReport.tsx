@@ -129,6 +129,7 @@ export function CommissioningReport({
         ? [
             "Activity",
             "Asset",
+            "Programme Activity ID",
             "Level",
             "Conforming",
             "Non-conforming",
@@ -137,7 +138,7 @@ export function CommissioningReport({
         : [
             "Activity / issue ID",
             "Asset",
-            "P6 Activity ID",
+            "Programme Activity ID",
             "Level",
             "Priority",
             "Status",
@@ -153,6 +154,7 @@ export function CommissioningReport({
         ? [
             t.title,
             taskAsset(t, project)?.id ?? "Unlinked",
+            t.cx?.activityId ?? "Unlinked",
             t.cx?.level ?? "—",
             t.cx?.conforming ?? "Not recorded",
             t.cx?.nonConforming ?? "Not recorded",
@@ -216,7 +218,7 @@ export function CommissioningReport({
       "Tag review",
       "Counted approval",
       "Test result",
-      "P6 Activity ID",
+      "Programme Activity ID",
       "Due",
     ];
     rows = items.map((r) => [
@@ -287,7 +289,7 @@ export function CommissioningReport({
         (!filters.dueTo || (!!s.finish && s.finish <= filters.dueTo)),
     );
     headers = [
-      "P6 Activity ID",
+      "Programme Activity ID",
       "Activity",
       "Baseline start",
       "Baseline finish",
@@ -309,6 +311,9 @@ export function CommissioningReport({
       projectTasks.filter((t) => t.cx?.activityId === s.activityId).length,
     ]);
   }
+  // Each exported row retains its programme provenance without changing Activity IDs.
+  headers = [...headers, "Programme ID"];
+  rows = rows.map((row) => [...row, state.programmeId || "Not recorded"]);
   const currentPage = Math.min(
     page,
     Math.max(0, Math.ceil(rows.length / 50) - 1),
@@ -337,6 +342,12 @@ export function CommissioningReport({
   }
   return (
     <div className="min-w-0 w-full space-y-4 report-print">
+      <p className="text-xs text-slate-600">
+        Programme ID:{" "}
+        <span className="font-medium break-words">
+          {state.programmeId || "Not recorded"}
+        </span>
+      </p>
       {!["equipment", "trend"].includes(request.view) && (
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 print:hidden">
           <label className="text-xs text-slate-600 col-span-2">

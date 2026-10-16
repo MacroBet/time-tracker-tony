@@ -8,6 +8,11 @@ bozza non è stata inviata.
 
 ## 16 ottobre — risposta all'esempio asset, da confermare
 
+Aggiornamento successivo, MSG-20261016-IDs: Marco ha riferito la risposta
+verificata di Tony «Both required». La domanda Programme ID / Activity ID del
+testo storico sotto è risolta e non va riproposta. Nessun nuovo messaggio o
+modifica del composer effettuati dal ciclo CX-010.
+
 Marco ha chiesto una risposta e ribadito che conferma lui l'invio. Fonte:
 MSG-20261015-2041/2054a/2054b; analisi in intake-20261016.md. Su successiva
 richiesta esplicita di Marco, il testo seguente è stato inserito nel composer
