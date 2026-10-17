@@ -59,3 +59,16 @@ Etichette di file nella trascrizione non provano acquisizione o analisi.
 [Analisi, playlist e copertura](../intake-20261016-1414.md). Fresh check del lettore
 circa14:22 interrotto al primo noWindowsAvailable: oltre14:14 non verificato,
 allegato12:41 non raggiunto, nessun nuovo file o retry.
+
+## Vocali osservati il17 ottobre — metadati, nessun file acquisito
+
+Lettura diretta root in chat Tony McIntyre: vocale17ott10:53 di18secondi;
+screenshot della stessa finestra mostra anche16ott14:47 di1secondo e14:48 di66secondi.
+Menu di recupero bloccato al primo -10005 noWindowsAvailable. Nessun audio
+scaricato/trascritto, nessun path/byte/SHA audio disponibile e nessun ATT assegnato;
+originali ricevuti invariati a17. La bozza privata di fallback non è un allegato
+ricevuto. [Intake aggiornato](../intake-20261017.md). Nessun vecchio allegato riscaricato.
+
+Marco ha poi escluso gli audio; non sono una dipendenza. **CAP-003** è una
+trascrizione manuale privata di7testi17ott10:56–11:04 da screenshot CUA root,
+non un allegato ricevuto. Path e impronta nell’intake; nessun raw in Git, ATT17 invariato.

@@ -1,9 +1,10 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: 16 ottobre 2026. **Avvio solo manuale, heartbeat PAUSED.**
+Ultimo aggiornamento: 17 ottobre 2026. **Incarico manuale Tony: testi acquisiti e filtri asset consegnati; heartbeat PAUSED.**
 Copertura acquisita successiva: **10 bolle visibili 12:28–14:14 del 16 ottobre**,
 fonte CUA della coordinatrice, JSON privato letto e riconciliato qui. Ultimo incoming
-nella fonte13:04; unico outgoing V3 delle14:14 riferito consegnato, non letto attestato.
+nella fonte13:04; outgoing V3 delle14:14 ora con spunte blu osservate nella UI del17ott,
+orario effettivo di lettura sconosciuto.
 Fresh check delegato circa14:22 parziale: **oltre14:14 non verificato**. Orari fonte
 Europe/Rome dichiarati, non prova di lettura root dell'intera conversazione.
 
@@ -16,21 +17,27 @@ Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
 Una domanda non autorizza sviluppo indiscriminato; «Riprendi Tony» ricostruisce
 il punto e porta avanti solo lavoro già chiaramente autorizzato.
 
-**Modalità corrente: PROGETTO TONY IN PAUSA.** La coordinatrice riferisce l’ultima
-istruzione di Marco di fermare i controlli automatici mentre si attende il cliente.
-Pausa eseguita dalla coordinatrice tramite strumento ufficiale; verifica diretta
-qui del file `automation.toml`: **PAUSED**, aggiornato **2026-10-16T15:07:11.062000+02:00**.
-Nessuna modifica dell’automazione effettuata da questa chat. AGENTS e configurazione
-ora concordano; le vecchie modalità ACTIVE15/10min e la proposta non applicata
-sono storiche. La precedente domanda di conferma per riattivare è **superata dalla
-pausa**, non una decisione ancora richiesta. Non riattivare o creare scheduler.
+**Modalità corrente:** avvio manuale, automazione `agente-progetto-tony` **PAUSED**
+confermata in sola lettura il17ott, nessun timer riattivato. Consenso umano diretto
+riferito e richiesta della regia resolved/locked verificata per **un solo incarico**:
+`tony-new-whatsapp-feedback-20261017`, intake213 riferito, owner questa chat.
+L’incarico supera la pausa soltanto per acquisire il nuovo messaggio, eventuale
+correzione pertinente/test e bozza da approvare. [Prove e tentativi](intake-20261017.md).
+Nessun nuovo job/chat, reporter/ACL, callback interchat, spesa o permesso DB.
 
-**Trigger di ripresa:** richiesta umana **«Riprendi Tony»** o incarico manuale
-esplicito di Marco; una ripresa manuale non riattiva il heartbeat. Fino ad allora
-nessun nuovo controllo WhatsApp, download o sviluppo. Questo checkpoint registra
-stato e lacune, non legge nuove fonti: copertura acquisita **14:14**, ultimo tentativo
-parziale **circa14:22**, periodo successivo non verificato. Project Health attende
-Tony; Excel ancora non acquisito. Nessuna bozza pendente o messaggio autorizzato.
+**Stato del compito:** incarico manuale **testi soltanto**, implementazione verificata e pubblicata su main. Marco gestisce
+personalmente gli audio, esclusi e non bloccanti. Letti direttamente7testi17ott
+**10:56–11:04**: prima modello funzionante/testato; lista asset per area/fase o
+sequenza tipica che Tony fornirà; proposta AI di riuso specifiche nel nuovo asset.
+[Fonti, classificazione e dipendenze](intake-20261017.md). Non sono istruzioni per
+riattivare il provider o aggiornare indiscriminatamente dati condivisi.
+
+**UX-005 consegnata:** filtri Area/Phase e metadati visibili in Assets desktop/mobile,
+combinati con ricerca/Supply e recupero Clear filters, basati sui dati esistenti.
+Nessun nuovo schema/gruppo/sequenza dedotto. Provider disattivato, chiave più avanti;
+multiphase e specifiche condivise richiedono definizione. Nessun DB remoto.
+Copertura CAP-003 limitata a7testi10:56–11:04, non cronologia/audio intermedi.
+Fallback trascrizione ritirato; nessun composer/invio. Heartbeat sempre PAUSED.
 
 **Consegnato:** Gantt persistente, asset CSV/JSON, storico, review I/R/AC/A,
 Client Supplied e UX desktop/mobile. Protocollo persistente cc14c07 consegnato
@@ -67,12 +74,13 @@ Le richieste fino13:04 confermano UX-003/004; nessuna nuova formula o regola gru
 **OUT-20261016-02, V3, 14:14:** coordinatrice riferisce approvazione puntuale di Marco
 e un unico invio relativo al popup, al prossimo esame Excel e alla domanda sul
 calcolo **Project Health**. Bolla presente nella trascrizione; due spunte grigie
-riferite = **consegnato, non letto attestato**. Nessuna risposta Tony visibile nel
+riferite = **consegnato, non letto attestato a quel controllo**. Il17ott root ha
+osservato due spunte blu nello screenshot, senza orario nativo di lettura. Nessuna risposta Tony visibile nel
 controllo della fonte14:14. **Project Health attende Tony**, non una formula da Marco.
 Invio12:10 OUT-20261016-01 precedente e concluso. Le bozze v1/v2 sono superate dalla
-V3 inviata; nessuna bozza attuale da approvare/ripetere. [Stato versioni](drafts.md).
+V3 inviata, da non ripetere. Fallback vocale17ott ritirato dopo esclusione audio da parte di Marco. [Stato versioni](drafts.md).
 
-**Ultimo controllo reale:** lettore delegato `tony_delta`, circa14:22 Europe/Rome.
+**Controllo storico16ott:** lettore delegato `tony_delta`, circa14:22 Europe/Rome.
 Lista chat con V3 delle14:14 Delivered; corpo soltanto due bolle già note12:24/12:28.
 Unico scroll fallito **noWindowsAvailable -10005**, nessun retry/focus/SaveAs.
 Dopo14:14 resta non verificato: non dichiarare zero nuovi messaggi. Nuovo Excel12:41
@@ -147,6 +155,7 @@ verificato, budget API o prezzo universale. Primo pagamento storico non verifica
 | CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
 | UX-003 dashboard compatta           | consegnata (699d019)                   | Dashboard e overdue pubblicati; Project Health attende risposta Tony alla domanda14:14                              | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
 | UX-004 popup aggiunta asset/tag     | consegnata (f7ed997)                   | Nuovo asset con tag/Project ID/Phase e anteprima nel popup; conservare edit inline e permessi                       | 91 unitari, 10 API, statici/build e desktop/mobile; GROUP/ADD DATA non dedotti                    |
+| UX-005 area/fase asset              | consegnata (d7dcb8f)                   | Filtri su metadati esistenti; sequenza Tony, multifase e specifiche condivise ancora da definire                    | Nessuna deduzione o modifica programma/permessi, AI non simulata                                  |
 | UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
 | DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
 | AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
@@ -156,6 +165,35 @@ Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossim
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
 Dopo ogni unità annotare file/prove/commit e passo successivo qui, senza riscrivere
 lo storico sottostante.
+
+## Incarico manuale 17 ottobre — testi e filtri asset
+
+Stesso job/request/intake213, nessun duplicato. Consenso resolved/locked verificato;
+ponte pubblicato dalla regia, nessun reporter/ACL/callback creato dall’esecutore.
+[Analisi](intake-20261017.md), CAP-003 privata e [report](regia-status.json).
+L’audio escluso da Marco supera il precedente blocco tecnico. Menu File chiuso;
+nessun testo composer modificato. Testi diretti10:56–11:04 analizzati, non audio.
+
+Filtri Area/Phase consegnati nel commit **d7dcb8f**, push main verificato sulla ref
+remota. **95 test unitari/PostgreSQL,10 API**, typecheck/lint/build/formato e browser
+desktop1440×1000/mobile390×844 passati, esclusivamente demo locale sintetica.
+Filtri AND, zero risultati/Clear anche da tastiera, metadati mancanti, cambio progetto
+e hash import verificati; geometria mobile senza overflow. Screenshot privati in
+output/playwright. Primo batch browser: aspettativa fixture errata (UPS contractor,
+non client); corretta a SWB, batch finale riuscito. Revisione indipendente read-only
+senza rilievi codice; titolo stale del registro corretto. Browser/server QA chiusi.
+**Vercel success** del commit app verificato17ott09:12UTC (11:12 Europe/Rome),
+status Deployment has completed aggiornato09:12:11Z. Prove autenticate solo locali.
+Bozza `tony-text-feedback-20261017 v1` privata, impronta nel report, da approvare sul
+testo esatto; nessun invio/composer. Il fallback audio resta ritirato.
+
+Prossimo passo di prodotto: sequenza tipica da Tony; definire appartenenze multifase
+e riuso/aggiornamento specifiche prima del flusso AI. Chiave più avanti, nessuna live
+call o nuova richiesta credenziali. Project Health attende risposta alla domanda16ott.
+Nessun nuovo timer: dopo la chiusura occorre richiesta manuale.
+Il primo avvio server e test API nel sandbox ordinario hanno avuto EPERM sul loopback,
+non errore app; verifiche locali riprese col permesso appropriato.
+next-env.d.ts preesistente preservato. Nessun provider/DB remoto/automazione/invio.
 
 ## Checkpoint di pausa e ripresa manuale — 16 ottobre 2026
 

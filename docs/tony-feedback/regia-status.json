@@ -1,53 +1,88 @@
 {
   "schemaVersion": 1,
   "projectId": "bd6c50d4-8a6d-43e3-b535-fc3dc538df8e",
-  "assignmentId": "tony-pause-checkpoint-20261016",
+  "assignmentId": "tony-new-whatsapp-feedback-20261017",
+  "requestId": "tony-new-whatsapp-feedback-20261017-owner-message-consent",
+  "intakeId": 213,
+  "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
+  "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "completed",
-  "observedAt": "2026-10-16T13:10:53.897427+00:00",
-  "outcome": "Checkpoint pausa registrato. Configurazione esistente PAUSED verificata in sola lettura; ripresa solo su richiesta umana. Nessuna nuova lettura WhatsApp, acquisizione, codice o invio. Copertura resta14:14.",
-  "evidence": [
+  "executionState": "manual-text-assignment-completed",
+  "observedAt": "2026-10-17T09:12:44.690722+00:00",
+  "startedAt": null,
+  "completedAt": "2026-10-17T09:12:44.690722+00:00",
+  "deadline": null,
+  "executors": [
     {
-      "kind": "file",
-      "ref": "docs/tony-feedback/intake-20261016-1414.md",
-      "verifiedAt": "2026-10-16T12:26:33.499234+00:00",
-      "verifiedBy": "root: lettura JSON privato, analisi e confronto backlog"
+      "threadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
+      "role": "primary",
+      "subagent": false,
+      "startedAt": null
     },
     {
-      "kind": "file",
-      "ref": "docs/tony-feedback/attachments/2026-10-16_1414_conversation-cua.json",
-      "verifiedAt": "2026-10-16T12:26:33.499234+00:00",
-      "verifiedBy": "root:2963byte,10bolle,copia byte-identica e ignoreGit; non screenshot originali"
-    },
-    {
-      "kind": "url",
-      "ref": "https://www.youtube.com/playlist?list=PL_dhPga7ruufX832BRusTVN4LJb_ej5LV",
-      "verifiedAt": "2026-10-16T12:26:33.499234+00:00",
-      "verifiedBy": "root: apertura web, titolo e footer soltanto; contenuti delle lezioni non verificati"
-    },
-    {
-      "kind": "agent-report",
-      "ref": "tony_delta, CUA16ott circa14:22 Europe/Rome: lista Delivered14:14, corpo12:24/12:28, scroll -10005 noWindowsAvailable",
-      "verifiedAt": "2026-10-16T12:26:33.499234+00:00",
-      "verifiedBy": "root: report lettore delegato, nessuna seconda lettura root"
-    },
-    {
-      "kind": "url",
-      "ref": "https://vercel.com/macrobets-projects/time-tracker-tony/HbhyMAWLmRKqYLVdzygjqUDx1Pau",
-      "verifiedAt": "2026-10-16T11:30:50Z",
-      "verifiedBy": "root: prova precedente Vercel successf7ed997, non rieseguita"
-    },
-    {
-      "kind": "file",
-      "ref": "/Users/marcobellia/.codex/automations/agente-progetto-tony/automation.toml",
-      "verifiedAt": "2026-10-16T13:10:53.897427+00:00",
-      "verifiedBy": "root: rg status PAUSED in sola lettura; coordinatrice riferisce pausa già eseguita",
-      "configurationUpdatedAt": "2026-10-16T15:07:11.062000+02:00"
+      "name": "asset_organisation_audit",
+      "role": "read-only scope and final review",
+      "subagent": true,
+      "codeOwnership": "none; root owns implementation and tests",
+      "result": "no code findings; stale register header corrected"
     }
   ],
+  "outcome": "7testi10:56–11:04 interpretati. Filtri Area/Phase d7dcb8f su main remoto e Vercel success verificati,95unitari/PostgreSQL+10API,statici/build e UI locale passati. Audio esclusi; bozza privata corrente da approvare, nessun invio.",
+  "turnReportTerminal": true,
+  "evidence": [
+    {
+      "kind": "agent-report",
+      "ref": "root CUA diretto, Tony identity/title/list, voice18s10:53, targeted window screenshot",
+      "verifiedAt": "2026-10-17T09:00:58.822101+00:00",
+      "verifiedBy": "root, solo WhatsApp Tony"
+    },
+    {
+      "kind": "file",
+      "ref": "output/tony/voice-note-20261017-observation.private.json",
+      "sha256": "345fa0f814af97b2ec8817ab445f263f565c033347c4e3babb1b694683d2baae",
+      "verifiedAt": "2026-10-17T09:00:58.822101+00:00",
+      "verifiedBy": "root, evidenza privata manuale, non audio originale"
+    },
+    {
+      "kind": "file",
+      "ref": "docs/tony-feedback/intake-20261017.md",
+      "verifiedAt": "2026-10-17T09:00:58.822101+00:00",
+      "verifiedBy": "root, metadati e tentativi"
+    },
+    {
+      "kind": "file",
+      "ref": "Mea data/requests.json: tony-new-whatsapp-feedback-20261017-owner-message-consent resolved/locked",
+      "verifiedAt": "2026-10-17T09:00:58.822101+00:00",
+      "verifiedBy": "root read-only; consenso umano riferito, resolvedAt2026-10-17T08:53:12.822Z"
+    },
+    {
+      "kind": "file",
+      "ref": "output/tony/text-intake-20261017-1104.private.json",
+      "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992",
+      "verifiedAt": "2026-10-17T09:08:47.974251+00:00",
+      "verifiedBy": "root manual screenshot transcription"
+    },
+    {
+      "kind": "deployment-status",
+      "ref": "https://vercel.com/macrobets-projects/time-tracker-tony/DpdKtRQCqoPsjrdGenjJybLEX4tj",
+      "commit": "d7dcb8fd1ef01ecfec2b14b783359b29d0b2f0e1",
+      "state": "success",
+      "verifiedAt": "2026-10-17T09:12:22Z",
+      "source": "GitHub combined commit status, Vercel context"
+    }
+  ],
+  "authorization": {
+    "scope": "solo questo incarico manuale, eventuale modifica pertinente e test, bozza inglese da approvare",
+    "consentRequestStatus": "resolved/locked",
+    "resolvedAt": "2026-10-17T08:53:12.822Z",
+    "customerSendAuthorized": false,
+    "periodicAutomationAuthorized": false
+  },
   "sourceCoverage": {
     "channel": "whatsapp",
     "contact": "Tony McIntyre",
-    "lastAcquiredWindow": {
+    "identityVerified": true,
+    "lastAnalyzedContentWindow": {
       "date": "2026-10-16",
       "from": "12:28",
       "through": "14:14",
@@ -59,88 +94,124 @@
       "timezone": "Europe/Rome dichiarato nella fonte",
       "rootRead": "JSON, non screenshot/chat diretta"
     },
-    "privateCapture": {
-      "id": "CAP-001",
-      "bytes": 2963,
-      "sha256": "a8b38809624a1e439056020054c8a127ed9f5d702e784163082b34294edab636",
-      "ignoredByGit": true
-    },
-    "lastIncomingVisibleTime": "13:04",
-    "noReplyVisibleAtSourceCheck": "14:14",
-    "lastFreshAttempt": {
-      "displayTimeApprox": "2026-10-16 14:22 Europe/Rome",
-      "reader": "tony_delta",
-      "bodyRead": ["duebolle giànote12:24/12:28"],
-      "listLastOutgoingTime": "14:14",
-      "listStatus": "Delivered",
-      "error": {
-        "code": -10005,
-        "reason": "noWindowsAvailable",
-        "retries": 0
-      },
-      "newMessageCountAfterCoverage": null,
-      "after1414Verified": false
-    },
-    "nextOverlap": "14:14, soltanto delta successivo; Excel12:41 distinto",
-    "checkPerformedThisCycle": false
-  },
-  "attachments": {
-    "verifiedTotal": 17,
-    "newReceivedFilesThisCycle": 0,
-    "conversationCaptureNotCountedAsAttachment": true,
-    "pending": [
+    "continuousContentCoverageAfter1414Verified": false,
+    "voiceMetadataThrough": "2026-10-17 10:53",
+    "latestTextPreviewObserved": "2026-10-17 11:04",
+    "latestTextPrivateRef": "output/tony/text-intake-20261017-1104.private.json",
+    "newRequestInterpreted": true,
+    "audioAcquired": false,
+    "voiceMetadata": [
       {
-        "sourceId": "MSG-20261016-1241",
-        "name": "ADD PROJECT.xlsx",
-        "acquired": false,
-        "analysisCompleted": false,
-        "sha256": null,
-        "reason": "Allegato non raggiunto: primo scroll CUA fallito; nessun tentativo SaveAs o retry",
-        "oldHomonym": "ATT-007 del14ott preservato, non sostitutivo"
+        "date": "2026-10-16",
+        "time": "14:47",
+        "durationSeconds": 1,
+        "audioAcquired": false
+      },
+      {
+        "date": "2026-10-16",
+        "time": "14:48",
+        "durationSeconds": 66,
+        "audioAcquired": false
+      },
+      {
+        "date": "2026-10-17",
+        "time": "10:53",
+        "durationSeconds": 18,
+        "audioAcquired": false
       }
-    ]
-  },
-  "work": {
-    "applicationChangesThisCycle": false,
-    "applicationCommit": "f7ed9977fca32d4ebf6834453016bc4a1f19f3a7",
-    "priorDocumentationCommit": "96f03f963eb66bfe1799850e1814c1d6cd5780d8",
-    "gitFetch": "success,0/0 a88705f8 prima degli edit",
-    "headVsOriginBeforeEdits": "0/0",
-    "pull": "non necessario, checkout modificato preservato",
-    "currentDocumentationCommit": "990df2e45b89c1dec1807c3123da2bdd10c4832d",
-    "validation": "Coerenza PAUSED/copertura invariata, JSON,70 link locali,formato/diff passati; nessun test app",
-    "pushThisCycle": true,
-    "pushVerifiedAgainstRemoteRef": true,
-    "newApplicationDeploymentVerified": false,
-    "previousIntakeDocumentationCommit": "540aa54bfa464da98e991b5e234c105e0a1a443f"
-  },
-  "blockers": [
-    {
-      "reason": "Risposta cliente sul calcolo Project Health attesa dopo domanda14:14",
-      "neededInput": "Risposta Tony; nessuna formula richiesta a Marco né nuovo sollecito autorizzato",
-      "owner": "Tony McIntyre",
-      "deadline": null,
-      "kind": "client"
+    ],
+    "rawPrivateContentInGit": false,
+    "newMessageCountAfterCoverage": null,
+    "textBatch": {
+      "date": "2026-10-17",
+      "from": "10:56",
+      "through": "11:04",
+      "incomingBubbles": 7,
+      "source": "root CUA targeted screenshot",
+      "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992"
     },
+    "audioExcludedByMarco": true
+  },
+  "receiptUpdates": [
     {
-      "reason": "CUA noWindowsAvailable interrompe delta e acquisizione Excel",
-      "neededInput": "Finestra disponibile per un successivo tentativo bounded; niente loop",
-      "owner": "responsabile Tony",
-      "deadline": null,
-      "kind": "technical"
-    },
-    {
-      "reason": "GROUP/ADD DATA e comportamento pagina progetto non definiti",
-      "neededInput": "Materiali leggibili/chiarimenti funzionali, nessun mapping dedotto",
-      "owner": "requisiti Tony",
-      "deadline": null,
-      "kind": "requirements"
+      "sourceId": "OUT-20261016-02",
+      "version": "V3",
+      "state": "read-receipt-visible",
+      "evidence": "due spunte blu nello screenshot WhatsApp17ott",
+      "observedAt": "2026-10-17T09:00:58.822101+00:00",
+      "actualReadAt": null,
+      "resent": false
     }
   ],
+  "attachments": {
+    "verifiedReceivedTotal": 17,
+    "newAudioFilesAcquired": 0,
+    "audioHash": null,
+    "newAttachmentIds": [],
+    "oldExcelAttemptedThisCycle": false
+  },
+  "work": {
+    "applicationChangesThisCycle": true,
+    "headBeforeEdits": "2e6b721d07d6b025e5450339e96145d8259274d5",
+    "gitFetch": "success,0/0",
+    "pull": "non necessario, next-env preesistente preservato",
+    "applicationTestsRun": true,
+    "applicationTestsReason": "95unitari/PostgreSQL,10API,statici/build/formato e browser locale passati; nessuna prova autenticata produzione",
+    "newDeploymentVerified": true,
+    "documentationCommit": null,
+    "pushThisCycle": true,
+    "applicationCommit": "d7dcb8fd1ef01ecfec2b14b783359b29d0b2f0e1",
+    "applicationTests": {
+      "unitPostgresql": 95,
+      "api": 10,
+      "typecheck": "pass",
+      "lint": "pass",
+      "build": "pass",
+      "format": "pass",
+      "browser": "local desktop1440x1000/mobile390x844, combined filters/zero/clear/keyboard/missing/project switch/import hash pass",
+      "independentReview": "pass after stale documentation title correction"
+    },
+    "remoteMainVerified": "d7dcb8fd1ef01ecfec2b14b783359b29d0b2f0e1",
+    "deploymentStatus": "success, checked2026-10-17T09:12:22Z, statusUpdated2026-10-17T09:12:11Z",
+    "documentationClosure": "Exact closure commit/push in ignored output/agent-heartbeat-state.json",
+    "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/DpdKtRQCqoPsjrdGenjJybLEX4tj"
+  },
+  "blockers": [],
   "nextActions": [
-    "Nessuna azione automatica mentre il progetto è in pausa",
-    "Attendere richiesta umana Riprendi Tony o incarico manuale esplicito; non riattivare heartbeat implicitamente",
-    "Alla ripresa: usare copertura14:14 e lacune note, acquisire Excel/delta solo se richiesto e sessione disponibile"
+    "Nessun polling o continuazione automatica; prossimo lavoro solo manuale",
+    "Tony fornisce sequenza; multifase e specifiche condivise richiedono regole esplicite prima di implementazione",
+    "Marco fornisce chiave più avanti; live AI disattivata",
+    "Eventuale invio bozza richiede conferma del testo corrente; nessun callback interchat"
+  ],
+  "outgoingDrafts": [
+    {
+      "id": "tony-voice-note-20261017",
+      "version": "v1",
+      "recipient": "Tony McIntyre",
+      "channel": "whatsapp",
+      "scope": "Solo richiesta di testo del vocale17ott10:53 se il blocco audio non è risolto; nessun annuncio implementazione",
+      "contentHash": "sha256:c6e5b4a62865a69298d01151897f478cd00069977b918b7592160ebd07cc0b5e",
+      "privateTextRef": "output/tony/voice-note-20261017-draft-v1.json",
+      "status": "withdrawn-audio-excluded",
+      "readyForApproval": false,
+      "customerSent": false,
+      "composerTextEdited": false,
+      "requiresExactHumanApproval": true
+    },
+    {
+      "id": "tony-text-feedback-20261017",
+      "version": "v1",
+      "recipient": "Tony McIntyre",
+      "channel": "whatsapp",
+      "scope": "Risposta ai7testi17ott10:56–11:04: working model first, filtri area/fase consegnati; attesa sequenza, AI e riuso specifiche annotati senza claim live",
+      "contentHash": "sha256:a77b317d6ad039cf6180f7f22712063694f451e78bc68ac3f4c862d6c40332e8",
+      "status": "awaiting-exact-human-approval",
+      "requiresExactHumanApproval": true,
+      "customerSent": false,
+      "composerTextEdited": false,
+      "privateTextRef": "output/tony/text-feedback-20261017-draft-v1.json",
+      "readyForApproval": true
+    }
   ],
   "usage": {
     "measuredTokens": null,
@@ -151,66 +222,30 @@
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "PAUSA: solo trigger umano Riprendi Tony; copertura14:14 invariata, ultimo tentativo parziale14:22, attese cliente/tecniche note"
+    "resumeFrom": "Unità testi e filtri asset conclusa. Prossimo solo manuale: sequenza Tony/multifase/specifiche; audio Marco, heartbeatPAUSED"
   },
   "automation": {
     "id": "agente-progetto-tony",
     "status": "PAUSED",
-    "verifiedAt": "2026-10-16T13:10:53.897427+00:00",
-    "configurationUpdatedAt": "2026-10-16T15:07:11.062000+02:00",
-    "source": "fileconfig letto da root; pausa tramite tool ufficiale riferita dalla coordinatrice",
+    "verifiedAt": "2026-10-17T09:00:58.822101+00:00",
     "createdOrModifiedThisCycle": false,
-    "effectiveProjectInstructions": "PAUSED, trigger umano manuale",
-    "configurationConflictsWithInstructions": false,
-    "resumeTrigger": "richiesta umana Riprendi Tony, non riattivazione automatica"
+    "resumeMode": "solo incarico manuale corrente, nessuna riattivazione periodica"
   },
-  "policyPersistence": {
-    "status": "Pausa corrente coerente con AGENTS e fileconfig. Vecchia proposta ACTIVE superata, nessuna richiesta di riattivazione pendente.",
-    "reviewRejectionRef": "docs/tony-feedback/register.md#ciclo-16-ottobre-1153-utc--riconciliazione-in-attesa-di-approvazione",
-    "pendingReactivationApproval": false
-  },
-  "outgoingDrafts": [],
-  "archivedDrafts": [
-    {
-      "id": "tony-popup-delivery-20261016",
-      "version": "v1",
-      "status": "superseded-by-V3-reported-sent"
-    },
-    {
-      "id": "tony-popup-delivery-20261016",
-      "version": "v2",
-      "status": "superseded-never-approved-or-sent-by-owner"
-    }
-  ],
   "integration": {
-    "protocolSource": "/Users/marcobellia/Desktop/mea world system/interface/agent-dashboard/PROTOCOL.md",
-    "transport": "file leggibile dalla coordinatrice",
-    "dashboardAdapterVerified": false,
-    "apiContractStatus": "riferito ancora in lavorazione, nessuna chiamata API eseguita",
-    "externalRepositoryModified": false,
+    "transport": "file condiviso; root supervisore pubblica ponte",
+    "existingRequestReused": true,
+    "newJobOrChatCreated": false,
+    "newReporterOrAclCreated": false,
+    "eventPublicationAttempted": false,
+    "dashboardUiActions": 0,
+    "readOnlyActivitySnapshotQueried": true,
+    "sameActivityIdFoundInSnapshot": false,
+    "http403Attempts": 0,
     "interchatCallbackSent": false,
-    "rawPrivateAttachmentsIncluded": false,
-    "reportPublication": "checkpoint versionato nella cronologiaGit; esito push in output/agent-heartbeat-state.json, nessun callback"
+    "rawWhatsAppAudioOrScreenshotInGit": false
   },
-  "executionState": "paused",
-  "previousAcquiredMessages": [
-    {
-      "sourceRange": "12:28–13:04",
-      "kind": "incoming-summary",
-      "delta": "Conferma richieste UX003/004 e GROUP/ADD DATA incerti; URL playlist recuperato, nessuna nuova regola certa"
-    },
-    {
-      "sourceId": "OUT-20261016-02",
-      "kind": "outgoing-reported",
-      "time": "14:14",
-      "version": "V3",
-      "scope": "Popup pubblicato, prossimo esame Excel, domanda calcolo Project Health",
-      "textSha256": "157d68ce93da1ad015a2a43235208bb652a17edd4ba879eea7e9d11ceaec550d",
-      "approval": "puntuale Marco riferita dalla coordinatrice; singolo invio concluso",
-      "delivery": "due spunte grigie riferite, delivered",
-      "readReceiptVerified": false,
-      "newReplyVisibleAt1414": false
-    }
-  ],
-  "messagesAcquiredThisCycle": []
+  "cleanup": {
+    "menuDismissalVerified": true,
+    "details": "Fresh AX menu0 Cancel riuscito; nessun testo composer modificato"
+  }
 }

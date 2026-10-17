@@ -25,12 +25,11 @@ spiegano il percorso, non sostituiscono lo stato. Nessuna dipendenza da una chat
 Fonti dashboard del 16 ottobre: [intake 12:24–12:31](intake-20261016-dashboard.md),
 con tre PNG salvati e due soltanto visualizzati da Show Chrome.
 
-**Stato operativo: progetto in pausa, heartbeat PAUSED confermato; ripresa solo
-su richiesta umana «Riprendi Tony».** Il checkpoint non è una nuova lettura WhatsApp.
-
-Ultimo intake: [dieci bolle acquisite fino14:14 e fresh check parziale](intake-20261016-1414.md).
-Project Health attende Tony; nuovo Excel è un'attesa tecnica distinta.
-[Report esecutore per la regia](regia-status.json), senza adapter automatico attestato.
+**Heartbeat PAUSED; incarico manuale17ott testi acquisiti e filtri consegnati.**
+[Nuovo intake](intake-20261017.md):7testi diretti10:56–11:04, richieste asset/AI
+separate dalle interpretazioni. Audio esclusi da Marco, fallback ritirato;
+nessun blocco audio residuo. Filtri Area/Phase d7dcb8f verificati localmente e su main; provider live spento.
+[Report esecutore](regia-status.json), ponte alla regia, nessun nuovo job o scheduler.
 
 ## Orientamento al codice, solo quando serve
 

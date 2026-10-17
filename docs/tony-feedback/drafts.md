@@ -3,7 +3,19 @@
 Ogni nuovo messaggio richiede conferma esplicita di Marco sul testo concreto.
 Le bozze restano in Codex salvo richiesta esplicita di Marco di preparare il testo
 nel composer, lasciando a lui il click Invia. Nessun invio autonomo.
-**Nessuna bozza pendente da approvare ora.** La proposta localev2 e la v1 della
+**17 ottobre: fallback trascrizione ritirato.** Marco gestisce gli audio e ha escluso
+la loro acquisizione; il testo privato `tony-voice-note-20261017 v1` non è più candidato
+all’approvazione. Nessun invio/composer. Una nuova bozza sui testi e sul risultato
+richiede versione, impronta e approvazione puntuale; il vecchio consenso V3 è concluso.
+
+**Nuova bozza testi17ott v1**, ID `tony-text-feedback-20261017`, destinatario Tony
+McIntyre, WhatsApp. Risposta breve al lotto10:56–11:04 e ai filtri consegnati;
+nessuna promessa di AI live o aggiornamenti collettivi. Testo esatto nel file privato
+`output/tony/text-feedback-20261017-draft-v1.json`; binding
+`sha256:a77b317d6ad039cf6180f7f22712063694f451e78bc68ac3f4c862d6c40332e8`. Non approvata, non nel composer, non inviata;
+conferma sul testo corrente necessaria per qualsiasi invio futuro.
+
+**Bozze precedenti archiviate.** La proposta localev2 e la v1 della
 regia sono superate dalla **V3 inviata dalla coordinatrice alle14:14 del16ott**,
 con approvazione puntuale di Marco riferita. Non riutilizzarle né ripetere l'invio.
 Il composer non è stato modificato dal responsabile in questa unità.
