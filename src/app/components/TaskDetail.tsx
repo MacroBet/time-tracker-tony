@@ -1,6 +1,7 @@
 "use client";
 import { AssignmentDialog } from "./AssignmentDialog";
 import { TestProgress } from "./CommissioningFields";
+import { TagLevel } from "./TagLevel";
 import {
   commissioning,
   dueDateFor,
@@ -244,7 +245,13 @@ function TaskContent({ task }: { task: Task }) {
         {isTag && (
           <div>
             <h2 className="text-lg font-semibold">
-              Test sheet · {task.cx?.level}
+              Test sheet ·{" "}
+              {task.cx?.level && (
+                <TagLevel
+                  level={task.cx.level}
+                  presentation={commissioning(project).config.phasePresentation}
+                />
+              )}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
               Record this tag’s test result and observations here. Supporting

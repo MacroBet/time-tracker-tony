@@ -29,6 +29,7 @@ import { type RegisterImport } from "@/lib/commissioning-import";
 import { parseRegisterFile } from "@/lib/asset-transfer";
 import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
 import { ProjectAudit } from "./ProjectAudit";
+import { TagLevel } from "./TagLevel";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
 import {
   type Project,
@@ -633,13 +634,10 @@ function ProjectWorkspace({
                       className="size-4 accent-blue-600"
                       defaultChecked={asset.levels.includes(level)}
                     />
-                    <span>
-                      <span className="font-medium">{level}</span>
-                      {state.config.phasePresentation?.[level]?.label &&
-                      state.config.phasePresentation[level]?.label !== level
-                        ? ` · ${state.config.phasePresentation[level]?.label}`
-                        : ""}
-                    </span>
+                    <TagLevel
+                      level={level}
+                      presentation={state.config.phasePresentation}
+                    />
                   </label>
                 ),
               )}
@@ -1470,11 +1468,10 @@ function ProjectWorkspace({
                 >
                   <div>
                     <p className="text-sm font-semibold">
-                      {level}
-                      {state.config.phasePresentation?.[level]?.label &&
-                      state.config.phasePresentation[level]?.label !== level
-                        ? ` · ${state.config.phasePresentation[level]?.label}`
-                        : ""}
+                      <TagLevel
+                        level={level}
+                        presentation={state.config.phasePresentation}
+                      />
                       {!enabled && (
                         <span className="ml-2 font-normal text-slate-600">
                           Not active in project

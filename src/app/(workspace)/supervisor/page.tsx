@@ -1,4 +1,5 @@
 import { hasModule } from "@/lib/commissioning";
+import { homeFor } from "@/lib/domain";
 import { SupervisorDashboard } from "@/app/components/SupervisorDashboard";
 import { currentUser } from "@/server/auth";
 import { redirect } from "next/navigation";
@@ -9,7 +10,7 @@ export default async function Page({
 }) {
   const user = await currentUser();
   if (!user) redirect("/");
-  if (user.role === "worker") redirect("/dashboard");
+  if (user.role === "worker") redirect(homeFor(user));
   const { view } = await searchParams;
   const feature =
     view === "timesheets"
@@ -19,6 +20,6 @@ export default async function Page({
         : view === "feedback"
           ? "feedback"
           : "tasks";
-  if (!hasModule(user, feature)) redirect("/supervisor");
+  if (!hasModule(user, feature)) redirect(homeFor(user));
   return <SupervisorDashboard />;
 }

@@ -156,9 +156,28 @@ export const isOverdue = (task: Task, now = new Date()) =>
 export const isStale = (task: Task, now = new Date()) =>
   !isClosed(task) &&
   now.getTime() - new Date(task.updatedAt).getTime() > 7 * 86400000;
-export const homeFor = (user: User) =>
-  user.role === "worker"
-    ? user.modules && !user.modules.includes("time")
-      ? "/my-tasks"
-      : "/dashboard"
-    : "/supervisor";
+export function homeFor(user: User) {
+  // Candidates stay inside each role's permitted routes. Missing module settings
+  // retain the legacy default access; administrators retain all modules.
+  const enabled = (module: NonNullable<User["modules"]>[number]) =>
+    user.role === "admin" || !user.modules || user.modules.includes(module);
+  if (user.role === "worker") {
+    if (enabled("tasks")) return "/my-tasks";
+    if (enabled("time")) return "/dashboard";
+    if (enabled("commissioning")) return "/commissioning";
+    return "/settings";
+  }
+  if (
+    (user.role === "manager" || user.role === "admin") &&
+    enabled("dashboard")
+  )
+    return "/overview";
+  if (enabled("tasks")) return "/supervisor";
+  if (enabled("dashboard")) return "/overview";
+  if (enabled("commissioning")) return "/commissioning";
+  if (enabled("reports")) return "/reports";
+  if (enabled("team")) return "/supervisor?view=team";
+  if (enabled("time")) return "/supervisor?view=timesheets";
+  if (enabled("feedback")) return "/supervisor?view=feedback";
+  return "/settings";
+}
