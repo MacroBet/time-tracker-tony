@@ -27,6 +27,7 @@ import {
 } from "@/lib/commissioning";
 import { type RegisterImport } from "@/lib/commissioning-import";
 import { parseRegisterFile } from "@/lib/asset-transfer";
+import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
 import { ProjectAudit } from "./ProjectAudit";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
 import {
@@ -196,6 +197,8 @@ function ProjectWorkspace({
   const [busy, setBusy] = useState(false),
     [assetQuery, setAssetQuery] = useState(""),
     [supplyFilter, setSupplyFilter] = useState("all"),
+    [areaFilter, setAreaFilter] = useState("all"),
+    [phaseFilter, setPhaseFilter] = useState("all"),
     [assetPage, setAssetPage] = useState(0);
   const [transferOpen, setTransferOpen] = useState(false),
     [reportsOpen, setReportsOpen] = useState(reports),
@@ -432,16 +435,27 @@ function ProjectWorkspace({
       setBusy(false);
     }
   }
-  const assetRows = state.assets.filter(
-    (a) =>
-      `${a.id} ${a.clientAssetId ?? ""} ${state.programmeId ?? ""} ${a.programmeActivityId ?? ""} ${a.name} ${a.equipmentType} ${a.location} ${a.phase ?? ""} ${a.floor ?? ""} ${a.area ?? ""} ${a.discipline ?? ""} ${a.parentAssetId ?? ""} ${a.serialNumber ?? ""} ${a.owner ?? ""} ${a.deliveryActivityId ?? ""}`
-        .toLowerCase()
-        .includes(assetQuery.trim().toLowerCase()) &&
-      (supplyFilter === "all" ||
-        (supplyFilter === "unknown"
-          ? a.clientSupplied == null
-          : String(a.clientSupplied) === supplyFilter)),
-  );
+  const areaOptions = assetFieldOptions(state.assets, "area");
+  const phaseOptions = assetFieldOptions(state.assets, "phase");
+  const assetRows = filterAssetRegister(state.assets, {
+    query: assetQuery,
+    supply: supplyFilter,
+    area: areaFilter,
+    phase: phaseFilter,
+    programmeId: state.programmeId,
+  });
+  const hasAssetFilters =
+    Boolean(assetQuery) ||
+    supplyFilter !== "all" ||
+    areaFilter !== "all" ||
+    phaseFilter !== "all";
+  function clearAssetFilters() {
+    setAssetQuery("");
+    setSupplyFilter("all");
+    setAreaFilter("all");
+    setPhaseFilter("all");
+    setAssetPage(0);
+  }
   const page = Math.min(
     assetPage,
     Math.max(0, Math.ceil(assetRows.length / 50) - 1),
@@ -1109,7 +1123,7 @@ function ProjectWorkspace({
                   </div>
                 )}
               </div>
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(12rem,1fr)_repeat(3,minmax(0,12rem))]">
                 <Input
                   className="h-11"
                   aria-label="Search asset register"
@@ -1120,10 +1134,39 @@ function ProjectWorkspace({
                   }}
                   placeholder="Search ID, equipment, location or owner"
                 />
-                <label className="flex items-center gap-2 text-sm">
+                {(
+                  [
+                    ["Area", areaFilter, setAreaFilter, areaOptions],
+                    ["Phase", phaseFilter, setPhaseFilter, phaseOptions],
+                  ] as const
+                ).map(([label, value, setValue, options]) => (
+                  <label
+                    key={label}
+                    className="flex items-center gap-2 text-sm min-w-0"
+                  >
+                    {label}
+                    <select
+                      className="field-select min-h-11 min-w-0 w-full"
+                      value={value}
+                      onChange={(event) => {
+                        setValue(event.target.value);
+                        setAssetPage(0);
+                      }}
+                    >
+                      <option value="all">All {label.toLowerCase()}s</option>
+                      <option value="missing">Not recorded</option>
+                      {options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+                <label className="flex items-center gap-2 text-sm min-w-0">
                   Supply
                   <select
-                    className="field-select min-h-11"
+                    className="field-select min-h-11 min-w-0 w-full"
                     value={supplyFilter}
                     onChange={(e) => {
                       setSupplyFilter(e.target.value);
@@ -1136,6 +1179,18 @@ function ProjectWorkspace({
                     <option value="unknown">Not classified</option>
                   </select>
                 </label>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                <p>Filter by the area and phase recorded on each asset.</p>
+                {hasAssetFilters && (
+                  <Button
+                    variant="link"
+                    className="h-11 px-0"
+                    onClick={clearAssetFilters}
+                  >
+                    Clear filters
+                  </Button>
+                )}
               </div>
               <div
                 className="hidden md:block overflow-x-auto focus-visible:outline-2 focus-visible:outline-blue-700"
@@ -1201,6 +1256,10 @@ function ProjectWorkspace({
                             {row.equipmentType}
                             <span className="mt-1 block text-xs text-slate-600">
                               {assetLocationLabel(row) || "Location not set"}
+                            </span>
+                            <span className="mt-1 block text-xs text-slate-600">
+                              Area: {row.area?.trim() || "Not recorded"} ·
+                              Phase: {row.phase?.trim() || "Not recorded"}
                             </span>
                           </td>
                           <td className="p-3 text-xs">
@@ -1272,6 +1331,18 @@ function ProjectWorkspace({
                       </p>
                       <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                         <div>
+                          <dt className="text-slate-600">Area</dt>
+                          <dd className="mt-1 break-words">
+                            {row.area?.trim() || "Not recorded"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-slate-600">Phase</dt>
+                          <dd className="mt-1 break-words">
+                            {row.phase?.trim() || "Not recorded"}
+                          </dd>
+                        </div>
+                        <div>
                           <dt className="text-slate-600">Client asset ID</dt>
                           <dd className="mt-1 break-words">
                             {row.clientAssetId || "No reference"}
@@ -1314,8 +1385,8 @@ function ProjectWorkspace({
               </div>
               {!assetRows.length && (
                 <p className="py-6 text-center text-sm text-slate-600">
-                  No assets match these filters. Try another search or supply
-                  filter.
+                  No assets match these filters. Change a filter or clear them
+                  to see all assets.
                 </p>
               )}
               <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3 text-xs text-slate-600">
@@ -1586,7 +1657,8 @@ function ProjectWorkspace({
             </h3>
             <p className="text-sm text-slate-600">
               CSV imports equipment. JSON also includes programme activities.
-              You will review a preview before anything is saved.
+              Include area and phase to filter the asset list after import. You
+              will review a preview before anything is saved.
             </p>
             <label className="block text-sm font-medium">
               Choose CSV or JSON
