@@ -1,16 +1,21 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: 17 ottobre 2026. **Incarico manuale Tony: testi acquisiti e filtri asset consegnati; monitor ACTIVE ogni10min.**
-Copertura17ott: **11testi diretti10:56–11:09**, audio esclusi. Ultimo outgoing
-**11:34 OUT-20261017-01**, testo approvato inviato una volta; controllo17ott11:45:
-**due spunte blu visibili**, ricevuta di lettura verificata, ora effettiva ignota.
-Controllo17ott12:16: nuovi materiali tag12:07–12:15 **parzialmente letti**: tre
-didascalie e cinque nomiPNG individuati, nessuna immagine aperta/scaricata. Richiesta
-colori tag configurabili per azienda, L2A consegna/L2B installazione; flussi/campi
-minimi ancora non verificati. Scroll fallito noWindowsAvailable, tentativi fermati.
-[Delta e limite](intake-20261017-tags-partial.md). Nessun invio o modifica app.
-Copertura16ott CAP-001 rimane storica.
-[Consenso e nuovo monitor](intake-20261017-send-monitor.md).
+Ultimo aggiornamento: **17 ottobre 2026, 21:23 Europe/Rome**. Mandato manuale
+successivo verificato: rileggere i WhatsApp pertinenti e sviluppare richieste chiare.
+**Lettura non completa:** testi mattino10:56–11:09 acquisiti, osservazioni discontinue
+fino21:06; PNG L1 acquisito/letto, ATT-018, totale18 originali. PDF/XLS/nove PNG e
+parti del testo ancora da leggere. Export nativo senza media riuscito in Download,
+ma macOS nega lettura del file; nessun consenso generico pendente o ricerca chat
+richiesta a Marco. [Copertura puntuale, mandato, gap e prove](intake-20261017-evening.md).
+
+**UX-006/007 implementate e verificate localmente:** home manager/admin su Overview,
+worker su My tasks con fallback per moduli; colori/label tag configurati per progetto
+visibili in popup asset, pannello tag e scheda test. 98 unitari/PostgreSQL,10 API,
+typecheck/lint/build e browser desktop/mobile passati; revisione indipendente senza
+rilievi. Commit **c12deea** e normale push main verificati; deploy GitHub/Vercel **success**
+17ott19:22:17UTC (21:22 Europe/Rome), environment label Production. Prove autenticate
+solo locali; metadato GitHub production_environment=false riportato nel report. Nessun altro invio cliente, DB remoto o provider live.
+Unico outgoing agente17ott11:34 concluso; ricevuta blu osservata11:45, ora lettura ignota.
 
 ## Stato corrente per ripresa
 
@@ -21,24 +26,35 @@ Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
 Una domanda non autorizza sviluppo indiscriminato; «Riprendi Tony» ricostruisce
 il punto e porta avanti solo lavoro già chiaramente autorizzato.
 
-**Modalità corrente:** monitoraggio ristretto richiesto direttamente da Marco nella
-regia vocale17ott e verificato con read_thread. Stesso heartbeat
-`agente-progetto-tony` **ACTIVE ogni10min**, stessa chat/job, nessun duplicato.
-Supera la pausa16ott solo per seguire nuovi testi/materiali pertinenti; audio a Marco.
-Nessuna nuova feature o messaggio implicitamente autorizzati dalle fonti.
+**Modalità corrente:** incarico manuale ampliato da Marco nella chat supervisore:
+rilettura delle fonti pertinenti e implementazione delle richieste chiare, entro
+soglia globale quota50%. Fonte e ID umani nell'intake serale. Nessun ampliamento
+automatizzato: stesso heartbeat `agente-progetto-tony` ACTIVE ogni10min per monitor
+ristretto, nessun duplicato. Audio a Marco, fonti non sono autorizzazioni aggiuntive.
+Quota conto verificata19:18UTC33% consumato; nessun reset/credito extra.
 
 **Invio concluso:** v1 approvata direttamente da Marco sul testo esatto e inviata
 una volta a Tony11:34. Consenso consumato; ogni futuro testo richiede nuova conferma.
 Handoff al publisher per riconciliare la richiesta regia, nessun bypass ACL/callback.
 
-**Nuove richieste acquisite11:06–11:09:** fonte dati/file condivisa per asset principale,
-test distinti per unità; home per manager/admin e Tasks per worker. Annotate, nessun
-nuovo sviluppo avviato. [Interpretazioni e prove](intake-20261017-send-monitor.md).
+**UX-006/007, nuovo lavoro chiaro:** home per ruolo e colori tag usando configurazione
+per progetto già persistente. Non equivale a colori globali per azienda o template.
+Revisione permessi/redirect e browser locale superati; next-env.d.ts preesistente
+preservato. Nessun cambiamento a risultati o review I/R/AC/A.
 
-**Nuovo lotto tag12:07–12:15:** richiesta colori per azienda acquisita dalle
-didascalie; nuovi diagrammi e campi minimi non ancora letti. Nessun originale
-scaricato, totaleATT17 invariato. Controllo parziale fermato al primo errore UI.
-Prossima lettura minima dal documento12:07, senza sviluppi dedotti dalle fonti.
+**CX-011, nuovi requisiti da completare con le fonti:** admin adatta voci documentali
+per progetto/tag, template riusabile, check sheet con ID e più passi; issue QA/QC
+collegate ad attrezzatura/area. Un ID interno e una task per tag già esistono, passi
+strutturati e issue automatiche no. Non dedurre ID cliente, esito per passo o
+propagazione. PDF/XLS e diagrammi ancora mancanti elencati nell'intake serale.
+
+**Blocco attuale preciso:** apertura PNG in Anteprima riuscita dopo consenso;
+AX scroll funziona, coordinate ancora noWindowsAvailable. Export WhatsApp Without
+media confermato in Download; lettura negata da macOS anche con esecuzione
+consentita. Intervento utente su WhatsApp rilevato e azioni UI fermate. Regia
+ricostruisce fonte/export noti quando disponibile una sessione supportata; nessuna
+richiesta generica di ritrovare la chat o ripetere consenso. Copertura continua
+oltre16ott14:14 non attestata. Nessun audio esportato/acquisito.
 
 **UX-005 consegnata:** filtri Area/Phase e metadati visibili in Assets desktop/mobile,
 combinati con ricerca/Supply e recupero Clear filters, basati sui dati esistenti.
@@ -73,7 +89,7 @@ resoconto Show Chrome la colloca alle **10:01 del 16 ottobre**. La domanda Sched
 statici/build e desktop/mobile passati; app `77b74d7`, Vercel success; chiusura
 documentale `58a548f` su main. Prova autenticata esclusivamente locale.
 
-**Copertura Tony e comunicazioni:** 17 allegati privati nel [manifest](attachments/manifest.md);
+**Copertura Tony e comunicazioni:** 18 allegati privati nel [manifest](attachments/manifest.md);
 Excel ATT-014 analizzato, 1.354 righe candidate, non importato. Nuova **CAP-001**:
 trascrizione privata della coordinatrice di10bolle12:28–14:14, 2.963byte e SHA
 verificati; non è un nuovo allegato ATT. [Intake e limiti](intake-20261016-1414.md).
@@ -153,21 +169,24 @@ nei test. Codex sviluppa, non è il backend dell'app. Autopilot futuro disattiva
 I 1.000 € aggiuntivi sono compenso commerciale accettato («No probs»), non pagamento
 verificato, budget API o prezzo universale. Primo pagamento storico non verificato con certezza.
 
-| Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
-| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/monitor          | aggiornato17/10, heartbeat ACTIVE      | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
-| AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
-| AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
-| CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
-| DATA-002 preflight Excel asset      | completata, solo locale                | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
-| CX-010 riferimenti asset esterni    | completata nel perimetro               | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
-| UX-003 dashboard compatta           | consegnata (699d019)                   | Dashboard e overdue pubblicati; Project Health attende risposta Tony alla domanda14:14                              | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
-| UX-004 popup aggiunta asset/tag     | consegnata (f7ed997)                   | Nuovo asset con tag/Project ID/Phase e anteprima nel popup; conservare edit inline e permessi                       | 91 unitari, 10 API, statici/build e desktop/mobile; GROUP/ADD DATA non dedotti                    |
-| UX-005 area/fase asset              | consegnata (d7dcb8f)                   | Filtri su metadati esistenti; sequenza Tony, multifase e specifiche condivise ancora da definire                    | Nessuna deduzione o modifica programma/permessi, AI non simulata                                  |
-| UX-002 chiarezza continua           | pronta                                 | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
-| DATA-001 dati rappresentativi       | locale completata / remoto in attesa   | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
-| AI-003 attivazione provider         | in attesa di Marco                     | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
-| AI-004 autopilot                    | futuro                                 | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
+| Priorità / ID                            | Stato                                    | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
+| ---------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| OPS-004 protocollo/monitor               | aggiornato17/10, heartbeat ACTIVE        | Bootstrap AGENTS → indice/stato; sviluppo manuale e unico monitor ristretto autorizzato                             | Nuove chat nella cartella; nessuno scheduler/polling duplicato                                    |
+| AI-001 copilot utile senza live API      | completata (0f80a4e)                     | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
+| AI-002 proposte controllabili            | completata (0f80a4e)                     | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
+| CX-009 tag/gruppi/check sheet            | analisi aggiornata, regole da definire   | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
+| DATA-002 preflight Excel asset           | completata, solo locale                  | Rapporto privato ripetibile e guida asset-preflight.md; attendere mapping espliciti prima di un import              | 1.354 righe riconciliate, duplicati preservati, sette test e protezione sovrascrittura verificati |
+| CX-010 riferimenti asset esterni         | completata nel perimetro                 | Programme ID e Activity ID separati/collegati, client ID distinto; prossimo: definire regole dei gruppi CX-009      | ID/task/tag/date preservati; zero valori dedotti nei dati esistenti, nessun DB remoto             |
+| UX-003 dashboard compatta                | consegnata (699d019)                     | Dashboard e overdue pubblicati; Project Health attende risposta Tony alla domanda14:14                              | Contatori e liste concordanti, mobile/tastiera, permessi e dati preservati                        |
+| UX-004 popup aggiunta asset/tag          | consegnata (f7ed997)                     | Nuovo asset con tag/Project ID/Phase e anteprima nel popup; conservare edit inline e permessi                       | 91 unitari, 10 API, statici/build e desktop/mobile; GROUP/ADD DATA non dedotti                    |
+| UX-006 home per ruolo                    | consegnata c12deea                       | Overview manager/admin, My tasks worker; push e deploy success                                                      | Moduli e membership preservati, fallback senza loop                                               |
+| UX-007 colori tag                        | consegnata c12deea                       | Mostrare colore/label già salvati nel progetto nei percorsi asset/test                                              | Bianco visibile, testo indipendente dal colore, mobile senza overflow                             |
+| CX-011 passi checklist/template/issue QA | fonti incomplete, definizione necessaria | Leggere PDF/XLS/PNG ed espandere testo QA; riconciliare campi e regole                                              | Nessuna issue automatica, AI live o schema da fonti parziali                                      |
+| UX-005 area/fase asset                   | consegnata (d7dcb8f)                     | Filtri su metadati esistenti; sequenza Tony, multifase e specifiche condivise ancora da definire                    | Nessuna deduzione o modifica programma/permessi, AI non simulata                                  |
+| UX-002 chiarezza continua                | pronta                                   | Migliorare il prossimo percorso realmente provato, senza rifare UI appena verificata                                | Primo passo chiaro, mobile strutturale, permessi e dati preservati                                |
+| DATA-001 dati rappresentativi            | locale completata / remoto in attesa     | Usare demo Northbank/empty per verifiche; identificare target da metadati quando accesso disponibile                | Mai popolare AMS16 Test o Production senza piano completo e nuova approvazione                    |
+| AI-003 attivazione provider              | in attesa di Marco                       | Setup sicuro chiave e autorizzazione d'uso; non chiederla in chat                                                   | Nessuna spesa implicita; prima live call solo dopo completamento del gate                         |
+| AI-004 autopilot                         | futuro                                   | Definire dashboard, regole, ambiti, audit e approvazioni                                                            | Nessuna attivazione autonoma o autorità desunta da messaggi Tony                                  |
 
 Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossima
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.

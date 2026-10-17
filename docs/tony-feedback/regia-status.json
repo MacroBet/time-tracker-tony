@@ -7,27 +7,31 @@
   "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "waiting",
-  "executionState": "new-tag-materials-partial-technical-limit",
-  "observedAt": "2026-10-17T10:17:38.323352+00:00",
+  "executionState": "delivered-source-coverage-partial",
+  "observedAt": "2026-10-17T19:23:25.547641+00:00",
   "startedAt": null,
-  "completedAt": null,
+  "completedAt": "2026-10-17T19:23:25.547641+00:00",
   "deadline": null,
   "executors": [
     {
       "threadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-      "role": "primary",
-      "subagent": false,
-      "startedAt": null
+      "role": "primary implementation, source reconciliation and validation",
+      "subagent": false
     },
     {
       "name": "asset_organisation_audit",
-      "role": "read-only scope and final review",
+      "role": "home routing implementation and independent final review",
       "subagent": true,
-      "codeOwnership": "none; root owns implementation and tests",
-      "result": "no code findings; stale register header corrected"
+      "result": "completed, no concrete findings"
+    },
+    {
+      "name": "manual_bootstrap_review",
+      "role": "tag colour UI implementation",
+      "subagent": true,
+      "result": "completed"
     }
   ],
-  "outcome": "Nuovi materiali tag12:07–12:15 parzialmente letti: colori perazienda e distinzioneL2A/L2B dalle didascalie;5nomiPNG,0originali acquisiti. ScrollnoWindowsAvailable, stop immediato. Nessun nuovo invio, app o deploy.",
+  "outcome": "Home per ruolo e colori tag per progetto consegnati in c12deea, push main verificato. 98 unitari/PostgreSQL,10 API, typecheck/lint/build/formato e browser locali passati; revisione indipendente senza rilievi. Deploy GitHub/Vercel success17ott19:22:17Z, environment label Production; nessun collaudo autenticato remoto. Lettura WhatsApp NON completa: ATT-018 L1 acquisito/letto, ulteriori testi osservati fino21:06, PDF/XLS/nove PNG e parti cronologia mancanti. Export senza media riuscito in Download ma non leggibile. Nessun nuovo invio cliente.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -83,17 +87,42 @@
       "sha256": "1240a28555f1c867ca7c42763d25e7b1460437235475eb472480e52df898435b",
       "verifiedAt": "2026-10-17T10:17:38.323352+00:00",
       "verifiedBy": "root CUA direct partialcaption/filemetadata only"
+    },
+    {
+      "kind": "file",
+      "ref": "output/tony/originals/2026-10-17_1207_l1-red-tag_original.png",
+      "sha256": "587df3b4d1f82098cf06db574bf6724a532f126fdd4f24b66a1096ecc2bf702b",
+      "bytes": 274343,
+      "verifiedBy": "root, opened via native WhatsApp/Preview and copied byte-identically from UI-exposed exact path",
+      "verifiedAt": "2026-10-17T19:18:28Z"
+    },
+    {
+      "kind": "git-remote",
+      "commit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+      "ref": "origin refs/heads/main",
+      "verifiedBy": "git ls-remote, exact hash match"
+    },
+    {
+      "kind": "deployment-status",
+      "commit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+      "ref": "https://api.github.com/repos/MacroBet/time-tracker-tony/deployments/7144586509/statuses",
+      "state": "success",
+      "updatedAt": "2026-10-17T19:22:17Z",
+      "environment": "Production",
+      "source": "public GitHub deployment event, Vercel app"
     }
   ],
   "authorization": {
-    "scope": "Unico invio approvato concluso; monitor delta pertinente e deploy soli filtriArea/Phase seTonychiede dopo verifica; nessun altro sviluppo/spesa/invio",
+    "scope": "Mandato umano successivo verificato: rileggere i WhatsApp pertinenti e portare avanti le richieste chiare; fonti non autorizzano nuovi invii, DB remoto, AI live o spese. Monitor ristretto invariato.",
     "consentRequestStatus": "resolved/locked",
     "resolvedAt": "2026-10-17T08:53:12.822Z",
     "customerSendAuthorized": false,
     "periodicAutomationAuthorized": true,
     "singleSendApprovalConsumed": true,
-    "latestHumanSourceThread": "01a14934-2940-7e42-a69b-768811718988",
-    "latestHumanMonitorMessage": "01a14936-4c4c-7770-abc9-d468322dcf19"
+    "latestHumanSourceThread": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+    "latestHumanMonitorMessage": "01a14936-4c4c-7770-abc9-d468322dcf19",
+    "latestHumanDevelopmentMessage": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+    "nativeConsentMessage": "01a14b40-c504-7061-8e82-6d6ce5119401"
   },
   "sourceCoverage": {
     "channel": "whatsapp",
@@ -148,7 +177,7 @@
       "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992"
     },
     "audioExcludedByMarco": true,
-    "latestIncomingTextObserved": "2026-10-17 11:09",
+    "latestIncomingTextObserved": "2026-10-17 21:06 Europe/Rome",
     "additionalTextDelta": {
       "incomingBubbles": 4,
       "from": "11:06",
@@ -157,18 +186,34 @@
       "source": "rootCUAtargetscreenshot during senddedupe",
       "privateRef": "output/tony/send-20261017-1134.private.json"
     },
-    "latestOutgoingObserved": "2026-10-17 11:34",
-    "totalIncomingTextsAnalyzedThisDate": 11,
+    "latestOutgoingObserved": "2026-10-17 21:01 Europe/Rome; existing source, not sent by executor",
+    "totalIncomingTextsAnalyzedThisDate": null,
     "partialNewMaterials": {
       "date": "2026-10-17",
       "firstCaption": "12:07",
-      "lastPreview": "12:15",
+      "lastPreview": "21:06",
       "complete": false,
       "source": "root CUA target screenshot/AX",
       "privateRef": "output/tony/tag-materials-20261017-1215-partial.private.json",
       "sha256": "1240a28555f1c867ca7c42763d25e7b1460437235475eb472480e52df898435b",
-      "imageContentsRead": false
-    }
+      "imageContentsRead": "Only L1 Red Tag flow ATT-018; all other new diagram/PDF/XLS contents not verified",
+      "newAnalysisRef": "docs/tony-feedback/intake-20261017-evening.md"
+    },
+    "allPertinentTextsRead": false,
+    "textExport": {
+      "method": "WhatsApp native Export chat / Without media",
+      "nativeOutcome": "Exported chat was saved to Downloads Folder",
+      "fileRead": false,
+      "filename": null,
+      "block": "macOS Operation not permitted reading Downloads, including approved escalation; no retry or bypass",
+      "mediaExported": false
+    },
+    "textGaps": [
+      "Continuous history after16Oct14:14 not proved",
+      "17Oct12:10 beginning clipped",
+      "17Oct13:34 QA/QC Read more collapsed; first section only",
+      "Remaining PNG/PDF/XLS originals unacquired; see evening intake"
+    ]
   },
   "receiptUpdates": [
     {
@@ -198,41 +243,41 @@
     }
   ],
   "attachments": {
-    "verifiedReceivedTotal": 17,
+    "verifiedReceivedTotal": 18,
     "newAudioFilesAcquired": 0,
     "audioHash": null,
-    "newAttachmentIds": [],
+    "newAttachmentIds": ["ATT-018"],
     "oldExcelAttemptedThisCycle": false,
-    "newPngNamesObservedNotAcquired": 5,
-    "newImageOriginalsAcquired": 0
+    "newPngNamesObservedNotAcquired": 9,
+    "newImageOriginalsAcquired": 1
   },
   "work": {
     "applicationChangesThisCycle": true,
-    "headBeforeEdits": "2e6b721d07d6b025e5450339e96145d8259274d5",
-    "gitFetch": "success,0/0",
+    "headBeforeEdits": "c9c187fd5226643330190550ad8b9804e8e6a34d",
+    "gitFetch": "success, HEAD/origin/main0/0, no pull on dirty checkout",
     "pull": "non necessario, next-env preesistente preservato",
     "applicationTestsRun": true,
-    "applicationTestsReason": "95unitari/PostgreSQL,10API,statici/build/formato e browser locale passati; nessuna prova autenticata produzione",
+    "applicationTestsReason": "98 unit/PostgreSQL,10 API, typecheck/lint/build and local desktop/mobile browser pass; no authenticated production test",
     "newDeploymentVerified": true,
     "documentationCommit": null,
     "pushThisCycle": true,
-    "applicationCommit": "d7dcb8fd1ef01ecfec2b14b783359b29d0b2f0e1",
+    "applicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
     "applicationTests": {
-      "unitPostgresql": 95,
+      "unitPostgresql": 98,
       "api": 10,
       "typecheck": "pass",
       "lint": "pass",
+      "browser": "local role login/returning entry; persisted white colour/long label/popup checkbox/test sheet desktop+390px mobile pass",
       "build": "pass",
       "format": "pass",
-      "browser": "local desktop1440x1000/mobile390x844, combined filters/zero/clear/keyboard/missing/project switch/import hash pass",
-      "independentReview": "pass after stale documentation title correction"
+      "independentReview": "pass, no findings"
     },
-    "remoteMainVerified": "d7dcb8fd1ef01ecfec2b14b783359b29d0b2f0e1",
-    "deploymentStatus": "success, checked2026-10-17T09:12:22Z, statusUpdated2026-10-17T09:12:11Z",
-    "documentationClosure": "Exact closure commit/push in ignored output/agent-heartbeat-state.json",
-    "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/DpdKtRQCqoPsjrdGenjJybLEX4tj",
-    "thisContinuation": "partial source intake/docs only; no app tests or deploy",
-    "productionEvidence": {
+    "remoteMainVerified": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+    "deploymentStatus": "success, deployment7144586509 updated2026-10-17T19:22:17Z; combined status earlier pending is historical",
+    "documentationClosure": "Source coverage and app proof closure in next documentation commit; exact head in ignored checkpoint",
+    "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/7vGrCASNMtWEszoe6tr1BPiP92SR",
+    "thisContinuation": "Application delivered and verified; remaining source acquisition blocked by Downloads access and desktop availability",
+    "productionEvidenceHistoricalFilters": {
       "sha": "e26ebd9267a1f0f59a0d1527ef59e2a22b5e2b2b",
       "deploymentId": 7137476517,
       "environmentLabel": "Production",
@@ -242,21 +287,39 @@
       "publicAliasHttp200": "https://time-tracker-tony.vercel.app/commissioning",
       "anonymousFeatureCodeCheck": "inconclusive",
       "authenticatedProductionTest": false
+    },
+    "productionEvidence": {
+      "sha": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+      "deploymentId": 7144586509,
+      "environmentLabel": "Production",
+      "githubProductionEnvironmentFlag": false,
+      "state": "success",
+      "updatedAt": "2026-10-17T19:22:17Z",
+      "environmentUrl": "https://time-tracker-tony-8dcbgioz6-macrobets-projects.vercel.app",
+      "authenticatedProductionTest": false,
+      "publicAliasHttp200": "https://time-tracker-tony.vercel.app/commissioning"
+    },
+    "documentationTests": {
+      "localLinks": 86,
+      "brokenLinks": 0,
+      "json": "valid",
+      "diffCheck": "pass",
+      "independentReview": "passed after correcting OPS004 manual-development vs restricted-monitor wording"
     }
   },
   "blockers": [
     {
-      "kind": "technical",
-      "reason": "Native chat scroll fails -10005noWindowsAvailable; new diagram images and remaining captions not acquired",
-      "neededInput": "Supported available desktop session for one bounded acquisition attempt; no permission or audio needed",
-      "owner": "executor at next available session",
+      "kind": "source-access",
+      "reason": "Native export succeeded without media but macOS denies Downloads file read. Native coordinate input also still noWindowsAvailable; AX scroll works. User changed WhatsApp while closing export alert; stopped UI actions.",
+      "neededInput": "Regia reconstructs known source/export with supported session when available; no request to Marco to locate chat already known. No generic approval pending.",
+      "owner": "executor/regia",
       "deadline": null
     }
   ],
   "nextActions": [
-    "Quando sessione disponibile, ripartire dal PNG12:07 e acquisire solo resto lotto pertinente senza retry ripetuti",
-    "Nessun nuovo sviluppo autorizzato da queste fonti; leggere flussi/campi prima di interpretare",
-    "Nessun reinvio11:34/audio/deploy duplicato; monitorristrettoesistente"
+    "Regia reconcile known exported Tony text and unacquired originals when supported session allows; no duplicate chat searches or broad Downloads scans",
+    "Complete QA/QC collapsed text and remaining PNG/PDF/XLS; reconcile structured steps, template and issue criteria before next implementation",
+    "No new customer send without exact current text approval; no audio, remote DB, live AI or duplicate scheduler"
   ],
   "outgoingDrafts": [
     {
@@ -297,14 +360,17 @@
   ],
   "usage": {
     "measuredTokens": null,
-    "scope": "not_measured",
-    "source": null
+    "scope": "account weekly window, not task token measurement",
+    "source": "get_usage_limits 2026-10-17T19:18:28Z",
+    "accountUsedPercent": 33,
+    "humanCeilingPercent": 50,
+    "resetOrExtraCreditsConsumed": false
   },
   "contextHandoff": {
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "Nuovi PNGtag12:07–12:15nonacquisiti; partire12:07 con sovrapposizioneminima, stopalprimoerrore; noaudio/send/develop"
+    "resumeFrom": "App c12deea delivered: main push and Vercel success verified. Source reading incomplete; read evening intake gaps. No generic approval pending."
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -335,28 +401,28 @@
   },
   "publisherHandoff": {
     "requestId": "tony-text-feedback-response-approval-20261017",
-    "actionRequired": "Authorizedpublisher reconciles earlier09:29draftrevisionrequest with later verifiedexactvoiceapproval and actualsingleSent11:34; record consentconsumed",
+    "actionRequired": "Publish delivered c12deea with tests/push/Vercel success and partial source coverage. Native Preview consent resolved. Reconstruct known Tony export using supported session; Downloads access/user desktop availability remain actual source limits.",
     "draftId": "tony-text-feedback-response-20261017",
     "plainTextHash": "sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b",
-    "evidenceRef": "docs/tony-feedback/intake-20261017-send-monitor.md",
+    "evidenceRef": "docs/tony-feedback/intake-20261017-evening.md",
     "canonicalRequestUpdatedByThisExecutor": false,
     "noAclOrImpersonation": true,
     "monitorConsentSource": "human userMessage01a14936-4c4c-7770-abc9-d468322dcf19",
     "transport": "sharedfile, no callback",
-    "receiptUpdate": "Two blue ticks observed17Oct11:45, actualReadAt unknown"
+    "receiptUpdate": "Two blue ticks observed17Oct11:45, actualReadAt unknown",
+    "applicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+    "deploymentState": "success",
+    "sourceCoverageComplete": false
   },
   "lastMonitorCheck": {
-    "observedAt": "2026-10-17T10:17:38.323352+00:00",
-    "incomingDelta": null,
-    "newUnreadCountObserved": 11,
-    "countDoesNotAttestCoverage": true,
-    "fullyReadNewCaptions": 3,
-    "newPngNamesObserved": 5,
-    "originalsAcquired": 0,
-    "error": "-10005 noWindowsAvailable on one native scroll",
-    "retries": 0,
-    "customerSentThisCycle": false,
-    "composerTextEditedThisCycle": false,
-    "newDeploymentCheckedOrTriggered": false
+    "observedAt": "2026-10-17T19:18:28Z",
+    "latestIncomingObserved": "2026-10-17 21:06 Europe/Rome",
+    "allTextsRead": false,
+    "newOriginalsAcquired": 1,
+    "customerSentThisContinuation": false,
+    "composerTextEditedThisContinuation": false,
+    "nativeApproval": "Preview getApp completed after human consent; no auto-review rejection reported",
+    "sourceBlock": "Downloads file access denied; stopped native actions on user change",
+    "finalReadOnlyState": "Tony selected; same collapsed QA13:34 and14:04 visible; no input, search or new coverage"
   }
 }

@@ -41,7 +41,7 @@ are reference material, not a replacement app. Raw attachments remain private.
 
 ## Evidence on Hand
 
-Seventeen supplied files in docs/tony-feedback/attachments, with a manifest; existing
+Eighteen verified private originals, indexed in docs/tony-feedback/attachments/manifest.md; existing
 application and commissioning tests. UI must use real authorized project records;
 synthetic demo mode stays visibly labelled and isolated from remote data. Local
 showcase fixtures are opt-in and must never seed a remote environment implicitly.
@@ -71,6 +71,18 @@ unverified. Marco-approved outgoing V3 was reported delivered, with no read rece
 attested. Project Health calculation now awaits Tony’s reply. The new Excel and
 GROUP/ADD DATA remain unresolved; acquisition after 14:14 is not verified.
 Source: docs/tony-feedback/intake-20261016-1414.md.
+
+Tony’s 17 October feedback requests manager/admin Overview on entry and worker
+Tasks first, plus configurable tag colours. Role-based entry and display of existing
+per-project tag labels/colours are delivered in c12deea, with local verification
+and GitHub/Vercel deployment success. This does not add company-wide
+settings. Later feedback requests reusable project templates, configurable document
+requirements and check sheets with multiple steps and QA issues linked to equipment
+or area. Source coverage remains partial: only the L1 diagram is newly acquired;
+the checklist PDF, roadmap XLS and remaining diagrams have not been read. Step fields,
+external IDs, issue rules and template versioning require reconciliation with those
+sources. No live AI, automatic issue generation or imported real data is implied.
+Source: docs/tony-feedback/intake-20261017-evening.md.
 
 ## Product Principles
 

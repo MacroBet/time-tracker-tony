@@ -22,6 +22,11 @@ o processo di continuazione. Il computer e l’app devono essere disponibili per
 controlli locali: configurazione ACTIVE non prova ogni lettura futura. L’aggiornamento
 dei dati dentro FieldTrack rimane distinto dal lavoro dell’assistente.
 
+Il mandato manuale successivo del17ott autorizza anche la rilettura delle fonti
+pertinenti e lo sviluppo delle richieste chiare, entro quota globale50%, senza
+nuovi invii, DB remoto o AI live. Non amplia lo scheduler. [Stato serale e gap](intake-20261017-evening.md):
+non dichiarare tutta la chat letta; l'export senza media esiste ma non è ancora leggibile.
+
 ## Come viene recuperato il contesto
 
 [AGENTS.md](../../AGENTS.md) è l'ingresso delle istruzioni di progetto. Indirizza

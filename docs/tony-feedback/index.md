@@ -36,6 +36,12 @@ nuovi4testi fino11:09, produzione verificata nei metadati; nessuna nuova feature
 Nuovo lotto17ott12:07–12:15: [tag e colori per azienda, intake parziale](intake-20261017-tags-partial.md).
 Cinque PNG individuati, nessun originale acquisito; scroll fallito, copertura incompleta.
 
+**Riconciliazione serale17ott:** [mandato, copertura e richieste→lavoro](intake-20261017-evening.md).
+ATT-018 L1 acquisito/letto,18 originali; testi osservati fino21:06 ma copertura
+continua non attestata. Export senza media in Download non ancora leggibile.
+Home per ruolo e colori tag verificati localmente; checklist/template/issue QA da
+riconciliare con i materiali mancanti. Il report condiviso distingue prove e limiti.
+
 ## Orientamento al codice, solo quando serve
 
 - Dati e permessi: `src/lib/domain.ts`, `src/lib/commissioning.ts`,

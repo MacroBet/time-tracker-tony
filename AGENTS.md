@@ -29,6 +29,10 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   Marco autorizza il deploy dei soli filtri Area/Phase se Tony lo chiede: verificare
   prima target/commit e non rifare ciò che è già pubblicato. Nuove chat e altri lavori
   restano manuali. [Consenso, invio e prove](docs/tony-feedback/intake-20261017-send-monitor.md).
+- Mandato manuale successivo del17ott verificato nella chat supervisore: rileggere
+  le fonti pertinenti e sviluppare le richieste chiare, non fermarsi all'analisi.
+  Non amplia il monitor né autorizza invii/DB/AI live. Soglia globale quota conto50%,
+  senza reset/crediti extra. [Intake e copertura reale](docs/tony-feedback/intake-20261017-evening.md).
 - Prima degli edit: `git status --short`, controllare attività in corso ed evitare
   duplicazioni; eseguire `git fetch origin` e confrontare HEAD con origin/main.
   `git pull --ff-only` soltanto su main con checkout pulito e aggiornamento necessario.

@@ -49,3 +49,7 @@ quello esistente, audio a Marco, risposte future solo dopo approvazione del test
 
 Solo documentazione: fetch0/0 a5725d32, next-env preesistente preservato; nessuna
 modifica app, suite applicativa ripetuta, nuovo deploy, DB o API live.
+
+Aggiornamento successivo: [riconciliazione serale](intake-20261017-evening.md).
+Primo PNG ora acquisito/letto come ATT-018; il limite scroll storico non descrive
+più da solo lo stato attuale. Restanti fonti ancora parziali, non tutta la chat letta.

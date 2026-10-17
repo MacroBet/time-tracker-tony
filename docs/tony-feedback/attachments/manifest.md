@@ -1,6 +1,6 @@
 # Manifest degli allegati di Tony
 
-Acquisizioni del 15–16 ottobre 2026: 17 originali privati verificati; due ulteriori PNG letti ma non salvati, esclusi da Git.
+Acquisizioni fino al17 ottobre 2026: 18 originali privati verificati; due ulteriori PNG letti ma non salvati, esclusi da Git.
 Le ore nei nomi sono quelle dei messaggi WhatsApp. I nomi originali sono descritti
 nel registro e riconoscibili nei nomi locali; gli originali non sono stati modificati.
 Acquisizione WhatsApp dei PNG del 16 ottobre riferita da Show Chrome; root ha
@@ -25,6 +25,7 @@ ispezionato soltanto i file locali e verificato byte/SHA-256 e ignore Git.
 | ATT-015 | MSG-20261016-1224a | 2026-10-16_1224_tony_tasks-by-status_original.png                        |   87149 | d97a00d4cb4549e991e1e994bbddd4f9f68f5cb272993e3f833480492140f8d0 | Originale locale ispezionato; fonte WhatsApp riferita da Show Chrome, non lettura diretta root. 305 è dato della figura; collocazione alta richiesta.            |
 | ATT-016 | MSG-20261016-1224b | 2026-10-16_1224_tony_project-health_original.png                         |   37176 | a5d2b558630b2a17a5a3ffc73d9840e561d3e2def00ac8d9ecead62a007f50a2 | Originale locale ispezionato; fonte riferita Show Chrome. 12/8/3/1 soltanto esempi. Ambito/formula health non definiti.                                          |
 | ATT-017 | MSG-20261016-1228a | 2026-10-16_1228_tony_issues-priority_original.png                        |  303240 | 062f6e64755d839a41cd18e74d75874a9b11122b9a8e5b673a6d323a2e8fe33b | Originale locale ispezionato; fonte riferita Show Chrome. Richieste percentuale completamento e late, non import dei numeri dell’immagine.                       |
+| ATT-018 | MSG-20261017-1207  | 2026-10-17_1207_l1-red-tag_original.png                                  |  274343 | 587df3b4d1f82098cf06db574bf6724a532f126fdd4f24b66a1096ecc2bf702b | PNG aperto da WhatsApp/Anteprima, copia privata byte-identica dal solo percorso esposto dalla UI; diagramma L1 letto, nessuna esecuzione                         |
 
 Programme overview (12:28) e Overdue (12:31, screenshot 12.30.52) sono stati
 visualizzati da Show Chrome ma non risultano salvati localmente: il possibile file
@@ -88,3 +89,12 @@ questi candidati. Dimensioni arrotondate della UI, non byte verificati. Il lotto
 non è interamente letto:10poi11nonletti è un contatore UI, non copertura acquisita.
 Unico scroll fallito noWindowsAvailable, nessun retry/download.
 [Fonti e requisiti parziali](../intake-20261017-tags-partial.md).
+
+## Aggiornamento serale17 ottobre
+
+La tabella candidati precedente descrive il controllo12:16, ora superato solo per
+il primo PNG: **ATT-018 acquisito e letto**, totale18 originali privati verificati.
+Altri nove PNG, checklist PDF13:32 e roadmap XLS14:08 restano non acquisiti.
+Nomi, metadati UI e gap nell'[intake serale](../intake-20261017-evening.md).
+Export chat senza media riuscito in Download, ma file non leggibile da questa
+sessione: nessun contenuto, conteggio o hash dell'export attestato. Audio esclusi.
