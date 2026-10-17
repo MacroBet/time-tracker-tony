@@ -8,7 +8,7 @@
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "waiting",
   "executionState": "delivered-source-coverage-partial",
-  "observedAt": "2026-10-17T19:23:25.547641+00:00",
+  "observedAt": "2026-10-17T19:36:03.747250+00:00",
   "startedAt": null,
   "completedAt": "2026-10-17T19:23:25.547641+00:00",
   "deadline": null,
@@ -110,6 +110,13 @@
       "updatedAt": "2026-10-17T19:22:17Z",
       "environment": "Production",
       "source": "public GitHub deployment event, Vercel app"
+    },
+    {
+      "kind": "file",
+      "ref": "output/tony/outgoing-preview-20261017-2126.private.json",
+      "sha256": "7167ac1ce8c7341571b5c985385d4aee2659257d0e9d1b09741326e3d2dbe8a9",
+      "verifiedAt": "2026-10-17T19:36:03.747250+00:00",
+      "verifiedBy": "root native CUA list preview only"
     }
   ],
   "authorization": {
@@ -186,7 +193,7 @@
       "source": "rootCUAtargetscreenshot during senddedupe",
       "privateRef": "output/tony/send-20261017-1134.private.json"
     },
-    "latestOutgoingObserved": "2026-10-17 21:01 Europe/Rome; existing source, not sent by executor",
+    "latestOutgoingObserved": "2026-10-17 21:26 Europe/Rome; native list preview only, Delivered, author not verified, not sent by executor",
     "totalIncomingTextsAnalyzedThisDate": null,
     "partialNewMaterials": {
       "date": "2026-10-17",
@@ -213,7 +220,9 @@
       "17Oct12:10 beginning clipped",
       "17Oct13:34 QA/QC Read more collapsed; first section only",
       "Remaining PNG/PDF/XLS originals unacquired; see evening intake"
-    ]
+    ],
+    "latestOutgoingPrivateRef": "output/tony/outgoing-preview-20261017-2126.private.json",
+    "latestOutgoingSha256": "7167ac1ce8c7341571b5c985385d4aee2659257d0e9d1b09741326e3d2dbe8a9"
   },
   "receiptUpdates": [
     {
@@ -415,14 +424,15 @@
     "sourceCoverageComplete": false
   },
   "lastMonitorCheck": {
-    "observedAt": "2026-10-17T19:18:28Z",
-    "latestIncomingObserved": "2026-10-17 21:06 Europe/Rome",
+    "observedAt": "2026-10-17T19:36:03.747250+00:00",
+    "latestIncomingObserved": "2026-10-17 21:06 Europe/Rome, unchanged saved coverage",
+    "latestOutgoingPreview": "2026-10-17 21:26 Europe/Rome, Delivered",
+    "incomingCoverageExtended": false,
     "allTextsRead": false,
-    "newOriginalsAcquired": 1,
-    "customerSentThisContinuation": false,
-    "composerTextEditedThisContinuation": false,
-    "nativeApproval": "Preview getApp completed after human consent; no auto-review rejection reported",
-    "sourceBlock": "Downloads file access denied; stopped native actions on user change",
-    "finalReadOnlyState": "Tony selected; same collapsed QA13:34 and14:04 visible; no input, search or new coverage"
+    "customerSentThisCycle": false,
+    "composerTextEditedThisCycle": false,
+    "nativeActions": "read-only AX, no input/scroll/export/search",
+    "bodyState": "same collapsed QA13:34 and14:04 visible",
+    "sourceBlock": "unchanged; no retry of Downloads access or coordinate input"
   }
 }

@@ -16,6 +16,9 @@ rilievi. Commit **c12deea** e normale push main verificati; deploy GitHub/Vercel
 17ott19:22:17UTC (21:22 Europe/Rome), environment label Production. Prove autenticate
 solo locali; metadato GitHub production_environment=false riportato nel report. Nessun altro invio cliente, DB remoto o provider live.
 Unico outgoing agente17ott11:34 concluso; ricevuta blu osservata11:45, ora lettura ignota.
+Controllo21:35 in sola lettura: anteprima lista con outgoing21:26 Delivered,
+non inviato da questo esecutore e autore non verificato. Corpo ancora QA13:34/14:04;
+nessuna estensione della copertura incoming o nuova lettura degli allegati.
 
 ## Stato corrente per ripresa
 
