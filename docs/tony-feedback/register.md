@@ -2,8 +2,10 @@
 
 Ultimo aggiornamento: 17 ottobre 2026. **Incarico manuale Tony: testi acquisiti e filtri asset consegnati; monitor ACTIVE ogni10min.**
 Copertura17ott: **11testi diretti10:56–11:09**, audio esclusi. Ultimo outgoing
-**11:34 OUT-20261017-01**, testo approvato inviato una volta, una spunta grigia:
-invio verificato, consegna/lettura non attestate. Copertura16ott CAP-001 rimane storica.
+**11:34 OUT-20261017-01**, testo approvato inviato una volta; controllo17ott11:45:
+**due spunte blu visibili**, ricevuta di lettura verificata, ora effettiva ignota.
+Nessun nuovo testo oltre11:09 nel controllo circoscritto; nessun invio/composer/audio.
+Copertura16ott CAP-001 rimane storica.
 [Consenso e nuovo monitor](intake-20261017-send-monitor.md).
 
 ## Stato corrente per ripresa

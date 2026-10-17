@@ -8,7 +8,7 @@
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "completed",
   "executionState": "approved-single-message-sent-monitor-configured",
-  "observedAt": "2026-10-17T09:37:38.656264+00:00",
+  "observedAt": "2026-10-17T09:46:29.585783+00:00",
   "startedAt": null,
   "completedAt": "2026-10-17T09:37:38.656264+00:00",
   "deadline": null,
@@ -170,6 +170,14 @@
       "actualDeliveryAt": null,
       "actualReadAt": null,
       "resent": false
+    },
+    {
+      "sourceId": "OUT-20261017-01",
+      "state": "read-receipt-two-blue-ticks-visible",
+      "observedAt": "2026-10-17T09:46:29.585783+00:00",
+      "actualReadAt": null,
+      "resent": false,
+      "source": "root CUA target screenshot17Oct11:45"
     }
   ],
   "attachments": {
@@ -255,9 +263,10 @@
       "approvedAlias": "tony-text-feedback-response-20261017",
       "plainTextHash": "sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b",
       "sentLocalMinute": "2026-10-17 11:34 Europe/Rome",
-      "receipt": "sent-single-grey-tick",
-      "deliveryVerified": false,
-      "readVerified": false
+      "receipt": "read-receipt-two-blue-ticks-visible",
+      "deliveryVerified": true,
+      "readVerified": true,
+      "actualReadAt": null
     }
   ],
   "usage": {
@@ -307,6 +316,18 @@
     "canonicalRequestUpdatedByThisExecutor": false,
     "noAclOrImpersonation": true,
     "monitorConsentSource": "human userMessage01a14936-4c4c-7770-abc9-d468322dcf19",
-    "transport": "sharedfile, no callback"
+    "transport": "sharedfile, no callback",
+    "receiptUpdate": "Two blue ticks observed17Oct11:45, actualReadAt unknown"
+  },
+  "lastMonitorCheck": {
+    "observedAt": "2026-10-17T09:46:29.585783+00:00",
+    "incomingDelta": 0,
+    "lastIncoming": "2026-10-17 11:09",
+    "lastOutgoing": "2026-10-17 11:34",
+    "receiptDelta": "read-receipt-two-blue-ticks",
+    "actualReadAt": null,
+    "customerSentThisCycle": false,
+    "composerTextEditedThisCycle": false,
+    "newDeploymentCheckedOrTriggered": false
   }
 }
