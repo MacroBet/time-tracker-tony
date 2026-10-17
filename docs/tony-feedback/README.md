@@ -23,8 +23,10 @@ controlli locali: configurazione ACTIVE non prova ogni lettura futura. L’aggio
 dei dati dentro FieldTrack rimane distinto dal lavoro dell’assistente.
 
 Il mandato manuale successivo del17ott autorizza anche la rilettura delle fonti
-pertinenti e lo sviluppo delle richieste chiare, entro quota globale50%, senza
-nuovi invii, DB remoto o AI live. Non amplia lo scheduler. [Stato serale e gap](intake-20261017-evening.md):
+pertinenti e lo sviluppo delle richieste chiare. Nuovo tetto umano17ott:85% usato,
+15% residuo; stop nuovi lotti80 e cinque punti per finalizzazione, checkpoint40/60/75/80.
+Uso ordinario non consentito o quota esaurita impongono STOP; niente reset o crediti extra. Nessun
+nuovo invio, DB remoto o AI live. Non amplia lo scheduler. [Stato serale e gap](intake-20261017-evening.md):
 non dichiarare tutta la chat letta; l'export senza media esiste ma non è ancora leggibile.
 
 ## Come viene recuperato il contesto

@@ -31,8 +31,10 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   restano manuali. [Consenso, invio e prove](docs/tony-feedback/intake-20261017-send-monitor.md).
 - Mandato manuale successivo del17ott verificato nella chat supervisore: rileggere
   le fonti pertinenti e sviluppare le richieste chiare, non fermarsi all'analisi.
-  Non amplia il monitor né autorizza invii/DB/AI live. Soglia globale quota conto50%,
-  senza reset/crediti extra. [Intake e copertura reale](docs/tony-feedback/intake-20261017-evening.md).
+  Non amplia il monitor né autorizza invii/DB/AI live. Tetto globale quota conto85% usato (15% residuo),
+  confermato da Marco17ott nella regia; sostituisce50. Stop nuovi lotti a80,
+  cinque punti riservati alla chiusura; checkpoint40/60/75/80. Uso ordinario non
+  consentito o quota esaurita: STOP. Nessun reset/acquisto/credito extra. [Intake e copertura reale](docs/tony-feedback/intake-20261017-evening.md).
 - Prima degli edit: `git status --short`, controllare attività in corso ed evitare
   duplicazioni; eseguire `git fetch origin` e confrontare HEAD con origin/main.
   `git pull --ff-only` soltanto su main con checkout pulito e aggiornamento necessario.

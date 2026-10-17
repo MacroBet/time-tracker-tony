@@ -136,3 +136,36 @@ stesso testo QA13:34 collassato e bolla14:04. Nessun nuovo input, scroll, export
 ricerca o presa di focus. Questo controllo non amplia la copertura né prova assenza
 di nuovi messaggi successivi. Alias pubblico `/commissioning` raggiungibile HTTP200
 in modo anonimo; non è collaudo autenticato delle feature in produzione.
+
+## Precisazione del gate e nuovo tetto quota — controllo successivo
+
+Mandato quota umano verificato con `read_thread` nella chat supervisore citata:
+user `01a14b63-f44d-74c2-b18b-97e15230c971` conferma **85% usato /15% residuo**,
+sostituendo50. Stop nuovi lotti80, cinque punti per finalizzazione;
+checkpoint40/60/75/80. Ordinary usage non consentito o quota esaurita impongono STOP.
+Nessun reset, acquisto o credito aggiuntivo. Quota nativa del controllo:39% usato,
+`ordinaryUsageAllowed=true`; token di questo task non misurati (`null`).
+
+L'operazione fallita era l'enumerazione dei soli candidati Tony/WhatsApp con
+`rg --files` nella cartella Download: **Operation not permitted (os error1)**,
+sia in esecuzione ordinaria sia dopo escalation consentita. L'export senza media è
+confermato soltanto dall'alert WhatsApp; nome/percorso esatto dell'archivio non noti.
+Non è stato osservato un pannello OS che identifichi app responsabile, voce TCC o
+permesso preciso. Attribuire il problema a uno specifico permesso privacy macOS è
+un'ipotesi, non una diagnosi verificata. Il consenso umano precedente ha risolto
+l'apertura in Anteprima, non dimostra approvazione dell'accesso a Download.
+
+**Azione nativa richiesta: non identificata.** Nessun consenso specifico pendente
+attestato; non prescrivere Full Disk Access né chiedere un generico GO. Prossimo
+attore regia: classificare un diagnostico nativo supportato, se reso disponibile,
+che specifichi operazione negata e applicazione/accesso responsabile. Marco soltanto
+per un'azione OS concreta effettivamente mostrata e approvata consapevolmente.
+Condizione di sblocco: diagnosi nativa precisa, eventuale azione umana completata e
+accesso supportato disponibile. Questo ciclo non ha riprovato Download, cercato
+vie alternative per leggere l'export o cambiato permessi. Nessuna nuova lettura
+WhatsApp: copertura e materiali mancanti invariati, nessun test o sviluppo ripetuto.
+
+Checkpoint di chiusura: quota nativa **40% usato**, uso ordinario consentito;
+prossimo checkpoint60. È consumo globale del conto, non token attribuibili al task.
+Solo aggiornamento documentale locale mirato; nessun nuovo push/deploy applicativo,
+lettura fonti, tentativo Download o invio cliente in questo controllo.

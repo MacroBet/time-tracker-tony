@@ -7,8 +7,8 @@
   "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "waiting",
-  "executionState": "delivered-source-coverage-partial",
-  "observedAt": "2026-10-17T19:36:03.747250+00:00",
+  "executionState": "delivered-source-gate-diagnostic-unidentified",
+  "observedAt": "2026-10-17T19:46:30.495415+00:00",
   "startedAt": null,
   "completedAt": "2026-10-17T19:23:25.547641+00:00",
   "deadline": null,
@@ -31,7 +31,7 @@
       "result": "completed"
     }
   ],
-  "outcome": "Home per ruolo e colori tag per progetto consegnati in c12deea, push main verificato. 98 unitari/PostgreSQL,10 API, typecheck/lint/build/formato e browser locali passati; revisione indipendente senza rilievi. Deploy GitHub/Vercel success17ott19:22:17Z, environment label Production; nessun collaudo autenticato remoto. Lettura WhatsApp NON completa: ATT-018 L1 acquisito/letto, ulteriori testi osservati fino21:06, PDF/XLS/nove PNG e parti cronologia mancanti. Export senza media riuscito in Download ma non leggibile. Nessun nuovo invio cliente.",
+  "outcome": "Consegna c12deea invariata e conclusa. Nuovo tetto quota85%usato verificato su fonte umana; checkpoint nativo40%ordinarytrue. Precisato gate: enumerazione Download EPERM/os error1 anche con escalation; permesso/app OS specifici e azione nativa NON identificati, nessun consenso pendente attestato. Nessuna nuova lettura/fonti, test, sviluppo o invio.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -129,7 +129,21 @@
     "latestHumanSourceThread": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
     "latestHumanMonitorMessage": "01a14936-4c4c-7770-abc9-d468322dcf19",
     "latestHumanDevelopmentMessage": "01a14b0b-9122-7390-8ec0-74ea633baab5",
-    "nativeConsentMessage": "01a14b40-c504-7061-8e82-6d6ce5119401"
+    "nativeConsentMessage": "01a14b40-c504-7061-8e82-6d6ce5119401",
+    "quotaPolicy": {
+      "source": {
+        "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+        "userMessageId": "01a14b63-f44d-74c2-b18b-97e15230c971",
+        "verifiedBy": "read_thread: explicit human confirmation that15%remaining means85%used, replacing50",
+        "verifiedAt": "2026-10-17T19:45:52.540506+00:00"
+      },
+      "ceilingUsedPercent": 85,
+      "stopNewBatchesUsedPercent": 80,
+      "finalizationReservePoints": 5,
+      "checkpointsUsedPercent": [40, 60, 75, 80],
+      "ordinaryUsageFalseOrExhausted": "STOP",
+      "noResetPurchaseOrExtraCredits": true
+    }
   },
   "sourceCoverage": {
     "channel": "whatsapp",
@@ -285,7 +299,7 @@
     "deploymentStatus": "success, deployment7144586509 updated2026-10-17T19:22:17Z; combined status earlier pending is historical",
     "documentationClosure": "Source coverage and app proof closure in next documentation commit; exact head in ignored checkpoint",
     "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/7vGrCASNMtWEszoe6tr1BPiP92SR",
-    "thisContinuation": "Application delivered and verified; remaining source acquisition blocked by Downloads access and desktop availability",
+    "thisContinuation": "Metadata-only mandate/gate clarification; no application edit, test, deploy, new source acquisition or remote push in this control",
     "productionEvidenceHistoricalFilters": {
       "sha": "e26ebd9267a1f0f59a0d1527ef59e2a22b5e2b2b",
       "deploymentId": 7137476517,
@@ -309,26 +323,31 @@
       "publicAliasHttp200": "https://time-tracker-tony.vercel.app/commissioning"
     },
     "documentationTests": {
-      "localLinks": 86,
-      "brokenLinks": 0,
+      "sourceCoverageUnchanged": "asserted against HEAD",
+      "attachmentsUnchanged": "asserted against HEAD",
+      "applicationCommitUnchanged": "asserted against HEAD",
+      "quotaPolicy": "85 ceiling,80 batch stop, null task tokens, verified human source",
       "json": "valid",
-      "diffCheck": "pass",
-      "independentReview": "passed after correcting OPS004 manual-development vs restricted-monitor wording"
+      "format": "pass targeted changed files",
+      "diffCheck": "pass"
     }
   },
   "blockers": [
     {
       "kind": "source-access",
-      "reason": "Native export succeeded without media but macOS denies Downloads file read. Native coordinate input also still noWindowsAvailable; AX scroll works. User changed WhatsApp while closing export alert; stopped UI actions.",
-      "neededInput": "Regia reconstructs known source/export with supported session when available; no request to Marco to locate chat already known. No generic approval pending.",
-      "owner": "executor/regia",
-      "deadline": null
+      "reason": "OS-level file access denied. Attribution to a specific macOS privacy permission/TCC entry has NOT been verified; shell escalation did not resolve the denial.",
+      "failedOperation": "Enumerate only Tony/WhatsApp export candidates under /Users/marcobellia/Downloads with rg --files and name filters",
+      "observedResult": "Operation not permitted (os error1), both default execution and approved escalation",
+      "specificNativeApprovalPending": false,
+      "nativeActionRequired": "No specific native permission action identified from returned evidence; do not prescribe Full Disk Access or claim an active consent prompt.",
+      "nextActor": "Regia: classify supported native client/OS diagnostic if one becomes available; Marco only for an actual named OS action shown and deliberately approved. Executor does not probe alternative routes.",
+      "unblockCondition": "A supported native diagnostic identifies the denied operation and responsible app/access requirement, then any required human OS action is completed and supported access becomes available. No generic GO is sufficient."
     }
   ],
   "nextActions": [
-    "Regia reconcile known exported Tony text and unacquired originals when supported session allows; no duplicate chat searches or broad Downloads scans",
-    "Complete QA/QC collapsed text and remaining PNG/PDF/XLS; reconcile structured steps, template and issue criteria before next implementation",
-    "No new customer send without exact current text approval; no audio, remote DB, live AI or duplicate scheduler"
+    "Regia classify a supported native diagnostic identifying denied operation and responsible app/access requirement; no alternative export routes or repeated probes",
+    "Acquire only missing pertinent sources when already-authorized supported access is available; existing coverage gaps remain unchanged",
+    "No repeated development/tests of c12deea; no customer send, DB, live provider, credentials, reset/credits or additional scheduler"
   ],
   "outgoingDrafts": [
     {
@@ -370,16 +389,32 @@
   "usage": {
     "measuredTokens": null,
     "scope": "account weekly window, not task token measurement",
-    "source": "get_usage_limits 2026-10-17T19:18:28Z",
-    "accountUsedPercent": 33,
-    "humanCeilingPercent": 50,
-    "resetOrExtraCreditsConsumed": false
+    "source": "native get_usage_limits: checkpoint40 in current control",
+    "accountUsedPercent": 40,
+    "ordinaryUsageAllowed": true,
+    "humanCeilingPercent": 85,
+    "stopNewBatchesUsedPercent": 80,
+    "resetOrExtraCreditsConsumed": false,
+    "observedAt": "2026-10-17T19:46:30.495415+00:00",
+    "checkpointHistory": [
+      {
+        "usedPercent": 39,
+        "ordinaryUsageAllowed": true,
+        "source": "native read at start of this control"
+      },
+      {
+        "usedPercent": 40,
+        "ordinaryUsageAllowed": true,
+        "source": "native read at closure checkpoint",
+        "nextCheckpointUsedPercent": 60
+      }
+    ]
   },
   "contextHandoff": {
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "App c12deea delivered: main push and Vercel success verified. Source reading incomplete; read evening intake gaps. No generic approval pending."
+    "resumeFrom": "c12deea delivered; source gaps unchanged. No exact OS permission action identified; no retry/alternative path to export. Quota85%used ceiling,80 stop new batches,40% last native checkpoint; next60."
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -410,7 +445,7 @@
   },
   "publisherHandoff": {
     "requestId": "tony-text-feedback-response-approval-20261017",
-    "actionRequired": "Publish delivered c12deea with tests/push/Vercel success and partial source coverage. Native Preview consent resolved. Reconstruct known Tony export using supported session; Downloads access/user desktop availability remain actual source limits.",
+    "actionRequired": "Metadata-only handoff: source coverage unchanged, exact failed operation/result and native diagnostic unknown. No generic approval pending; regia owns diagnostic identification. Quota85%used human-confirmed, native40%, task usage null.",
     "draftId": "tony-text-feedback-response-20261017",
     "plainTextHash": "sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b",
     "evidenceRef": "docs/tony-feedback/intake-20261017-evening.md",
@@ -421,7 +456,37 @@
     "receiptUpdate": "Two blue ticks observed17Oct11:45, actualReadAt unknown",
     "applicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
     "deploymentState": "success",
-    "sourceCoverageComplete": false
+    "sourceCoverageComplete": false,
+    "quotaSource": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a14b63-f44d-74c2-b18b-97e15230c971",
+      "verifiedBy": "read_thread: explicit human confirmation that15%remaining means85%used, replacing50",
+      "verifiedAt": "2026-10-17T19:45:52.540506+00:00"
+    },
+    "sourceAccessGate": {
+      "operation": "Enumerate only Tony/WhatsApp export candidates under /Users/marcobellia/Downloads with rg --files and name filters",
+      "observedResult": "Operation not permitted (os error1), both default execution and approved escalation",
+      "exportNativeOutcome": "WhatsApp Export chat / Without media reported saved to Downloads Folder",
+      "exactExportFilenameKnown": false,
+      "exactExportPathKnown": false,
+      "exportFileRead": false,
+      "nativePermissionPromptObserved": false,
+      "specificPermissionOrResponsibleApplicationVerified": false,
+      "specificNativeApprovalPending": false,
+      "reason": "OS-level file access denied. Attribution to a specific macOS privacy permission/TCC entry has NOT been verified; shell escalation did not resolve the denial.",
+      "nativeActionRequired": "No specific native permission action identified from returned evidence; do not prescribe Full Disk Access or claim an active consent prompt.",
+      "nextActor": "Regia: classify supported native client/OS diagnostic if one becomes available; Marco only for an actual named OS action shown and deliberately approved. Executor does not probe alternative routes.",
+      "unblockCondition": "A supported native diagnostic identifies the denied operation and responsible app/access requirement, then any required human OS action is completed and supported access becomes available. No generic GO is sufficient.",
+      "thisCycle": "No retry, alternative export path, Downloads probe, permission change or computer-use action; coverage unchanged",
+      "previewConsentSeparate": "Earlier human consent resolved the Preview getApp operation only; not evidence of Downloads permission approval."
+    },
+    "measuredTaskUsage": null,
+    "documentationSync": {
+      "mode": "local-only targeted metadata commit",
+      "remotePushPerformedThisControl": false,
+      "commitReference": "output/agent-heartbeat-state.json after commit",
+      "applicationUnchanged": true
+    }
   },
   "lastMonitorCheck": {
     "observedAt": "2026-10-17T19:36:03.747250+00:00",
@@ -433,6 +498,25 @@
     "composerTextEditedThisCycle": false,
     "nativeActions": "read-only AX, no input/scroll/export/search",
     "bodyState": "same collapsed QA13:34 and14:04 visible",
-    "sourceBlock": "unchanged; no retry of Downloads access or coordinate input"
+    "sourceBlock": "unchanged; no retry of Downloads access or coordinate input",
+    "thisContinuation": "No new native actions or source read; diagnostic/mandate reconciliation only"
+  },
+  "continuationJobId": "tony-authorized-feedback-continuation-20261017",
+  "sourceAccessGate": {
+    "operation": "Enumerate only Tony/WhatsApp export candidates under /Users/marcobellia/Downloads with rg --files and name filters",
+    "observedResult": "Operation not permitted (os error1), both default execution and approved escalation",
+    "exportNativeOutcome": "WhatsApp Export chat / Without media reported saved to Downloads Folder",
+    "exactExportFilenameKnown": false,
+    "exactExportPathKnown": false,
+    "exportFileRead": false,
+    "nativePermissionPromptObserved": false,
+    "specificPermissionOrResponsibleApplicationVerified": false,
+    "specificNativeApprovalPending": false,
+    "reason": "OS-level file access denied. Attribution to a specific macOS privacy permission/TCC entry has NOT been verified; shell escalation did not resolve the denial.",
+    "nativeActionRequired": "No specific native permission action identified from returned evidence; do not prescribe Full Disk Access or claim an active consent prompt.",
+    "nextActor": "Regia: classify supported native client/OS diagnostic if one becomes available; Marco only for an actual named OS action shown and deliberately approved. Executor does not probe alternative routes.",
+    "unblockCondition": "A supported native diagnostic identifies the denied operation and responsible app/access requirement, then any required human OS action is completed and supported access becomes available. No generic GO is sufficient.",
+    "thisCycle": "No retry, alternative export path, Downloads probe, permission change or computer-use action; coverage unchanged",
+    "previewConsentSeparate": "Earlier human consent resolved the Preview getApp operation only; not evidence of Downloads permission approval."
   }
 }

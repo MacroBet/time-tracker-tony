@@ -5,7 +5,8 @@ successivo verificato: rileggere i WhatsApp pertinenti e sviluppare richieste ch
 **Lettura non completa:** testi mattino10:56–11:09 acquisiti, osservazioni discontinue
 fino21:06; PNG L1 acquisito/letto, ATT-018, totale18 originali. PDF/XLS/nove PNG e
 parti del testo ancora da leggere. Export nativo senza media riuscito in Download,
-ma macOS nega lettura del file; nessun consenso generico pendente o ricerca chat
+ma l’enumerazione fallisce EPERM e il permesso OS preciso non è identificato;
+nessun consenso generico pendente o ricerca chat
 richiesta a Marco. [Copertura puntuale, mandato, gap e prove](intake-20261017-evening.md).
 
 **UX-006/007 implementate e verificate localmente:** home manager/admin su Overview,
@@ -31,10 +32,14 @@ il punto e porta avanti solo lavoro già chiaramente autorizzato.
 
 **Modalità corrente:** incarico manuale ampliato da Marco nella chat supervisore:
 rilettura delle fonti pertinenti e implementazione delle richieste chiare, entro
-soglia globale quota50%. Fonte e ID umani nell'intake serale. Nessun ampliamento
+tetto globale quota85% usato (15% residuo), confermato da Marco.
+Stop nuovi lotti80, cinque punti per chiusura, checkpoint40/60/75/80; uso ordinario
+non consentito/quota esaurita impongono STOP, niente reset/acquisti/crediti extra. Fonte e ID umani nell'intake serale. Nessun ampliamento
 automatizzato: stesso heartbeat `agente-progetto-tony` ACTIVE ogni10min per monitor
 ristretto, nessun duplicato. Audio a Marco, fonti non sono autorizzazioni aggiuntive.
-Quota conto verificata19:18UTC33% consumato; nessun reset/credito extra.
+Checkpoint nativo40% usato, ordinaryUsageAllowed=true; prossima soglia60.
+Conferma umana verificata via read_thread, user01a14b63-f44d-74c2-b18b-97e15230c971;
+33% alle19:18UTC resta misura storica, nessun reset/credito extra.
 
 **Invio concluso:** v1 approvata direttamente da Marco sul testo esatto e inviata
 una volta a Tony11:34. Consenso consumato; ogni futuro testo richiede nuova conferma.
@@ -53,9 +58,13 @@ propagazione. PDF/XLS e diagrammi ancora mancanti elencati nell'intake serale.
 
 **Blocco attuale preciso:** apertura PNG in Anteprima riuscita dopo consenso;
 AX scroll funziona, coordinate ancora noWindowsAvailable. Export WhatsApp Without
-media confermato in Download; lettura negata da macOS anche con esecuzione
-consentita. Intervento utente su WhatsApp rilevato e azioni UI fermate. Regia
-ricostruisce fonte/export noti quando disponibile una sessione supportata; nessuna
+media confermato in Download; enumerazione file negata con Operation not permitted
+(os error1), sia ordinaria sia con esecuzione consentita. Specifica voce permessi
+macOS/TCC e app responsabile non identificate; nessun pannello OS o consenso
+specifico pendente osservato. Il consenso precedente riguardava Anteprima, non Download. Intervento utente su WhatsApp rilevato e azioni UI fermate. Regia
+deve prima identificare un diagnostico nativo supportato che specifichi operazione/app
+responsabile. Marco interviene soltanto su un’azione OS concreta effettivamente mostrata;
+nessuna
 richiesta generica di ritrovare la chat o ripetere consenso. Copertura continua
 oltre16ott14:14 non attestata. Nessun audio esportato/acquisito.
 
