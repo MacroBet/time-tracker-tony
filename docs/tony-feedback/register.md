@@ -21,6 +21,13 @@ Controllo21:35 in sola lettura: anteprima lista con outgoing21:26 Delivered,
 non inviato da questo esecutore e autore non verificato. Corpo ancora QA13:34/14:04;
 nessuna estensione della copertura incoming o nuova lettura degli allegati.
 
+**Nuovo limite desktop,17ott22:27 Europe/Rome:** richiesta CUA in sola lettura
+fermata: Mac bloccato e sblocco automatico non riuscito secondo il tool. Nessuna
+nuova lettura, acquisizione o tentativo ripetuto. Prossimo attore Marco: sblocco
+manuale quando disponibile; nessun consenso generico richiesto. Non ripetere CUA
+finché non c'è evidenza esterna di sblocco/sessione disponibile. Il gate dell'export
+Download rimane distinto e invariato; copertura incoming non estesa.
+
 ## Stato corrente per ripresa
 
 **Missione e avvio:** FieldTrack per Tony McIntyre, gestione su richiesta di Marco.
