@@ -72,3 +72,19 @@ ricevuto. [Intake aggiornato](../intake-20261017.md). Nessun vecchio allegato ri
 Marco ha poi escluso gli audio; non sono una dipendenza. **CAP-003** è una
 trascrizione manuale privata di7testi17ott10:56–11:04 da screenshot CUA root,
 non un allegato ricevuto. Path e impronta nell’intake; nessun raw in Git, ATT17 invariato.
+
+## Nuovi PNG17 ottobre12:07–12:15 — individuati, non acquisiti
+
+| Nome originale visibile               | Ora messaggio  | Dimensione UI   | Stato                                                                |
+| ------------------------------------- | -------------- | --------------- | -------------------------------------------------------------------- |
+| Screenshot 2026-10-17 at 11.50.02.png | 12:07          | 274 KB          | Didascalia L1/colori letta, immagine non aperta né scaricata         |
+| Screenshot 2026-10-17 at 11.50.14.png | 12:08          | 249 KB          | Didascalia L2B installazione letta, immagine non aperta né scaricata |
+| Screenshot 2026-10-17 at 11.51.00.png | 12:09          | 515 KB          | Etichetta L3 letta, immagine non aperta né scaricata                 |
+| Screenshot 2026-10-17 at 11.51.12.png | non verificata | 442 KB          | Solo card parziale, nessuna immagine acquisita                       |
+| Screenshot 2026-10-17 at 12.14.11.png | 12:15          | non disponibile | Solo anteprima lista, contenuto non verificato                       |
+
+Totale ATT acquisiti invariato a17; nessun path/byte/SHA originale attribuibile a
+questi candidati. Dimensioni arrotondate della UI, non byte verificati. Il lotto
+non è interamente letto:10poi11nonletti è un contatore UI, non copertura acquisita.
+Unico scroll fallito noWindowsAvailable, nessun retry/download.
+[Fonti e requisiti parziali](../intake-20261017-tags-partial.md).

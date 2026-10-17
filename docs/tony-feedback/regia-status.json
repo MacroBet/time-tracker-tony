@@ -6,11 +6,11 @@
   "intakeId": 213,
   "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-  "status": "completed",
-  "executionState": "approved-single-message-sent-monitor-configured",
-  "observedAt": "2026-10-17T09:46:29.585783+00:00",
+  "status": "waiting",
+  "executionState": "new-tag-materials-partial-technical-limit",
+  "observedAt": "2026-10-17T10:17:38.323352+00:00",
   "startedAt": null,
-  "completedAt": "2026-10-17T09:37:38.656264+00:00",
+  "completedAt": null,
   "deadline": null,
   "executors": [
     {
@@ -27,7 +27,7 @@
       "result": "no code findings; stale register header corrected"
     }
   ],
-  "outcome": "Unico testo v1 approvato direttamente inviato11:34 aTony, AXSent e una spunta; consegna/lettura non attestate. Monitor esistenteACTIVE10min verificato su nuovo mandato diretto. Filtri già suVercel/ambienteProduction etichettato; nessun nuovo deploy. Delta4testi11:06–11:09 registrato, nessun nuovo sviluppo.",
+  "outcome": "Nuovi materiali tag12:07–12:15 parzialmente letti: colori perazienda e distinzioneL2A/L2B dalle didascalie;5nomiPNG,0originali acquisiti. ScrollnoWindowsAvailable, stop immediato. Nessun nuovo invio, app o deploy.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -76,6 +76,13 @@
       "sha256": "ccb7170b5a55d67333c967ea595914a172f330a3bb0dce96b70214c6599a244b",
       "verifiedAt": "2026-10-17T09:37:38.656264+00:00",
       "verifiedBy": "root CUA exactoutgoing/AXSent/composerempty, humanapproval read_thread"
+    },
+    {
+      "kind": "file",
+      "ref": "output/tony/tag-materials-20261017-1215-partial.private.json",
+      "sha256": "1240a28555f1c867ca7c42763d25e7b1460437235475eb472480e52df898435b",
+      "verifiedAt": "2026-10-17T10:17:38.323352+00:00",
+      "verifiedBy": "root CUA direct partialcaption/filemetadata only"
     }
   ],
   "authorization": {
@@ -151,7 +158,17 @@
       "privateRef": "output/tony/send-20261017-1134.private.json"
     },
     "latestOutgoingObserved": "2026-10-17 11:34",
-    "totalIncomingTextsAnalyzedThisDate": 11
+    "totalIncomingTextsAnalyzedThisDate": 11,
+    "partialNewMaterials": {
+      "date": "2026-10-17",
+      "firstCaption": "12:07",
+      "lastPreview": "12:15",
+      "complete": false,
+      "source": "root CUA target screenshot/AX",
+      "privateRef": "output/tony/tag-materials-20261017-1215-partial.private.json",
+      "sha256": "1240a28555f1c867ca7c42763d25e7b1460437235475eb472480e52df898435b",
+      "imageContentsRead": false
+    }
   },
   "receiptUpdates": [
     {
@@ -185,7 +202,9 @@
     "newAudioFilesAcquired": 0,
     "audioHash": null,
     "newAttachmentIds": [],
-    "oldExcelAttemptedThisCycle": false
+    "oldExcelAttemptedThisCycle": false,
+    "newPngNamesObservedNotAcquired": 5,
+    "newImageOriginalsAcquired": 0
   },
   "work": {
     "applicationChangesThisCycle": true,
@@ -212,7 +231,7 @@
     "deploymentStatus": "success, checked2026-10-17T09:12:22Z, statusUpdated2026-10-17T09:12:11Z",
     "documentationClosure": "Exact closure commit/push in ignored output/agent-heartbeat-state.json",
     "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/DpdKtRQCqoPsjrdGenjJybLEX4tj",
-    "thisContinuation": "documentation/configuration/send only; no application changes/tests repeated",
+    "thisContinuation": "partial source intake/docs only; no app tests or deploy",
     "productionEvidence": {
       "sha": "e26ebd9267a1f0f59a0d1527ef59e2a22b5e2b2b",
       "deploymentId": 7137476517,
@@ -225,12 +244,19 @@
       "authenticatedProductionTest": false
     }
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "kind": "technical",
+      "reason": "Native chat scroll fails -10005noWindowsAvailable; new diagram images and remaining captions not acquired",
+      "neededInput": "Supported available desktop session for one bounded acquisition attempt; no permission or audio needed",
+      "owner": "executor at next available session",
+      "deadline": null
+    }
+  ],
   "nextActions": [
-    "UnicoheartbeatACTIVE10min legge soltanto delta dopo11:09 senza audio/invii automatici",
-    "Publisherautorizzato riconcilia richiestaapprovazione/invio/monitor dal reportcondiviso",
-    "Nessun redeploy dei filtri già pubblicati; eventuale richiestaTony impone verificatarget/stato",
-    "Nuove richieste homeperruolo e documenticondivisi registrate, nessuna autorizzazione sviluppo desunta"
+    "Quando sessione disponibile, ripartire dal PNG12:07 e acquisire solo resto lotto pertinente senza retry ripetuti",
+    "Nessun nuovo sviluppo autorizzato da queste fonti; leggere flussi/campi prima di interpretare",
+    "Nessun reinvio11:34/audio/deploy duplicato; monitorristrettoesistente"
   ],
   "outgoingDrafts": [
     {
@@ -278,7 +304,7 @@
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "DeltaTony dopo11:09, solo monitorristretto esistenteACTIVE10min; invio11:34concluso,norepeat; audioMarco; providerDBbloccati"
+    "resumeFrom": "Nuovi PNGtag12:07–12:15nonacquisiti; partire12:07 con sovrapposizioneminima, stopalprimoerrore; noaudio/send/develop"
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -320,12 +346,15 @@
     "receiptUpdate": "Two blue ticks observed17Oct11:45, actualReadAt unknown"
   },
   "lastMonitorCheck": {
-    "observedAt": "2026-10-17T09:46:29.585783+00:00",
-    "incomingDelta": 0,
-    "lastIncoming": "2026-10-17 11:09",
-    "lastOutgoing": "2026-10-17 11:34",
-    "receiptDelta": "read-receipt-two-blue-ticks",
-    "actualReadAt": null,
+    "observedAt": "2026-10-17T10:17:38.323352+00:00",
+    "incomingDelta": null,
+    "newUnreadCountObserved": 11,
+    "countDoesNotAttestCoverage": true,
+    "fullyReadNewCaptions": 3,
+    "newPngNamesObserved": 5,
+    "originalsAcquired": 0,
+    "error": "-10005 noWindowsAvailable on one native scroll",
+    "retries": 0,
     "customerSentThisCycle": false,
     "composerTextEditedThisCycle": false,
     "newDeploymentCheckedOrTriggered": false

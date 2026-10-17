@@ -33,6 +33,9 @@ nessun blocco audio residuo. Filtri Area/Phase d7dcb8f verificati localmente e s
 [Invio approvato11:34 e monitor ristretto](intake-20261017-send-monitor.md): una spunta,
 nuovi4testi fino11:09, produzione verificata nei metadati; nessuna nuova feature avviata.
 
+Nuovo lotto17ott12:07–12:15: [tag e colori per azienda, intake parziale](intake-20261017-tags-partial.md).
+Cinque PNG individuati, nessun originale acquisito; scroll fallito, copertura incompleta.
+
 ## Orientamento al codice, solo quando serve
 
 - Dati e permessi: `src/lib/domain.ts`, `src/lib/commissioning.ts`,

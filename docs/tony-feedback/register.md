@@ -4,7 +4,11 @@ Ultimo aggiornamento: 17 ottobre 2026. **Incarico manuale Tony: testi acquisiti 
 Copertura17ott: **11testi diretti10:56–11:09**, audio esclusi. Ultimo outgoing
 **11:34 OUT-20261017-01**, testo approvato inviato una volta; controllo17ott11:45:
 **due spunte blu visibili**, ricevuta di lettura verificata, ora effettiva ignota.
-Nessun nuovo testo oltre11:09 nel controllo circoscritto; nessun invio/composer/audio.
+Controllo17ott12:16: nuovi materiali tag12:07–12:15 **parzialmente letti**: tre
+didascalie e cinque nomiPNG individuati, nessuna immagine aperta/scaricata. Richiesta
+colori tag configurabili per azienda, L2A consegna/L2B installazione; flussi/campi
+minimi ancora non verificati. Scroll fallito noWindowsAvailable, tentativi fermati.
+[Delta e limite](intake-20261017-tags-partial.md). Nessun invio o modifica app.
 Copertura16ott CAP-001 rimane storica.
 [Consenso e nuovo monitor](intake-20261017-send-monitor.md).
 
@@ -30,6 +34,11 @@ Handoff al publisher per riconciliare la richiesta regia, nessun bypass ACL/call
 **Nuove richieste acquisite11:06–11:09:** fonte dati/file condivisa per asset principale,
 test distinti per unità; home per manager/admin e Tasks per worker. Annotate, nessun
 nuovo sviluppo avviato. [Interpretazioni e prove](intake-20261017-send-monitor.md).
+
+**Nuovo lotto tag12:07–12:15:** richiesta colori per azienda acquisita dalle
+didascalie; nuovi diagrammi e campi minimi non ancora letti. Nessun originale
+scaricato, totaleATT17 invariato. Controllo parziale fermato al primo errore UI.
+Prossima lettura minima dal documento12:07, senza sviluppi dedotti dalle fonti.
 
 **UX-005 consegnata:** filtri Area/Phase e metadati visibili in Assets desktop/mobile,
 combinati con ricerca/Supply e recupero Clear filters, basati sui dati esistenti.
