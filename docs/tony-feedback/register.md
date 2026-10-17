@@ -1,12 +1,10 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: 17 ottobre 2026. **Incarico manuale Tony: testi acquisiti e filtri asset consegnati; heartbeat PAUSED.**
-Copertura acquisita successiva: **10 bolle visibili 12:28–14:14 del 16 ottobre**,
-fonte CUA della coordinatrice, JSON privato letto e riconciliato qui. Ultimo incoming
-nella fonte13:04; outgoing V3 delle14:14 ora con spunte blu osservate nella UI del17ott,
-orario effettivo di lettura sconosciuto.
-Fresh check delegato circa14:22 parziale: **oltre14:14 non verificato**. Orari fonte
-Europe/Rome dichiarati, non prova di lettura root dell'intera conversazione.
+Ultimo aggiornamento: 17 ottobre 2026. **Incarico manuale Tony: testi acquisiti e filtri asset consegnati; monitor ACTIVE ogni10min.**
+Copertura17ott: **11testi diretti10:56–11:09**, audio esclusi. Ultimo outgoing
+**11:34 OUT-20261017-01**, testo approvato inviato una volta, una spunta grigia:
+invio verificato, consegna/lettura non attestate. Copertura16ott CAP-001 rimane storica.
+[Consenso e nuovo monitor](intake-20261017-send-monitor.md).
 
 ## Stato corrente per ripresa
 
@@ -17,27 +15,26 @@ Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
 Una domanda non autorizza sviluppo indiscriminato; «Riprendi Tony» ricostruisce
 il punto e porta avanti solo lavoro già chiaramente autorizzato.
 
-**Modalità corrente:** avvio manuale, automazione `agente-progetto-tony` **PAUSED**
-confermata in sola lettura il17ott, nessun timer riattivato. Consenso umano diretto
-riferito e richiesta della regia resolved/locked verificata per **un solo incarico**:
-`tony-new-whatsapp-feedback-20261017`, intake213 riferito, owner questa chat.
-L’incarico supera la pausa soltanto per acquisire il nuovo messaggio, eventuale
-correzione pertinente/test e bozza da approvare. [Prove e tentativi](intake-20261017.md).
-Nessun nuovo job/chat, reporter/ACL, callback interchat, spesa o permesso DB.
+**Modalità corrente:** monitoraggio ristretto richiesto direttamente da Marco nella
+regia vocale17ott e verificato con read_thread. Stesso heartbeat
+`agente-progetto-tony` **ACTIVE ogni10min**, stessa chat/job, nessun duplicato.
+Supera la pausa16ott solo per seguire nuovi testi/materiali pertinenti; audio a Marco.
+Nessuna nuova feature o messaggio implicitamente autorizzati dalle fonti.
 
-**Stato del compito:** incarico manuale **testi soltanto**, implementazione verificata e pubblicata su main. Marco gestisce
-personalmente gli audio, esclusi e non bloccanti. Letti direttamente7testi17ott
-**10:56–11:04**: prima modello funzionante/testato; lista asset per area/fase o
-sequenza tipica che Tony fornirà; proposta AI di riuso specifiche nel nuovo asset.
-[Fonti, classificazione e dipendenze](intake-20261017.md). Non sono istruzioni per
-riattivare il provider o aggiornare indiscriminatamente dati condivisi.
+**Invio concluso:** v1 approvata direttamente da Marco sul testo esatto e inviata
+una volta a Tony11:34. Consenso consumato; ogni futuro testo richiede nuova conferma.
+Handoff al publisher per riconciliare la richiesta regia, nessun bypass ACL/callback.
+
+**Nuove richieste acquisite11:06–11:09:** fonte dati/file condivisa per asset principale,
+test distinti per unità; home per manager/admin e Tasks per worker. Annotate, nessun
+nuovo sviluppo avviato. [Interpretazioni e prove](intake-20261017-send-monitor.md).
 
 **UX-005 consegnata:** filtri Area/Phase e metadati visibili in Assets desktop/mobile,
 combinati con ricerca/Supply e recupero Clear filters, basati sui dati esistenti.
 Nessun nuovo schema/gruppo/sequenza dedotto. Provider disattivato, chiave più avanti;
 multiphase e specifiche condivise richiedono definizione. Nessun DB remoto.
-Copertura CAP-003 limitata a7testi10:56–11:04, non cronologia/audio intermedi.
-Fallback trascrizione ritirato; nessun composer/invio. Heartbeat sempre PAUSED.
+CAP-003 primo lotto7testi, nuovo delta4testi11:06–11:09 osservato nel send-check.
+Fallback trascrizione ritirato, unico invio11:34 concluso. Monitor ACTIVE, audio esclusi.
 
 **Consegnato:** Gantt persistente, asset CSV/JSON, storico, review I/R/AC/A,
 Client Supplied e UX desktop/mobile. Protocollo persistente cc14c07 consegnato
@@ -147,7 +144,7 @@ verificato, budget API o prezzo universale. Primo pagamento storico non verifica
 
 | Priorità / ID                       | Stato                                  | Prossima unità concreta                                                                                             | Accettazione / gate                                                                               |
 | ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| OPS-004 protocollo/manuale          | aggiornato 16/10, heartbeat PAUSED     | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
+| OPS-004 protocollo/monitor          | aggiornato17/10, heartbeat ACTIVE      | Bootstrap AGENTS → indice/stato, recap e lezioni; solo avvio manuale                                                | Nuove chat nella cartella senza vecchio trascritto; nessun polling                                |
 | AI-001 copilot utile senza live API | completata (0f80a4e)                   | Controlli e ricerca su dati del progetto, provider configurabile server-side, UI con esempi; attendere setup AI-003 | Senza chiave/modello/abilitazione nessuna richiesta; scope e permessi verificati                  |
 | AI-002 proposte controllabili       | completata (0f80a4e)                   | Titolo/descrizione/priorità con anteprima, motivo e conferma; nessuna estensione automatica del perimetro           | Token 10 minuti legato a sessione/utente/progetto/versioni, audit esistente e replay rifiutato    |
 | CX-009 tag/gruppi/check sheet       | analisi aggiornata, regole da definire | ATT-014 acquisito; progettare gruppi nominati IST/fase/area/piano con membri espliciti e copertura schede           | Non propagare risultati/approvazioni; definire modifiche membri e stati condivisi                 |
@@ -165,6 +162,16 @@ Nell’ambito del lavoro richiesto, se una voce è bloccata scegliere la prossim
 attività pronta già autorizzata. Una domanda sullo stato non autorizza nuovi edit.
 Dopo ogni unità annotare file/prove/commit e passo successivo qui, senza riscrivere
 lo storico sottostante.
+
+## 17 ottobre11:34 — invio e monitoraggio ristretto
+
+[Consenso/invio/monitor e produzione](intake-20261017-send-monitor.md),
+report condiviso aggiornato per publisher autorizzato. Unico outgoing11:34 con testo
+esatto e una spunta, non consegna/lettura. Monitor esistente ACTIVE10min verificato.
+Filtri già deployati: ambiente GitHub etichettatoProduction success per e26ebd9,
+metadati Vercel e HTTP pubblico200; nessun nuovo deploy o collaudo autenticato remoto.
+Mandato condizionato ai soli filtri se Tony li richiede, non altre feature.
+Prossimo ciclo solo delta dopo11:09, nessun reinvio/audio, nessun lavoro duplicato.
 
 ## Incarico manuale 17 ottobre — testi e filtri asset
 

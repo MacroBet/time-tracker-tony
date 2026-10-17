@@ -25,11 +25,13 @@ spiegano il percorso, non sostituiscono lo stato. Nessuna dipendenza da una chat
 Fonti dashboard del 16 ottobre: [intake 12:24–12:31](intake-20261016-dashboard.md),
 con tre PNG salvati e due soltanto visualizzati da Show Chrome.
 
-**Heartbeat PAUSED; incarico manuale17ott testi acquisiti e filtri consegnati.**
+**Monitor esistente ACTIVE10min per nuovo mandato diretto17ott; filtri consegnati.**
 [Nuovo intake](intake-20261017.md):7testi diretti10:56–11:04, richieste asset/AI
 separate dalle interpretazioni. Audio esclusi da Marco, fallback ritirato;
 nessun blocco audio residuo. Filtri Area/Phase d7dcb8f verificati localmente e su main; provider live spento.
 [Report esecutore](regia-status.json), ponte alla regia, nessun nuovo job o scheduler.
+[Invio approvato11:34 e monitor ristretto](intake-20261017-send-monitor.md): una spunta,
+nuovi4testi fino11:09, produzione verificata nei metadati; nessuna nuova feature avviata.
 
 ## Orientamento al codice, solo quando serve
 

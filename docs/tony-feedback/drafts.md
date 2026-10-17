@@ -8,12 +8,16 @@ la loro acquisizione; il testo privato `tony-voice-note-20261017 v1` non è più
 all’approvazione. Nessun invio/composer. Una nuova bozza sui testi e sul risultato
 richiede versione, impronta e approvazione puntuale; il vecchio consenso V3 è concluso.
 
-**Nuova bozza testi17ott v1**, ID `tony-text-feedback-20261017`, destinatario Tony
-McIntyre, WhatsApp. Risposta breve al lotto10:56–11:04 e ai filtri consegnati;
-nessuna promessa di AI live o aggiornamenti collettivi. Testo esatto nel file privato
-`output/tony/text-feedback-20261017-draft-v1.json`; binding
-`sha256:a77b317d6ad039cf6180f7f22712063694f451e78bc68ac3f4c862d6c40332e8`. Non approvata, non nel composer, non inviata;
-conferma sul testo corrente necessaria per qualsiasi invio futuro.
+**Bozza testi17ott v1 inviata una volta alle11:34**, OUT-20261017-01. Alias regia
+`tony-text-feedback-response-20261017`, locale `tony-text-feedback-20261017`.
+Approvazione umana diretta verificata tramite read_thread della chat vocale,
+testo identico, hash testo `sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b`;
+binding locale completo `sha256:a77b317d6ad039cf6180f7f22712063694f451e78bc68ac3f4c862d6c40332e8` distinto.
+Una spunta grigia e AXSent: invio verificato, consegna/lettura non attestate;
+composer vuoto. **Non reinviare**, consenso consumato. [Prove](intake-20261017-send-monitor.md).
+La vecchia coda richiesta va riconciliata dal publisher con il consenso successivo;
+nessuna scrittura canonica o callback eseguita da qui. Ogni futuro invio richiede
+nuovo consenso sul testo esatto.
 
 **Bozze precedenti archiviate.** La proposta localev2 e la v1 della
 regia sono superate dalla **V3 inviata dalla coordinatrice alle14:14 del16ott**,

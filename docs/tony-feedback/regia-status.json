@@ -7,10 +7,10 @@
   "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "completed",
-  "executionState": "manual-text-assignment-completed",
-  "observedAt": "2026-10-17T09:12:44.690722+00:00",
+  "executionState": "approved-single-message-sent-monitor-configured",
+  "observedAt": "2026-10-17T09:37:38.656264+00:00",
   "startedAt": null,
-  "completedAt": "2026-10-17T09:12:44.690722+00:00",
+  "completedAt": "2026-10-17T09:37:38.656264+00:00",
   "deadline": null,
   "executors": [
     {
@@ -27,7 +27,7 @@
       "result": "no code findings; stale register header corrected"
     }
   ],
-  "outcome": "7testi10:56–11:04 interpretati. Filtri Area/Phase d7dcb8f su main remoto e Vercel success verificati,95unitari/PostgreSQL+10API,statici/build e UI locale passati. Audio esclusi; bozza privata corrente da approvare, nessun invio.",
+  "outcome": "Unico testo v1 approvato direttamente inviato11:34 aTony, AXSent e una spunta; consegna/lettura non attestate. Monitor esistenteACTIVE10min verificato su nuovo mandato diretto. Filtri già suVercel/ambienteProduction etichettato; nessun nuovo deploy. Delta4testi11:06–11:09 registrato, nessun nuovo sviluppo.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -69,14 +69,24 @@
       "state": "success",
       "verifiedAt": "2026-10-17T09:12:22Z",
       "source": "GitHub combined commit status, Vercel context"
+    },
+    {
+      "kind": "file",
+      "ref": "output/tony/send-20261017-1134.private.json",
+      "sha256": "ccb7170b5a55d67333c967ea595914a172f330a3bb0dce96b70214c6599a244b",
+      "verifiedAt": "2026-10-17T09:37:38.656264+00:00",
+      "verifiedBy": "root CUA exactoutgoing/AXSent/composerempty, humanapproval read_thread"
     }
   ],
   "authorization": {
-    "scope": "solo questo incarico manuale, eventuale modifica pertinente e test, bozza inglese da approvare",
+    "scope": "Unico invio approvato concluso; monitor delta pertinente e deploy soli filtriArea/Phase seTonychiede dopo verifica; nessun altro sviluppo/spesa/invio",
     "consentRequestStatus": "resolved/locked",
     "resolvedAt": "2026-10-17T08:53:12.822Z",
     "customerSendAuthorized": false,
-    "periodicAutomationAuthorized": false
+    "periodicAutomationAuthorized": true,
+    "singleSendApprovalConsumed": true,
+    "latestHumanSourceThread": "01a14934-2940-7e42-a69b-768811718988",
+    "latestHumanMonitorMessage": "01a14936-4c4c-7770-abc9-d468322dcf19"
   },
   "sourceCoverage": {
     "channel": "whatsapp",
@@ -96,7 +106,7 @@
     },
     "continuousContentCoverageAfter1414Verified": false,
     "voiceMetadataThrough": "2026-10-17 10:53",
-    "latestTextPreviewObserved": "2026-10-17 11:04",
+    "latestTextPreviewObserved": "2026-10-17 11:09",
     "latestTextPrivateRef": "output/tony/text-intake-20261017-1104.private.json",
     "newRequestInterpreted": true,
     "audioAcquired": false,
@@ -130,7 +140,18 @@
       "source": "root CUA targeted screenshot",
       "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992"
     },
-    "audioExcludedByMarco": true
+    "audioExcludedByMarco": true,
+    "latestIncomingTextObserved": "2026-10-17 11:09",
+    "additionalTextDelta": {
+      "incomingBubbles": 4,
+      "from": "11:06",
+      "through": "11:09",
+      "date": "2026-10-17",
+      "source": "rootCUAtargetscreenshot during senddedupe",
+      "privateRef": "output/tony/send-20261017-1134.private.json"
+    },
+    "latestOutgoingObserved": "2026-10-17 11:34",
+    "totalIncomingTextsAnalyzedThisDate": 11
   },
   "receiptUpdates": [
     {
@@ -139,6 +160,14 @@
       "state": "read-receipt-visible",
       "evidence": "due spunte blu nello screenshot WhatsApp17ott",
       "observedAt": "2026-10-17T09:00:58.822101+00:00",
+      "actualReadAt": null,
+      "resent": false
+    },
+    {
+      "sourceId": "OUT-20261017-01",
+      "state": "sent-single-grey-tick",
+      "nativeLocalMinute": "2026-10-17 11:34 Europe/Rome",
+      "actualDeliveryAt": null,
       "actualReadAt": null,
       "resent": false
     }
@@ -174,14 +203,26 @@
     "remoteMainVerified": "d7dcb8fd1ef01ecfec2b14b783359b29d0b2f0e1",
     "deploymentStatus": "success, checked2026-10-17T09:12:22Z, statusUpdated2026-10-17T09:12:11Z",
     "documentationClosure": "Exact closure commit/push in ignored output/agent-heartbeat-state.json",
-    "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/DpdKtRQCqoPsjrdGenjJybLEX4tj"
+    "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/DpdKtRQCqoPsjrdGenjJybLEX4tj",
+    "thisContinuation": "documentation/configuration/send only; no application changes/tests repeated",
+    "productionEvidence": {
+      "sha": "e26ebd9267a1f0f59a0d1527ef59e2a22b5e2b2b",
+      "deploymentId": 7137476517,
+      "environmentLabel": "Production",
+      "githubProductionEnvironmentFlag": false,
+      "state": "success",
+      "environmentUrl": "https://time-tracker-tony-k02dgep74-macrobets-projects.vercel.app",
+      "publicAliasHttp200": "https://time-tracker-tony.vercel.app/commissioning",
+      "anonymousFeatureCodeCheck": "inconclusive",
+      "authenticatedProductionTest": false
+    }
   },
   "blockers": [],
   "nextActions": [
-    "Nessun polling o continuazione automatica; prossimo lavoro solo manuale",
-    "Tony fornisce sequenza; multifase e specifiche condivise richiedono regole esplicite prima di implementazione",
-    "Marco fornisce chiave più avanti; live AI disattivata",
-    "Eventuale invio bozza richiede conferma del testo corrente; nessun callback interchat"
+    "UnicoheartbeatACTIVE10min legge soltanto delta dopo11:09 senza audio/invii automatici",
+    "Publisherautorizzato riconcilia richiestaapprovazione/invio/monitor dal reportcondiviso",
+    "Nessun redeploy dei filtri già pubblicati; eventuale richiestaTony impone verificatarget/stato",
+    "Nuove richieste homeperruolo e documenticondivisi registrate, nessuna autorizzazione sviluppo desunta"
   ],
   "outgoingDrafts": [
     {
@@ -205,12 +246,18 @@
       "channel": "whatsapp",
       "scope": "Risposta ai7testi17ott10:56–11:04: working model first, filtri area/fase consegnati; attesa sequenza, AI e riuso specifiche annotati senza claim live",
       "contentHash": "sha256:a77b317d6ad039cf6180f7f22712063694f451e78bc68ac3f4c862d6c40332e8",
-      "status": "awaiting-exact-human-approval",
+      "status": "sent-approval-consumed",
       "requiresExactHumanApproval": true,
-      "customerSent": false,
-      "composerTextEdited": false,
+      "customerSent": true,
+      "composerTextEdited": true,
       "privateTextRef": "output/tony/text-feedback-20261017-draft-v1.json",
-      "readyForApproval": true
+      "readyForApproval": false,
+      "approvedAlias": "tony-text-feedback-response-20261017",
+      "plainTextHash": "sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b",
+      "sentLocalMinute": "2026-10-17 11:34 Europe/Rome",
+      "receipt": "sent-single-grey-tick",
+      "deliveryVerified": false,
+      "readVerified": false
     }
   ],
   "usage": {
@@ -222,14 +269,17 @@
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "Unità testi e filtri asset conclusa. Prossimo solo manuale: sequenza Tony/multifase/specifiche; audio Marco, heartbeatPAUSED"
+    "resumeFrom": "DeltaTony dopo11:09, solo monitorristretto esistenteACTIVE10min; invio11:34concluso,norepeat; audioMarco; providerDBbloccati"
   },
   "automation": {
     "id": "agente-progetto-tony",
-    "status": "PAUSED",
-    "verifiedAt": "2026-10-17T09:00:58.822101+00:00",
-    "createdOrModifiedThisCycle": false,
-    "resumeMode": "solo incarico manuale corrente, nessuna riattivazione periodica"
+    "status": "ACTIVE",
+    "verifiedAt": "2026-10-17T09:37:38.656264+00:00",
+    "createdOrModifiedThisCycle": true,
+    "resumeMode": "existingheartbeat restrictedtextmonitor after verifieddirecthumanmandate17Oct",
+    "rrule": "RRULE:FREQ=MINUTELY;INTERVAL=10",
+    "targetThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
+    "futureExecutionVerified": false
   },
   "integration": {
     "transport": "file condiviso; root supervisore pubblica ponte",
@@ -247,5 +297,16 @@
   "cleanup": {
     "menuDismissalVerified": true,
     "details": "Fresh AX menu0 Cancel riuscito; nessun testo composer modificato"
+  },
+  "publisherHandoff": {
+    "requestId": "tony-text-feedback-response-approval-20261017",
+    "actionRequired": "Authorizedpublisher reconciles earlier09:29draftrevisionrequest with later verifiedexactvoiceapproval and actualsingleSent11:34; record consentconsumed",
+    "draftId": "tony-text-feedback-response-20261017",
+    "plainTextHash": "sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b",
+    "evidenceRef": "docs/tony-feedback/intake-20261017-send-monitor.md",
+    "canonicalRequestUpdatedByThisExecutor": false,
+    "noAclOrImpersonation": true,
+    "monitorConsentSource": "human userMessage01a14936-4c4c-7770-abc9-d468322dcf19",
+    "transport": "sharedfile, no callback"
   }
 }

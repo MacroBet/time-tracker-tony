@@ -8,18 +8,19 @@ Puoi essere più preciso: «Fammi lo stato», «Leggi i nuovi messaggi di Tony»
 «Continua l'implementazione di …». Una domanda resta una domanda; non avvia sviluppo
 indiscriminato. Il contesto è nel repository: non serve riaprire una vecchia chat.
 
-**Solo avvio manuale.** Marco ha scelto il 16 ottobre 2026 di evitare consumo AI
-periodico: heartbeat **Agente progetto Tony**, ID `agente-progetto-tony`, **PAUSED**.
-Non riattivarlo o crearne altri senza richiesta. Nessun polling o continuazione
-in background dopo il turno. L'aggiornamento periodico dei dati nell'app aperta
-è una funzione diversa e non avvia l'assistente di sviluppo.
+**Monitoraggio ristretto ripreso il17ott.** Marco ha chiesto direttamente nella
+regia vocale di continuare a seguire Tony. Riattivato l’unico heartbeat
+**Agente progetto Tony**, `agente-progetto-tony`, ogni dieci minuti nella stessa chat.
+Solo nuovi testi/materiali pertinenti, audio esclusi, silenzio senza novità; nessun
+nuovo sviluppo o invio cliente implicito. Marco autorizza soltanto il deploy Area/Phase
+se Tony lo richiede, previa verifica del target e senza duplicare deploy già riusciti.
+[Fonti e stato verificato](intake-20261017-send-monitor.md).
 
-Checkpoint successivo del16ott: progetto **in pausa**, consegna app f7ed997 e
-intake540aa54/88705f8 già pubblicati. File dell’automazione nuovamente verificato
-**PAUSED** dopo la pausa eseguita dalla coordinatrice. Trigger: richiesta umana
-**«Riprendi Tony»**, per una sola ripresa manuale; nessuna riattivazione implicita
-leggendo vecchi heartbeat ACTIVE. Copertura acquisita14:14, ultimo tentativo
-parziale circa14:22; il tempo trascorso in pausa non estende la copertura.
+La pausa del16ott rimane una decisione storica superata soltanto per questo monitoraggio.
+Nuove chat e altri incarichi restano manuali. Nessun altro scheduler, polling proprio
+o processo di continuazione. Il computer e l’app devono essere disponibili per i
+controlli locali: configurazione ACTIVE non prova ogni lettura futura. L’aggiornamento
+dei dati dentro FieldTrack rimane distinto dal lavoro dell’assistente.
 
 ## Come viene recuperato il contesto
 
@@ -61,7 +62,8 @@ la verifica di questa unità è documentale e tramite revisione indipendente.
 6. Alla chiusura di un risultato significativo aggiornare registro con fonti,
    prove, limiti, commit/push/deploy distinti e prossimo passo. Aggiornare recap e
    lezioni solo per novità sostanziali, senza copie divergenti o dump della chat.
-   Poi fermarsi: la prossima esecuzione parte da una richiesta manuale di Marco.
+   Poi chiudere il turno: solo il monitor esistente può riprendere il perimetro ristretto;
+   nuovi incarichi di sviluppo richiedono mandato manuale.
 
 ## Verifiche proporzionate
 
