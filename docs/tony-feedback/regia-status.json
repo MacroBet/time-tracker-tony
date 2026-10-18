@@ -7,10 +7,10 @@
   "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "checkpoint",
-  "executionState": "idle-source-status-check-complete",
-  "observedAt": "2026-10-18T10:51:15.096899+00:00",
+  "executionState": "manual-catalog-local-complete-native-monitor-blocked",
+  "observedAt": "2026-10-18T14:37:02.469065+00:00",
   "startedAt": null,
-  "completedAt": "2026-10-17T19:23:25.547641+00:00",
+  "completedAt": "2026-10-18T14:37:02.469065+00:00",
   "deadline": null,
   "executors": [
     {
@@ -31,7 +31,7 @@
       "result": "completed"
     }
   ],
-  "outcome": "App nativa utilizzabile18ott. QA13:34 e testo12:10 completi; ATT019–029 acquisiti,29 originali. Dieci PNG17ott e PDF18pagine/171attività letti; XLS roadmap acquisito, sole etichette Quick Look, frecce/layout non leggibili. Mapping colori divergenti conservati. c12deea/home/colori/filtri già consegnati; passi/template/QA automatico ancora incompleti. Nessuno sviluppo, nuovo test, invio o deploy in questo controllo. Fetch SSH fallito; main pubblico58b3bb4 e Vercel success già verificati.",
+  "outcome": "Manual catalog completed locally after current specific human approval: commit5cd5ca9,103unit/PostgreSQL,10API,typecheck,lint,build,format,desktop/mobile local QA and independent review PASS. No push/deploy/send. WhatsApp prerequisite rejected by auto-review due missing unlock evidence; no retry or new coverage.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -204,6 +204,15 @@
       "sha256": "147fb11b834dbd390dd7c76a5d82837777243f62835a84f0455e91bac559def1",
       "attachmentId": "ATT-029",
       "verifiedAt": "2026-10-18T10:51:15.096899+00:00"
+    },
+    {
+      "kind": "private-static-analysis",
+      "ref": "output/tony/roadmap-analysis-20261018/structure.private.json",
+      "sha256": "bc0f55bb137b1e822eccff921eb015f1ccc8a38038b246a324cada0e988609a9",
+      "sourceOriginalSha256": "147fb11b834dbd390dd7c76a5d82837777243f62835a84f0455e91bac559def1",
+      "sourceUnchanged": true,
+      "method": "bundled headless LibreOffice with macros disabled in isolated profile",
+      "verifiedAt": "2026-10-18T11:08:12.629586+00:00"
     }
   ],
   "authorization": {
@@ -220,14 +229,20 @@
     "quotaPolicy": {
       "source": {
         "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
-        "userMessageId": "01a14b63-f44d-74c2-b18b-97e15230c971",
-        "verifiedBy": "read_thread: explicit human confirmation that15%remaining means85%used, replacing50",
-        "verifiedAt": "2026-10-17T19:45:52.540506+00:00"
+        "userMessageId": "01a14e88-d38b-73f1-99dd-1076fcb0f1ea",
+        "quoteExcerpt": "puoi utilizzare il novanta per cento del piano e lasciarne al massimo residuo del dieci",
+        "verifiedBy": "direct native read_thread18Oct",
+        "verifiedAt": "2026-10-18T11:08:12.629586+00:00"
       },
-      "ceilingUsedPercent": 85,
-      "stopNewBatchesUsedPercent": 80,
+      "ceilingUsedPercent": 90,
+      "stopNewBatchesUsedPercent": 85,
       "finalizationReservePoints": 5,
-      "checkpointsUsedPercent": [40, 60, 75, 80],
+      "checkpointsUsedPercent": [
+        40,
+        60,
+        75,
+        85
+      ],
       "ordinaryUsageFalseOrExhausted": "STOP",
       "noResetPurchaseOrExtraCredits": true
     },
@@ -246,7 +261,37 @@
       "ceilingUsedPercent": 90,
       "stopNewBatchesUsedPercent": 85,
       "source": "supervisor dispatch, human exact numeric confirmation not retrieved in this check",
-      "effectiveConservativePolicy": "retain verified AGENTS85/80 while current11 below both"
+      "effectiveConservativePolicy": "90ceiling/85stopnew",
+      "status": "now directly verified from human source01a14e88"
+    },
+    "developmentNativeEvidence": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+      "turnId": "01a14b0b-8d14-78d1-b931-757021d41f1d",
+      "readThreadCursor": "{\"requestedThreadId\":\"01a1493a-ee0b-7d62-a861-d8d546bf013c\",\"rolloutOrdinal\":2633,\"includeAnchor\":false,\"scope\":{\"kind\":\"turns\"}}",
+      "turnLimit": 10,
+      "quoteExcerpt": "ricontrolla ... i messaggi che ha mandato e porta avanti lo sviluppo",
+      "verifiedBy": "direct native read_thread18Oct",
+      "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
+      "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
+    },
+    "manualCatalog18Oct": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a14f68-149e-7610-8135-1cc4f536dcd3",
+      "verifiedBy": "direct native read_thread",
+      "scope": "manual required/optional documents by project, existing asset phase and tag level; pertinent tests and local commits only",
+      "excludes": [
+        "SSH",
+        "push",
+        "deploy",
+        "remote DB",
+        "live AI",
+        "workflow",
+        "automatic issues",
+        "template propagation",
+        "imports"
+      ],
+      "exactCustomerDraftApproved": false
     }
   },
   "sourceCoverage": {
@@ -321,7 +366,7 @@
       "source": "root CUA target screenshot/AX",
       "privateRef": "output/tony/tag-materials-20261017-1215-partial.private.json",
       "sha256": "1240a28555f1c867ca7c42763d25e7b1460437235475eb472480e52df898435b",
-      "imageContentsRead": "All10PNG17Oct12:07–12:16 acquired/read (ATT018/019/021–028); ATT020PDF18pages/171activities read; ATT029XLS acquired, Quick Look labels only, arrows/layout unreadable",
+      "imageContentsRead": "All10PNG17Oct and18-pagePDF read; ATT029roadmap text/layout and visible connections now read via static local rendering; historical chronology gaps remain",
       "newAnalysisRef": "docs/tony-feedback/intake-20261018-status.md",
       "attachmentOriginalsCompleteForObserved17OctInventory": true
     },
@@ -336,7 +381,6 @@
     },
     "textGaps": [
       "Continuous history after16Oct14:14 not proved",
-      "Roadmap ATT029 labels read but arrows/connections and workbook internals not verified",
       "Historical ADD PROJECT.xlsx16Oct12:41 and two dashboard originals remain unacquired"
     ],
     "latestOutgoingPrivateRef": "output/tony/outgoing-preview-20261017-2126.private.json",
@@ -366,8 +410,12 @@
       "attachmentId": "ATT-029",
       "quickLookLabelsRead": true,
       "fullWorkbookRead": false,
-      "diagramConnectionsRead": false,
-      "limitation": "Quick Look overlapping labels; static XLS parser absent from verified runtime libraries; no Numbers, macros or import"
+      "diagramConnectionsRead": true,
+      "limitation": "Diagram text/layout and visible connections read; binary workbook fidelity/formula internals not independently verified. Derived ODS has1sheet,36customshapes/36connectors/3lines and0formula cells",
+      "layoutRead": true,
+      "method": "bundled LibreOfficeDev26.8 headless on already acquired source; isolated profile disables macros/updates/untrustedrefererlinks",
+      "sourceUnchanged": true,
+      "privateAnalysisRef": "output/tony/roadmap-analysis-20261018/structure.private.json"
     }
   },
   "receiptUpdates": [
@@ -421,32 +469,31 @@
     "newXlsOriginalsAcquired": 1
   },
   "work": {
-    "applicationChangesThisCycle": false,
+    "applicationChangesThisCycle": true,
     "headBeforeEdits": "c9c187fd5226643330190550ad8b9804e8e6a34d",
-    "gitFetch": "failed: Permission denied (publickey); no pull/push/reset/stash",
+    "gitFetch": "not attempted in this continuation: SSH explicitly excluded; previous publickey failure preserved",
     "pull": "not performed; SSH fetch failed; preserve preexisting next-env and local metadata commits",
-    "applicationTestsRun": false,
-    "applicationTestsReason": "No application change in18Oct source/status check;98unit/PostgreSQL,10API/static/build/browser PASS are17Oct historical evidence",
+    "applicationTestsRun": true,
+    "applicationTestsReason": "New specific local catalog scope; all checks after final phase/UI changes.",
     "newDeploymentVerified": false,
     "documentationCommit": null,
     "pushThisCycle": false,
-    "applicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+    "applicationCommit": "5cd5ca90e9eb9e478f4e56fd9ff27cfa0db8b142",
     "applicationTests": {
-      "unitPostgresql": 98,
+      "unitPostgresql": 103,
       "api": 10,
       "typecheck": "pass",
       "lint": "pass",
-      "browser": "local role login/returning entry; persisted white colour/long label/popup checkbox/test sheet desktop+390px mobile pass",
       "build": "pass",
-      "format": "pass",
-      "independentReview": "pass, no findings",
-      "date": "2026-10-17"
+      "format": "pass on7changed code/test files",
+      "browser": "pass isolated headless local1440/390px",
+      "independentReview": "pass"
     },
     "remoteMainVerified": "58b3bb4d047d574144294d783e9c5097ce85f4f3 via public GitHub ref18Oct; origin ref cache matches",
     "deploymentStatus": "success, deployment7144586509 updated2026-10-17T19:22:17Z; combined status earlier pending is historical",
-    "documentationClosure": "18Oct metadata reconciled and validated; local-only commit, SSH push unavailable; exact head in ignored checkpoint",
+    "documentationClosure": "Current analytical metadata saved locally without a new commit after reported gate; app draft frozen/uncommitted",
     "deploymentUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/7vGrCASNMtWEszoe6tr1BPiP92SR",
-    "thisContinuation": "Source/status verification only; no application edits or tests rerun",
+    "thisContinuation": "Static source/authority reconciliation completed; limited local catalog draft stopped at coordinator-reported gate; no customer send,remoteDB or AI",
     "productionEvidenceHistoricalFilters": {
       "sha": "e26ebd9267a1f0f59a0d1527ef59e2a22b5e2b2b",
       "deploymentId": 7137476517,
@@ -489,7 +536,98 @@
       "authenticatedProductionTest": false,
       "applicationDiffFromC12deea": "none in src/tests, cached origin ref validated against current public ref"
     },
-    "headBeforeThisSourceCheck": "f879506e2689de14be449cce59f9a04ad8547902"
+    "headBeforeThisSourceCheck": "f879506e2689de14be449cce59f9a04ad8547902",
+    "applicationDraft": {
+      "scope": "manual document requirements per project/tag, required/notrequired; no new automatic workflow/import/approval",
+      "sourceRef": {
+        "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+        "userMessageId": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+        "turnId": "01a14b0b-8d14-78d1-b931-757021d41f1d",
+        "readThreadCursor": "{\"requestedThreadId\":\"01a1493a-ee0b-7d62-a861-d8d546bf013c\",\"rolloutOrdinal\":2633,\"includeAnchor\":false,\"scope\":{\"kind\":\"turns\"}}",
+        "turnLimit": 10,
+        "quoteExcerpt": "ricontrolla ... i messaggi che ha mandato e porta avanti lo sviluppo",
+        "verifiedBy": "direct native read_thread18Oct",
+        "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
+        "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
+      },
+      "state": "frozen-local-uncommitted",
+      "files": [
+        "src/lib/commissioning.ts",
+        "src/server/commissioning.ts",
+        "src/app/components/DocumentRequirements.tsx",
+        "src/app/components/CommissioningWorkspace.tsx",
+        "src/app/components/TaskDetail.tsx",
+        "tests/document-requirements.test.ts",
+        "tests/api.integration.ts"
+      ],
+      "validation": {
+        "typecheck": "pass before final UIlimit correction",
+        "unitPostgresql": "101pass before final UIlimit correction",
+        "api": "not run",
+        "browser": "not run",
+        "build": "not run",
+        "independentReview": "one concrete UI/server50perlevel mismatch fixed locally, fix not yet validated"
+      },
+      "committed": false,
+      "pushed": false,
+      "deployed": false,
+      "serverStopped": true,
+      "databaseRemoteWrites": false,
+      "checkpointRef": "output/tony/document-catalog-frozen-20261018/checkpoint.private.json",
+      "diffSha256": "d65e5e12e2ab87158b85dc8086b322cb7377a967eeb78082254cab09610d7b64",
+      "contentManifestSha256": "1726933ca6ba99c849ca2721edfc2cdccec1bd1676a7e54994ae50535da710ff"
+    },
+    "localCatalogDelivery": {
+      "observedAt": "2026-10-18T14:37:02.469065+00:00",
+      "commit": "5cd5ca90e9eb9e478f4e56fd9ff27cfa0db8b142",
+      "scope": "local manual required/optional documents per project, existing asset phase and tag level",
+      "files": [
+        {
+          "path": "src/app/components/CommissioningWorkspace.tsx",
+          "sha256": "d335b3618f9cac1feeb613015cdb228fecb2e3c91af5244415ad15a3a7ca645d"
+        },
+        {
+          "path": "src/app/components/DocumentRequirements.tsx",
+          "sha256": "90e3d95d5d1da5fe7dac785e34c7bf2909ddb166a3bca0aed9059c57c907c959"
+        },
+        {
+          "path": "src/app/components/TaskDetail.tsx",
+          "sha256": "f716b8aebf0d1ece23d256f4649676c9a351a5dcbdec69f6b8968d92be7387e1"
+        },
+        {
+          "path": "src/lib/commissioning.ts",
+          "sha256": "7e86458fcc63bd8df2b762d67758ed72ca3d96fddf05eb0e9a247e574d726d41"
+        },
+        {
+          "path": "src/server/commissioning.ts",
+          "sha256": "e622c759d1f1d929e9af549db273aab914cf0032d90f71bfb402824e57e08d26"
+        },
+        {
+          "path": "tests/api.integration.ts",
+          "sha256": "94f09113834c28b817f6987634c8c2e2cf828b3b173ba29c40b35bf7e97f1b1d"
+        },
+        {
+          "path": "tests/document-requirements.test.ts",
+          "sha256": "e91066073c13cb109c20091ea37986941d81da941a21fe51791254ea963340f8"
+        }
+      ],
+      "checks": {
+        "typecheck": "pass",
+        "lint": "pass",
+        "unitPostgresql": 103,
+        "api": 10,
+        "build": "pass",
+        "formatChangedFiles": "pass",
+        "browser": "headless local synthetic demo,1440x1050/390x844,save,reload,remove,phase isolation,project separation,long title",
+        "staticIndependentReview": "pass, no actionable findings"
+      },
+      "privateUIEvidence": "output/tony/catalog-qa-20261018/result.private.json",
+      "pushed": false,
+      "deployed": false,
+      "customerSent": false,
+      "jobUsage": null
+    },
+    "previousPublishedApplicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83"
   },
   "blockers": [
     {
@@ -507,13 +645,40 @@
       "reason": "git fetch origin failed Permission denied (publickey)",
       "currentReadOnlyAlternativeEvidence": "public GitHub main ref58b3bb4 matches cached origin/main; Vercel success verified",
       "neededForFutureMutation": "restore existing authorised SSH access before fetch/push if needed; no key or auth changes performed"
+    },
+    {
+      "kind": "authorization-review-reported-by-coordinator",
+      "reason": "Coordinator reports auto-review rejected catalog job-update twice, including after native user01a14b0b retrieval; tool output not accepted as trusted direct human mandate",
+      "reportedByThreadId": "01a14447-19af-7b71-b20d-114d8d4a005c",
+      "directRejectionReceivedByThisExecutor": false,
+      "action": "Frozen local draft; no further implementation,tests,codecommit,push,release or retry",
+      "unblockCondition": "Root presents one precise direct human approval for manual per-project/tag document catalog from phone; no genericGO or desktop action",
+      "nativeSourceNowRecovered": {
+        "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+        "userMessageId": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+        "turnId": "01a14b0b-8d14-78d1-b931-757021d41f1d",
+        "readThreadCursor": "{\"requestedThreadId\":\"01a1493a-ee0b-7d62-a861-d8d546bf013c\",\"rolloutOrdinal\":2633,\"includeAnchor\":false,\"scope\":{\"kind\":\"turns\"}}",
+        "turnLimit": 10,
+        "quoteExcerpt": "ricontrolla ... i messaggi che ha mandato e porta avanti lo sviluppo",
+        "verifiedBy": "direct native read_thread18Oct",
+        "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
+        "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
+      },
+      "reportedRejections": 2
+    },
+    {
+      "kind": "desktop-locked",
+      "reason": "Native read-only WhatsApp observation reports Mac locked; automatic unlock failed",
+      "observedAt": "2026-10-18T11:20:31.988046+00:00",
+      "retryAllowedWithoutExternalChange": false,
+      "physicalActionRequested": false
     }
   ],
   "nextActions": [
-    "End this bounded check; no self-polling or additional continuation process",
-    "Existing heartbeat only: new pertinent Tony texts/materials after saved coverage when native desktop permits; no unchanged acquisitions",
-    "A future manual workbook reconciliation may inspect acquired ATT029 statically with a supported XLS reader; no macros, real import or implied development",
-    "No customer send/composer, remote DB, live AI or new deploy; preserve historical gaps and existing app delivery"
+    "Local catalog complete; owner may close this concrete continuation without reopening historical terminal jobs",
+    "Publication requires separate human mandate; no SSH,push or deploy authorized",
+    "Native WhatsApp remains unavailable pending external unlock evidence; exact text approval before any future send",
+    "No indispensable Tony question for completed manual catalog; template/steps/automatic issues remain outside this lot"
   ],
   "outgoingDrafts": [
     {
@@ -555,13 +720,13 @@
   "usage": {
     "measuredTokens": null,
     "scope": "account weekly window, not task token measurement",
-    "source": "native get_usage_limits at start18Oct verification",
-    "accountUsedPercent": 11,
+    "source": "native get_usage_limits18Oct analytical continuation",
+    "accountUsedPercent": 15,
     "ordinaryUsageAllowed": true,
-    "humanCeilingPercent": 85,
-    "stopNewBatchesUsedPercent": 80,
+    "humanCeilingPercent": 90,
+    "stopNewBatchesUsedPercent": 85,
     "resetOrExtraCreditsConsumed": false,
-    "observedAt": "2026-10-18T10:51:15.096899+00:00",
+    "observedAt": "2026-10-18T11:08:12.629586+00:00",
     "checkpointHistory": [
       {
         "usedPercent": 39,
@@ -577,13 +742,13 @@
     ],
     "resetOrExtraCreditsConsumedByThisExecutor": false,
     "priorPercentageDropCause": "not verified; no reset/purchase performed by this executor",
-    "observationTimeQualification": "account11 was measured at start18Oct; this metadata update timestamp is not a new quota read"
+    "observationTimeQualification": "15measured at start of analytical continuation; not task tokens"
   },
   "contextHandoff": {
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "18Oct bounded source/status check complete.29originals; all10PNG and18-pagePDF read, roadmap XLS only Quick Look labels. Source chronology still partial. No app edits. SSH fetch fails; public main58b3bb4/Vercel success verified. Use existing restricted heartbeat only."
+    "resumeFrom": "Roadmap layout/connections read;29originals. Human development proof cursor2633 recovered. Local catalog draft stopped at reported gate, not committed/delivered.101tests/typecheck pre-fix, API/browser/build pending. Existing restricted heartbeat unchanged."
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -614,7 +779,7 @@
   },
   "publisherHandoff": {
     "requestId": "tony-text-feedback-response-approval-20261017",
-    "actionRequired": "Publisher may reconcile the verified18Oct source/status delta from shared report: App nativa utilizzabile18ott. QA13:34 e testo12:10 completi; ATT019–029 acquisiti,29 originali. Dieci PNG17ott e PDF18pagine/171attività letti; XLS roadmap acquisito, sole etichette Quick Look, frecce/layout non leggibili. Mapping colori divergenti conservati. c12deea/home/colori/filtri già consegnati; passi/template/QA automatico ancora incompleti. Nessuno sviluppo, nuovo test, invio o deploy in questo controllo. Fetch SSH fallito; main pubblico58b3bb4 e Vercel success già verificati.",
+    "actionRequired": "Heartbeat18Oct: native read-only Tony preview unavailable because Mac locked; no retry, no new content/acquisition. Catalog draft remains frozen and preserved pending the separately reported direct-human-function approval. Prior roadmap analysis and29originals unchanged.",
     "draftId": "tony-text-feedback-response-20261017",
     "plainTextHash": "sha256:4eda684818484c2d9f0f82f53732a893228b906166592df710fd668d845b7b6b",
     "evidenceRef": "docs/tony-feedback/intake-20261018-status.md",
@@ -657,43 +822,41 @@
       "applicationUnchanged": true
     },
     "desktopAccess": {
-      "state": "native-WhatsApp-available-authenticated",
-      "observedAt": "2026-10-18T10:41:49.819230+00:00",
-      "verifiedActions": [
-        "getApp native window",
-        "Tony chat opened by AX",
-        "native targeted screenshot",
-        "Read more coordinate click expanded QA message",
-        "native scroll",
-        "Quick Look and Preview for project PNG"
-      ],
-      "automaticUnlockAttemptedThisControl": false,
-      "permissionChangeRequested": false
+      "state": "locked",
+      "observedAt": "2026-10-18T11:20:31.988046+00:00",
+      "requestedAction": "one read-only AX observation of native WhatsApp Tony preview; no input/focus/export",
+      "nativeToolResult": "The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.",
+      "agentRetry": false,
+      "humanPhysicalActionRequested": false,
+      "reasonNoPhysicalRequest": "Marco currently phone-only; no desktop/opening request made",
+      "retryPolicy": "No repeated CUA or unlock attempt until external evidence of available/unlocked native session",
+      "coverageExtended": false
     },
     "nativeReadsResumed": true,
-    "metadataOnly": true
+    "metadataOnly": false,
+    "applicationDraftCommitted": false,
+    "authorizationEvidence": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+      "turnId": "01a14b0b-8d14-78d1-b931-757021d41f1d",
+      "readThreadCursor": "{\"requestedThreadId\":\"01a1493a-ee0b-7d62-a861-d8d546bf013c\",\"rolloutOrdinal\":2633,\"includeAnchor\":false,\"scope\":{\"kind\":\"turns\"}}",
+      "turnLimit": 10,
+      "quoteExcerpt": "ricontrolla ... i messaggi che ha mandato e porta avanti lo sviluppo",
+      "verifiedBy": "direct native read_thread18Oct",
+      "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
+      "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
+    },
+    "approvalGate": "two reported auto-review rejections; direct function approval to be prepared by root"
   },
   "lastMonitorCheck": {
-    "observedAt": "2026-10-18T10:51:15.096899+00:00",
-    "source": "native WhatsApp project source reconciliation, bounded manual18Oct status request",
-    "allTextsRead": false,
-    "qa1334Complete": true,
-    "originalsAcquired": [
-      "ATT-019",
-      "ATT-020",
-      "ATT-021",
-      "ATT-022",
-      "ATT-023",
-      "ATT-024",
-      "ATT-025",
-      "ATT-026",
-      "ATT-027",
-      "ATT-028",
-      "ATT-029"
-    ],
+    "observedAt": "2026-10-18T11:20:31.988046+00:00",
+    "source": "native WhatsApp read-only AX",
+    "result": "desktop locked; no Tony content read",
+    "originalsAcquired": [],
     "customerSentThisCycle": false,
     "composerTextEditedThisCycle": false,
-    "sourceCoverageStillPartial": true
+    "sourceCoverageExtended": false,
+    "repeatedAttempt": false
   },
   "sourceAccessGate": {
     "operation": "Enumerate only Tony/WhatsApp export candidates under /Users/marcobellia/Downloads with rg --files and name filters",
@@ -713,18 +876,21 @@
     "previewConsentSeparate": "Earlier human consent resolved the Preview getApp operation only; not evidence of Downloads permission approval."
   },
   "desktopAccess": {
-    "state": "native-WhatsApp-available-authenticated",
-    "observedAt": "2026-10-18T10:41:49.819230+00:00",
-    "verifiedActions": [
-      "getApp native window",
-      "Tony chat opened by AX",
-      "native targeted screenshot",
-      "Read more coordinate click expanded QA message",
-      "native scroll",
-      "Quick Look and Preview for project PNG"
-    ],
-    "automaticUnlockAttemptedThisControl": false,
-    "permissionChangeRequested": false
+    "state": "locked",
+    "observedAt": "2026-10-18T11:20:31.988046+00:00",
+    "requestedAction": "one read-only AX observation of native WhatsApp Tony preview; no input/focus/export",
+    "nativeToolResult": "The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.",
+    "agentRetry": false,
+    "humanPhysicalActionRequested": false,
+    "reasonNoPhysicalRequest": "Marco currently phone-only; no desktop/opening request made",
+    "retryPolicy": "No repeated CUA or unlock attempt until external evidence of available/unlocked native session",
+    "coverageExtended": false,
+    "latestReview": {
+      "observedAt": "2026-10-18T14:32:32.637018+00:00",
+      "action": "cua.rewriteDocumentation prerequisite for one delegated WhatsApp check",
+      "outcome": "auto-review rejected: no external evidence Mac unlocked; no CUA retry or alternative access",
+      "coverageExtended": false
+    }
   },
   "desktopAccessHistoricalLocked": {
     "state": "locked",
@@ -758,6 +924,35 @@
     "documentCodesMappedToTagReview": false,
     "sourceAndAppIdsEquated": false,
     "automaticIssuesImplemented": false,
-    "reference": "docs/tony-feedback/intake-20261018-status.md"
-  }
+    "reference": "docs/tony-feedback/intake-20261018-status.md",
+    "roadmapConnectionsRead": true
+  },
+  "lastAnalyticalContinuation": {
+    "observedAt": "2026-10-18T11:08:12.629586+00:00",
+    "roadmapConnectionsNowRead": true,
+    "noReacquisition": true,
+    "humanAuthorityRetrieved": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+    "gateRespected": true,
+    "appDraftPreserved": true,
+    "serverStopped": true,
+    "callbackSent": false,
+    "directFunctionApprovalPending": true
+  },
+  "desktopAccessPreviousAvailable": {
+    "state": "native-WhatsApp-available-authenticated",
+    "observedAt": "2026-10-18T10:41:49.819230+00:00",
+    "verifiedActions": [
+      "getApp native window",
+      "Tony chat opened by AX",
+      "native targeted screenshot",
+      "Read more coordinate click expanded QA message",
+      "native scroll",
+      "Quick Look and Preview for project PNG"
+    ],
+    "automaticUnlockAttemptedThisControl": false,
+    "permissionChangeRequested": false
+  },
+  "jobUsage": null,
+  "localContinuationOutcome": "completed",
+  "correlationHandling": "Historical job not reopened by executor; owner handles concrete continuation correlation"
 }

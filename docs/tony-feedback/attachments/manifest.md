@@ -37,7 +37,7 @@ ispezionato soltanto i file locali e verificato byte/SHA-256 e ignore Git.
 | ATT-026 | MSG-20261017-1211 | 2026-10-17_1211_fr-dates_original.png | 329024 | 7bc00e9ab7e0de4b73e4164002ebe6dcf3639f7a3f76ef82f555b954c2adf85c | Current FR Dates, esempio programma IST per fasi; date/ID fonte non importati |
 | ATT-027 | MSG-20261017-1212 | 2026-10-17_1212_schedule-comparison_original.png | 375771 | a2e25e28166fd3d9647fc46c11965b1b7eba3794ede107389fb671d87c27556a | Caption passi tag, immagine confronto programmi/preparazione; nessun form per esiti per passo |
 | ATT-028 | MSG-20261017-1213 | 2026-10-17_1213_tag-document-matrix_original.png | 443896 | b1708c15f7e3bb46902914ae158f0d5c053d5574f6ae16ff71cf43b47c38b71e | Matrice documenti variante distinta da ATT-019; stessa ambiguità Blue/Green L3 |
-| ATT-029 | MSG-20261017-1408 | 2026-10-17_1408_ATT-01-MC-Roadmap_original.xls | 51200 | 147fb11b834dbd390dd7c76a5d82837777243f62835a84f0455e91bac559def1 | Save as nativo in output privato, firma OLE verificata; etichette Quick Look lette, frecce/layout illeggibili. Nessun Numbers/macro/import |
+| ATT-029 | MSG-20261017-1408 | 2026-10-17_1408_ATT-01-MC-Roadmap_original.xls | 51200 | 147fb11b834dbd390dd7c76a5d82837777243f62835a84f0455e91bac559def1 | Originale OLE da Save as; ora roadmap/collegamenti letti via LibreOffice headless isolato su copia acquisita. Fonte invariata, nessuna macro o import app |
 
 Programme overview (12:28) e Overdue (12:31, screenshot 12.30.52) sono stati
 visualizzati da Show Chrome ma non risultano salvati localmente: il possibile file
@@ -125,3 +125,9 @@ del container. Nomi originali e provenienza in evidenza privata di acquisizione.
 QA/QC13:34 letto interamente e testo12:10 ora completo; non sono nuovi ATT.
 Restano gap storici16ott, ADD PROJECT.xlsx12:41 e continuità della cronologia.
 [Verifica e confronto sviluppo](../intake-20261018-status.md).
+
+Aggiornamento18ott13:07: limite Quick Look di ATT-029 superato con rendering locale
+LibreOffice headless presente nel runtime. Profilo isolato, macro disabilitate,
+nessun nuovo download; layout/frecce ora leggibili. Originale invariato, totale29.
+Il conteggio oggetti e le celle/formule provengono dall’intermedio ODS, non da una
+lettura binaria indipendente del file sorgente. Dettagli nell’intake18ott.

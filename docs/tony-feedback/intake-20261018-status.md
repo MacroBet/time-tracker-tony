@@ -163,3 +163,143 @@ per progetto/filtri consegnati; checklist a passi, template, registro documental
 e automatismi QA ancora da sviluppare/definire. In questo controllo solo analisi
 e metadati, nessun nuovo sviluppo o test applicativo. Report condiviso aggiornato,
 nessun callback, messaggio cliente o scheduler aggiuntivo.
+
+## Continuazione analitica18ott13:07 — roadmap leggibile e mandato nativo
+
+Non serve un’ulteriore acquisizione di ATT-029. Nel runtime è presente
+LibreOfficeDev26.8 headless, sfuggito al precedente controllo dei soli parser
+Python/JS. La copia XLS già acquisita è stata resa in PDF e ODS intermedi privati,
+con profilo isolato: DisableMacrosExecution=true, nessun percorso trusted,
+aggiornamento link disattivato e collegamenti non trusted bloccati. Nessuna
+installazione, apertura desktop, import FieldTrack, DB, macro o provider live.
+SHA originale invariato147fb11b834dbd390dd7c76a5d82837777243f62835a84f0455e91bac559def1.
+La precedente frase “parser non disponibile” riguardava solo le librerie verificate,
+non attestava l’assenza di ogni lettore nel runtime.
+
+**Ora letta la roadmap con layout e frecce:** una pagina derivata, un foglio
+“Handover flowchart” nell’intermedio,36blocchi custom e36connettori,3linee di
+separazione. Nessuna cella formula nell’intermedio ODS; non è prova indipendente di
+ogni dettaglio binario dell’originale. Fonte e derivati restano privati in output.
+
+Relazioni leggibili nella figura, senza trasformarle in gate applicativi:
+
+- Installazione contractor → QC/ispezioni → walkdown preliminare → punch list →
+  categorie A/B/C → clearance → verifica major punch list → walkdown congiunto.
+- QC → registrazione nei form → verifica FW/QA → raccolta test pack/dossier →
+  handover aFW → invio aGSK → review → carenze documentali → rispostaFW →
+  accettazione dossier → certificato mechanical completion.
+- Walkdown congiunto → carenze installazione → accordo categoria → firma punch
+  list → closeout A → verifica/sign-off → pressure/continuity test → certificato.
+  Dalla firma parte anche la registrazione punch list DB/Excel. Le frecce
+  mostrano dipendenze del riferimento, non una specifica di AND/OR o permessi.
+- Certificato → avvio commissioning → esecuzione → handoverGSK → qualification.
+  Ramo closeoutB collegato al handover e successivo closeoutC; ramo tutti i
+  certificati → provisional acceptance certificate.
+
+FW/GSK/contractor sono attori del documento. Non vengono mappati automaticamente
+ai ruoli admin/manager/worker. Categorie punch list A/B/C, stati documentali
+A/B/C/R e review tag I/R/AC/A restano concetti distinti. La roadmap non definisce
+trigger di issue, assegnazione area/asset o propagazione delle approvazioni.
+
+### Prova umana da verificare dalla regia
+
+Fonte nativa `read_thread`, chat `01a1493a-ee0b-7d62-a861-d8d546bf013c`:
+
+- Turno `01a14b0b-8d14-78d1-b931-757021d41f1d`, userMessage
+  **`01a14b0b-9122-7390-8ec0-74ea633baab5`**: Marco chiede di ricontrollare
+  tutti i messaggi Tony e **“porta avanti lo sviluppo”** del lavoro richiesto.
+- Cursore di lettura effettivamente restituito e usato:
+  `{"requestedThreadId":"01a1493a-ee0b-7d62-a861-d8d546bf013c","rolloutOrdinal":2633,"includeAnchor":false,"scope":{"kind":"turns"}}`,
+  `turnLimit:10`. È fonte umana, distinta dai desiderata Tony14:04/14:05 e dai
+  messaggi di coordinamento. Recuperata direttamente18ott13:05circa.
+- `01a14b40-c504-7061-8e82-6d6ce5119401`, “ho consentito”, riguarda lo sblocco
+  dell’accesso descritto nel dialogo; non è un mandato implementativo aggiuntivo.
+- Quota umana18ott `01a14e88-d38b-73f1-99dd-1076fcb0f1ea`:90% usato/10% residuo.
+  Rilevazione nativa di questo lotto15%, uso ordinario consentito. Stop nuovi85
+  mantiene cinque punti per chiusura. Nessun reset/spesa/credito extra.
+
+### Rami separati e stato concreto
+
+| Ramo                                        | Definizione esistente e lavoro possibile                                                                                             | Limite reale                                                                                                       |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Analisi roadmap                             | Eseguita sulla copia acquisita, collegamenti ora leggibili                                                                           | Nessun mapping automatico degli attori o delle categorie                                                           |
+| Catalogo manuale documenti per progetto/tag | Tony14:04 dice aggiungere voci e renderle non richieste;14:15/matrice fornisce tipi documento. Ramo indipendente da issue e template | Draft locale implementato prima del gate riferito dalla regia; ora fermo per verifica nativa dell’autorizzazione   |
+| Check sheet a passi con esiti/firme         | ID interno/task per tag già presenti; fonti descrivono attività/evidenze                                                             | Mancano risultati/criteri e firme per passo; non dedurre approvazione automatica                                   |
+| Template riusabile                          | Richiesta14:05 esplicita; analisi e contratto possibili ora                                                                          | Scelta da concordare quando si implementa il riuso: copia per nuovi progetti o aggiornamento anche degli esistenti |
+| Issue QA automatiche                        | Fonti collegano QA a equipment/area e issue register                                                                                 | Trigger, identificazione, deduplicazione e riapertura non specificati                                              |
+| AI                                          | Scaffold consegnato e provider disattivato                                                                                           | Chiave più avanti, nessuna richiesta ripetuta o chiamata live                                                      |
+
+**Gate segnalato dalla regia:** auto-review ha rifiutato il job-update relativo al
+catalogo, ritenendo non verificata la fonte umana del sottoambito. Questo esecutore
+non ha ricevuto un rifiuto diretto sui propri edit locali; rispetta comunque il
+fermo comunicato e non prosegue con applicazione, test browser, commit del codice
+o deploy. La fonte umana nativa sopra è ora disponibile alla regia per verifica.
+Nessun aggiramento. Non è un blocco da SSH o quota.
+
+**Draft preservato, non consegna:** config JSON opzionale e validata, editor admin
+con obbligatorio/non richiesto per livello, elenco corrente nella scheda tag,
+audit delle modifiche e compatibilità client legacy. Nessuna modifica a risultati,
+approvazioni o stato task. Typecheck e101test unitari/PostgreSQL passati prima
+del fermo; successiva correzione del limite UI50per tag conservata ma non collaudata.
+Nessun test API/browser/build completato per questo draft, nessun commit/push/deploy.
+Server demo sintetico avviato per verifica e fermato dopo il gate; nessun DB remoto.
+next-env.d.ts preesistente escluso. Le modifiche locali non vanno perse o presentate
+come funzionalità consegnata. Il mancato SSH non impedisce lavoro locale autorizzato.
+
+Secondo aggiornamento della regia18ott: auto-review ha rifiutato nuovamente la
+registrazione del catalogo anche dopo recupero nativo della fonte01a14b0b, perché
+l’output tool non è accettato come mandato umano fidato. **Draft congelato**, nessun
+ulteriore retry o implementazione. Root prepara una sola approvazione umana diretta
+per il catalogo manuale per progetto/tag; non un GO generico e nessuna azione sul Mac.
+File7 e patch privata preservati; diffSHA-256 `d65e5e12e2ab87158b85dc8086b322cb7377a967eeb78082254cab09610d7b64`.
+Manifest contenutiSHA-256 `1726933ca6ba99c849ca2721edfc2cdccec1bd1676a7e54994ae50535da710ff`.
+Nessun nuovo commit dopo il fermo: analisi/metadata locali, codice non consegnato.
+
+## Nuovo consenso specifico e catalogo locale completato18ott
+
+Fonte corrente verificata direttamente tramite read_thread nella regia
+`01a1493a-ee0b-7d62-a861-d8d546bf013c`: domanda precisa sul catalogo documenti
+obbligatori/facoltativi per progetto/fase/livello con test e commit solo locali;
+risposta umana **01a14f68-149e-7610-8135-1cc4f536dcd3**. Supera il precedente
+fermo del catalogo per questo perimetro; non è un riuso del mandato storico.
+Il vecchio job non è riaperto da questo esecutore; correlazione/ledger in carico
+all'owner autorizzato. Uso per job non misurato: null.
+
+Commit applicativo locale **5cd5ca9** (7file): config opzionale validata,
+editor admin nel setup progetto, nome/Required/livello/Phase esistente oppure
+All phases, rimozione esplicita, lista applicabile nel test sheet del tag.
+Le fasi salvate restano selezionabili anche se successivamente assenti dagli asset.
+Filtro sulla fase corrente dell'asset, senza inventare multiphase. Voci senza fase
+valgono per tutte le fasi. Massimo50voci per livello, nomi200caratteri, ID univoci;
+compatibilità dei client precedenti, audit e controllo versione conservati.
+Nessun requisito di completamento, controllo upload, workflow, approvazione,
+issue automatica, propagazione template o import introdotto.
+
+**Prove:** typecheck/lint/build superati, **103 unitari/PostgreSQL e10 API PASS**;
+formato dei7file e diffcheck passati. API verificano permessi403, versione409,
+input invalido400, persistenza/phase, preservazione legacy, cancellazione esplicita
+e relativo audit. Browser headless nella sola demo sintetica locale1440×1050 e
+390×844: editor vuoto/pieno, add/edit/Required/Phase/livello, validazione nome vuoto,
+save/reload, remove, liste Phase1/Phase2 separate con voci comuni, progetto diverso
+vuoto, titolo lungo200caratteri. Screenshot esaminati: nessun overflow orizzontale,
+sovrapposizione del catalogo o errore JS osservato. Revisione statica indipendente
+finale senza rilievi. Il primo script UI confrontava erroneamente203caratteri con
+un campo max200: corretto lo script, nessun difetto applicativo corrispondente.
+API inizialmente impedite dal sandbox EPERM sulla connessione locale; esecuzione
+locale consentita e passata. Build ha rigenerato next-env.d.ts: ripristinate soltanto
+quelle righe generate alla copia pre-build, SHA originale0f70629890b72a0a82e91972cc032c04b658b26c265373cb711cf576bfbf8fcc,
+file non committato. Server demo e browser temporanei fermati. Nessun DB remoto,
+seed, provider live, spesa, SSH, push o deploy. Quota nativa finale20% usato,
+ordinaryUsageAllowed=true; cap90/stop85 invariato.
+
+**WhatsApp separato:** il nuovo consenso autorizza contatto breve tramite app Mac,
+ma nessun testo esatto corrente era già approvato. Il solo prerequisito CUA
+rewriteDocumentation per il controllo delegato è stato rifiutato dall'auto-review:
+manca evidenza esterna di Mac sbloccato. Nessun accesso, retry, Web, richiesta fisica
+al Marco dal telefono, composer o invio. Copertura resta quella già registrata;
+nessun nuovo testo Tony18ott attestato. Nessuna domanda è indispensabile per questo
+catalogo manuale; non è preparata una nuova bozza cliente su decisioni di altri lotti.
+
+Prove private: `output/tony/catalog-qa-20261018/delivery.private.json`, inventario,
+risultato QA e screenshot nella stessa cartella ignorata da Git. Pubblicazione del
+catalogo non autorizzata: resta un risultato locale. Heartbeat ristretto invariato.

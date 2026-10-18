@@ -79,11 +79,15 @@ and GitHub/Vercel deployment success. This does not add company-wide
 settings. Later feedback requests reusable project templates, configurable document
 requirements and check sheets with multiple steps and QA issues linked to equipment
 or area. On18October, all ten17October PNGs and the18-page checklist PDF were
-acquired and read. The roadmap XLS was acquired but only its Quick Look labels
-were readable. Historical chat coverage and roadmap connections remain partial.
+acquired and read. The acquired roadmap XLS was subsequently rendered with the bundled headless
+reader: its layout and connections are now readable. Historical chat coverage remains partial.
 The references use different level/colour mappings, so no universal mapping is
 inferred. Step fields, external IDs, issue rules and template versioning remain
-incomplete. No live AI, automatic issue generation or imported real data is implied.
+incomplete. The manual document catalog is implemented and validated locally for each project,
+existing asset phase and tag level. Admins name required/not-required items; tag
+test sheets show the current applicable list. It has no completion or approval
+gates and is not published. No live AI, automatic issue generation
+or imported real data is implied.
 Source: docs/tony-feedback/intake-20261018-status.md.
 
 ## Product Principles

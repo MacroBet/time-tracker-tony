@@ -45,9 +45,12 @@ riconciliare con i materiali mancanti. Il report condiviso distingue prove e lim
 **Verifica18ott:** [fonte nativa, copertura e confronto con lo sviluppo](intake-20261018-status.md).
 Correzione diretta Marco: app nativa già autenticata, Web superato. QA13:34 letto
 interamente; ATT-019–029 acquisiti, totale29. Dieci PNG e PDF18pagine letti;
-XLS acquisito, sole etichette leggibili. Mapping colori divergenti e cronologia
+XLS ora letto anche nel layout con rendering locale headless. Catalogo documenti
+progetto/Phase asset/livello completato e verificato solo localmente, **5cd5ca9**,
+dopo nuovo consenso umano specifico18ott. Mapping colori divergenti e cronologia
 ancora parziale; nessuna equivalenza automatica fra codici documentali e review tag.
-Fetch SSH fallito, main verificato via ref pubblica; nessun nuovo sviluppo o test.
+Fetch SSH precedente fallito; nessun nuovo SSH/push/deploy. Catalogo:103unitari,10API,
+statici/build e browser desktop/mobile locali passati.
 
 ## Orientamento al codice, solo quando serve
 
