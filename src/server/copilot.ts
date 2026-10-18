@@ -361,7 +361,7 @@ export async function chatCopilot(request: Request, projectId: string) {
         throw new Error("This tool is not available to the project copilot.");
       },
     },
-    getCopilotConfig(),
+    { ...getCopilotConfig(), projectId },
   ).catch((error: unknown) => {
     if (error instanceof CopilotProviderError) {
       const status =

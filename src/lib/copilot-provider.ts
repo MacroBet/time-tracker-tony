@@ -1,3 +1,8 @@
+import {
+  responseMeterMetadata,
+  type MeterRecorder,
+  type AttemptObservation,
+} from "./openai-metering";
 /** Stateless Responses transport. Configuration and project-scoped tools are injected. */
 export type CopilotConfig = {
   apiKey?: string;
@@ -5,6 +10,9 @@ export type CopilotConfig = {
   enabled: boolean;
   /** Internal/test override, bounded by the same production ceiling. */
   timeoutMs?: number;
+  recordAttempt?: MeterRecorder;
+  projectId?: string | null;
+  jobId?: string | null;
 };
 export type CopilotStatus = {
   state: "not_configured" | "disabled" | "ready";
@@ -184,7 +192,11 @@ function validateTurn(input: CopilotTurn) {
   }
 }
 
-async function readResponse(response: Response, signal: AbortSignal) {
+async function readResponse(
+  response: Response,
+  signal: AbortSignal,
+  observe: (value: unknown) => void,
+) {
   const length = Number(response.headers.get("content-length"));
   if (length > COPILOT_LIMITS.responseBytes) {
     void response.body?.cancel().catch(() => {});
@@ -236,6 +248,7 @@ async function readResponse(response: Response, signal: AbortSignal) {
       "The copilot returned an unreadable response.",
     );
   }
+  observe(value);
   if (
     !record(value) ||
     value.status !== "completed" ||
@@ -293,6 +306,7 @@ export async function runCopilotTurn(
   const names = new Set(input.tools.map((tool) => tool.name));
   const seen = new Set<string>();
   let totalCalls = 0;
+  const logicalRequestId = crypto.randomUUID();
   try {
     for (let round = 0; round < COPILOT_LIMITS.rounds; round++) {
       const body = JSON.stringify({
@@ -311,29 +325,112 @@ export async function runCopilotTurn(
           "limit_exceeded",
           "The copilot context exceeded the request size limit.",
         );
-      const response = await withinDeadline(
-        transport(ENDPOINT, {
-          method: "POST",
-          redirect: "error",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${config.apiKey!.trim()}`,
-          },
-          body,
-          signal: controller.signal,
-        }),
-      );
-      // Provider error bodies may contain sensitive request details: never echo or log them.
-      if (!response.ok) {
-        void response.body?.cancel().catch(() => {});
-        throw failure(
-          "provider_unavailable",
-          "The copilot provider is unavailable. Check configuration and account access.",
+      const started = Date.now();
+      const attemptId = crypto.randomUUID();
+      const stamp = new Date(started).toISOString();
+      const observation: AttemptObservation = {
+        event: {
+          schemaVersion: 1,
+          eventId: attemptId,
+          provider: "openai",
+          requestId: logicalRequestId,
+          attemptId,
+          projectId: config.projectId ?? null,
+          jobId: config.jobId ?? null,
+          model: null,
+          status: "failure",
+          startedAt: stamp,
+          endedAt: stamp,
+          observedAt: stamp,
+          source: "fieldtrack-copilot-responses",
+          usage: responseMeterMetadata(null).usage,
+          estimate: null,
+          billed: null,
+        },
+        outcome: "started",
+        usageState: "missing",
+        latencyMs: null,
+        providerRequestId: null,
+        attemptNumber: round + 1,
+      };
+      const save = () => {
+        try {
+          config.recordAttempt?.(structuredClone(observation));
+        } catch {
+          throw failure(
+            "provider_unavailable",
+            "API usage recording is unavailable.",
+          );
+        }
+      };
+      // Persist intent before any paid operation. A crash leaves an explicit pending attempt.
+      save();
+      let output: Record<string, unknown>[];
+      let receivedHeaders = false;
+      let parsedResponse = false;
+      try {
+        const response = await withinDeadline(
+          transport(ENDPOINT, {
+            method: "POST",
+            redirect: "error",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${config.apiKey!.trim()}`,
+            },
+            body,
+            signal: controller.signal,
+          }),
         );
+        receivedHeaders = true;
+        // The recorder hashes this opaque reference; no headers are retained.
+        observation.providerRequestId = response.headers.get("x-request-id");
+        if (!response.ok) {
+          observation.outcome = "http_error";
+          void response.body?.cancel().catch(() => {});
+          throw failure(
+            "provider_unavailable",
+            "The copilot provider is unavailable. Check configuration and account access.",
+          );
+        }
+        output = await withinDeadline(
+          readResponse(response, controller.signal, (value) => {
+            parsedResponse = true;
+            const metadata = responseMeterMetadata(value);
+            observation.event.model =
+              metadata.model === config.apiKey ? null : metadata.model;
+            observation.event.usage = metadata.usage;
+            observation.usageState = metadata.usageState;
+            observation.outcome =
+              record(value) && value.status === "incomplete"
+                ? "incomplete"
+                : "invalid_response";
+          }),
+        );
+        observation.event.status = "success";
+        observation.outcome = "completed";
+      } catch (error) {
+        if (error instanceof CopilotProviderError && error.code === "timeout") {
+          observation.event.status = "timeout";
+          observation.outcome = "timeout";
+        } else if (error instanceof Error && error.name === "AbortError") {
+          observation.event.status = "cancel";
+          observation.outcome = "cancel";
+        } else if (observation.outcome === "started") {
+          observation.outcome = receivedHeaders
+            ? parsedResponse
+              ? "invalid_response"
+              : "body_interrupted"
+            : "transport_error";
+        }
+        throw error;
+      } finally {
+        observation.latencyMs = Math.max(0, Date.now() - started);
+        observation.event.endedAt = new Date(
+          Math.max(started, Date.now()),
+        ).toISOString();
+        observation.event.observedAt = observation.event.endedAt;
+        save();
       }
-      const output = await withinDeadline(
-        readResponse(response, controller.signal),
-      );
       const calls = output.filter((item) => item.type === "function_call");
       if (!calls.length) {
         const text = output

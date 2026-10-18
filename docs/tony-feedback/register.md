@@ -963,3 +963,17 @@ WhatsApp non accessibile, nessuna nuova lettura o acquisizione, copertura invari
 nessun messaggio composto/inviato. Non richiedere lo sblocco a ogni ciclo: riprovare
 solo all'occasione consentita. Prossimi passi restano chiave/autorizzazione AI-003,
 metadati DB e lista/regole gruppi CX-009; nessuna scrittura remota o live API.
+
+## Contabilità OpenAI passiva — 18 ottobre 2026
+
+Mandato specialistico `mea-api-consumption-openai-hook-20261018`: unico trasporto
+Responses collegato a spool privato locale; provider non attivato. Eventi finali
+v1 compatibili con collector Mea, intent pending separati, proiezione atomica collector-v1.json ed export finito senza rete.
+113 test passati, typecheck/lint mirati e compatibilità normalizzatore collector
+su evento sintetico verificati. Nessuna chiamata reale, import centrale, push,
+deploy o DB remoto. Costi e consumo storico/account sconosciuti, non zero.
+Dettagli, source file e limiti in [contabilità OpenAI](../openai-metering.md).
+Prossimo passo: collector valida/importa un export autorizzato; persistenza cloud
+richiede directory durevole esplicita prima di attivare il provider.
+Fetch remoto tentato: SSH publickey non disponibile; nessun allineamento remoto
+attestato. Cambi documentali di altri esecutori e next-env.d.ts preservati.
