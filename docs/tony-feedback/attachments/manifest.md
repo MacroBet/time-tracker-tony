@@ -1,6 +1,6 @@
 # Manifest degli allegati di Tony
 
-Acquisizioni fino al17 ottobre 2026: 18 originali privati verificati; due ulteriori PNG letti ma non salvati, esclusi da Git.
+Acquisizioni fino al18 ottobre 2026: 29 originali privati verificati; due ulteriori PNG letti ma non salvati, esclusi da Git.
 Le ore nei nomi sono quelle dei messaggi WhatsApp. I nomi originali sono descritti
 nel registro e riconoscibili nei nomi locali; gli originali non sono stati modificati.
 Acquisizione WhatsApp dei PNG del 16 ottobre riferita da Show Chrome; root ha
@@ -26,6 +26,18 @@ ispezionato soltanto i file locali e verificato byte/SHA-256 e ignore Git.
 | ATT-016 | MSG-20261016-1224b | 2026-10-16_1224_tony_project-health_original.png                         |   37176 | a5d2b558630b2a17a5a3ffc73d9840e561d3e2def00ac8d9ecead62a007f50a2 | Originale locale ispezionato; fonte riferita Show Chrome. 12/8/3/1 soltanto esempi. Ambito/formula health non definiti.                                          |
 | ATT-017 | MSG-20261016-1228a | 2026-10-16_1228_tony_issues-priority_original.png                        |  303240 | 062f6e64755d839a41cd18e74d75874a9b11122b9a8e5b673a6d323a2e8fe33b | Originale locale ispezionato; fonte riferita Show Chrome. Richieste percentuale completamento e late, non import dei numeri dell’immagine.                       |
 | ATT-018 | MSG-20261017-1207  | 2026-10-17_1207_l1-red-tag_original.png                                  |  274343 | 587df3b4d1f82098cf06db574bf6724a532f126fdd4f24b66a1096ecc2bf702b | PNG aperto da WhatsApp/Anteprima, copia privata byte-identica dal solo percorso esposto dalla UI; diagramma L1 letto, nessuna esecuzione                         |
+| ATT-019 | MSG-20261017-1215  | 2026-10-17_1215_tag-required-documents_original.png                      | 2098794 | e20ae6a4d26e37ba9c8b7765a532ee92dd806d5b6f9c8e27c089f02a9778a1f7 | Matrice documenti minimi letta18ott; originale byte-identico dal solo URL esposto da Anteprima, senza export/scan. Ambiguità Blue/Green L3 non risolta           |
+
+| ATT-020 | MSG-20261017-1332 | 2026-10-17_1332_structured-Data-Center-Commissioning-Checklist-R4.pdf | 146408 | 4e428f43cbfc1a8ab0790d0705e4e4847ccc263c5570358e3568756b53ff594b | 18 pagine, 171 attività L0–L6 lette; statico, non compilabile. ID fonte e ruoli non equivalgono a istanze/permessi app |
+| ATT-021 | MSG-20261017-1216 | 2026-10-17_1216_typical-construction-sequence_original.png | 84586 | 84be0e1e53bf4e159a5465cf96d82dbbf806168709a3c3cb35fa37b704cf47ba | Timeline Design/Construction/Acceptance/Operations; mapping colori diverso dagli altri riferimenti |
+| ATT-022 | MSG-20261017-1208 | 2026-10-17_1208_l2b-yellow-tag_original.png | 248953 | 3c085a124b7c0086cc8bf8b210ca6e60a10ad9f23eab86c3bb5d1b44a8900466 | Yellow Tag process flow, caption L2B installazione; W1/W2/W3 non espansi |
+| ATT-023 | MSG-20261017-1209 | 2026-10-17_1209_l3-blue-tag_original.png | 515496 | eec555bf1ae751b2b3e5a68828550c3a6eb991df5f5adc10ffab0e78239162a9 | Blue Tag, energizzazione/live test/start-up/load run/controlli/review; caption L3 |
+| ATT-024 | MSG-20261017-1209 | 2026-10-17_1209_l4-green-tag_original.png | 442386 | 06b33882baa9eb1096870ad5d86e37febc505538476a394eeebdc4ce2f4d25f2 | Green Tag, switching/test scripts/BMS/PMS/load run/QA/review; caption L4 |
+| ATT-025 | MSG-20261017-1209 | 2026-10-17_1209_l5-ist_original.png | 437177 | 74af7f3186c753f97e3228fdb22cecb1e6f567a4e3e1b470cc040d7cd0fc0928 | White Tag process flow, caption L5 IST; support/report e FR non espanso |
+| ATT-026 | MSG-20261017-1211 | 2026-10-17_1211_fr-dates_original.png | 329024 | 7bc00e9ab7e0de4b73e4164002ebe6dcf3639f7a3f76ef82f555b954c2adf85c | Current FR Dates, esempio programma IST per fasi; date/ID fonte non importati |
+| ATT-027 | MSG-20261017-1212 | 2026-10-17_1212_schedule-comparison_original.png | 375771 | a2e25e28166fd3d9647fc46c11965b1b7eba3794ede107389fb671d87c27556a | Caption passi tag, immagine confronto programmi/preparazione; nessun form per esiti per passo |
+| ATT-028 | MSG-20261017-1213 | 2026-10-17_1213_tag-document-matrix_original.png | 443896 | b1708c15f7e3bb46902914ae158f0d5c053d5574f6ae16ff71cf43b47c38b71e | Matrice documenti variante distinta da ATT-019; stessa ambiguità Blue/Green L3 |
+| ATT-029 | MSG-20261017-1408 | 2026-10-17_1408_ATT-01-MC-Roadmap_original.xls | 51200 | 147fb11b834dbd390dd7c76a5d82837777243f62835a84f0455e91bac559def1 | Save as nativo in output privato, firma OLE verificata; etichette Quick Look lette, frecce/layout illeggibili. Nessun Numbers/macro/import |
 
 Programme overview (12:28) e Overdue (12:31, screenshot 12.30.52) sono stati
 visualizzati da Show Chrome ma non risultano salvati localmente: il possibile file
@@ -74,7 +86,7 @@ Marco ha poi escluso gli audio; non sono una dipendenza. **CAP-003** è una
 trascrizione manuale privata di7testi17ott10:56–11:04 da screenshot CUA root,
 non un allegato ricevuto. Path e impronta nell’intake; nessun raw in Git, ATT17 invariato.
 
-## Nuovi PNG17 ottobre12:07–12:15 — individuati, non acquisiti
+## Controllo storico17 ottobre12:16 — PNG allora non acquisiti
 
 | Nome originale visibile               | Ora messaggio  | Dimensione UI   | Stato                                                                |
 | ------------------------------------- | -------------- | --------------- | -------------------------------------------------------------------- |
@@ -90,7 +102,7 @@ non è interamente letto:10poi11nonletti è un contatore UI, non copertura acqui
 Unico scroll fallito noWindowsAvailable, nessun retry/download.
 [Fonti e requisiti parziali](../intake-20261017-tags-partial.md).
 
-## Aggiornamento serale17 ottobre
+## Aggiornamento storico serale17 ottobre
 
 La tabella candidati precedente descrive il controllo12:16, ora superato solo per
 il primo PNG: **ATT-018 acquisito e letto**, totale18 originali privati verificati.
@@ -98,3 +110,18 @@ Altri nove PNG, checklist PDF13:32 e roadmap XLS14:08 restano non acquisiti.
 Nomi, metadati UI e gap nell'[intake serale](../intake-20261017-evening.md).
 Export chat senza media riuscito in Download, ma file non leggibile da questa
 sessione: nessun contenuto, conteggio o hash dell'export attestato. Audio esclusi.
+
+## Recupero nativo18 ottobre
+
+ATT-019–029 acquisiti, totale29 originali privati. I dieci PNG17ott12:07–12:16
+sono ora tutti acquisiti e letti, contando ATT-018 già disponibile. PDF13:32 letto
+in tutte le18pagine, verifica indipendente su171attività. XLS14:08 salvato dalla
+bolla con Save as direttamente in output privato, senza aprire Numbers: Quick Look
+espone etichette ma rende il diagramma sovrapposto, quindi direzione delle frecce,
+connessioni e lettura completa del workbook non attestate. Parser XLS statico non
+disponibile nel runtime verificato; nessuna installazione o esecuzione macro.
+Per PNG/PDF: copie byte-identiche dal solo URL esposto da Anteprima, senza scansioni
+del container. Nomi originali e provenienza in evidenza privata di acquisizione.
+QA/QC13:34 letto interamente e testo12:10 ora completo; non sono nuovi ATT.
+Restano gap storici16ott, ADD PROJECT.xlsx12:41 e continuità della cronologia.
+[Verifica e confronto sviluppo](../intake-20261018-status.md).

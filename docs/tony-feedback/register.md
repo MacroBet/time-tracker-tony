@@ -1,32 +1,28 @@
 # Registro operativo — Tony
 
-Ultimo aggiornamento: **17 ottobre 2026, 21:23 Europe/Rome**. Mandato manuale
-successivo verificato: rileggere i WhatsApp pertinenti e sviluppare richieste chiare.
-**Lettura non completa:** testi mattino10:56–11:09 acquisiti, osservazioni discontinue
-fino21:06; PNG L1 acquisito/letto, ATT-018, totale18 originali. PDF/XLS/nove PNG e
-parti del testo ancora da leggere. Export nativo senza media riuscito in Download,
-ma l’enumerazione fallisce EPERM e il permesso OS preciso non è identificato;
-nessun consenso generico pendente o ricerca chat
-richiesta a Marco. [Copertura puntuale, mandato, gap e prove](intake-20261017-evening.md).
+Ultimo aggiornamento: **18 ottobre 2026, 12:52 Europe/Rome**. Correzione umana
+verificata: app nativa WhatsApp già autenticata. **Lettura nativa riuscita**:
+QA/QC17ott13:34 letto interamente, testo12:10 ora completo, **ATT-019–029 acquisiti**,
+totale29 originali privati. Tutti i dieci PNG17ott12:07–12:16 e il PDF18pagine/
+171attività sono letti. XLS roadmap acquisito, sole etichette Quick Look leggibili:
+layout/frecce sovrapposti, connessioni e workbook completo non attestati. Le fonti
+usano mapping livello/colore differenti, da conservare senza equivalenze arbitrarie.
+Restano gap storici e ADD PROJECT.xlsx16ott12:41. Nessun nuovo testo cliente18ott
+attestato; fondo osservato all’outgoing17ott21:26, senza copertura continua implicita.
+[Confronto e prove18ott](intake-20261018-status.md).
 
-**UX-006/007 implementate e verificate localmente:** home manager/admin su Overview,
-worker su My tasks con fallback per moduli; colori/label tag configurati per progetto
-visibili in popup asset, pannello tag e scheda test. 98 unitari/PostgreSQL,10 API,
-typecheck/lint/build e browser desktop/mobile passati; revisione indipendente senza
-rilievi. Commit **c12deea** e normale push main verificati; deploy GitHub/Vercel **success**
-17ott19:22:17UTC (21:22 Europe/Rome), environment label Production. Prove autenticate
-solo locali; metadato GitHub production_environment=false riportato nel report. Nessun altro invio cliente, DB remoto o provider live.
-Unico outgoing agente17ott11:34 concluso; ricevuta blu osservata11:45, ora lettura ignota.
-Controllo21:35 in sola lettura: anteprima lista con outgoing21:26 Delivered,
-non inviato da questo esecutore e autore non verificato. Corpo ancora QA13:34/14:04;
-nessuna estensione della copertura incoming o nuova lettura degli allegati.
+**Sviluppo già consegnato:** home per ruolo e colori tag per progetto, app **c12deea**;
+98 unitari/PostgreSQL,10 API, statici/build/formato/browser locali del17ott superati.
+Nessun nuovo sviluppo o test ripetuto in questo controllo di stato. Main pubblico
+GitHub18ott **58b3bb4** (sola documentazione dopo c12deea), Vercel success riconfermato
+nei metadati, evento17ott19:37:20UTC. Test autenticati soltanto locali.
 
-**Nuovo limite desktop,17ott22:27 Europe/Rome:** richiesta CUA in sola lettura
-fermata: Mac bloccato e sblocco automatico non riuscito secondo il tool. Nessuna
-nuova lettura, acquisizione o tentativo ripetuto. Prossimo attore Marco: sblocco
-manuale quando disponibile; nessun consenso generico richiesto. Non ripetere CUA
-finché non c'è evidenza esterna di sblocco/sessione disponibile. Il gate dell'export
-Download rimane distinto e invariato; copertura incoming non estesa.
+**Limiti distinti:** controllo Web iniziale mostrava QR e si è concluso senza login;
+indicazione superata dalla correzione di Marco. App nativa ora disponibile, vecchio
+Mac bloccato storico. Export Download non riprovato e gate invariato. Nuovo errore
+`git fetch origin`: Permission denied (publickey); nessun pull/push o modifica chiavi.
+Riferimento remoto verificato solo con API pubblica GitHub. Nessun invio/composer,
+DB remoto, provider live o nuova automazione.
 
 ## Stato corrente per ripresa
 
@@ -44,7 +40,10 @@ Stop nuovi lotti80, cinque punti per chiusura, checkpoint40/60/75/80; uso ordina
 non consentito/quota esaurita impongono STOP, niente reset/acquisti/crediti extra. Fonte e ID umani nell'intake serale. Nessun ampliamento
 automatizzato: stesso heartbeat `agente-progetto-tony` ACTIVE ogni10min per monitor
 ristretto, nessun duplicato. Audio a Marco, fonti non sono autorizzazioni aggiuntive.
-Checkpoint nativo40% usato, ordinaryUsageAllowed=true; prossima soglia60.
+Checkpoint nativo18ott11% usato, ordinaryUsageAllowed=true; token task non misurati.
+Il calo rispetto ai valori storici non ha causa verificata; questo esecutore non
+ha eseguito reset/acquisti. Cap90/stop85 riferito dalla regia, conferma numerica
+umana più recente non recuperata: applicata prudenzialmente85/80 già verificata.
 Conferma umana verificata via read_thread, user01a14b63-f44d-74c2-b18b-97e15230c971;
 33% alle19:18UTC resta misura storica, nessun reset/credito extra.
 
@@ -61,19 +60,17 @@ preservato. Nessun cambiamento a risultati o review I/R/AC/A.
 per progetto/tag, template riusabile, check sheet con ID e più passi; issue QA/QC
 collegate ad attrezzatura/area. Un ID interno e una task per tag già esistono, passi
 strutturati e issue automatiche no. Non dedurre ID cliente, esito per passo o
-propagazione. PDF/XLS e diagrammi ancora mancanti elencati nell'intake serale.
+propagazione. Fonti17ott ora acquisite: dieci PNG e PDF letti, roadmap solo etichette;
+confronto e gap aggiornati nell’intake18ott.
 
-**Blocco attuale preciso:** apertura PNG in Anteprima riuscita dopo consenso;
-AX scroll funziona, coordinate ancora noWindowsAvailable. Export WhatsApp Without
-media confermato in Download; enumerazione file negata con Operation not permitted
-(os error1), sia ordinaria sia con esecuzione consentita. Specifica voce permessi
-macOS/TCC e app responsabile non identificate; nessun pannello OS o consenso
-specifico pendente osservato. Il consenso precedente riguardava Anteprima, non Download. Intervento utente su WhatsApp rilevato e azioni UI fermate. Regia
-deve prima identificare un diagnostico nativo supportato che specifichi operazione/app
-responsabile. Marco interviene soltanto su un’azione OS concreta effettivamente mostrata;
-nessuna
-richiesta generica di ritrovare la chat o ripetere consenso. Copertura continua
-oltre16ott14:14 non attestata. Nessun audio esportato/acquisito.
+**Gate export storico, ancora non riprovato:** vecchio export WhatsApp Without
+media confermato in Download; enumerazione file negata con Operation not permitted,
+anche dopo esecuzione consentita. App/voce TCC responsabile non verificate e nessun
+consenso OS concreto pendente. Nessun nuovo accesso a Download, scansione container
+o percorso alternativo dell’export. Questo gate resta separato dalla **nuova lettura
+nativa riuscita18ott**, compresi click/scroll/Read more, Quick Look/Anteprima per
+PNG/PDF e Save as del solo XLS nella cartella privata autorizzata. Copertura continua
+oltre16ott14:14 non attestata. Nessun audio acquisito.
 
 **UX-005 consegnata:** filtri Area/Phase e metadati visibili in Assets desktop/mobile,
 combinati con ricerca/Supply e recupero Clear filters, basati sui dati esistenti.
@@ -108,7 +105,7 @@ resoconto Show Chrome la colloca alle **10:01 del 16 ottobre**. La domanda Sched
 statici/build e desktop/mobile passati; app `77b74d7`, Vercel success; chiusura
 documentale `58a548f` su main. Prova autenticata esclusivamente locale.
 
-**Copertura Tony e comunicazioni:** 18 allegati privati nel [manifest](attachments/manifest.md);
+**Copertura Tony e comunicazioni:** 29 allegati privati nel [manifest](attachments/manifest.md);
 Excel ATT-014 analizzato, 1.354 righe candidate, non importato. Nuova **CAP-001**:
 trascrizione privata della coordinatrice di10bolle12:28–14:14, 2.963byte e SHA
 verificati; non è un nuovo allegato ATT. [Intake e limiti](intake-20261016-1414.md).

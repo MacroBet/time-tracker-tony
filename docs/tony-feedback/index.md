@@ -42,6 +42,13 @@ continua non attestata. Export senza media in Download non ancora leggibile.
 Home per ruolo e colori tag verificati localmente; checklist/template/issue QA da
 riconciliare con i materiali mancanti. Il report condiviso distingue prove e limiti.
 
+**Verifica18ott:** [fonte nativa, copertura e confronto con lo sviluppo](intake-20261018-status.md).
+Correzione diretta Marco: app nativa già autenticata, Web superato. QA13:34 letto
+interamente; ATT-019–029 acquisiti, totale29. Dieci PNG e PDF18pagine letti;
+XLS acquisito, sole etichette leggibili. Mapping colori divergenti e cronologia
+ancora parziale; nessuna equivalenza automatica fra codici documentali e review tag.
+Fetch SSH fallito, main verificato via ref pubblica; nessun nuovo sviluppo o test.
+
 ## Orientamento al codice, solo quando serve
 
 - Dati e permessi: `src/lib/domain.ts`, `src/lib/commissioning.ts`,
