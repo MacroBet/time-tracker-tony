@@ -460,3 +460,79 @@ test("a stalled transport or project tool times out and aborts without live requ
   );
   assert.equal(mock.requests.length, 1);
 });
+
+test("a body stalled after headers is cancelled on deadline without executing tools", async () => {
+  let cancelled = false;
+  let executed = 0;
+  let requests = 0;
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(
+        new TextEncoder().encode('{"status":"completed","output":['),
+      );
+    },
+    cancel() {
+      cancelled = true;
+      // A broken underlying source must not hold up the timeout response.
+      return new Promise<void>(() => {});
+    },
+  });
+  await assert.rejects(
+    runCopilotTurn(
+      input({
+        executeTool: async () => {
+          executed++;
+          return {};
+        },
+      }),
+      { ...config, timeoutMs: 10 },
+      async () => {
+        requests++;
+        return new Response(body);
+      },
+    ),
+    code("timeout"),
+  );
+  assert.equal(cancelled, true);
+  assert.equal(executed, 0);
+  assert.equal(requests, 1);
+  assert.equal(body.locked, false);
+});
+
+test("oversized bodies are cancelled both from headers and streamed bytes", async () => {
+  for (const declaredLength of [true, false]) {
+    let cancelled = false;
+    let executed = 0;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        if (!declaredLength)
+          controller.enqueue(new Uint8Array(COPILOT_LIMITS.responseBytes + 1));
+      },
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    await assert.rejects(
+      runCopilotTurn(
+        input({
+          executeTool: async () => {
+            executed++;
+            return {};
+          },
+        }),
+        { ...config, timeoutMs: 100 },
+        async () =>
+          new Response(body, {
+            headers: declaredLength
+              ? { "Content-Length": String(COPILOT_LIMITS.responseBytes + 1) }
+              : {},
+          }),
+      ),
+      code("limit_exceeded"),
+    );
+    assert.equal(cancelled, true);
+    assert.equal(executed, 0);
+    assert.equal(body.locked, false);
+  }
+});

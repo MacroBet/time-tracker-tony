@@ -184,19 +184,28 @@ function validateTurn(input: CopilotTurn) {
   }
 }
 
-async function readResponse(response: Response) {
+async function readResponse(response: Response, signal: AbortSignal) {
   const length = Number(response.headers.get("content-length"));
-  if (length > COPILOT_LIMITS.responseBytes)
+  if (length > COPILOT_LIMITS.responseBytes) {
+    void response.body?.cancel().catch(() => {});
     throw failure(
       "limit_exceeded",
       "The copilot response exceeded the size limit.",
     );
+  }
   if (!response.body)
     throw failure(
       "invalid_response",
       "The copilot returned an empty response.",
     );
   const reader = response.body.getReader();
+  // The deadline must also release a body that stalls after headers arrive.
+  // Do not rely on the injected transport forwarding abort to its stream.
+  const cancel = () => {
+    void reader.cancel().catch(() => {});
+  };
+  signal.addEventListener("abort", cancel, { once: true });
+  if (signal.aborted) cancel();
   let size = 0;
   const decoder = new TextDecoder();
   let text = "";
@@ -214,7 +223,8 @@ async function readResponse(response: Response) {
     }
     text += decoder.decode();
   } finally {
-    await reader.cancel().catch(() => {});
+    signal.removeEventListener("abort", cancel);
+    cancel();
     reader.releaseLock();
   }
   let value: unknown;
@@ -321,7 +331,9 @@ export async function runCopilotTurn(
           "The copilot provider is unavailable. Check configuration and account access.",
         );
       }
-      const output = await withinDeadline(readResponse(response));
+      const output = await withinDeadline(
+        readResponse(response, controller.signal),
+      );
       const calls = output.filter((item) => item.type === "function_call");
       if (!calls.length) {
         const text = output

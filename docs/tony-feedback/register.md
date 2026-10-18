@@ -45,6 +45,14 @@ Il nuovo controllo WhatsApp delegato è stato rifiutato dall'auto-review prima
 dell'accesso: manca evidenza esterna di Mac sbloccato. Nessun retry, copertura
 non estesa. Nessun testo esatto corrente approvato o inviato. Nessun SSH/push/deploy.
 
+
+**Lotto AI locale18ott:** base Responses già esistente, corretta soltanto la
+cancellazione degli stream in timeout/oversize.105 test, typecheck/lint/build e
+revisione indipendente passati; zero provider live. Mandato regia: Marco ha già
+configurato personalmente la chiave dedicata e scelto il riuso; supera l’attesa
+storica della chiave, non autorizza uso/spesa/deploy. Nessun segreto letto da questo
+esecutore. [Fonti, prove e next step AI](ai-preintegration-20261018.md).
+
 ## Stato corrente per ripresa
 
 **Missione e avvio:** FieldTrack per Tony McIntyre, gestione su richiesta di Marco.
