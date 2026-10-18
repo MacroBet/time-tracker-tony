@@ -2,9 +2,11 @@
 import { AssignmentDialog } from "./AssignmentDialog";
 import { TestProgress } from "./CommissioningFields";
 import { TagLevel } from "./TagLevel";
+import { DocumentRequirementsList } from "./DocumentRequirements";
 import {
   commissioning,
   dueDateFor,
+  documentsForTag,
   hasModule,
   tagReviewLabels,
 } from "@/lib/commissioning";
@@ -257,6 +259,15 @@ function TaskContent({ task }: { task: Task }) {
               Record this tag’s test result and observations here. Supporting
               files are attached below; a passed test does not approve the tag.
             </p>
+            <div className="mt-4">
+              <DocumentRequirementsList
+                items={documentsForTag(
+                  commissioning(project).config.documentRequirements,
+                  task.cx?.level,
+                  linkedAsset?.phase,
+                )}
+              />
+            </div>
           </div>
         )}
         {!closed ? (

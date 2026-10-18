@@ -15,6 +15,7 @@ import { canManage } from "@/lib/permissions";
 import {
   commissioning,
   configSchema,
+  documentRequirementChanges,
   hasModule,
   MODULES,
   scheduleSchema,
@@ -128,7 +129,17 @@ export async function updateRegister(request: Request, projectId: string) {
     changes = [
       `Project setup: levels ${input.config.levels.join(", ") || "none"}; priorities ${input.config.priorities.join(", ")}`,
     ];
-    next.config = input.config;
+    next.config = {
+      ...input.config,
+      documentRequirements:
+        input.config.documentRequirements ?? state.config.documentRequirements,
+    };
+    changes.push(
+      ...documentRequirementChanges(
+        state.config.documentRequirements,
+        next.config.documentRequirements,
+      ),
+    );
   } else {
     const registerData =
       input.action === "schedule"

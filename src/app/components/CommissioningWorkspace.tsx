@@ -30,6 +30,7 @@ import { parseRegisterFile } from "@/lib/asset-transfer";
 import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
 import { ProjectAudit } from "./ProjectAudit";
 import { TagLevel } from "./TagLevel";
+import { DocumentRequirementsEditor } from "./DocumentRequirements";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
 import {
   type Project,
@@ -319,6 +320,9 @@ function ProjectWorkspace({
           capacityMw: f.get("capacityMw")
             ? Number(f.get("capacityMw"))
             : undefined,
+          documentRequirements: JSON.parse(
+            String(f.get("documentRequirements") ?? "{}"),
+          ),
           phasePresentation: Object.fromEntries(
             LEVELS.map((level) => [
               level,
@@ -1023,6 +1027,14 @@ function ProjectWorkspace({
               </div>
             </fieldset>
           </details>
+          <DocumentRequirementsEditor
+            initial={state.config.documentRequirements}
+            defaultLevel={state.config.levels[0] ?? "L1"}
+            phases={assetFieldOptions(state.assets, "phase").map(
+              (option) => option.label,
+            )}
+            disabled={busy || !isOnline}
+          />
           <fieldset>
             <legend className="text-sm mb-2">Available issue priorities</legend>
             <div className="flex flex-wrap gap-5">

@@ -112,12 +112,73 @@ export const scheduleSchema = z
       v.baselineFinish >= v.baselineStart,
     "Baseline finish precedes baseline start",
   );
+export const documentRequirementSchema = z
+  .object({
+    id: z.uuid(),
+    title: z.string().trim().min(1).max(200),
+    required: z.boolean(),
+    phase: z.string().trim().min(1).max(150).optional(),
+  })
+  .strict();
+export const documentRequirementsSchema = z
+  .partialRecord(z.enum(LEVELS), z.array(documentRequirementSchema).max(50))
+  .refine((requirements) => {
+    const ids = Object.values(requirements)
+      .flat()
+      .map((item) => item.id);
+    return new Set(ids).size === ids.length;
+  }, "Each document checklist item must have its own ID");
+export type DocumentRequirements = z.infer<typeof documentRequirementsSchema>;
+
+export function documentsForTag(
+  requirements: DocumentRequirements = {},
+  level?: Level,
+  phase?: string,
+) {
+  return level
+    ? (requirements[level] ?? []).filter(
+        (item) => !item.phase || item.phase === phase?.trim(),
+      )
+    : [];
+}
+
+export function documentRequirementChanges(
+  before: DocumentRequirements = {},
+  after: DocumentRequirements = {},
+) {
+  return LEVELS.flatMap((level) => {
+    const previous = before[level] ?? [];
+    const current = after[level] ?? [];
+    const changes = current.flatMap((item) => {
+      const old = previous.find((entry) => entry.id === item.id);
+      if (
+        old?.title === item.title &&
+        old.required === item.required &&
+        old.phase === item.phase
+      )
+        return [];
+      return [
+        `${level} document ${old ? "updated" : "added"}: ${item.title} (${item.required ? "required" : "not required"})${item.phase ? `; phase ${item.phase}` : ""}`,
+      ];
+    });
+    return [
+      ...changes,
+      ...previous
+        .filter((item) => !current.some((entry) => entry.id === item.id))
+        .map(
+          (item) => `${level} document removed from checklist: ${item.title}`,
+        ),
+    ];
+  });
+}
+
 export const configSchema = z
   .object({
     levels,
     projectType: z.string().trim().max(100).optional(),
     location: z.string().trim().max(250).optional(),
     capacityMw: z.number().finite().positive().max(1000000).optional(),
+    documentRequirements: documentRequirementsSchema.optional(),
     phasePresentation: z
       .partialRecord(
         z.enum(LEVELS),

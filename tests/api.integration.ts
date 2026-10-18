@@ -487,6 +487,16 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
     config: {
       levels: ["L2A", "L2B", "L3", "L4", "L5", "L6"],
       priorities: ["P1", "P2", "P3", "P4", "P5"],
+      documentRequirements: {
+        L3: [
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            title: "Synthetic commissioning test report",
+            required: true,
+            phase: "Synthetic phase 1",
+          },
+        ],
+      },
     },
   };
   assert.equal((await request(endpoint, manager, "PATCH", config)).status, 403);
@@ -495,6 +505,78 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
   assert.equal((await request(endpoint, admin, "PATCH", config)).status, 409);
   data = await load(admin);
   project = data.projects[0];
+  assert.equal(
+    project.commissioning.config.documentRequirements.L3[0].title,
+    "Synthetic commissioning test report",
+  );
+  assert(
+    project.commissioning.revisions
+      .at(-1)
+      .changes.some((change: string) =>
+        change.includes(
+          "L3 document added: Synthetic commissioning test report (required)",
+        ),
+      ),
+  );
+  const legacyConfig = {
+    ...config,
+    version: project.commissioning.version,
+    config: {
+      levels: config.config.levels,
+      priorities: config.config.priorities,
+    },
+  };
+  assert.equal(
+    (await request(endpoint, admin, "PATCH", legacyConfig)).status,
+    200,
+  );
+  data = await load(admin);
+  project = data.projects[0];
+  assert.equal(
+    project.commissioning.config.documentRequirements.L3[0].required,
+    true,
+  );
+  assert.equal(
+    project.commissioning.config.documentRequirements.L3[0].phase,
+    "Synthetic phase 1",
+  );
+  assert.equal(
+    (
+      await request(endpoint, admin, "PATCH", {
+        ...config,
+        version: project.commissioning.version,
+        config: {
+          ...config.config,
+          documentRequirements: {
+            L3: [{ ...config.config.documentRequirements.L3[0], title: " " }],
+          },
+        },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await request(endpoint, admin, "PATCH", {
+        ...config,
+        version: project.commissioning.version,
+        config: { ...config.config, documentRequirements: {} },
+      })
+    ).status,
+    200,
+  );
+  data = await load(admin);
+  project = data.projects[0];
+  assert.deepEqual(project.commissioning.config.documentRequirements, {});
+  assert(
+    project.commissioning.revisions
+      .at(-1)
+      .changes.some((change: string) =>
+        change.includes(
+          "L3 document removed from checklist: Synthetic commissioning test report",
+        ),
+      ),
+  );
   const register = {
     assets: [
       {
