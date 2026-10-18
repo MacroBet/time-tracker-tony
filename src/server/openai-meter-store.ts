@@ -109,10 +109,13 @@ function projectCollectorSnapshot(directory: string) {
   const handle = openSync(lock, "wx", 0o600);
   const temp = path.join(directory, `${randomUUID()}.tmp`);
   try {
-    const { events } = readOpenAIMeterExport(directory);
+    const { events, pendingAttempts } = readOpenAIMeterExport(directory);
     const fd = openSync(temp, "wx", 0o600);
     try {
-      writeFileSync(fd, JSON.stringify({ schemaVersion: 1, events }) + "\n");
+      writeFileSync(
+        fd,
+        JSON.stringify({ schemaVersion: 1, events, pendingAttempts }) + "\n",
+      );
       fsyncSync(fd);
     } finally {
       closeSync(fd);
@@ -172,7 +175,8 @@ export function createOpenAIMeterRecorder(directory: string) {
     } finally {
       unlinkSync(temp);
     }
-    if (suffix === "final") projectCollectorSnapshot(directory);
+    // Publish durable intent before transport as well as final state.
+    projectCollectorSnapshot(directory);
   };
 }
 /** Finite export for an explicit collector import; never a watcher or public API. */
@@ -195,7 +199,11 @@ export function readOpenAIMeterExport(directory: string) {
         (item) => item.outcome === "started" && !ids.has(item.event.attemptId),
       )
       .map((item) => ({
+        provider: item.event.provider,
         attemptId: item.event.attemptId,
+        projectId: item.event.projectId,
+        jobId: item.event.jobId,
+        source: item.event.source,
         startedAt: item.event.startedAt,
         requestId: item.event.requestId,
       })),

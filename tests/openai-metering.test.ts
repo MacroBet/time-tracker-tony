@@ -317,7 +317,11 @@ test("atomic collector projection contains only v1 final events and strips injec
   const projection = JSON.parse(
     readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
   );
-  assert.deepEqual(Object.keys(projection), ["schemaVersion", "events"]);
+  assert.deepEqual(Object.keys(projection), [
+    "schemaVersion",
+    "events",
+    "pendingAttempts",
+  ]);
   assert.equal(projection.events.length, 1);
   assert.ok(!JSON.stringify(projection).includes("PRIVATE_EXTRA"));
   s.recordAttempt(injected);
@@ -327,4 +331,87 @@ test("atomic collector projection contains only v1 final events and strips injec
     ).events.length,
     1,
   );
+});
+
+test("collector sees pending before HTTP and final replaces it without a second attempt", async (t) => {
+  const s = setup(t);
+  const projectId = "project-meter-test";
+  let pendingId: string | undefined;
+  await runCopilotTurn(
+    turn,
+    { ...config, projectId, recordAttempt: s.recordAttempt },
+    async () => {
+      const snapshot = JSON.parse(
+        readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
+      );
+      assert.equal(snapshot.events.length, 0);
+      assert.equal(snapshot.pendingAttempts.length, 1);
+      const pending = snapshot.pendingAttempts[0];
+      assert.equal(pending.provider, "openai");
+      assert.equal(pending.projectId, projectId);
+      assert.equal(pending.model, undefined);
+      assert.equal(pending.source, "fieldtrack-copilot-responses");
+      assert.equal(pending.jobId, null);
+      pendingId = pending.attemptId;
+      // A separate process sees the same durable intent, independently of live process memory.
+      const restarted = execFileSync(
+        process.execPath,
+        [
+          "--input-type=module",
+          "-e",
+          `import {readFileSync} from 'node:fs'; const s=JSON.parse(readFileSync(process.argv[1],'utf8')); console.log(s.pendingAttempts[0].attemptId);`,
+          path.join(s.directory, "collector-v1.json"),
+        ],
+        { encoding: "utf8" },
+      );
+      assert.equal(restarted.trim(), pendingId);
+      return Response.json(payload);
+    },
+  );
+  const terminal = JSON.parse(
+    readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
+  );
+  assert.equal(terminal.events.length, 1);
+  assert.equal(terminal.pendingAttempts.length, 0);
+  assert.equal(terminal.events[0].attemptId, pendingId);
+});
+
+test("process exit during transport leaves exported pending, then same-attempt final supersedes it", (t) => {
+  const s = setup(t);
+  execFileSync(process.execPath, [
+    "--import",
+    "tsx",
+    "--input-type=module",
+    "-e",
+    `
+ import {runCopilotTurn} from './src/lib/copilot-provider.ts';
+ import {createOpenAIMeterRecorder} from './src/server/openai-meter-store.ts';
+ await runCopilotTurn({message:'Synthetic',history:[],projectName:'Synthetic',tools:[],executeTool:async()=>({})},
+ {enabled:true,apiKey:'synthetic',model:'test-model',recordAttempt:createOpenAIMeterRecorder(process.argv[1])},
+ async()=>process.exit(0));`,
+    s.directory,
+  ]);
+  const before = JSON.parse(
+    readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
+  );
+  assert.equal(before.events.length, 0);
+  assert.equal(before.pendingAttempts.length, 1);
+  const id = before.pendingAttempts[0].attemptId;
+  const pending = JSON.parse(
+    readFileSync(path.join(s.directory, `${id}.pending.json`), "utf8"),
+  ) as AttemptObservation;
+  // Synthetic recovered terminal evidence; real recovery must never invent measured usage.
+  s.recordAttempt({
+    ...pending,
+    outcome: "timeout",
+    event: { ...pending.event, status: "timeout" },
+  });
+  const after = JSON.parse(
+    readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
+  );
+  assert.equal(after.pendingAttempts.length, 0);
+  assert.equal(after.events.length, 1);
+  assert.equal(after.events[0].attemptId, id);
+  assert.equal(after.events[0].estimate, null);
+  assert.ok(Object.values(after.events[0].usage).every((v) => v === null));
 });

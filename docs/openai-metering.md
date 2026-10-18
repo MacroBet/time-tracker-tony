@@ -71,14 +71,15 @@ must retain the reported pending count as a coverage limitation.
 publication, central UI, historical/account totals, production durable storage.
 No service restart, push or deploy was performed.
 
-After each final event, the recorder updates `collector-v1.json` in the same
-private spool directory with exactly `{schemaVersion:1,events:[...]}` via
+After each durable pending intent (before HTTP) and each final event, the recorder updates `collector-v1.json` in the same
+private spool directory with `{schemaVersion:1,events:[...],pendingAttempts:[...]}` via
 fsync/atomic rename. A short exclusive projection lock prevents concurrent
 writers from replacing a newer snapshot with an older one. Lock contention or
 stale crash locks surface an accounting error; final event files remain durable.
 An operator must resolve stale locks explicitly and replay the unchanged final
-observation to refresh the projection. The projection is absent until the first
-recorded final event; no synthetic runtime event or empty account total was seeded.
+observation to refresh the projection. An empty private projection was explicitly initialized on 18 October, then updated
+to include an empty pending array. No synthetic runtime event was seeded. Empty
+arrays report no observed local attempts, never an account total of zero.
 The central reader integration is owned by Mea and has not been verified here.
 
 ## Validation and sources
@@ -96,3 +97,33 @@ Official schema reviewed 2026-10-18:
 The schema search exposed input cache/cache-write and reasoning detail fields;
 the full retrieve page fetch exceeded the tool limit, while the reasoning guide
 was fetched successfully. No unverified model price table was introduced.
+
+
+## Pending coverage correction — 18 October 2026
+
+Job `mea-api-consumption-pending-coverage-20261018`, request
+`mea-api-consumption-pending-coverage-request-20261018`, owner Mea, intake 585.
+The collector projection now includes `pendingAttempts` using the backend's closed
+`normalizeApiPending` contract: provider, attemptId, requestId, projectId, jobId,
+startedAt, source. No model, status, usage, cost or payload is inferred for a stub.
+Final events remain unchanged. A final suppresses the same attempt's pending stub;
+the immutable intent file stays on disk for audit.
+
+Intent file AND atomic projection are fsynced before transport begins. Failure to
+publish the projection prevents HTTP. A process exit inside transport leaves the
+pending observable centrally; dispatch, completion and cost remain uncertain.
+If final projection fails after final-file persistence, the collector may temporarily
+retain the pending until explicit recovery; it cannot silently infer free usage.
+The finite import CLI remains finals-only; the fixed-source collector consumes the
+extended projection directly.
+
+25 focused provider/meter tests passed, including PREHTTP observation from another
+process and abrupt process exit bypassing finally, then final supersession.
+Typecheck and scoped lint passed. The backend's actual `normalizeApiPending` and
+`buildApiSnapshot` accepted synthetic producer output: pending counted once with
+unknown cost, final plus stale pending counted once as finalized. No central
+ledger mutation, runtime fixture, provider request or server restart.
+
+Code-only model audit: `getCopilotConfig()` reads `OPENAI_MODEL` without a default;
+absent value is undefined. No specific model or official tariff can be selected
+from this code. No environment value was inspected. Estimate and billed stay null.

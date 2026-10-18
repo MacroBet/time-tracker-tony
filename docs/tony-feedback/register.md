@@ -977,3 +977,17 @@ Prossimo passo: collector valida/importa un export autorizzato; persistenza clou
 richiede directory durevole esplicita prima di attivare il provider.
 Fetch remoto tentato: SSH publickey non disponibile; nessun allineamento remoto
 attestato. Cambi documentali di altri esecutori e next-env.d.ts preservati.
+
+
+## Correttivo copertura pending OpenAI — 18 ottobre 2026
+
+Job correlato `mea-api-consumption-pending-coverage-20261018`, intake585:
+proiezione atomica aggiornata anche prima HTTP con pendingAttempts conformi al
+contratto backend, finali invariati e prevalenti per stesso tentativo.25 test
+mirati passati, typecheck/lint e integrazione con normalizzatore/aggregatore reale
+su metadata sintetici verificati senza scrittura centrale. Export runtime privato
+aggiornato con array vuoti, nessuna fixture o chiamata reale. Il codice non imposta
+un modello default; tariffa non associabile senza modello osservato, costi null.
+[Prove e limiti](../openai-metering.md#pending-coverage-correction--18-october-2026).
+Nessun restart, push/deploy o recupero storico account; adozione server in esecuzione
+resta distinta dalla compatibilità verificata. Fetch ancora bloccato da SSH publickey.
