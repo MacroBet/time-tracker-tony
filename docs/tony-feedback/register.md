@@ -53,6 +53,31 @@ configurato personalmente la chiave dedicata e scelto il riuso; supera l’attes
 storica della chiave, non autorizza uso/spesa/deploy. Nessun segreto letto da questo
 esecutore. [Fonti, prove e next step AI](ai-preintegration-20261018.md).
 
+## Lettura manuale20ott — nuovo delta19ott
+
+Nuovo mandato diretto di Marco verificato nella regia, user
+`01a15849-487f-7000-802e-c936abea0808`: supera il limite del monitor invariato
+per questa lettura circoscritta. **Lettura WhatsApp nativa riuscita20ott**:
+Tony identificato da chat individuale selezionata e intestazione; nessun ID
+univoco contatto/account attestato. Letti **4 elementi testuali**19ott10:48–20:53
+(**1 didascalia album e3 messaggi autonomi**) e viste **tutte10foto**, posizioni
+32–41/41 nel viewer. Sovrapposizione outgoing17ott21:26; ultima bolla visibile
+incoming19ott20:53, nessuna successiva visibile. Non sana i gap storici.
+
+Delta: semplicità delle schede con prove allegate, prove per attività/passaggi QA/QC,
+valutazione dello storage. Allegati per attività/tag già presenti; passi strutturati
+con prova per singolo passo ancora mancanti. Storage corrente: payload nel DB,
+PNG/JPEG/WebP/PDF,2MB/file e20file/attività; nessun object storage scalabile attestato.
+Le foto sono riferimenti di reporting, non un nuovo mandato a replicarne funzioni.
+Catalogo manuale5cd5ca9 resta solo locale; nessun nuovo push/deploy o test applicativo.
+
+[Analisi e confronto](intake-20261020-read-resume.md). Nessun originale scaricato
+(totale verificato29 invariato), audio, testo nel composer o invio. Accesso riuscito
+con CUA già autorizzato; nessuna firma/certificato/permesso nuovo, lettore Go non
+attestato completo. Fetch richiesto fallito SSH(publickey), nessun pull/push o chiave
+modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo delta
+pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
+
 ## Stato corrente per ripresa
 
 **Missione e avvio:** FieldTrack per Tony McIntyre, gestione su richiesta di Marco.

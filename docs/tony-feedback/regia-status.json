@@ -7,10 +7,10 @@
   "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "checkpoint",
-  "executionState": "manual-catalog-local-complete-native-monitor-blocked",
-  "observedAt": "2026-10-18T14:37:02.469065+00:00",
+  "executionState": "manual-native-read-completed-20261020",
+  "observedAt": "2026-10-20T07:53:03Z",
   "startedAt": null,
-  "completedAt": "2026-10-18T14:37:02.469065+00:00",
+  "completedAt": "2026-10-20T07:53:03Z",
   "deadline": null,
   "executors": [
     {
@@ -31,7 +31,7 @@
       "result": "completed"
     }
   ],
-  "outcome": "Manual catalog completed locally after current specific human approval: commit5cd5ca9,103unit/PostgreSQL,10API,typecheck,lint,build,format,desktop/mobile local QA and independent review PASS. No push/deploy/send. WhatsApp prerequisite rejected by auto-review due missing unlock evidence; no retry or new coverage.",
+  "outcome": "Native Tony read succeeded:19Oct10:48–20:53,1album caption+3plain texts and10photos visually read; no send, originals download, application changes or live services. Historical coverage gaps remain.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -337,7 +337,7 @@
       }
     ],
     "rawPrivateContentInGit": false,
-    "newMessageCountAfterCoverage": null,
+    "newMessageCountAfterCoverage": 4,
     "textBatch": {
       "date": "2026-10-17",
       "from": "10:56",
@@ -347,7 +347,7 @@
       "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992"
     },
     "audioExcludedByMarco": true,
-    "latestIncomingTextObserved": "2026-10-17 21:06 Europe/Rome",
+    "latestIncomingTextObserved": "2026-10-19 20:53 Europe/Rome",
     "additionalTextDelta": {
       "incomingBubbles": 4,
       "from": "11:06",
@@ -394,9 +394,10 @@
       "newAcceptanceCodesNotMappedToApp": true
     },
     "lastNativeBottomObservation": {
-      "observedAt": "2026-10-18T10:41:49.819230+00:00",
-      "lastVisibleBubble": "17Oct21:26 outgoing, two blue ticks visible",
+      "observedAt": "2026-10-20T07:53:03Z",
+      "lastVisibleBubble": "19Oct20:53 incoming",
       "newerBubblesVisible": false,
+      "source": "native app bounded scroll and direct screenshot",
       "doesNotProveContinuousHistoryCoverage": true
     },
     "text1210": {
@@ -675,10 +676,10 @@
     }
   ],
   "nextActions": [
-    "Local catalog complete; owner may close this concrete continuation without reopening historical terminal jobs",
-    "Publication requires separate human mandate; no SSH,push or deploy authorized",
-    "Native WhatsApp remains unavailable pending external unlock evidence; exact text approval before any future send",
-    "No indispensable Tony question for completed manual catalog; template/steps/automatic issues remain outside this lot"
+    "Publisher reconcile reused assignment or fallback intake using latestManualRead20Oct; executor does not update regia requests/events",
+    "Marco can choose next bounded product work: per-step evidence/check sheets and scalable storage; no development authorized by source text alone",
+    "Approved18Oct draft remains send-deferred; no composer typing or automatic sends",
+    "Close this read cycle; no repeated unchanged UI inspections or new scheduler"
   ],
   "outgoingDrafts": [
     {
@@ -876,21 +877,23 @@
     "previewConsentSeparate": "Earlier human consent resolved the Preview getApp operation only; not evidence of Downloads permission approval."
   },
   "desktopAccess": {
-    "state": "locked",
-    "observedAt": "2026-10-18T11:20:31.988046+00:00",
-    "requestedAction": "one read-only AX observation of native WhatsApp Tony preview; no input/focus/export",
-    "nativeToolResult": "The Mac is locked and automatic unlock could not unlock it. Ask the user to unlock the Mac manually before continuing.",
+    "state": "available",
+    "observedAt": "2026-10-20T07:53:03Z",
+    "requestedAction": "manual20Oct read of new Tony texts and album",
+    "nativeToolResult": "Native AX identity and media metadata plus screenshot content read succeeded",
     "agentRetry": false,
     "humanPhysicalActionRequested": false,
     "reasonNoPhysicalRequest": "Marco currently phone-only; no desktop/opening request made",
     "retryPolicy": "No repeated CUA or unlock attempt until external evidence of available/unlocked native session",
-    "coverageExtended": false,
+    "coverageExtended": true,
     "latestReview": {
       "observedAt": "2026-10-18T14:32:32.637018+00:00",
       "action": "cua.rewriteDocumentation prerequisite for one delegated WhatsApp check",
       "outcome": "auto-review rejected: no external evidence Mac unlocked; no CUA retry or alternative access",
       "coverageExtended": false
-    }
+    },
+    "currentResult": "19Oct caption+3plain texts and10photos read",
+    "humanActionNeeded": null
   },
   "desktopAccessHistoricalLocked": {
     "state": "locked",
@@ -954,5 +957,53 @@
   },
   "jobUsage": null,
   "localContinuationOutcome": "completed",
-  "correlationHandling": "Historical job not reopened by executor; owner handles concrete continuation correlation"
+  "correlationHandling": "Historical job not reopened by executor; owner handles concrete continuation correlation",
+  "latestManualRead20Oct": {
+    "observedAt": "2026-10-20T07:53:03Z",
+    "authorization": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a15849-487f-7000-802e-c936abea0808",
+      "verifiedBy": "direct native read_thread20Oct",
+      "scope": "Read new Tony texts/materials and reconcile delivered scope; no feature implementation or external send"
+    },
+    "assignmentCorrelation": "tony-new-whatsapp-feedback-20261017",
+    "fallbackAssignmentId": "tony-whatsapp-read-resume-20261020",
+    "fallbackRequestId": "tony-whatsapp-read-resume-request-20261020",
+    "publisherIntakeStatus": "publisher decides reuse vs terminal fallback; no request/event write or callback by executor",
+    "result": "completed native read and reconciliation",
+    "identityVerified": true,
+    "identityScope": "Tony McIntyre selected individual chat and header; no unique account/contact ID attested",
+    "contentWindow": {
+      "date": "2026-10-19",
+      "from": "10:48",
+      "through": "20:53",
+      "timezone": "Europe/Rome UI context",
+      "textualItems": 4,
+      "plainTextBubbles": 3,
+      "albumCaptionBubbles": 1,
+      "photosVisuallyRead": 10,
+      "mediaChooserRange": "32–41 of41",
+      "overlap": "17Oct21:26 outgoing",
+      "latestVisibleBubble": "19Oct20:53 incoming",
+      "newerBubbleVisible": false
+    },
+    "sourceMethod": "native CUA AX identity and album metadata plus direct screenshot reading; AX list incomplete",
+    "originalsDownloaded": 0,
+    "verifiedOriginalCountUnchanged": 29,
+    "audioExcluded": true,
+    "rawPrivateContentInGit": false,
+    "privateSourceRef": "output/tony/read-resume-20261020.private.json",
+    "privateSourceSha256": "ac894583e2f51f2d11bd5bcf9ebbcc54e7cc2a05560168d8db3a81e53ac39af7",
+    "analysisRef": "docs/tony-feedback/intake-20261020-read-resume.md",
+    "historicalCoverageComplete": false,
+    "blocker": null,
+    "humanPhysicalActionNeeded": null,
+    "customerSend": false,
+    "composerTyped": false,
+    "goReaderImplementedOrSigned": false,
+    "remoteDbOrProviderCalls": false,
+    "gitFetch": "failed SSH Permission denied(publickey); no key changes, pull or push",
+    "applicationChanges": false,
+    "applicationTestsRerun": false
+  }
 }
