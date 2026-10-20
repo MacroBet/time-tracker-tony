@@ -30,6 +30,15 @@ Uso ordinario non consentito o quota esaurita impongono STOP; niente reset o cre
 nuovo invio, DB remoto o AI live. Non amplia lo scheduler. [Stato serale e gap](intake-20261017-evening.md):
 non dichiarare tutta la chat letta; l'export senza media esiste ma non è ancora leggibile.
 
+## Ultimo batch mail analizzato20ott2026
+
+[Analisi7allegati e matrice requisito→app](intake-20261020-mail-analysis.md):
+MPX,2XLSX,2PDF,PPTX eXER letti localmente, con prove e sintesi privata navigabile.
+Prima di sviluppare/importare usare questo confronto e lo stato corrente: nuovi
+passi/signoff/NC e incompatibilità P6 non sono coperti dal catalogo manuale.
+Il batch è analisi conclusa, non autorizzazione a importare, inviare o pubblicare.
+`regia-status.json` contiene `latestMailBatch20Oct` con copertura e percorso lettore.
+
 ## Come viene recuperato il contesto
 
 [AGENTS.md](../../AGENTS.md) è l'ingresso delle istruzioni di progetto. Indirizza

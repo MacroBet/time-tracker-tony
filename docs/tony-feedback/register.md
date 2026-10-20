@@ -1,5 +1,34 @@
 # Registro operativo — Tony
 
+## Batch mail20ott - analisi conclusa7/7
+
+Mandato diretto di Marco verificato in regia, user
+`01a15861-e4a0-79f3-8cb0-c867359b0ede`. Nuovo incarico
+`tony-mail-context-analysis-20261020`, request
+`tony-mail-context-analysis-request-20261020`, scadenza20ott. Tutti7allegati letti,
+4contesti mail trattati come fonti riferite, non ordini o lettura mailbox diretta.
+[Rapporto e matrice requisito→app](intake-20261020-mail-analysis.md).
+
+PDF9+21pagine:35risposte form vuote,299righe tecniche di allocazione MC/startup,
+non test eseguiti. NCblocking/nonblocking, readiness e firme provvisorie/finali
+restano distinti; issue aperta non implica signoff. MPX e Excel associato divergono
+su date/baseline e non hanno joinIDcomune verificata. Due fogli dell'altro Excel
+ripetono5453ActivityID. XER1progetto/16969attività supera max15000 e contiene WBS,
+calendari/relazioni/risorse non supportati senza perdita. Deck8slide letto e
+confrontato per tipo con10fotoWhatsApp già lette; niente formule o accessoACC.
+
+Già fatti: identificativi, Gantt, link asset/tag/task, review/allegati/audit e catalogo
+manuale5cd5ca9locale. Da definire: passi/prove/NC/gate e contrattoimport fedele,
+poi storage e metriche. Nessun lotto applicativo, import reale, invio, provider,
+DB remoto o deploy. Sorgenti/testi/immagini e riferimenti cliente soltanto privati
+in `output/tony/mail-batch-20261020/`,7hash in manifest separato dai29WhatsApp.
+Tre figli reali con ownership indipendente, sintesi e verifica parent; nessun nuovo
+supervisore o scheduler. Rapporto metadata disponibile al publisher, nessun callback.
+Originali7/7 invariati, JSON/link/formato/diff verificati; testapp non ripetuti.
+Nessun nuovo fetch/push, SSH già fallito; modifiche preesistenti e next-env preservati.
+
+Lo stato18ott sotto è storico; per la ripresa valgono i delta20ott e lo stato corrente.
+
 Ultimo aggiornamento: **18 ottobre 2026, chiusura del catalogo locale**. Correzione umana
 verificata: app nativa WhatsApp già autenticata. **Lettura nativa riuscita**:
 QA/QC17ott13:34 letto interamente, testo12:10 ora completo, **ATT-019–029 acquisiti**,

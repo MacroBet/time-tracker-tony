@@ -52,6 +52,10 @@ ancora parziale; nessuna equivalenza automatica fra codici documentali e review 
 Fetch SSH precedente fallito; nessun nuovo SSH/push/deploy. Catalogo:103unitari,10API,
 statici/build e browser desktop/mobile locali passati.
 
+**Batch mail20ott concluso7/7:** [analisi integrata, matrice e prossimo passo](intake-20261020-mail-analysis.md).
+Programmi MPX/XER/Excel, signoff PDF e8slide reali riconciliati con il codice;
+fonti e lettore privati fuoriGit. Nessun import/sviluppo/invio/deploy.
+
 ## Orientamento al codice, solo quando serve
 
 - Dati e permessi: `src/lib/domain.ts`, `src/lib/commissioning.ts`,

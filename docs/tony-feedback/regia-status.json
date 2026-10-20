@@ -1,37 +1,44 @@
 {
   "schemaVersion": 1,
   "projectId": "bd6c50d4-8a6d-43e3-b535-fc3dc538df8e",
-  "assignmentId": "tony-new-whatsapp-feedback-20261017",
-  "requestId": "tony-new-whatsapp-feedback-20261017-owner-message-consent",
-  "intakeId": 213,
-  "intakeIdProvenance": "coordinator-report; non verificato come stesso ID activity-v1",
+  "assignmentId": "tony-mail-context-analysis-20261020",
+  "requestId": "tony-mail-context-analysis-request-20261020",
+  "intakeId": null,
+  "intakeIdProvenance": "publisher intake requested by supervisor; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-  "status": "checkpoint",
-  "executionState": "manual-native-read-completed-20261020",
-  "observedAt": "2026-10-20T07:53:03Z",
-  "startedAt": null,
-  "completedAt": "2026-10-20T07:53:03Z",
-  "deadline": null,
+  "status": "completed",
+  "executionState": "mail-context-analysis-completed-20261020",
+  "observedAt": "2026-10-20T08:28:11Z",
+  "startedAt": "2026-10-20T08:17:19Z",
+  "completedAt": "2026-10-20T08:28:11Z",
+  "deadline": "2026-10-20",
   "executors": [
     {
+      "name": "/root",
       "threadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-      "role": "primary implementation, source reconciliation and validation",
+      "role": "primary source integration and code reconciliation",
       "subagent": false
     },
     {
-      "name": "asset_organisation_audit",
-      "role": "home routing implementation and independent final review",
+      "name": "/root/mail_schedules20",
+      "role": "MPX/XER/two XLSX, static full-record analysis",
       "subagent": true,
-      "result": "completed, no concrete findings"
+      "result": "completed"
     },
     {
-      "name": "manual_bootstrap_review",
-      "role": "tag colour UI implementation",
+      "name": "/root/mail_signoff20",
+      "role": "two PDFs, full text/render/OCR and signoff/NC rules",
+      "subagent": true,
+      "result": "completed"
+    },
+    {
+      "name": "/root/mail_ppt20",
+      "role": "PPT eight slides/images and visual comparison by view type",
       "subagent": true,
       "result": "completed"
     }
   ],
-  "outcome": "Native Tony read succeeded:19Oct10:48–20:53,1album caption+3plain texts and10photos visually read; no send, originals download, application changes or live services. Historical coverage gaps remain.",
+  "outcome": "Seven local mail attachments fully analysed statically;30PDFpages and8PPTslides visually inspected. Source-to-app matrix and private reader delivered. No development/import/send/deploy; originals unchanged.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -676,10 +683,10 @@
     }
   ],
   "nextActions": [
-    "Publisher reconcile reused assignment or fallback intake using latestManualRead20Oct; executor does not update regia requests/events",
-    "Marco can choose next bounded product work: per-step evidence/check sheets and scalable storage; no development authorized by source text alone",
-    "Approved18Oct draft remains send-deferred; no composer typing or automatic sends",
-    "Close this read cycle; no repeated unchanged UI inspections or new scheduler"
+    "Publisher reconcile mail-analysis job/request using latestMailBatch20Oct; no executor callback or requests/events mutation",
+    "No action required to finish analysis; future signoff/import/storage work requires bounded human mandate and the documented decisions",
+    "Preserve approved18Oct draft with deferred send; no composer or automatic WhatsApp send",
+    "Close this batch, no duplicate scheduler or unchanged-source reacquisition"
   ],
   "outgoingDrafts": [
     {
@@ -1005,5 +1012,182 @@
     "gitFetch": "failed SSH Permission denied(publickey); no key changes, pull or push",
     "applicationChanges": false,
     "applicationTestsRerun": false
+  },
+  "latestMailBatch20Oct": {
+    "jobId": "tony-mail-context-analysis-20261020",
+    "requestId": "tony-mail-context-analysis-request-20261020",
+    "deadline": "2026-10-20",
+    "observedAt": "2026-10-20T08:28:11Z",
+    "humanSource": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "messageId": "01a15861-e4a0-79f3-8cb0-c867359b0ede",
+      "verifiedBy": "direct read_thread20Oct"
+    },
+    "result": "completed local source analysis and context reconciliation",
+    "inputCount": 7,
+    "readableCount": 7,
+    "sourceOriginalsUnchanged": true,
+    "sourceMetadata": [
+      {
+        "id": "MAIL20-01",
+        "bytes": 2480018,
+        "sha256": "6863d49cdfe11b6aef3df8c07c7a1bde7ef5b74651c55ea9b6a3097403937692",
+        "format": "MPX/cp1252",
+        "coverage": {
+          "taskRecords": 5121,
+          "scheduledRecords": 3708,
+          "outlineRecords": 1413
+        }
+      },
+      {
+        "id": "MAIL20-02",
+        "bytes": 282225,
+        "sha256": "b63433230a33007f210e034afc678f1c12dea869ab76e3907f41a29cb746c03e",
+        "format": "XLSX/OOXML",
+        "coverage": {
+          "sheets": 1,
+          "activityRows": 3708,
+          "groupRows": 1136
+        }
+      },
+      {
+        "id": "MAIL20-03",
+        "bytes": 6503071,
+        "sha256": "b3b41043e6a66ffbc317187972949a8299821a9953f96d78dd141976dd5194b1",
+        "format": "PDF1.7",
+        "coverage": {
+          "pages": 9
+        }
+      },
+      {
+        "id": "MAIL20-04",
+        "bytes": 1427321,
+        "sha256": "a6b76ec748214f9059692fd9fc347bf5af2b22c56fa9ce9029f6950efb1f0bf6",
+        "format": "PDF1.3",
+        "coverage": {
+          "pages": 21
+        }
+      },
+      {
+        "id": "MAIL20-05",
+        "bytes": 877009,
+        "sha256": "70a9caaf09d2ed5649093e38f90fc8dfb725a1301e6a4de25b80ffa8529fca34",
+        "format": "XLSX/OOXML",
+        "coverage": {
+          "sheets": 2,
+          "uniqueActivities": 5453,
+          "twoViewsSameActivityIds": true
+        }
+      },
+      {
+        "id": "MAIL20-06",
+        "bytes": 1138091,
+        "sha256": "ad7a67e7dd611ec3e4a449f90611c828f87b96b498764ebbbe8257e39df742f8",
+        "format": "PPTX/OOXML",
+        "coverage": {
+          "slides": 8,
+          "images": 8
+        }
+      },
+      {
+        "id": "MAIL20-07",
+        "bytes": 23590083,
+        "sha256": "8e0b1b7766212b85457a3abec2c6ac83e6e1379ff916e6a0ddf138b6542111b5",
+        "format": "PrimaveraXER15.2/cp1252",
+        "coverage": {
+          "projects": 1,
+          "tasks": 16969,
+          "wbs": 3073,
+          "relationships": 36923,
+          "calendars": 13,
+          "taskCalendarsUsed": 9,
+          "resources": 60,
+          "assignments": 27834
+        }
+      }
+    ],
+    "mailContext": {
+      "contexts": 4,
+      "source": "human batch relayed by supervisor",
+      "rawMailboxOrEmlRead": false,
+      "geminiSummaryUsed": false,
+      "historicalChainTreatedAsCurrentMandate": false
+    },
+    "coverage": {
+      "structuredRecords": "complete static MPX/XER/XLSX parse; no schedule engine recalculation",
+      "xlsxSheets": 3,
+      "pdfPages": 30,
+      "pdfPagesRenderedAndInspected": 30,
+      "pptSlides": 8,
+      "pptImagesVisuallyInspected": 8,
+      "pptFullRendersInspected": 8,
+      "croppedAiPanelRemainder": "not present in source bitmap, unverifiable"
+    },
+    "keyFindings": [
+      "Signoff requires response/evidence and distinct NC blocking classification, readiness and provisional/final approvals; no operational completion proved",
+      "MPX/pairedExcel differ in dates/baselines, missing common verified ID crosswalk; no lossless conversion",
+      "Two Excel views repeat5453ActivityIDs, not10906activities",
+      "XER16969activities exceed existing15000limit by1969; relation/calendars/milestone/resources also unsupported",
+      "PPT8slides provides reporting patterns, not formulas/ACC access or AI mandate; media identity withWhatsApp unverified"
+    ],
+    "privateReaderRef": "output/tony/mail-batch-20261020/report.private.md",
+    "privateInventoryRef": "output/tony/mail-batch-20261020/inventory.private.json",
+    "analysisRef": "docs/tony-feedback/intake-20261020-mail-analysis.md",
+    "parent": "/root",
+    "children": [
+      {
+        "name": "/root/mail_schedules20",
+        "scope": "MPX/XER/two XLSX, static full-record analysis",
+        "requestedModel": "gpt-6.1-sol",
+        "requestedEffort": "xhigh",
+        "result": "complete",
+        "privateReportRef": "output/tony/mail-batch-20261020/schedules/report.md"
+      },
+      {
+        "name": "/root/mail_signoff20",
+        "scope": "two PDFs, full text/render/OCR and signoff/NC rules",
+        "requestedModel": "gpt-6.1-sol",
+        "requestedEffort": "medium",
+        "result": "complete",
+        "privateReportRef": "output/tony/mail-batch-20261020/signoff/report.md"
+      },
+      {
+        "name": "/root/mail_ppt20",
+        "scope": "PPT eight slides/images and visual comparison by view type",
+        "requestedModel": "gpt-6.1-sol",
+        "requestedEffort": "medium",
+        "result": "complete",
+        "privateReportRef": "output/tony/mail-batch-20261020/presentation/analysis.private.md"
+      }
+    ],
+    "blockers": [],
+    "unresolvedProductDecisions": [
+      "authoritative signoff revision, applicability and blocking/approval roles",
+      "pilot programme and required import fidelity if implementation requested",
+      "evidence storage volumes/types/retention/access if storage work requested"
+    ],
+    "checks": [
+      "7of7 source SHA256 unchanged",
+      "full structured parse and visual coverage as reported",
+      "source-to-app static comparison",
+      "documentation JSON/link/format and staged diff QA"
+    ],
+    "applicationTestsRun": false,
+    "applicationChanges": false,
+    "whatsAppRead": false,
+    "externalSend": false,
+    "remoteDbOrImport": false,
+    "liveAiOrPaidApi": false,
+    "newScheduler": false,
+    "gitFetchOrPushRetried": false,
+    "headAtStart": "fb12005",
+    "quota": {
+      "ordinaryUsageAllowed": true,
+      "usedPercent": 2,
+      "measuredDuringRun": true,
+      "jobTokenUsage": null
+    },
+    "publisher": "Mea handles request/event outcome; no callback or ACL write by executor",
+    "readerDelivery": "local Markdown existing file viewer/report bridge; no new UI/cloud/navigation"
   }
 }
