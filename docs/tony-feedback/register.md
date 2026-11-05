@@ -1,5 +1,42 @@
 # Registro operativo — Tony
 
+## Rilascio5nov — patch validate, push/deploy da verificare
+
+Nuovo mandato esplicito Marco nella regia, user
+`01a1ab8a-c773-7840-a28b-b5cc5e24b4cb`, job `tony-secure-release-20261105`:
+correzione sicurezza e pubblicazione del lavoro già completato. Next/eslint16.4.5,
+sharp0.35.5, source-map-js1.2.2, Zod4.6.7; corretta anche brace-expansion dev.
+Audit produzione **0**, completo **8 moderate soltanto lint, 0 high/critical**.
+**132 unitari,10API, typecheck/lint/build verdi** nella demo locale isolata;
+nessuna migrazione, DB remoto, AI live o nuovo invio. next-env.d.ts preservato.
+[Mandato, versioni, prove e residui](intake-20261105-secure-release.md).
+Push e deploy nuovi ancora da attestare; non confonderli con le prove locali.
+
+## Invio5nov12:40 — consegnato, consenso consumato
+
+Marco ha autorizzato l'unico invio del testo esatto della bozza
+`tony-update-before-release-20261105-v1`, SHA256
+`a5a4a1eea74d4c0bf14f08d79ddda3cad7f2b5f9191795689043dbba75e0aee1`.
+Inviato una volta a Tony McIntyre il5nov **12:40 Europe/Rome**: identità della chat,
+composer inizialmente vuoto e corrispondenza UTF-8 completa verificati prima dell'unico
+click Send; composer vuoto e bolla uscente completa verificati dopo.
+**Due spunte grigie: consegnato. Lettura non attestata. Consenso consumato; nessun reinvio.**
+Ricevuta privata `output/tony/tony-update-before-release-20261105-v1-send.private.json`,
+prova focalizzata `output/tony/tony-update-before-release-20261105-v1-send.private.png`.
+Solo testo approvato, nessun altro messaggio/audio, lettura storica o deploy.
+Metadata locali: `latestTonyUpdateSend5Nov`; nessun evento/richiesta/ACL o callback.
+
+## Bozza5nov — storico prima dell’approvazione e invio
+
+Su richiesta di Marco riferita dal supervisore, preparata la bozza privata
+`tony-update-before-release-20261105-v1`,114 parole, con stato implementato/in controlli
+finali prima del rilascio e tre domande per il lotto successivo. Testo esatto soltanto
+in `output/tony/tony-update-before-release-20261105-v1.private.txt`, metadata omonimi
+`.private.json`. SHA256 UTF-8:
+`a5a4a1eea74d4c0bf14f08d79ddda3cad7f2b5f9191795689043dbba75e0aee1`.
+Preparata inizialmente non approvata/non inviata; approvazione e invio successivi
+sono attestati sopra. Testo e hash invariati; nessun deploy implicito.
+
 ## XLSX asset e dashboard5nov — entrambi completati localmente
 
 Commit applicativo **14692f6**: import XLSX sullo schema asset canonico e template
@@ -54,6 +91,56 @@ Non equivale a import XLSX o motore MS Project completo. Nessun invio, push o de
 `latestManualResume5Nov` di `regia-status.json`. Prossimo passo: definire la regola
 comune asset→tag→sequenza e il formato Excel desiderato prima di automatizzarli;
 separare assegnazione approvatore/gate e contratto video/storage.
+
+## Monitor22ott — CUA disponibile, lettura Tony non eseguita
+
+Al22ott11:20UTC il tool CUA è tornato disponibile e WhatsApp nativo è accessibile.
+Unica osservazione AX: altra conversazione selezionata, Tony non nella lista
+visibile. Controllo chiuso senza ricerca, cambio chat, composer o invio per non
+interferire con Marco. Nessun contenuto Tony nuovo letto; copertura invariata.
+Superato soltanto il limite di disponibilità tool21ott, conservato come storico.
+Metadata: `latestMonitorCapabilityCheck22Oct` in `regia-status.json`.
+
+## Limite monitor21ott — computer use non disponibile
+
+Al heartbeat21ott15:39UTC il tool CUA non è disponibile nella sessione
+(aggiornamento esplicito delle capacità). Nessun accesso desktop o lettura Tony:
+non implica Mac bloccato né assenza di nuovi messaggi. Copertura invariata;
+ultimo esito attestato resta l’invio20ott11:43Roma, consegnato e non attestato letto.
+Limite registrato in `regia-status.json` → `latestMonitorCapabilityLimit21Oct`.
+Nessun retry, percorso alternativo, composer, invio o nuova automazione.
+
+## Invio risposta mail20ott — consegnato11:43
+
+Approvazione umana sul testo esatto verificata in regia, user
+`01a158ac-be84-7241-8183-e1d5c16d6a90`. Job
+`tony-mail-response-send-20261020`, request
+`tony-mail-response-send-request-20261020`. Bozza v1 SHA256
+`613a53c95998211ea2bf1e6f89ef22ca460d3bee1cdd7071ad88ae3cae6adc83`
+inviata **una sola volta** a Tony McIntyre il20ott alle **11:43 Europe/Rome**.
+Testo composer identico al file approvato; bolla uscente intera verificata
+visivamente dopo espansione, composer vuoto, **due spunte grigie: consegnato**.
+Lettura non attestata. Il primo click AX non aveva inviato: composer e assenza
+uscente verificati prima dell'unico click efficace sul pulsante visibile.
+Consenso consumato; nessun reinvio. Ricevuta privata:
+`output/tony/mail-response-send-20261020.private.json`, metadata in
+`regia-status.json` → `latestMailResponseSend20Oct`.
+Bozza18ott resta differita e invio17ott invariato. Nessun allegato, audio,
+sviluppo, DB/provider, push/deploy o callback. Nessuna nuova automazione.
+
+## Bozza risposta mail20ott — storico prima dell’approvazione
+
+Mandato umano regia verificato, user `01a158a8-4b15-7660-9e20-e1173c36368c`.
+Job `tony-mail-response-draft-20261020`, request
+`tony-mail-response-draft-request-20261020`, scadenza20ott. Bozza inglese v1
+`tony-mail-response-20261020-v1`, 144parole/3domande, stato
+**draft-pending-human-review**. Testo soltanto privato in
+`output/tony/mail-response-20261020-v1.private.txt`, SHA256 `613a53c95998211ea2bf1e6f89ef22ca460d3bee1cdd7071ad88ae3cae6adc83`.
+Basata su analisi7/7 **8d9e95c**, nessuna nuova lettura o sviluppo. Domande su
+revisione/ruoli signoff, fedeltà iniziale LHR11/Test2 e ricalcolo, dimensioni/accesso
+prove. La copiaP6fissa è proposta per il confronto iniziale, non una nuova decisione
+che sostituisce il programma autorevole nell'app. Nessun invio/composer, approvazione
+o callback. Bozza18ott approvata resta differita, invio17ott già concluso invariato.
 
 ## Batch mail20ott - analisi conclusa7/7
 
@@ -129,6 +216,26 @@ Il nuovo controllo WhatsApp delegato è stato rifiutato dall'auto-review prima
 dell'accesso: manca evidenza esterna di Mac sbloccato. Nessun retry, copertura
 non estesa. Nessun testo esatto corrente approvato o inviato. Nessun SSH/push/deploy.
 
+**Bozza aggiornamento18ott:** preparata v1 su richiesta corrente di Marco tramite
+regia, solo risultato locale catalogo e nessuna disponibilità online. Testo/impronta
+in [bozze](drafts.md#18-ottobre--aggiornamento-catalogo-v1-da-valutare); testo approvato
+da Marco, invio espressamente differito (fonte nativa01a14f93-92f0-7552-a0d7-dee4615c3557).
+Nessun invio ora o automatico allo sblocco; composer intatto. Nessun nuovo accesso WhatsApp. Ramo AI
+separato: nessun piano/codice/configurazione avviato da questo esecutore.
+
+**Accesso nativo ripristinato18ott:** nuova presenza al computer dichiarata da Marco
+nella regia, user `01a14fbc-947f-7fc1-a575-a530b7b969a2`, verificata via read_thread.
+CUA consentito e app WhatsApp effettivamente accessibile; identità Tony e fondo
+verificati con scorrimento circoscritto e screenshot. Ultima bolla visibile ancora
+17ott21:26 outgoing con due spunte blu; nessuna bolla più recente visibile. Nessun
+nuovo materiale acquisito, audio, composer o invio. Non prova copertura continua
+dei gap storici. **Nessuna azione umana necessaria ora per WhatsApp.** Superato il
+precedente impedimento Mac bloccato per questa verifica; non ripetere acquisizioni
+a stato invariato. Bozza v1 approvata sempre con invio differito, nessuna esecuzione
+automatica allo sblocco. Chiave AI ancora in configurazione personale Marco.
+Riconciliazione aggiornata nel confronto18ott: filtri/home/colori pubblicati, catalogo
+manuale solo locale; template, passi/firme/ID documentali e issue automatiche restano
+fuori dalla consegna. Nessun nuovo sviluppo, test o acquisizione in questa verifica.
 
 **Lotto AI locale18ott:** base Responses già esistente, corretta soltanto la
 cancellazione degli stream in timeout/oversize.105 test, typecheck/lint/build e
@@ -136,6 +243,14 @@ revisione indipendente passati; zero provider live. Mandato regia: Marco ha già
 configurato personalmente la chiave dedicata e scelto il riuso; supera l’attesa
 storica della chiave, non autorizza uso/spesa/deploy. Nessun segreto letto da questo
 esecutore. [Fonti, prove e next step AI](ai-preintegration-20261018.md).
+
+**Limite monitor18ott18:28 Europe/Rome:** nuova lettura passiva dell’anteprima Tony
+rifiutata dall’auto-review perché ripete uno stato invariato. Nessuna azione UI
+eseguita, retry o percorso alternativo. Ultimo controllo riuscito18:18Roma:
+anteprima ancora17ott21:26. App accessibile nell’ultima prova, non nuovamente
+bloccata attestata. Ulteriori acquisizioni soltanto con evidenza di variazione
+pertinente o nuovo mandato umano specifico; heartbeat senza UI a stato invariato.
+Invio approvato sempre differito. Lavori AI di altri mandati restano separati.
 
 ## Lettura manuale20ott — nuovo delta19ott
 
@@ -163,6 +278,11 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Ultimo mandato5nov:** rilascio autorizzato del lotto completato dopo patch sicurezza;
+controlli locali verdi, push e produzione ancora da verificare nel [report corrente](intake-20261105-secure-release.md).
+Le consegne sotto e i vecchi limiti di pubblicazione sono storici. Ultima copertura
+incoming Tony5nov08:11; outgoing5nov12:40 consegnato, consenso consumato.
 
 **Missione e avvio:** FieldTrack per Tony McIntyre, gestione su richiesta di Marco.
 Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
@@ -1086,7 +1206,6 @@ Prossimo passo: collector valida/importa un export autorizzato; persistenza clou
 richiede directory durevole esplicita prima di attivare il provider.
 Fetch remoto tentato: SSH publickey non disponibile; nessun allineamento remoto
 attestato. Cambi documentali di altri esecutori e next-env.d.ts preservati.
-
 
 ## Correttivo copertura pending OpenAI — 18 ottobre 2026
 

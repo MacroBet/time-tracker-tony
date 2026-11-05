@@ -98,7 +98,6 @@ The schema search exposed input cache/cache-write and reasoning detail fields;
 the full retrieve page fetch exceeded the tool limit, while the reasoning guide
 was fetched successfully. No unverified model price table was introduced.
 
-
 ## Pending coverage correction — 18 October 2026
 
 Job `mea-api-consumption-pending-coverage-20261018`, request

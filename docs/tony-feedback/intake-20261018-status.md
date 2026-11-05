@@ -66,15 +66,16 @@ richiesto da Tony. Nessun mapping universale livello↔colore o rinomina silenzi
 
 ## Richieste e sviluppo
 
-| Richiesta verificata                                      | Stato applicativo                                                               | Residuo                                                                      |
-| --------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Home manager/admin e Tasks worker                         | Consegnata c12deea, fallback per moduli verificati                              | Nessuna ripetizione del lavoro                                               |
-| Colori/label tag configurabili                            | Configurazione per progetto persistente e ora visibile nei percorsi asset/test  | Impostazioni globali per azienda/template non consegnate                     |
-| Filtri Area/Phase                                         | d7dcb8f già pubblicato e verificato                                             | Nessun nuovo deploy necessario                                               |
-| Scheda per singolo tag/asset                              | Task distinta e ID interno, test aggregato, note/allegati e review già presenti | Passi strutturati, ID documento cliente e registro documentale non completi  |
-| QA con issue attrezzatura/area                            | Issue manuali collegate ad asset già presenti                                   | Criteri e collegamento automatico passo→issue da definire, non implementati  |
-| Voci richieste/non richieste per tag e template riusabile | Configurazione livelli esistente                                                | Template/versionamento e catalogo documenti/passi da definire con le fonti   |
-| Copilot/AI per documenti e sequenze                       | Scaffold controllato consegnato                                                 | Provider live spento; chiave più avanti, nessuna chiamata pagata o Autopilot |
+| Richiesta verificata                     | Stato applicativo                                                                                   | Residuo                                                                      |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Home manager/admin e Tasks worker        | Consegnata c12deea, fallback per moduli verificati                                                  | Nessuna ripetizione del lavoro                                               |
+| Colori/label tag configurabili           | Configurazione per progetto persistente e ora visibile nei percorsi asset/test                      | Impostazioni globali per azienda/template non consegnate                     |
+| Filtri Area/Phase                        | d7dcb8f già pubblicato e verificato                                                                 | Nessun nuovo deploy necessario                                               |
+| Scheda per singolo tag/asset             | Task distinta e ID interno, test aggregato, note/allegati e review già presenti                     | Passi strutturati, ID documento cliente e registro documentale non completi  |
+| QA con issue attrezzatura/area           | Issue manuali collegate ad asset già presenti                                                       | Criteri e collegamento automatico passo→issue da definire, non implementati  |
+| Catalogo manuale richiesti/non richiesti | Implementato e verificato solo localmente5cd5ca9 per progetto/Phase asset/livello;103unitari e10API | Nessun push/deploy; nessuna verifica automatica dei documenti                |
+| Template riusabile                       | Richiesta17ott14:05 acquisita, separata dal catalogo locale                                         | Copia/versionamento/propagazione da definire; non implementati               |
+| Copilot/AI per documenti e sequenze      | Scaffold controllato consegnato                                                                     | Provider live spento; chiave più avanti, nessuna chiamata pagata o Autopilot |
 
 ## Lotto recuperato e confronto delle fonti
 
@@ -303,3 +304,32 @@ catalogo manuale; non è preparata una nuova bozza cliente su decisioni di altri
 Prove private: `output/tony/catalog-qa-20261018/delivery.private.json`, inventario,
 risultato QA e screenshot nella stessa cartella ignorata da Git. Pubblicazione del
 catalogo non autorizzata: resta un risultato locale. Heartbeat ristretto invariato.
+
+## Riconciliazione dopo il ripristino dell’accesso nativo18ott
+
+L’app Mac è ora effettivamente accessibile: prova CUA in sola lettura registrata
+alle16:01UTC (18:01 Europe/Rome), dopo nuova presenza umana al computer. Fondo Tony
+verificato visivamente ancora17ott21:26 outgoing; nessuna bolla successiva visibile.
+Il nuovo resoconto “WhatsApp sbloccato” della regia è coerente con questa prova,
+non richiede ripetere immediatamente acquisizioni a stato invariato. Nessuna
+estensione della copertura continua dei gap storici;29originali già acquisiti,
+nessun nuovo audio/materiale scaricato.
+
+Confronto aggiornato senza nuovo sviluppo o test:
+
+- Filtri Area/Phase d7dcb8f e home/colore c12deea: pubblicati e verificati in precedenza.
+- Richiesta Tony17ott14:04 e matrici documentali ATT-019/028: catalogo manuale
+  progetto/Phase asset/livello5cd5ca9 completo e collaudato **solo localmente**.
+  Le liste Required/Not required non attestano caricamento, accettazione o firma.
+- Richiesta14:05: template riusabile ancora distinto e non implementato.
+- Testi21:04/21:06, PDF ATT-020 e roadmap ATT-029: check sheet a passi con ID
+  documento, esiti/firme e issue automatiche non coperti dal catalogo locale;
+  regole specifiche di risultato, collegamento, deduplicazione e riapertura mancanti.
+- Diagrammi e matrici conservano mapping colore/livello divergenti: nessuna
+  equivalenza universale introdotta,171attività PDF non replicate su ogni asset.
+- AI richiesta nelle fonti: provider live disattivato, chiave in configurazione
+  personale di Marco; nessuna implementazione/chiamata/test API in questa verifica.
+
+Il messaggio v1 è approvato sul testo esatto ma **invio differito**: nessun invio,
+composer o pianificazione automatica allo sblocco. Il progetto complessivo non è
+chiuso; catalogo locale e preparazione messaggio sono risultati distinti conclusi.

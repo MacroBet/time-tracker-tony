@@ -42,28 +42,28 @@ Le foto sono report di un sistema di terzi, non schermate operative di FieldTrac
 I titoli descrittivi di alcuni tool erano ipotesi prima della cattura: l’analisi
 qui segue il contenuto effettivamente osservato.
 
-| Foto nell’album | Contenuto letto | Limite |
-| --- | --- | --- |
-| 1–2 | Flat table asset/tag con baseline, achieved, forecast, stato/puntualità; filtri gerarchia progetto, team, tipo tag, Phase, disciplina/sistema e owner; barre ritardo/puntualità e tag | Due viste con selezioni diverse; numeri del riferimento, non dati FieldTrack |
-| 3 | Riepilogo Red/Yellow/Green/Blue con passed/in progress/not started e milestone L2/L3/L4/L5 | Colori specifici del riferimento, nessuna equivalenza globale dedotta |
-| 4 | S-curve settimanale planned/forecast/achieved con tabella per data/tag | Formule e calcolo non visibili, non dedotti |
-| 5 | Gantt progetto→tag, date, percentuali actual, linea today, espandi/comprimi e tabella sottostante | Non prova editing, dipendenze o motore di ripianificazione |
-| 6–7 | Vincoli per categoria/disciplina/vendor/sistema, elenco gerarchico per owner e asset | Stesso report da due inquadrature; semantica vincoli non equiparata automaticamente alle issue |
-| 8 | Issue open/closed, media giorni aperti, tipo, assegnatario, root cause e mese creazione | Valori del riferimento; nessuna regola automatica approvata |
-| 9 | Flat table filtrata Phase2 con date/stato/puntualità e barre tag | Non una checklist dettagliata nonostante il nome del tool di cattura |
-| 10 | Power/Cooling String: planned/achieved/forecast, varianza e pivot progetto→tag→asset | Non una master checklist; metrica/aggregazioni non specificate |
+| Foto nell’album | Contenuto letto                                                                                                                                                                       | Limite                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1–2             | Flat table asset/tag con baseline, achieved, forecast, stato/puntualità; filtri gerarchia progetto, team, tipo tag, Phase, disciplina/sistema e owner; barre ritardo/puntualità e tag | Due viste con selezioni diverse; numeri del riferimento, non dati FieldTrack                   |
+| 3               | Riepilogo Red/Yellow/Green/Blue con passed/in progress/not started e milestone L2/L3/L4/L5                                                                                            | Colori specifici del riferimento, nessuna equivalenza globale dedotta                          |
+| 4               | S-curve settimanale planned/forecast/achieved con tabella per data/tag                                                                                                                | Formule e calcolo non visibili, non dedotti                                                    |
+| 5               | Gantt progetto→tag, date, percentuali actual, linea today, espandi/comprimi e tabella sottostante                                                                                     | Non prova editing, dipendenze o motore di ripianificazione                                     |
+| 6–7             | Vincoli per categoria/disciplina/vendor/sistema, elenco gerarchico per owner e asset                                                                                                  | Stesso report da due inquadrature; semantica vincoli non equiparata automaticamente alle issue |
+| 8               | Issue open/closed, media giorni aperti, tipo, assegnatario, root cause e mese creazione                                                                                               | Valori del riferimento; nessuna regola automatica approvata                                    |
+| 9               | Flat table filtrata Phase2 con date/stato/puntualità e barre tag                                                                                                                      | Non una checklist dettagliata nonostante il nome del tool di cattura                           |
+| 10              | Power/Cooling String: planned/achieved/forecast, varianza e pivot progetto→tag→asset                                                                                                  | Non una master checklist; metrica/aggregazioni non specificate                                 |
 
 ## Richieste rispetto al consegnato
 
 Parafrasi del contenuto pertinente, senza trascrizione privata in Git.
 
-| Richiesta/indicazione | Già presente verificabile | Mancante o da decidere |
-| --- | --- | --- |
-| Schede semplici con prove allegate, richiamo a un precedente prodotto | Tasks e test sheet per tag con file collegati all’attività, risultato/observations e review separata | Non abbiamo esaminato il precedente prodotto: nessuna equivalenza UX esatta attestata; eventuale semplificazione va delimitata |
-| Prova del lavoro su task o passi QA/QC | Allegati a task/tag, upload/download autenticati e audit | Checklist con più passi e prova legata al singolo passo non consegnata; campi, esiti/firme, versioni e regole issue da definire |
-| Soluzione di archiviazione | MVP attuale nel DB: dati base64; PNG/JPEG/WebP/PDF,2MB/file,20file/attività; task chiusa da riaprire prima di aggiungere prove | Object storage per scala, volumi/tipi/conservazione, permessi, costi e migrazione da concordare; nessun servizio attivato |
-| Sistema mostrato debole sulla pianificazione; foto come riferimento | Gantt persistente e baseline/forecast, asset/tag/issue, filtri Area/Phase e dashboard esistenti | Nessun mandato a copiare ogni report o dedurre formule/S-curve/vincoli; Project Health storico resta senza formula concordata |
-| Catalogo documenti manuale precedente |5cd5ca9 locale: required/optional per progetto/Phase/livello, visibile nei tag | Non è stato pubblicato da questo ciclo; template riusabili e prova per singolo passo restano fuori |
+| Richiesta/indicazione                                                 | Già presente verificabile                                                                                                      | Mancante o da decidere                                                                                                          |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Schede semplici con prove allegate, richiamo a un precedente prodotto | Tasks e test sheet per tag con file collegati all’attività, risultato/observations e review separata                           | Non abbiamo esaminato il precedente prodotto: nessuna equivalenza UX esatta attestata; eventuale semplificazione va delimitata  |
+| Prova del lavoro su task o passi QA/QC                                | Allegati a task/tag, upload/download autenticati e audit                                                                       | Checklist con più passi e prova legata al singolo passo non consegnata; campi, esiti/firme, versioni e regole issue da definire |
+| Soluzione di archiviazione                                            | MVP attuale nel DB: dati base64; PNG/JPEG/WebP/PDF,2MB/file,20file/attività; task chiusa da riaprire prima di aggiungere prove | Object storage per scala, volumi/tipi/conservazione, permessi, costi e migrazione da concordare; nessun servizio attivato       |
+| Sistema mostrato debole sulla pianificazione; foto come riferimento   | Gantt persistente e baseline/forecast, asset/tag/issue, filtri Area/Phase e dashboard esistenti                                | Nessun mandato a copiare ogni report o dedurre formule/S-curve/vincoli; Project Health storico resta senza formula concordata   |
+| Catalogo documenti manuale precedente                                 | 5cd5ca9 locale: required/optional per progetto/Phase/livello, visibile nei tag                                                 | Non è stato pubblicato da questo ciclo; template riusabili e prova per singolo passo restano fuori                              |
 
 Riscontro statico20ott: `src/app/components/TaskDetail.tsx` sezione Evidence,
 `src/server/handlers.ts` uploadAttachment/getAttachment e

@@ -139,12 +139,12 @@ Non sono nuove acquisizioni WhatsApp: il totale degli originali WhatsApp verific
 resta29. Inventario privato con nomi/percorso: `output/tony/mail-batch-20261020/inventory.private.json`.
 [Copertura e conclusioni](../intake-20261020-mail-analysis.md). Nessun contenuto privato in Git.
 
-| ID batch | Formato | Byte | SHA256 |
-| --- | --- | ---: | --- |
-| MAIL20-01 | MPX/cp1252 | 2480018 | `6863d49cdfe11b6aef3df8c07c7a1bde7ef5b74651c55ea9b6a3097403937692` |
-| MAIL20-02 | XLSX/OOXML | 282225 | `b63433230a33007f210e034afc678f1c12dea869ab76e3907f41a29cb746c03e` |
-| MAIL20-03 | PDF1.7 | 6503071 | `b3b41043e6a66ffbc317187972949a8299821a9953f96d78dd141976dd5194b1` |
-| MAIL20-04 | PDF1.3 | 1427321 | `a6b76ec748214f9059692fd9fc347bf5af2b22c56fa9ce9029f6950efb1f0bf6` |
-| MAIL20-05 | XLSX/OOXML | 877009 | `70a9caaf09d2ed5649093e38f90fc8dfb725a1301e6a4de25b80ffa8529fca34` |
-| MAIL20-06 | PPTX/OOXML | 1138091 | `ad7a67e7dd611ec3e4a449f90611c828f87b96b498764ebbbe8257e39df742f8` |
+| ID batch  | Formato                 |     Byte | SHA256                                                             |
+| --------- | ----------------------- | -------: | ------------------------------------------------------------------ |
+| MAIL20-01 | MPX/cp1252              |  2480018 | `6863d49cdfe11b6aef3df8c07c7a1bde7ef5b74651c55ea9b6a3097403937692` |
+| MAIL20-02 | XLSX/OOXML              |   282225 | `b63433230a33007f210e034afc678f1c12dea869ab76e3907f41a29cb746c03e` |
+| MAIL20-03 | PDF1.7                  |  6503071 | `b3b41043e6a66ffbc317187972949a8299821a9953f96d78dd141976dd5194b1` |
+| MAIL20-04 | PDF1.3                  |  1427321 | `a6b76ec748214f9059692fd9fc347bf5af2b22c56fa9ce9029f6950efb1f0bf6` |
+| MAIL20-05 | XLSX/OOXML              |   877009 | `70a9caaf09d2ed5649093e38f90fc8dfb725a1301e6a4de25b80ffa8529fca34` |
+| MAIL20-06 | PPTX/OOXML              |  1138091 | `ad7a67e7dd611ec3e4a449f90611c828f87b96b498764ebbbe8257e39df742f8` |
 | MAIL20-07 | PrimaveraXER15.2/cp1252 | 23590083 | `8e0b1b7766212b85457a3abec2c6ac83e6e1379ff916e6a0ddf138b6542111b5` |

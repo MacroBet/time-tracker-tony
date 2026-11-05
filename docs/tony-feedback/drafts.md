@@ -76,3 +76,19 @@ Non aggiungere annunci di disponibilità finché il deploy non è verificato.
 Marco ha chiuso la conversazione con il saluto delle 20:23, riferito come inviato
 e letto. Non preparare o inviare nuovi messaggi in una futura sessione senza una
 nuova richiesta. Lo storico degli invii manuali e dei resoconti è nel registro.
+
+## 18 ottobre — aggiornamento catalogo, v1 approvata, invio differito
+
+Su richiesta corrente di Marco riferita dalla regia, preparata una sola bozza
+per Tony McIntyre via WhatsApp app Mac. Comunica esclusivamente catalogo manuale
+progetto/Phase/livello implementato e testato localmente (5cd5ca9), non online.
+Nessuna domanda necessaria o promessa AI aggiunta. Testo esatto privato in
+`output/tony/delivery-message-20261018-v1.private.json`; impronta UTF-8 `sha256:2c72489d71ee39aaf6e86bdd95fea4822f03a0ac25b94a02d08ede2506956065`.
+Alias `tony-delivery-message-20261018-v1`, request
+`tony-delivery-message-draft-request-20261018`, job
+`tony-delivery-message-draft-20261018`, ownerMea/executorTony.
+**Testo approvato da Marco, invio differito: composer intatto e non inviata.**
+Fonte nativa corrente regia, user `01a14f93-92f0-7552-a0d7-dee4615c3557`,
+verificata via read_thread. Hash/testo invariati. Nessun invio automatico allo
+sblocco del Mac; Marco configura personalmente la chiave API, ramo separato.
+Nessun accesso WhatsApp nuovo o modifica al ramo AI; uso job non misurato:null.
