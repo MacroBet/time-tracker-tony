@@ -94,3 +94,8 @@ Copertura fino5nov08:11; editor rapido Gantt e template CSV vuoto verificati sol
 Nessun invio o pubblicazione; import XLSX, sequenze comuni, approvatori e video restano distinti.
 Prosecuzione manuale: matrice residui per parti indipendenti e fix5f4cd7c contro
 perdita di metadati nei JSON parziali;29 test mirati, nessuna nuova lettura o pubblicazione.
+
+**Ultima consegna5nov:** [XLSX asset e dashboard, prove e limiti](intake-20261105-xlsx-dashboard.md),
+applicazione locale14692f6. [Contratto XLSX](../asset-xlsx-import.md),56 test mirati e
+build passati. I due rami tecnici sono conclusi; resta distinto il rilievo audit
+sulle dipendenze preesistenti e le decisioni di dominio ancora mancanti.

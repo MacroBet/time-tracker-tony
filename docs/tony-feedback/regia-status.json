@@ -1323,7 +1323,7 @@
       "privateRef": "output/tony/next-questions-20261105.private.txt",
       "sha256Utf8": "30fdc2a546bda9fa00f77728e5dddda337bad24c9bf0e05d433a8b11185d1d0e",
       "wordCount": 37,
-      "status": "local-only-unapproved",
+      "status": "superseded-local-only-unapproved",
       "approved": false,
       "sent": false,
       "composerTouched": false
@@ -1352,6 +1352,143 @@
     "liveAiOrPaidApi": false,
     "pushed": false,
     "deployed": false,
+    "publisherRequestsEventsAclOrCallbackWritten": false
+  },
+  "latestXlsxDashboard5Nov": {
+    "observedAt": "2026-11-05T09:32:51.188Z",
+    "assignmentCorrelation": "tony-new-whatsapp-feedback-20261017",
+    "authorization": {
+      "sourceThreadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "source": "Trusted continuation delegation received in this chat; complete canonical asset XLSX and simplify existing dashboard; ordinary project dependencies allowed",
+      "newHumanMessageRead": false,
+      "scope": "local application work and local commits; no WhatsApp/customer send/push/deploy"
+    },
+    "status": "both requested independent application branches complete locally",
+    "applicationCommit": "14692f601c1dba82548c012e25fafe4d4ea68679",
+    "analysisRef": "docs/tony-feedback/intake-20261105-xlsx-dashboard.md",
+    "contractRef": "docs/asset-xlsx-import.md",
+    "xlsx": {
+      "columns": 19,
+      "sheets": "exactly one visible worksheet, header row1",
+      "pipeline": "shared CSV table validation, existing preview/reason/confirm/version/permissions/merge",
+      "template": "blank native XLSX, text column format, no project data",
+      "limits": {
+        "compressedMB": 8,
+        "expandedPartMB": 16,
+        "expandedTotalMB": 32,
+        "parts": 256,
+        "columns": 19,
+        "physicalRows": 10001,
+        "assets": 10000,
+        "xmlNodes": 600000,
+        "xmlDepth": 32
+      },
+      "rejects": [
+        "cell formulas and caches",
+        "external links/connections",
+        "macros/embedded objects",
+        "DTD/entity declarations",
+        "multiple/hidden sheets",
+        "merged cells",
+        "numeric identifiers"
+      ],
+      "zipCrcVerified": false,
+      "importsProgrammesOrChecklistRules": false
+    },
+    "dashboard": {
+      "summary": "existing counts/statuses consolidated; work needing attention first; deep views behind native disclosures; tag rows instead of rings",
+      "metricsFiltersDrilldownsRolesUnchanged": true,
+      "newHealthRating": false
+    },
+    "dependencies": {
+      "projectOnly": true,
+      "pinned": { "fflate": "0.8.3", "fast-xml-parser": "5.12.0" },
+      "licenses": "MIT",
+      "newLockEntries": 9,
+      "existingPackageVersionsChanged": false,
+      "installScriptsRun": false,
+      "registry": "https://registry.npmjs.org",
+      "globalInstallOrPaidService": false
+    },
+    "verification": {
+      "targetedTests": 56,
+      "newXlsxTests": 11,
+      "includes10000AssetWorkbook": true,
+      "typecheck": true,
+      "targetedLint": true,
+      "format": true,
+      "finalIsolatedBuild": true,
+      "impeccableDetector": "CLI exit0, no output, no ignores added",
+      "independentReview": "active relationship/orphan parts, one-pass case-sensitive SpreadsheetML escapes and time-only styles corrected with regressions",
+      "independentTemplateRead": "openpyxl: one sheet, 19 headers, no data rows, text column style",
+      "browser": [
+        "1440x1000 and390x844",
+        "total120 drilldown120, blocker11 drilldown11",
+        "deep programme disclosure opens",
+        "empty-project guided path and isolation",
+        "synthetic XLSX preview1 then explicit save and reload: assets28to29, programme activities100, revision1to2",
+        "no horizontal mobile overflow; no console errors observed"
+      ],
+      "templateDownloadCompletedInBrowser": false,
+      "full115Or10ApiSuiteRerun": false,
+      "screenshots": [
+        "output/playwright/nov5-xlsx/overview-desktop.png",
+        "output/playwright/nov5-xlsx/overview-mobile.png",
+        "output/playwright/nov5-xlsx/xlsx-preview-mobile.png"
+      ],
+      "cleanup": "temporary tab closed, viewport reset, local server terminated, next-env bytes restored"
+    },
+    "securityAudit": {
+      "newPackageAdvisories": 0,
+      "preexisting": {
+        "next": { "version": "16.3.5", "severity": "critical" },
+        "sharp": { "version": "0.35.4", "severity": "high" },
+        "source-map-js": { "version": "1.2.1", "severity": "high" },
+        "zod": { "version": "4.6.2", "severity": "high" }
+      },
+      "applicationExploitabilityProven": false,
+      "remediationScope": "separate pre-publication dependency patch; no broad audit fix performed"
+    },
+    "supersedesTechnicalOpenStatus": "XLSX and dashboard rows of latestManualResidualReview5Nov",
+    "supersededDraft": {
+      "id": "tony-next-questions-20261105",
+      "status": "outdated local draft; XLSX pending sentence no longer current; never approved or sent",
+      "originalPreserved": true
+    },
+    "remainingDomainDecisions": [
+      "common asset/tag/activity/dependency generation rules",
+      "authoritative checklist and approver eligibility/provisional-final gates",
+      "video size/access/retention",
+      "P6 pilot calendars/relationships for complete fidelity",
+      "Project Health criteria only for new rating"
+    ],
+    "git": {
+      "fetchedBefore": true,
+      "aheadBefore": 14,
+      "behindBefore": 0,
+      "preexistingEditsPreserved": true,
+      "nextEnvCommitted": false,
+      "pullResetStashForce": false,
+      "pushed": false,
+      "deployed": false
+    },
+    "quota": {
+      "ordinaryUsageAllowed": true,
+      "usedPercentAtStart": 56,
+      "usedPercentLatest": 60,
+      "lastNativeSampleUtc": "2026-11-05T09:34:14.735Z",
+      "globalNotAttributableToThisJob": true,
+      "jobTokenUsage": null,
+      "resetsOrExtraCreditsUsed": false,
+      "checkpointsObserved": [60]
+    },
+    "sourceCoverageExtended": false,
+    "customerSend": false,
+    "composerTouched": false,
+    "remoteDbOrRealClientImport": false,
+    "syntheticLocalSave": true,
+    "liveAiOrPaidApi": false,
+    "newSchedulerOrJob": false,
     "publisherRequestsEventsAclOrCallbackWritten": false
   }
 }

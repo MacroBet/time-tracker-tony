@@ -1,5 +1,10 @@
 # Ripresa Tony — 5 novembre 2026
 
+**Delta successivo:** i rami XLSX asset e semplificazione dashboard indicati sotto
+come aperti sono stati completati localmente in14692f6.
+[Ultima consegna e prove](intake-20261105-xlsx-dashboard.md).
+La matrice seguente resta lo stato dell'audit precedente, non un nuovo blocco.
+
 ## Mandato e copertura attestata
 
 Marco ha chiesto nella regia di riprendere il lavoro perché Tony ha scritto nuovi

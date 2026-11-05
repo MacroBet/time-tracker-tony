@@ -1,5 +1,25 @@
 # Registro operativo — Tony
 
+## XLSX asset e dashboard5nov — entrambi completati localmente
+
+Commit applicativo **14692f6**: import XLSX sullo schema asset canonico e template
+Excel vuoto; dashboard con riepilogo/stati e lavoro da gestire prioritari, analisi
+approfondite apribili. Stessi permessi, metriche, preview/conferma e salvataggi.
+[Consegna, prove e limiti](intake-20261105-xlsx-dashboard.md),
+[contratto XLSX](../asset-xlsx-import.md). Superato lo stato tecnico aperto sotto.
+
+**56 test mirati**,11 casi XLSX inclusi10.000asset, lint/typecheck/formato/build
+finale passati. Browser desktop/mobile: drilldown, progetto vuoto e import sintetico
+con anteprima/conferma/persistenza dopo reload;100attività programma conservate.
+Nessun push/deploy/invio, DB cliente o provider live. next-env.d.ts preservato.
+La bozza precedente con «XLSX pending» è superata, non approvata e mai inviata.
+Metadata: `latestXlsxDashboard5Nov`. Quota conto56→60%, globale non attribuita al job.
+
+Audit delle dipendenze: nessuna segnalazione nuova; rilevate preesistenti1critical
+(Next) e3high (sharp/source-map-js/Zod), da correggere prima di una pubblicazione.
+Non sono regole da chiedere a Tony. Restano le decisioni vere su sequenze, checklist,
+approvatori, video, fedeltà P6 e rating Health; nessun nuovo GO ordinario richiesto.
+
 ## Audit residui5nov — correzione JSON locale
 
 Proseguito il mandato manuale già registrato, senza nuove letture o invii.

@@ -34,6 +34,16 @@ idempotente, sorgente invariata, clear del modulo e validazione,29 test mirati.
 Ambito: file asset JSON con lista esistente dello stesso progetto; non autorizza
 inferenze, conversioni dei workbook cliente o scritture remote.
 
+## Identità e dipendenze negli import XLSX — 5 novembre
+
+**T, dimostrato in14692f6:** risolvere workbook/stringhe/stili dalle relazioni attive,
+senza leggere parti orfane al loro posto; decodificare gli escape SpreadsheetML
+una sola volta, preservando il prefisso `_x` minuscolo. Le date non si ricavano
+da stili solo orario. Questi tre casi hanno regressioni sintetiche verificate.
+La normale dipendenza ZIP/XML locale, consentita dalla delega corrente, è lavoro
+tecnico: non va trasformata in una domanda business a Tony o in un nuovo GO.
+Rimane distinta da accessi, servizi pagati, segreti e provider live.
+
 ## Proposta trasversale ancora da definire — 16 ottobre
 
 Resoconto della chat operativa: Marco vuole coordinamento tra progetti semplice
