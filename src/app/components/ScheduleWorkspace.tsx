@@ -17,7 +17,7 @@ import { ProjectAudit } from "./ProjectAudit";
 import { ProgrammeReference } from "./ProgrammeReference";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Popover, PopoverAnchor, PopoverContent } from "./ui/popover";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import {
   commissioning,
   hasModule,
@@ -95,6 +95,7 @@ function Programme({ project }: { project: Project }) {
   const [editing, setEditing] = useState<{
     activity: ScheduleActivity;
     version: number;
+    anchor: HTMLElement;
   } | null>(null);
   const projectTasks = tasks.filter((t) => t.projectId === project.id);
   const selectedAsset = state.assets.find((a) => a.id === assetId);
@@ -116,8 +117,11 @@ function Programme({ project }: { project: Project }) {
   const linked = tasks.filter(
     (t) => t.projectId === project.id && t.cx?.activityId,
   ).length;
-  function edit(activity: ScheduleActivity) {
-    setEditing({ activity, version: state.version });
+  function edit(
+    activity: ScheduleActivity,
+    anchor = document.activeElement as HTMLElement,
+  ) {
+    setEditing({ activity, version: state.version, anchor });
   }
   function addActivity() {
     edit({
@@ -137,85 +141,83 @@ function Programme({ project }: { project: Project }) {
       </div>
     </details>
   );
+  const activityDialog = editing && (
+    <ActivityDialog
+      project={project}
+      activity={editing.activity}
+      version={editing.version}
+      anchor={editing.anchor}
+      onClose={() => setEditing(null)}
+    />
+  );
   if (!state.schedule.length)
     return (
       <div className="space-y-8">
         <ProgrammeReference key={project.id} project={project} />
-        {editing ? (
-          <ActivityEditor
-            key={editing.activity.activityId || "new"}
-            project={project}
-            activity={editing.activity}
-            version={editing.version}
-            onClose={() =>
-              setEditing((current) => (current === editing ? null : current))
-            }
+        {activityDialog}
+        <section
+          className="bg-white border rounded-xl px-5 py-8 sm:px-10 sm:py-12"
+          aria-labelledby="programme-start"
+        >
+          <CalendarDays
+            className="size-8 text-blue-700 mb-6"
+            aria-hidden="true"
           />
-        ) : (
-          <section
-            className="bg-white border rounded-xl px-5 py-8 sm:px-10 sm:py-12"
-            aria-labelledby="programme-start"
+          <h2
+            id="programme-start"
+            className="text-2xl font-semibold tracking-tight"
           >
-            <CalendarDays
-              className="size-8 text-blue-700 mb-6"
-              aria-hidden="true"
-            />
-            <h2
-              id="programme-start"
-              className="text-2xl font-semibold tracking-tight"
+            Plan your first activity
+          </h2>
+          <p className="mt-3 text-slate-600 max-w-xl leading-relaxed">
+            Add a start date and duration. Your programme will show when work
+            happens and which activities depend on each other.
+          </p>
+          <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:items-center">
+            <Button
+              className="min-h-11"
+              disabled={!isOnline}
+              onClick={addActivity}
             >
-              Plan your first activity
-            </h2>
-            <p className="mt-3 text-slate-600 max-w-xl leading-relaxed">
-              Add a start date and duration. Your programme will show when work
-              happens and which activities depend on each other.
-            </p>
-            <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:items-center">
-              <Button
-                className="min-h-11"
-                disabled={!isOnline}
-                onClick={addActivity}
+              <Plus className="size-4" /> Add first activity
+            </Button>
+            <Button asChild variant="outline" className="min-h-11">
+              <Link href="/commissioning#import-register">
+                Import programme
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-10 border-t pt-6 grid gap-6 sm:grid-cols-2 max-w-2xl">
+            <div>
+              <h3 className="font-medium">Equipment belongs in Assets</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Add the equipment and choose its required tags. Link it to
+                programme activities when you are ready.
+              </p>
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
+                href="/commissioning"
               >
-                <Plus className="size-4" /> Add first activity
-              </Button>
-              <Button asChild variant="outline" className="min-h-11">
-                <Link href="/commissioning#import-register">
-                  Import programme
-                </Link>
-              </Button>
+                Go to Assets <ArrowRight className="size-4" />
+              </Link>
             </div>
-            <div className="mt-10 border-t pt-6 grid gap-6 sm:grid-cols-2 max-w-2xl">
-              <div>
-                <h3 className="font-medium">Equipment belongs in Assets</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Add the equipment and choose its required tags. Link it to
-                  programme activities when you are ready.
-                </p>
+            <div>
+              <h3 className="font-medium">Work and tests belong in Tasks</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                Assign work, record test results and collect evidence. Linked
+                tasks follow the dates in this programme.
+              </p>
+              {hasModule(currentUser, "tasks") && (
                 <Link
                   className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
-                  href="/commissioning"
+                  href="/supervisor"
                 >
-                  Go to Assets <ArrowRight className="size-4" />
+                  Go to Tasks <ArrowRight className="size-4" />
                 </Link>
-              </div>
-              <div>
-                <h3 className="font-medium">Work and tests belong in Tasks</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                  Assign work, record test results and collect evidence. Linked
-                  tasks follow the dates in this programme.
-                </p>
-                {hasModule(currentUser, "tasks") && (
-                  <Link
-                    className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
-                    href="/supervisor"
-                  >
-                    Go to Tasks <ArrowRight className="size-4" />
-                  </Link>
-                )}
-              </div>
+              )}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
         {history}
       </div>
     );
@@ -242,17 +244,7 @@ function Programme({ project }: { project: Project }) {
           </Button>
         </div>
       </div>
-      {editing && (
-        <ActivityEditor
-          key={editing.activity.activityId || "new"}
-          project={project}
-          activity={editing.activity}
-          version={editing.version}
-          onClose={() =>
-            setEditing((current) => (current === editing ? null : current))
-          }
-        />
-      )}
+      {activityDialog}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <label className="text-sm w-full sm:w-80">
           Find an activity
@@ -418,7 +410,7 @@ function Programme({ project }: { project: Project }) {
                   {visible.map((row) => (
                     <li key={row.activityId}>
                       <button
-                        onClick={() => edit(row)}
+                        onClick={(event) => edit(row, event.currentTarget)}
                         className="w-full text-left p-4 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700"
                       >
                         <span className="text-xs text-slate-600">
@@ -452,13 +444,7 @@ function Programme({ project }: { project: Project }) {
                 </ol>
               )}
               <div className={mobileTimeline ? "block" : "hidden md:block"}>
-                <Gantt
-                  rows={visible}
-                  all={state.schedule}
-                  project={project}
-                  version={state.version}
-                  onEdit={edit}
-                />
+                <Gantt rows={visible} all={state.schedule} onEdit={edit} />
               </div>
             </>
           ) : (
@@ -529,19 +515,75 @@ function Programme({ project }: { project: Project }) {
   );
 }
 
+function ActivityDialog({
+  project,
+  activity,
+  version,
+  anchor,
+  onClose,
+}: {
+  project: Project;
+  activity: ScheduleActivity;
+  version: number;
+  anchor: HTMLElement;
+  onClose: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  return (
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open && !busy) onClose();
+      }}
+    >
+      <DialogContent
+        ref={contentRef}
+        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-2xl"
+        aria-describedby={undefined}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          contentRef.current
+            ?.querySelector<HTMLInputElement>('input[name="name"]')
+            ?.focus({ preventScroll: true });
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          if (anchor.isConnected) anchor.focus({ preventScroll: true });
+        }}
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => {
+          if (busy) event.preventDefault();
+        }}
+      >
+        <DialogTitle className="pr-8 break-words">
+          {activity.activityId
+            ? `Edit ${activity.activityId}`
+            : "New programme activity"}
+        </DialogTitle>
+        <ActivityEditor
+          project={project}
+          activity={activity}
+          version={version}
+          onClose={onClose}
+          onBusyChange={setBusy}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function ActivityEditor({
   project,
   activity,
   version,
   onClose,
-  compact = false,
   onBusyChange,
 }: {
   project: Project;
   activity: ScheduleActivity;
   version: number;
   onClose: () => void;
-  compact?: boolean;
   onBusyChange?: (busy: boolean) => void;
 }) {
   const { mutate, isOnline } = useApp();
@@ -554,24 +596,9 @@ function ActivityEditor({
   } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const editorRef = useRef<HTMLElement>(null);
   useEffect(() => {
     onBusyChange?.(busy);
   }, [busy, onBusyChange]);
-  useEffect(() => {
-    if (!compact)
-      editorRef.current?.scrollIntoView({
-        block: "start",
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
-      });
-    editorRef.current
-      ?.querySelector<HTMLInputElement>(
-        compact ? 'input[name="notBefore"]' : 'input[name="name"]',
-      )
-      ?.focus({ preventScroll: true });
-  }, [compact]);
   const stale = version !== state.version;
   let referenceNumber = state.schedule.length + 1;
   while (
@@ -668,34 +695,7 @@ function ActivityEditor({
     (r) => r.activityId === proposal?.activity.activityId,
   );
   return (
-    <section
-      ref={editorRef}
-      className={
-        compact
-          ? "space-y-4"
-          : "rounded-xl border border-blue-200 bg-white p-4 sm:p-6 space-y-4 scroll-mt-52"
-      }
-      aria-label={compact ? "Quick activity editor" : "Activity editor"}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h3 className="font-semibold">
-          {activity.activityId
-            ? `Edit ${activity.activityId}`
-            : "New programme activity"}
-        </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="min-h-11"
-          disabled={busy}
-          onClick={onClose}
-        >
-          Close
-        </Button>
-      </div>
-      {compact && (
-        <p className="text-sm text-slate-600 break-words">{activity.name}</p>
-      )}
+    <section className="space-y-4" aria-label="Activity editor">
       {stale && (
         <p role="alert" className="text-sm text-red-700">
           The programme changed while this editor was open. Close and reopen the
@@ -708,14 +708,8 @@ function ActivityEditor({
           disabled={busy || stale}
           className="space-y-4 [&_input]:min-h-11 [&_select]:min-h-11"
         >
-          <div
-            className={
-              compact
-                ? "grid sm:grid-cols-2 gap-3"
-                : "grid sm:grid-cols-2 lg:grid-cols-3 gap-3"
-            }
-          >
-            <label className={compact ? "hidden" : "text-sm"}>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <label className="text-sm">
               Reference
               <Input
                 name="activityId"
@@ -726,7 +720,7 @@ function ActivityEditor({
                 placeholder="e.g. INSTALL-001"
               />
             </label>
-            <label className={compact ? "hidden" : "text-sm sm:col-span-2"}>
+            <label className="text-sm sm:col-span-2">
               Activity name
               <Input
                 name="name"
@@ -774,10 +768,7 @@ function ActivityEditor({
           {state.schedule.some(
             (row) => row.activityId !== activity.activityId,
           ) && (
-            <details
-              open={!compact && links.length > 0}
-              className="border-t pt-3"
-            >
+            <details open={links.length > 0} className="border-t pt-3">
               <summary className="cursor-pointer min-h-11 text-sm font-medium">
                 Dependencies
                 {links.length ? ` (${links.length})` : " · optional"}
@@ -899,6 +890,9 @@ function ActivityEditor({
           </Button>
         </fieldset>
       </form>
+      <Button variant="outline" disabled={busy} onClick={onClose}>
+        Cancel
+      </Button>
       {error && (
         <p role="alert" className="text-sm text-red-700">
           {error}
@@ -949,36 +943,17 @@ function ActivityEditor({
 function Gantt({
   rows,
   all,
-  project,
-  version,
   onEdit,
 }: {
   rows: ScheduleActivity[];
   all: ScheduleActivity[];
-  project: Project;
-  version: number;
-  onEdit: (r: ScheduleActivity) => void;
+  onEdit: (r: ScheduleActivity, anchor: HTMLElement) => void;
 }) {
   const first =
     rows.flatMap((r) => (r.start ? [r.start] : [])).sort()[0] ?? projectDate();
   const [anchor, setAnchor] = useState<string | null>(null);
   const [zoom, setZoom] = useState<GanttScale>("week");
   const [showLinks, setShowLinks] = useState(false);
-  const [quickEditing, setQuickEditing] = useState<{
-    activity: ScheduleActivity;
-    version: number;
-    anchor: HTMLElement;
-  } | null>(null);
-  const [quickBusy, setQuickBusy] = useState(false);
-  function quickEdit(activity: ScheduleActivity, anchor: HTMLElement) {
-    if (quickBusy) return;
-    setQuickEditing({ activity, version, anchor });
-  }
-  function closeQuickEdit() {
-    setQuickBusy(false);
-    setQuickEditing(null);
-    quickEditing?.anchor.focus({ preventScroll: true });
-  }
   const tableWidth = showLinks ? 670 : 480;
   const start = anchor ?? shiftDate(first, -2);
   const { span, unit, width, columns } = ganttAxis(start, zoom);
@@ -989,12 +964,7 @@ function Gantt({
   const clipped = (n: number) => Math.max(0, Math.min(width, n));
   const todayX = x(projectDate());
   return (
-    <Popover
-      open={!!quickEditing}
-      onOpenChange={(open) => {
-        if (!open && !quickBusy) closeQuickEdit();
-      }}
-    >
+    <>
       <section
         className="rounded-xl border bg-white overflow-hidden"
         aria-label="Project Gantt"
@@ -1102,7 +1072,7 @@ function Gantt({
                       className="h-12 border-t hover:bg-blue-50/40"
                       onContextMenu={(event) => {
                         event.preventDefault();
-                        quickEdit(
+                        onEdit(
                           r,
                           event.currentTarget.querySelector<HTMLButtonElement>(
                             "button",
@@ -1113,14 +1083,14 @@ function Gantt({
                       <td className="px-3">
                         <button
                           className="text-xs text-left w-full hover:text-blue-700 focus-visible:outline-blue-600"
-                          onClick={() => onEdit(r)}
+                          onClick={(event) => onEdit(r, event.currentTarget)}
                           onKeyDown={(event) => {
                             if (
                               event.key === "ContextMenu" ||
                               (event.shiftKey && event.key === "F10")
                             ) {
                               event.preventDefault();
-                              quickEdit(r, event.currentTarget);
+                              onEdit(r, event.currentTarget);
                             }
                           }}
                         >
@@ -1141,7 +1111,7 @@ function Gantt({
                           size="icon"
                           className="min-h-11 min-w-11"
                           aria-label={`Quick edit ${r.activityId}`}
-                          onClick={(event) => quickEdit(r, event.currentTarget)}
+                          onClick={(event) => onEdit(r, event.currentTarget)}
                         >
                           <Pencil className="size-4" aria-hidden="true" />
                         </Button>
@@ -1300,7 +1270,7 @@ function Gantt({
                       tabIndex={-1}
                       onContextMenu={(event) => {
                         event.preventDefault();
-                        quickEdit(
+                        onEdit(
                           r,
                           event.currentTarget.querySelector<HTMLButtonElement>(
                             "button",
@@ -1332,7 +1302,7 @@ function Gantt({
                           }}
                           title={`${r.activityId}: ${r.name}; ${r.start} → ${r.finish}; ${r.progress ?? "unrecorded"}%`}
                           aria-label={`Edit ${r.activityId}: ${r.name}, ${r.start} to ${r.finish}`}
-                          onClick={() => onEdit(r)}
+                          onClick={(event) => onEdit(r, event.currentTarget)}
                         >
                           <span
                             className="absolute left-0 inset-y-0 bg-blue-400/50"
@@ -1365,36 +1335,6 @@ function Gantt({
           row or use its pencil for quick changes here.
         </p>
       </section>
-      {quickEditing && (
-        <>
-          <PopoverAnchor virtualRef={{ current: quickEditing.anchor }} />
-          <PopoverContent
-            align="start"
-            side="bottom"
-            collisionPadding={12}
-            className="w-[min(36rem,calc(100vw-1.5rem))] max-h-[min(42rem,var(--radix-popover-content-available-height))] overflow-y-auto rounded-xl p-4 sm:p-5"
-            aria-label={`Quick edit ${quickEditing.activity.activityId}`}
-            onOpenAutoFocus={(event) => event.preventDefault()}
-            onCloseAutoFocus={(event) => event.preventDefault()}
-            onInteractOutside={(event) => {
-              if (quickBusy) event.preventDefault();
-            }}
-            onEscapeKeyDown={(event) => {
-              if (quickBusy) event.preventDefault();
-            }}
-          >
-            <ActivityEditor
-              key={quickEditing.activity.activityId}
-              project={project}
-              activity={quickEditing.activity}
-              version={quickEditing.version}
-              compact
-              onBusyChange={setQuickBusy}
-              onClose={closeQuickEdit}
-            />
-          </PopoverContent>
-        </>
-      )}
-    </Popover>
+    </>
   );
 }
