@@ -86,7 +86,7 @@ inferred. Step fields, external IDs, issue rules and template versioning remain
 incomplete. The manual document catalog is implemented and validated locally for each project,
 existing asset phase and tag level. Admins name required/not-required items; tag
 test sheets show the current applicable list. It has no completion or approval
-gates and is not published. No live AI, automatic issue generation
+gates. The completed catalog was published with the verified 5 November release. No live AI, automatic issue generation
 or imported real data is implied.
 Source: docs/tony-feedback/intake-20261018-status.md.
 
@@ -95,8 +95,9 @@ text-formatted Excel template, using the existing preview, validation and save
 pipeline. One visible worksheet is supported; formulas, external connections and
 ambiguous workbook structures are rejected. The Overview now puts the existing
 summary and work needing attention first, with deeper analyses behind disclosure
-controls. Metrics and role/project boundaries are unchanged; neither change is
-published. Sources: docs/asset-xlsx-import.md and the 5 November delivery report.
+controls. Metrics and role/project boundaries are unchanged; both changes are
+published in the verified 5 November release (90dd199). Sources: docs/asset-xlsx-import.md,
+the 5 November delivery report and docs/tony-feedback/intake-20261105-secure-release.md.
 
 ## Product Principles
 

@@ -99,3 +99,8 @@ perdita di metadati nei JSON parziali;29 test mirati, nessuna nuova lettura o pu
 applicazione locale14692f6. [Contratto XLSX](../asset-xlsx-import.md),56 test mirati e
 build passati. I due rami tecnici sono conclusi; resta distinto il rilievo audit
 sulle dipendenze preesistenti e le decisioni di dominio ancora mancanti.
+
+**Rilascio5nov pubblicato:** [patch sicurezza, push e prove produzione](intake-20261105-secure-release.md).
+Main90dd199, Vercel Production success7573042780; XLSX/Overview, Gantt e catalogo
+completati inclusi.132unitari+10API e build locali verdi, smoke pubblico sola lettura.
+Audit produzione0;8moderate residue soltanto lint. Invio5nov12:40 consegnato, nessun reinvio.

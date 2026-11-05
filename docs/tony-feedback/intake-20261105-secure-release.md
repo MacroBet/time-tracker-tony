@@ -76,9 +76,29 @@ aggiornati, nessun pacchetto aggiunto/rimosso o modifica estranea.
 
 ## Pubblicazione
 
-Controlli locali conclusi; push e deploy ancora da attestare. Il deploy storico
-17ott SHA58b3bb4 non prova la presenza del nuovo lotto. L’esito remoto e lo smoke
-pubblico saranno registrati dopo le risposte effettive GitHub/Vercel.
+Push normale riuscito da58b3bb4 a **90dd1993f72f0501340dcdd6f786c3d6c6805ce1**,
+21 commit, con corrispondenza main remoto verificata anche via GitHub API.
+**Vercel Production success**5nov **12:02:58UTC / 13:02:58 Europe/Rome**:
+GitHub deployment **7573042780**, Vercel **Ce3ytFZwWSW5aJkNd4cWW1e5Vr7p**.
+[Dashboard deploy](https://vercel.com/macrobets-projects/time-tracker-tony/Ce3ytFZwWSW5aJkNd4cWW1e5Vr7p),
+[URL deploy](https://time-tracker-tony-a928fzlic-macrobets-projects.vercel.app),
+[alias pubblico](https://time-tracker-tony.vercel.app).
+
+Smoke pubblico di sola lettura: HTTP200 per /, /commissioning, /overview e /schedule;
+sessione anonima in modalità **neon**, /api/bootstrap **401**. Il bundle Gantt
+referenziato dal server risponde200 e contiene scala Days predefinita e editor.
+Percorso effettivo `/_next/static/chunks/app/(workspace)/schedule/page-eb5ef812874b2dca.js`,
+SHA256 `da264c9e7365ba00142a0103438a995f3bd56c423ff94675c09c9160b1bd6e2a`.
+Gli hash dei chunk Vercel differiscono dalla build locale: i primi percorsi locali
+sondati davano404; la prova usa quello effettivamente pubblicato.
+
+Non effettuato un collaudo autenticato in produzione, né import/salvataggi reali:
+XLSX e Overview sono coperti dai test locali e dal commit pubblicato verificato.
+Nessuna credenziale cercata o creata. Ricevute API/audit/smoke in
+`output/tony/secure-release-20261105/`, ignorate da Git. Quota conto65→66%, globale,
+uso ordinario consentito; nessun reset/acquisto. Formato completo passato dopo sole
+correzioni di impaginazione in3 documenti esistenti. Questo aggiornamento delle prove
+è un successivo commit documentale: contenuto applicativo invariato rispetto a90dd199.
 
 L’invio WhatsApp5nov12:40 è già consegnato e il consenso consumato. Nessun nuovo
 invio o estensione della copertura Tony durante questo incarico. Regole su sequenze,

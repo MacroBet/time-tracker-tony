@@ -1,6 +1,6 @@
 # Registro operativo — Tony
 
-## Rilascio5nov — patch validate, push/deploy da verificare
+## Rilascio5nov — pubblicato e verificato in produzione
 
 Nuovo mandato esplicito Marco nella regia, user
 `01a1ab8a-c773-7840-a28b-b5cc5e24b4cb`, job `tony-secure-release-20261105`:
@@ -10,7 +10,12 @@ Audit produzione **0**, completo **8 moderate soltanto lint, 0 high/critical**.
 **132 unitari,10API, typecheck/lint/build verdi** nella demo locale isolata;
 nessuna migrazione, DB remoto, AI live o nuovo invio. next-env.d.ts preservato.
 [Mandato, versioni, prove e residui](intake-20261105-secure-release.md).
-Push e deploy nuovi ancora da attestare; non confonderli con le prove locali.
+Push normale **90dd199** verificato su main; **Vercel Production success**, deploy
+**7573042780 / Ce3ytFZwWSW5aJkNd4cWW1e5Vr7p**,5nov12:02:58UTC.
+[App online](https://time-tracker-tony.vercel.app). Smoke pubblico200, sessione Neon,
+bootstrap anonimo401; bundle Gantt Days/editor verificato. Flussi autenticati e
+XLSX/Overview testati localmente, inclusi nello SHA pubblicato. Quota globale65→66%,
+uso ordinario consentito; nessun reset o credito extra. Solo next-env resta locale.
 
 ## Invio5nov12:40 — consegnato, consenso consumato
 
@@ -280,7 +285,7 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 ## Stato corrente per ripresa
 
 **Ultimo mandato5nov:** rilascio autorizzato del lotto completato dopo patch sicurezza;
-controlli locali verdi, push e produzione ancora da verificare nel [report corrente](intake-20261105-secure-release.md).
+push main90dd199 e Vercel Production success verificati nel [report corrente](intake-20261105-secure-release.md).
 Le consegne sotto e i vecchi limiti di pubblicazione sono storici. Ultima copertura
 incoming Tony5nov08:11; outgoing5nov12:40 consegnato, consenso consumato.
 

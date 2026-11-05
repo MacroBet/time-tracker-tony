@@ -6,22 +6,27 @@
   "intakeId": null,
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-  "status": "in_progress",
-  "executionState": "validated-awaiting-push",
-  "observedAt": "2026-11-05T11:59:26.774183+00:00",
+  "status": "completed",
+  "executionState": "production-release-verified",
+  "observedAt": "2026-11-05T12:07:54.282004+00:00",
   "startedAt": "2026-11-05T11:59:26.774183+00:00",
-  "completedAt": null,
+  "completedAt": "2026-11-05T12:07:54.282004+00:00",
   "deadline": "2026-11-05",
   "executors": [
     {
       "name": "/root",
       "threadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-      "role": "draft from completed7-file analysis",
+      "role": "security patch, validation, normal main push and production verification",
       "subagent": false
+    },
+    {
+      "name": "/root/nov5_scope_audit",
+      "role": "independent read-only pending-document and dependency review",
+      "subagent": true
     }
   ],
-  "outcome": "Security patches and completed application lot validated locally; remote push and production deployment pending.",
-  "turnReportTerminal": false,
+  "outcome": "Completed application lot and security patches pushed normally to main90dd199; Vercel Production success7573042780 and public read-only alias smoke verified.132unit+10API tests locally; production audit0, full audit8moderate dev-only. No new customer send, remote data writes or live AI.",
+  "turnReportTerminal": true,
   "evidence": [
     {
       "kind": "agent-report",
@@ -276,7 +281,14 @@
         "imports"
       ],
       "exactCustomerDraftApproved": false
-    }
+    },
+    "latestReleaseHumanSource": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a1ab8a-c773-7840-a28b-b5cc5e24b4cb",
+      "verifiedBy": "direct native read_thread5Nov",
+      "scope": "minimal dependency security fixes, completed app/docs normal main push, Vercel production deployment and read-only smoke"
+    },
+    "latestReleaseScope": "Normal main push of validated completed application/docs and security patches; existing Vercel production integration and public read-only smoke; no customer send, remoteDB, liveAI or spending"
   },
   "sourceCoverage": {
     "channel": "whatsapp",
@@ -331,7 +343,7 @@
       "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992"
     },
     "audioExcludedByMarco": true,
-    "latestIncomingTextObserved": "2026-10-19 20:53 Europe/Rome",
+    "latestIncomingTextObserved": "2026-11-05 08:11 Europe/Rome",
     "additionalTextDelta": {
       "incomingBubbles": 4,
       "from": "11:06",
@@ -401,7 +413,12 @@
       "method": "bundled LibreOfficeDev26.8 headless on already acquired source; isolated profile disables macros/updates/untrustedrefererlinks",
       "sourceUnchanged": true,
       "privateAnalysisRef": "output/tony/roadmap-analysis-20261018/structure.private.json"
-    }
+    },
+    "currentIncomingWatermark": "2026-11-05 08:11 Europe/Rome",
+    "currentOutgoingWatermark": "2026-11-05 12:40 Europe/Rome delivered; not read receipt",
+    "currentCoverageRef": "docs/tony-feedback/intake-20261105-resume.md",
+    "extendedDuringSecurityRelease": false,
+    "historicalWindowsRetained": true
   },
   "receiptUpdates": [
     {
@@ -614,54 +631,11 @@
     },
     "previousPublishedApplicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83"
   },
-  "blockers": [
-    {
-      "kind": "source-access",
-      "reason": "OS-level file access denied. Attribution to a specific macOS privacy permission/TCC entry has NOT been verified; shell escalation did not resolve the denial.",
-      "failedOperation": "Enumerate only Tony/WhatsApp export candidates under /Users/marcobellia/Downloads with rg --files and name filters",
-      "observedResult": "Operation not permitted (os error1), both default execution and approved escalation",
-      "specificNativeApprovalPending": false,
-      "nativeActionRequired": "No specific native permission action identified from returned evidence; do not prescribe Full Disk Access or claim an active consent prompt.",
-      "nextActor": "Regia: classify supported native client/OS diagnostic if one becomes available; Marco only for an actual named OS action shown and deliberately approved. Executor does not probe alternative routes.",
-      "unblockCondition": "A supported native diagnostic identifies the denied operation and responsible app/access requirement, then any required human OS action is completed and supported access becomes available. No generic GO is sufficient."
-    },
-    {
-      "kind": "git-ssh-auth",
-      "reason": "git fetch origin failed Permission denied (publickey)",
-      "currentReadOnlyAlternativeEvidence": "public GitHub main ref58b3bb4 matches cached origin/main; Vercel success verified",
-      "neededForFutureMutation": "restore existing authorised SSH access before fetch/push if needed; no key or auth changes performed"
-    },
-    {
-      "kind": "authorization-review-reported-by-coordinator",
-      "reason": "Coordinator reports auto-review rejected catalog job-update twice, including after native user01a14b0b retrieval; tool output not accepted as trusted direct human mandate",
-      "reportedByThreadId": "01a14447-19af-7b71-b20d-114d8d4a005c",
-      "directRejectionReceivedByThisExecutor": false,
-      "action": "Frozen local draft; no further implementation,tests,codecommit,push,release or retry",
-      "unblockCondition": "Root presents one precise direct human approval for manual per-project/tag document catalog from phone; no genericGO or desktop action",
-      "nativeSourceNowRecovered": {
-        "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
-        "userMessageId": "01a14b0b-9122-7390-8ec0-74ea633baab5",
-        "turnId": "01a14b0b-8d14-78d1-b931-757021d41f1d",
-        "readThreadCursor": "{\"requestedThreadId\":\"01a1493a-ee0b-7d62-a861-d8d546bf013c\",\"rolloutOrdinal\":2633,\"includeAnchor\":false,\"scope\":{\"kind\":\"turns\"}}",
-        "turnLimit": 10,
-        "quoteExcerpt": "ricontrolla ... i messaggi che ha mandato e porta avanti lo sviluppo",
-        "verifiedBy": "direct native read_thread18Oct",
-        "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
-        "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
-      },
-      "reportedRejections": 2
-    },
-    {
-      "kind": "desktop-locked",
-      "reason": "Native read-only WhatsApp observation reports Mac locked; automatic unlock failed",
-      "observedAt": "2026-10-18T11:20:31.988046+00:00",
-      "retryAllowedWithoutExternalChange": false,
-      "physicalActionRequested": false
-    }
-  ],
+  "blockers": [],
   "nextActions": [
-    "Complete the explicitly authorized security patch and release tony-secure-release-20261105; verify tests, remote SHA and production deployment",
-    "Customer update5Nov already delivered; approval consumed, no further send or composer editing authorized",
+    "Tony can test the released application on the existing production alias",
+    "Await concrete domain decisions on shared sequences, checklist/approver gates, video storage/access and Health before those additional features",
+    "Customer message5Nov12:40 already delivered; no resend or composer editing authorized",
     "Publisher reconciles requests/events from evidence; no executor callback or ACL changes"
   ],
   "outgoingDrafts": [
@@ -830,7 +804,9 @@
       "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
       "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
     },
-    "approvalGate": "two reported auto-review rejections; direct function approval to be prepared by root"
+    "approvalGate": "two reported auto-review rejections; direct function approval to be prepared by root",
+    "historicalRecord": true,
+    "currentReleaseRef": "latestSecureRelease5Nov; docs/tony-feedback/intake-20261105-secure-release.md"
   },
   "lastMonitorCheck": {
     "observedAt": "2026-10-18T11:20:31.988046+00:00",
@@ -1668,7 +1644,7 @@
       "verifiedBy": "direct native read_thread5Nov",
       "scope": "minimal dependency security fixes, completed app/docs normal main push, Vercel production deployment and read-only smoke"
     },
-    "status": "validated-awaiting-push",
+    "status": "completed",
     "baseRemote": "58b3bb4d047d574144294d783e9c5097ce85f4f3",
     "previousLocalHead": "2a34e4051e533ae974f5f47c060ce5f5ac796a1b",
     "versions": {
@@ -1701,7 +1677,8 @@
       "apiTarget": "isolated local synthetic demo 127.0.0.1:3107",
       "serverStopped": true,
       "migrationDiff": "none",
-      "independentDependencyReview": "passed; no extra direct dependency, major or override"
+      "independentDependencyReview": "passed; no extra direct dependency, major or override",
+      "formatCheck": "passed, including formatting-only corrections in3 existing docs"
     },
     "reportRef": "docs/tony-feedback/intake-20261105-secure-release.md",
     "target": {
@@ -1710,8 +1687,8 @@
       "vercelProject": "macrobets-projects/time-tracker-tony",
       "alias": "https://time-tracker-tony.vercel.app"
     },
-    "pushVerified": false,
-    "deploymentVerified": false,
+    "pushVerified": true,
+    "deploymentVerified": true,
     "sourceCoverageExtended": false,
     "customerSend": false,
     "composerTouched": false,
@@ -1723,8 +1700,81 @@
       "usedPercentAtStart": 65,
       "ordinaryUsageAllowed": true,
       "globalNotJobCost": true,
-      "resetsOrCreditsUsed": false
+      "resetsOrCreditsUsed": false,
+      "usedPercentAtClosure": 66
     },
-    "securityCommit": "7341157d239530c433c9b772d076d2fbd44c1753"
+    "securityCommit": "7341157d239530c433c9b772d076d2fbd44c1753",
+    "codeReleaseCommit": "90dd1993f72f0501340dcdd6f786c3d6c6805ce1",
+    "completedAt": "2026-11-05T12:07:54.282004+00:00",
+    "deployment": {
+      "githubId": 7573042780,
+      "vercelId": "Ce3ytFZwWSW5aJkNd4cWW1e5Vr7p",
+      "environment": "Production",
+      "state": "success",
+      "commit": "90dd1993f72f0501340dcdd6f786c3d6c6805ce1",
+      "successAt": "2026-11-05T12:02:58Z",
+      "dashboardUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/Ce3ytFZwWSW5aJkNd4cWW1e5Vr7p",
+      "environmentUrl": "https://time-tracker-tony-a928fzlic-macrobets-projects.vercel.app"
+    },
+    "smoke": {
+      "publicRoutes": "HTTP200 /, /commissioning, /overview, /schedule",
+      "sessionMode": "neon",
+      "authenticated": false,
+      "bootstrapUnauthenticatedStatus": 401,
+      "ganttBundleStatus": 200,
+      "ganttDayDefaultAndEditMarkers": true,
+      "authenticatedProductionFlowsTested": false,
+      "xlsxOverviewRuntimeVerification": "local only; code included in verified production commit",
+      "remoteMutations": false
+    },
+    "privateEvidenceDir": "output/tony/secure-release-20261105"
+  },
+  "historicalSourceAndPriorJobBlockersAtRelease5Nov": {
+    "scope": "Prior source/export or job conditions retained verbatim; not blockers for the separately authorized5Nov release",
+    "items": [
+      {
+        "kind": "source-access",
+        "reason": "OS-level file access denied. Attribution to a specific macOS privacy permission/TCC entry has NOT been verified; shell escalation did not resolve the denial.",
+        "failedOperation": "Enumerate only Tony/WhatsApp export candidates under /Users/marcobellia/Downloads with rg --files and name filters",
+        "observedResult": "Operation not permitted (os error1), both default execution and approved escalation",
+        "specificNativeApprovalPending": false,
+        "nativeActionRequired": "No specific native permission action identified from returned evidence; do not prescribe Full Disk Access or claim an active consent prompt.",
+        "nextActor": "Regia: classify supported native client/OS diagnostic if one becomes available; Marco only for an actual named OS action shown and deliberately approved. Executor does not probe alternative routes.",
+        "unblockCondition": "A supported native diagnostic identifies the denied operation and responsible app/access requirement, then any required human OS action is completed and supported access becomes available. No generic GO is sufficient."
+      },
+      {
+        "kind": "git-ssh-auth",
+        "reason": "git fetch origin failed Permission denied (publickey)",
+        "currentReadOnlyAlternativeEvidence": "public GitHub main ref58b3bb4 matches cached origin/main; Vercel success verified",
+        "neededForFutureMutation": "restore existing authorised SSH access before fetch/push if needed; no key or auth changes performed"
+      },
+      {
+        "kind": "authorization-review-reported-by-coordinator",
+        "reason": "Coordinator reports auto-review rejected catalog job-update twice, including after native user01a14b0b retrieval; tool output not accepted as trusted direct human mandate",
+        "reportedByThreadId": "01a14447-19af-7b71-b20d-114d8d4a005c",
+        "directRejectionReceivedByThisExecutor": false,
+        "action": "Frozen local draft; no further implementation,tests,codecommit,push,release or retry",
+        "unblockCondition": "Root presents one precise direct human approval for manual per-project/tag document catalog from phone; no genericGO or desktop action",
+        "nativeSourceNowRecovered": {
+          "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+          "userMessageId": "01a14b0b-9122-7390-8ec0-74ea633baab5",
+          "turnId": "01a14b0b-8d14-78d1-b931-757021d41f1d",
+          "readThreadCursor": "{\"requestedThreadId\":\"01a1493a-ee0b-7d62-a861-d8d546bf013c\",\"rolloutOrdinal\":2633,\"includeAnchor\":false,\"scope\":{\"kind\":\"turns\"}}",
+          "turnLimit": 10,
+          "quoteExcerpt": "ricontrolla ... i messaggi che ha mandato e porta avanti lo sviluppo",
+          "verifiedBy": "direct native read_thread18Oct",
+          "verifiedAt": "2026-10-18T11:08:12.629586+00:00",
+          "doesNotAuthorize": "customer sends,remoteDB,liveAI,paidAPI,newmonitor"
+        },
+        "reportedRejections": 2
+      },
+      {
+        "kind": "desktop-locked",
+        "reason": "Native read-only WhatsApp observation reports Mac locked; automatic unlock failed",
+        "observedAt": "2026-10-18T11:20:31.988046+00:00",
+        "retryAllowedWithoutExternalChange": false,
+        "physicalActionRequested": false
+      }
+    ]
   }
 }
