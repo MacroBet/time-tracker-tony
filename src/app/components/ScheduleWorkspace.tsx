@@ -24,6 +24,7 @@ import {
   type ScheduleActivity,
 } from "@/lib/commissioning";
 import { calendarDays, dayNumber, workingDuration } from "@/lib/scheduling";
+import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
 import { projectDate, type Project, type Task } from "@/lib/domain";
 import type { Asset } from "@/lib/commissioning";
 
@@ -961,7 +962,7 @@ function Gantt({
   const first =
     rows.flatMap((r) => (r.start ? [r.start] : [])).sort()[0] ?? projectDate();
   const [anchor, setAnchor] = useState<string | null>(null);
-  const [zoom, setZoom] = useState("week");
+  const [zoom, setZoom] = useState<GanttScale>("week");
   const [showLinks, setShowLinks] = useState(false);
   const [quickEditing, setQuickEditing] = useState<{
     activity: ScheduleActivity;
@@ -980,9 +981,7 @@ function Gantt({
   }
   const tableWidth = showLinks ? 670 : 480;
   const start = anchor ?? shiftDate(first, -2);
-  const span = zoom === "day" ? 35 : zoom === "week" ? 100 : 365;
-  const unit = zoom === "day" ? 26 : zoom === "week" ? 12 : 4;
-  const width = span * unit;
+  const { span, unit, width, columns } = ganttAxis(start, zoom);
   const positions = new Map(
     rows.map((r, i) => [r.activityId, { row: r, index: i }]),
   );
@@ -1039,7 +1038,7 @@ function Gantt({
               <select
                 aria-label="Gantt scale"
                 value={zoom}
-                onChange={(e) => setZoom(e.target.value)}
+                onChange={(e) => setZoom(e.target.value as GanttScale)}
                 className="field-select mt-1"
               >
                 <option value="day">Days</option>
@@ -1187,13 +1186,22 @@ function Gantt({
             </table>
             <div className="relative shrink-0 border-l" style={{ width }}>
               <div className="h-14 relative bg-slate-50 border-b text-xs text-slate-600">
-                {Array.from({ length: Math.ceil(span / 7) }, (_, i) => (
+                {columns.map((column) => (
                   <span
-                    key={i}
-                    className="absolute top-5 pl-2 border-l border-slate-300"
-                    style={{ left: i * 7 * unit }}
+                    key={column.date}
+                    className={
+                      zoom === "day"
+                        ? `absolute inset-y-0 flex flex-col items-center justify-center gap-1 border-l border-slate-200 tabular-nums ${column.weekend ? "bg-slate-100" : ""}`
+                        : "absolute top-5 pl-2 border-l border-slate-300"
+                    }
+                    style={{
+                      left: column.left,
+                      ...(zoom === "day" ? { width: unit } : {}),
+                    }}
+                    title={column.date}
                   >
-                    {formatDate(shiftDate(start, i * 7))}
+                    <time dateTime={column.date}>{column.label}</time>
+                    {zoom === "day" && <span>{column.weekday}</span>}
                   </span>
                 ))}
               </div>
@@ -1217,11 +1225,24 @@ function Gantt({
                       <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
                     </marker>
                   </defs>
-                  {Array.from({ length: Math.ceil(span / 7) }, (_, i) => (
+                  {zoom === "day" &&
+                    columns
+                      .filter((column) => column.weekend)
+                      .map((column) => (
+                        <rect
+                          key={`weekend-${column.date}`}
+                          x={column.left}
+                          y={0}
+                          width={unit}
+                          height={rows.length * 48}
+                          fill="#f1f5f9"
+                        />
+                      ))}
+                  {columns.map((column) => (
                     <line
-                      key={i}
-                      x1={i * 7 * unit}
-                      x2={i * 7 * unit}
+                      key={column.date}
+                      x1={column.left}
+                      x2={column.left}
                       y1={0}
                       y2={rows.length * 48}
                       stroke="#e2e8f0"
