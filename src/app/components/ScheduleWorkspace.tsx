@@ -280,21 +280,27 @@ function Programme({ project }: { project: Project }) {
           </Button>
         </div>
       </div>
-      <div className="flex flex-col xl:flex-row gap-4 items-start">
+      <div className="space-y-4">
         {state.assets.length > 0 && (
-          <aside className="w-full xl:w-56 xl:shrink-0 rounded-xl border bg-white p-3">
+          <aside className="w-full rounded-xl border bg-white px-3">
             <details>
-              <summary className="font-semibold text-sm cursor-pointer">
+              <summary className="min-h-11 content-center font-semibold text-sm cursor-pointer">
                 Browse equipment{" "}
                 <span className="font-normal text-slate-600">
                   ({state.assets.length})
                 </span>
+                {selectedAsset && (
+                  <span className="font-normal text-slate-600 break-words">
+                    {" "}
+                    · {selectedAsset.name}
+                  </span>
+                )}
               </summary>
-              <div className="mt-3 space-y-3">
+              <div className="grid gap-3 pb-3 sm:grid-cols-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="self-end sm:justify-self-start"
                   onClick={() => {
                     setAssetId("");
                     setPage(0);
@@ -318,7 +324,7 @@ function Programme({ project }: { project: Project }) {
                     <option value="area">Area</option>
                   </select>
                 </label>
-                <div className="max-h-96 overflow-y-auto space-y-2">
+                <div className="max-h-96 overflow-y-auto grid gap-2 sm:col-span-2 sm:grid-cols-2 xl:grid-cols-3">
                   {[...new Set(state.assets.map((a) => a.equipmentType))]
                     .sort()
                     .map((type) => {
@@ -326,7 +332,7 @@ function Programme({ project }: { project: Project }) {
                         (a) => a.equipmentType === type,
                       );
                       return (
-                        <details key={type}>
+                        <details key={type} className="min-w-0 self-start">
                           <summary className="cursor-pointer text-sm py-1 font-medium">
                             {type}{" "}
                             <span className="text-slate-500 font-normal">
@@ -952,7 +958,7 @@ function Gantt({
   const first =
     rows.flatMap((r) => (r.start ? [r.start] : [])).sort()[0] ?? projectDate();
   const [anchor, setAnchor] = useState<string | null>(null);
-  const [zoom, setZoom] = useState<GanttScale>("week");
+  const [zoom, setZoom] = useState<GanttScale>("day");
   const [showLinks, setShowLinks] = useState(false);
   const tableWidth = showLinks ? 670 : 480;
   const start = anchor ?? shiftDate(first, -2);
