@@ -1,5 +1,54 @@
 # Registro operativo — Tony
 
+## Diagnosi dati5nov — produzione con305task, anteprima reale parziale
+
+Mandato corrente `tony-production-data-reconciliation-20261105`, request
+`tony-production-data-reconciliation-request-20261105`. Marco ha scelto **dati reali di Tony con anteprima**;
+scelta fissata, nessuna demo online. [Diagnosi, prova UI, preview e prerequisiti](intake-20261105-production-data.md).
+Northbank28asset/100programma/120task del tour è fixture sintetica locale mai
+trasferita. Il child reale della regia ha letto produzione già autenticata:
+Test admin/Admin, FieldTrack Test, AMS16 · Test, **0asset/0programma ma305task**
+(279unassigned,22assigned,0review,4closed). Non è un DB globalmente vuoto;
+Progetto osservato ID`fcdb866f-12d4-4e85-a6b2-004ca1d53701`; corrispondenza
+all’import/account/membership di Tony e origine dei305record non verificati.
+I305task vanno preservati. Nessun login, API/SQL, cambio accessi o scrittura.
+
+Nuovi testi delegati: outgoing12:40→incoming **5nov14:19 Europe/Rome**,
+14bolle=12testi+2XLSX con caption. **0nuovi file acquisiti**, download fallito
+noWindowsAvailable/frontmostApplicationChanged; originali29WhatsApp+7mail invariati.
+La regia ha già chiesto i2nuovi Excel e username/email usato da Tony a Marco.
+People/Team5persone senza corrispondenza Tony nella vista non prova assenza globale. FR→Phase e configurabilità firmatari
+QA per progetto ora chiariti; P6 contiene già predecessori/successori. Non ripetere
+queste domande, non sostituire il nuovo export ACC migliore conATT014 o i nuovi
+checksheet con vecchi PDF. Copertura owner via trascrizione privata del lettore,
+non propria lettura CUA; i gap storici restano.
+
+Anteprima P6 **parziale pronta**, solo offline:16969ActivityID univoci e36923legami
+con righe/campi sorgente conservati nei JSONL privati. Non sono record pronti al
+caricamento: limite15000perrichiesta,8607nonFS,14lagnegativi,2099duratezero,
+6attività oltre100predecessori, calendari/WBS/risorse da rappresentare. Nessun
+nuovo parser nell’app, conversione lossy, taglio di righe o ricalcolo reale.
+TargetID/versione/snapshot e join con i nuovi2file pending; aggiunte/aggiornamenti
+**ignoti**, non zero. Manifest/anteprima privata in
+`output/tony/data-reconciliation-20261105/real-data-preview.private.md` e `.json`.
+
+Prossimo passo:2originali nuovi, target esatto e crosswalk; poi preview definitiva
+e approvazione specifica di scrittura con isolamento/idempotenza/rollback. Nessun
+GO generico, nuova chiave, messaggio cliente, test completi o deploy necessario.
+Quota globale71%, uso ordinario consentito; token jobnull, nessun reset/spesa.
+Metadata `latestDataReconciliation5Nov`. Limite CUA sotto è storico del solo owner,
+la copertura è avanzata grazie al lettore delegato.
+
+## Monitor5nov — computer use non disponibile nella sessione corrente
+
+Il controllo delle capacità dopo il heartbeat5nov13:04UTC conferma che il tool
+computer use è assente, come da aggiornamento esplicito della sessione. Desktop
+non ispezionato: non si deduce Mac bloccato né assenza di nuovi messaggi Tony.
+Copertura incoming invariata **5nov08:11 Europe/Rome**; outgoing5nov12:40 già
+consegnato, consenso consumato. Nessun accesso alternativo, retry, audio, composer,
+invio o nuova automazione. Limite registrato in `latestMonitorCapabilityLimit5Nov`;
+chiusura del controllo senza attese o richiesta di intervento fisico a Marco.
+
 ## Rilascio5nov — pubblicato e verificato in produzione
 
 Nuovo mandato esplicito Marco nella regia, user
@@ -16,6 +65,13 @@ Push normale **90dd199** verificato su main; **Vercel Production success**, depl
 bootstrap anonimo401; bundle Gantt Days/editor verificato. Flussi autenticati e
 XLSX/Overview testati localmente, inclusi nello SHA pubblicato. Quota globale65→66%,
 uso ordinario consentito; nessun reset o credito extra. Solo next-env resta locale.
+
+Chiusura pubblicazione: commit documentale finale **9cd994bae740679e15161e95475e95afe747cb0f**,
+main confermato allineato dal fetch successivo. **Vercel Production success** anche
+per questo SHA, deploy **7573171129 / 8PMSHyM9YYGAFEk3cs7eYW7fEMRK**,5nov12:09:14UTC.
+Contenuto applicativo invariato rispetto a90dd199; nessun nuovo collaudo autenticato
+in produzione. Ricevuta privata `output/tony/secure-release-20261105/final-release.private.json`.
+I nuovi metadati di chiusura/limite monitor restano locali; nessun ulteriore push o deploy.
 
 ## Invio5nov12:40 — consegnato, consenso consumato
 
@@ -283,6 +339,12 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Priorità corrente5nov:** riconciliazione dati e anteprima reale scelta da Marco.
+Produzione osservata Admin AMS16 · Test:0asset/0programma/305task, accountTony e
+targetID non verificati. Preview P6 parziale offline e2XLSX nuovi ancora da acquisire;
+[stato e prerequisiti esatti](intake-20261105-production-data.md). Copertura incoming
+ora5nov14:19 tramite lettore delegato; nessun import o nuovo invio.
 
 **Ultimo mandato5nov:** rilascio autorizzato del lotto completato dopo patch sicurezza;
 push main90dd199 e Vercel Production success verificati nel [report corrente](intake-20261105-secure-release.md).

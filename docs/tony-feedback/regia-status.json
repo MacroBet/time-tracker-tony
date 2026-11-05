@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "projectId": "bd6c50d4-8a6d-43e3-b535-fc3dc538df8e",
-  "assignmentId": "tony-secure-release-20261105",
-  "requestId": "tony-secure-release-request-20261105",
+  "assignmentId": "tony-production-data-reconciliation-20261105",
+  "requestId": "tony-production-data-reconciliation-request-20261105",
   "intakeId": null,
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-  "status": "completed",
-  "executionState": "production-release-verified",
-  "observedAt": "2026-11-05T12:07:54.282004+00:00",
-  "startedAt": "2026-11-05T11:59:26.774183+00:00",
-  "completedAt": "2026-11-05T12:07:54.282004+00:00",
+  "status": "needs-input",
+  "executionState": "partial-real-data-preview-ready",
+  "observedAt": "2026-11-05T15:03:55.418375+00:00",
+  "startedAt": "2026-11-05T14:41:46+00:00",
+  "completedAt": null,
   "deadline": "2026-11-05",
   "executors": [
     {
@@ -25,7 +25,7 @@
       "subagent": true
     }
   ],
-  "outcome": "Completed application lot and security patches pushed normally to main90dd199; Vercel Production success7573042780 and public read-only alias smoke verified.132unit+10API tests locally; production audit0, full audit8moderate dev-only. No new customer send, remote data writes or live AI.",
+  "outcome": "Local Northbank is synthetic and never transferred. Delegated authenticated Production UI Test admin / AMS16Test has0assets/0programme but305tasks. Marco selected real Tony data. Complete-source P6 review preserved16969activities/36923links offline; not importable under current semantics. New2XLSX and exact target/crosswalk pending; no remote writes or new deployment.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -288,7 +288,20 @@
       "verifiedBy": "direct native read_thread5Nov",
       "scope": "minimal dependency security fixes, completed app/docs normal main push, Vercel production deployment and read-only smoke"
     },
-    "latestReleaseScope": "Normal main push of validated completed application/docs and security patches; existing Vercel production integration and public read-only smoke; no customer send, remoteDB, liveAI or spending"
+    "latestReleaseScope": "Normal main push of validated completed application/docs and security patches; existing Vercel production integration and public read-only smoke; no customer send, remoteDB, liveAI or spending",
+    "latestDataReconciliationHumanSource": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a1ac28-a6f4-7940-b2e9-51d67dc38407",
+      "scope": "targeted diagnosis, existing source review, offline real-data preview and exact import plan; no new remoteDB queries/writes, secrets, services or sends",
+      "verifiedBy": "direct native read_thread5Nov"
+    },
+    "dataChoice5Nov": {
+      "userMessageId": "01a1ac30-4ac5-72e0-9929-d42c0b657888",
+      "choice": "real Tony data with import preview",
+      "locked": true,
+      "remoteWriteApproval": false,
+      "verifiedBy": "direct native read_thread5Nov"
+    }
   },
   "sourceCoverage": {
     "channel": "whatsapp",
@@ -343,7 +356,7 @@
       "sha256": "bc239546278cfb90e50fb383e46c0d07a5117514ba597a4728803ec8260b6992"
     },
     "audioExcludedByMarco": true,
-    "latestIncomingTextObserved": "2026-11-05 08:11 Europe/Rome",
+    "latestIncomingTextObserved": "2026-11-05 14:19 Europe/Rome",
     "additionalTextDelta": {
       "incomingBubbles": 4,
       "from": "11:06",
@@ -414,11 +427,23 @@
       "sourceUnchanged": true,
       "privateAnalysisRef": "output/tony/roadmap-analysis-20261018/structure.private.json"
     },
-    "currentIncomingWatermark": "2026-11-05 08:11 Europe/Rome",
+    "currentIncomingWatermark": "2026-11-05 14:19 Europe/Rome",
     "currentOutgoingWatermark": "2026-11-05 12:40 Europe/Rome delivered; not read receipt",
-    "currentCoverageRef": "docs/tony-feedback/intake-20261105-resume.md",
+    "currentCoverageRef": "docs/tony-feedback/intake-20261105-production-data.md",
     "extendedDuringSecurityRelease": false,
-    "historicalWindowsRetained": true
+    "historicalWindowsRetained": true,
+    "latestDelegatedWindow": {
+      "fromOutgoing": "2026-11-05 12:40 Europe/Rome",
+      "throughIncoming": "2026-11-05 14:19 Europe/Rome",
+      "bubbles": 14,
+      "textBubbles": 12,
+      "attachmentBubblesWithCaptions": 2,
+      "reader": "/root/tony_reply_reader",
+      "method": "reported native CUA screenshot reading; transcript read by owner, not own CUA",
+      "originalsAcquired": 0,
+      "audioAcquired": false,
+      "historicalGapsRetained": true
+    }
   },
   "receiptUpdates": [
     {
@@ -631,12 +656,32 @@
     },
     "previousPublishedApplicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83"
   },
-  "blockers": [],
+  "blockers": [
+    {
+      "kind": "newest-source-files-not-acquired",
+      "files": 2,
+      "sourceUiTimes": [
+        "2026-11-05 14:12 Europe/Rome",
+        "2026-11-05 14:18 Europe/Rome"
+      ],
+      "reason": "bounded native attachment input failed noWindowsAvailable/frontmostApplicationChanged;0downloads",
+      "humanActionAlreadyRequestedByRegia": "Attach the exact2new XLSX originals here; no repeated generic request to Tony"
+    },
+    {
+      "kind": "target-and-crosswalk-pending",
+      "reason": "Observed Admin UI is not verified Tony account; application projectID/Neon target/version/record snapshot unknown. No approved asset-ActivityID-checksheet join."
+    },
+    {
+      "kind": "p6-fidelity-current-contract",
+      "reason": "16969sourceactivities exceed15000perrequest; unsupported nonFS/negative lags/calendars/milestones and6activities>100predecessors; no truncation or lossy conversion"
+    }
+  ],
   "nextActions": [
-    "Tony can test the released application on the existing production alias",
-    "Await concrete domain decisions on shared sequences, checklist/approver gates, video storage/access and Health before those additional features",
-    "Customer message5Nov12:40 already delivered; no resend or composer editing authorized",
-    "Publisher reconciles requests/events from evidence; no executor callback or ACL changes"
+    "Use the already locked choice: real Tony data with import preview, no online demo",
+    "Receive the2new XLSX originals already requested by regia; retain hashes and inspect locally without substituting ATT014 or old check sheets",
+    "Verify existing target account/project IDs, membership, version and authorized current snapshot; preserve305observed tasks",
+    "Complete offline field mappings and source-asset-ActivityID-checksheet crosswalk; separately specify lossless P6 compatibility work",
+    "Only after concrete preview request exact remote-write approval including target, payload, diff, isolation, idempotence and rollback; no genericGO, customer send or credential request"
   ],
   "outgoingDrafts": [
     {
@@ -1727,7 +1772,27 @@
       "xlsxOverviewRuntimeVerification": "local only; code included in verified production commit",
       "remoteMutations": false
     },
-    "privateEvidenceDir": "output/tony/secure-release-20261105"
+    "privateEvidenceDir": "output/tony/secure-release-20261105",
+    "finalDocumentationCommit": "9cd994bae740679e15161e95475e95afe747cb0f",
+    "finalDeployment": {
+      "githubId": 7573171129,
+      "vercelId": "8PMSHyM9YYGAFEk3cs7eYW7fEMRK",
+      "environment": "Production",
+      "state": "success",
+      "commit": "9cd994bae740679e15161e95475e95afe747cb0f",
+      "successAt": "2026-11-05T12:09:14Z",
+      "observedAt": "2026-11-05T12:10:12.819549+00:00",
+      "dashboardUrl": "https://vercel.com/macrobets-projects/time-tracker-tony/8PMSHyM9YYGAFEk3cs7eYW7fEMRK",
+      "environmentUrl": "https://time-tracker-tony-8399j6hwh-macrobets-projects.vercel.app",
+      "applicationUnchangedFromVerifiedRelease": true
+    },
+    "finalRemoteFetch": {
+      "verifiedAt": "2026-11-05T13:06:55.993254+00:00",
+      "headAndOriginMain": "9cd994bae740679e15161e95475e95afe747cb0f",
+      "ahead": 0,
+      "behind": 0
+    },
+    "finalReceiptRef": "output/tony/secure-release-20261105/final-release.private.json"
   },
   "historicalSourceAndPriorJobBlockersAtRelease5Nov": {
     "scope": "Prior source/export or job conditions retained verbatim; not blockers for the separately authorized5Nov release",
@@ -1776,5 +1841,132 @@
         "physicalActionRequested": false
       }
     ]
+  },
+  "latestMonitorCapabilityLimit5Nov": {
+    "observedAt": "2026-11-05T13:06:55.993254+00:00",
+    "jobId": "tony-new-whatsapp-feedback-20261017",
+    "result": "computer-use tool unavailable in current session",
+    "source": "explicit availability update removed mcp__cua_repl; current tool inventory has no supported CUA surface",
+    "desktopState": "not inspected; no inference of locked or unlocked desktop",
+    "sourceCoverageExtended": false,
+    "incomingWatermarkUnchanged": "2026-11-05 08:11 Europe/Rome",
+    "outgoingWatermarkUnchanged": "2026-11-05 12:40 Europe/Rome delivered; read receipt not attested",
+    "customerContentRead": false,
+    "customerSentThisCycle": false,
+    "composerTextEditedThisCycle": false,
+    "retryAttempted": false,
+    "fallbackAccessAttempted": false,
+    "nextAction": "Close current cycle; bounded source reading only when supported computer-use becomes available and relevant changed state warrants it. No alternate WhatsApp cache/API or new scheduler.",
+    "historicalRecord": true,
+    "ownerCuaStillUnavailable": true,
+    "coverageAdvancedByDelegatedReader": true,
+    "currentCoverageRef": "latestDataReconciliation5Nov.sourceCoverage"
+  },
+  "latestDataReconciliation5Nov": {
+    "jobId": "tony-production-data-reconciliation-20261105",
+    "requestId": "tony-production-data-reconciliation-request-20261105",
+    "status": "partial-preview-ready-needs-source-and-target",
+    "observedAt": "2026-11-05T15:03:55.418375+00:00",
+    "reportRef": "docs/tony-feedback/intake-20261105-production-data.md",
+    "choice": {
+      "realData": true,
+      "onlineDemo": false,
+      "locked": true
+    },
+    "sourceCoverage": {
+      "fromOutgoing": "2026-11-05 12:40 Europe/Rome",
+      "throughIncoming": "2026-11-05 14:19 Europe/Rome",
+      "bubbles": 14,
+      "textBubbles": 12,
+      "attachmentBubblesWithCaptions": 2,
+      "reader": "/root/tony_reply_reader",
+      "method": "reported native CUA screenshot reading; transcript read by owner, not own CUA",
+      "originalsAcquired": 0,
+      "audioAcquired": false,
+      "historicalGapsRetained": true
+    },
+    "privateTranscriptRef": "output/tony/data-reconciliation-20261105/reply.private.md",
+    "privateTranscriptSha256": "4bb8fb6dbb34600a25d270b6dbc55e76ee7205e0d0d0a45172aae62969db01ba",
+    "uiObservation": {
+      "reader": "/root/tony_reply_reader",
+      "privateRef": "output/tony/data-reconciliation-20261105/production-ui-observation.private.md",
+      "sha256": "714f86f0e567949926e8ea19a0097f896f7ffc9100a62a66dad3479ea882851a",
+      "domain": "https://time-tracker-tony.vercel.app",
+      "accountLabel": "Test admin",
+      "role": "Admin",
+      "workspaceLabel": "FieldTrack Test",
+      "projectName": "AMS16 · Test",
+      "projectId": "fcdb866f-12d4-4e85-a6b2-004ca1d53701",
+      "tonyAccountVerified": false,
+      "assets": 0,
+      "programmeActivities": 0,
+      "tasks": 305,
+      "unassigned": 279,
+      "assigned": 22,
+      "toReview": 0,
+      "closed": 4,
+      "overview": {
+        "complete": 4,
+        "late": 272,
+        "blocked": 19,
+        "withoutAssetOrProgrammeLink": 305
+      },
+      "taskFilter": "Unassigned; search empty; overdueOnly off",
+      "globalDbInventory": false,
+      "recordOriginsVerified": false,
+      "projectApprovedForImport": false,
+      "teamVisiblePeople": 5,
+      "tonyMatchedInVisibleTeamScope": false,
+      "tonyGlobalAbsenceProven": false
+    },
+    "offlineRealDataPreview": {
+      "readableRef": "output/tony/data-reconciliation-20261105/real-data-preview.private.md",
+      "manifestRef": "output/tony/data-reconciliation-20261105/real-data-preview.private.json",
+      "sourceId": "MAIL20-07",
+      "sourceAuthority": "already acquired P6 candidate; exact project correspondence with latest asset export pending",
+      "sourceActivities": 16969,
+      "sourceRelationships": 36923,
+      "idsPreserved": true,
+      "sourceRowsDiscarded": 0,
+      "importableCompleteBatch": false,
+      "targetRecordDiff": null,
+      "newAssetRows": null,
+      "newChecksheetRows": null,
+      "artifactsIgnoredByGit": true
+    },
+    "pendingInputs": [
+      "2latestXLSX originals already requested",
+      "Tony login identity (username/email, no password) already asked by regia; membership and approved target correspondence",
+      "target version/record snapshot and explicit asset-ActivityID-checksheet crosswalk",
+      "lossless P6 compatibility plan"
+    ],
+    "validation": {
+      "offlineSourceIdAndLinkIntegrity": "passed;16969uniqueActivityIDs,36923resolved links, no renaming/drop",
+      "fullSuiteRepeated": false,
+      "dependencyAuditRepeated": false,
+      "nextEnvPreserved": true,
+      "independentReview": "passed; source counts, observed UI baseline and unknown target diff kept separate",
+      "formatting": "passed",
+      "privateReceiptRef": "output/tony/data-reconciliation-20261105/validation.private.json",
+      "jsonlHashAndLineCount": "passed16969/36923",
+      "observedTasksReconciled": "279+22+0+4=305"
+    },
+    "remoteDbQueriesOrWrites": false,
+    "publicAppObservationDelegated": true,
+    "apiCookieOrCredentialAccess": false,
+    "realImportOrSeed": false,
+    "newAppParserFeatureOrDeploy": false,
+    "customerSend": false,
+    "composerTouched": false,
+    "schedulerAdded": false,
+    "publisherRequestsEventsAclOrCallbackWritten": false,
+    "quota": {
+      "usedPercentStart": 71,
+      "usedPercentLatest": 71,
+      "ordinaryUsageAllowed": true,
+      "globalNotJobCost": true,
+      "jobTokenUsage": null,
+      "resetsOrCreditsUsed": false
+    }
   }
 }

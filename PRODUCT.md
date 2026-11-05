@@ -99,6 +99,16 @@ controls. Metrics and role/project boundaries are unchanged; both changes are
 published in the verified 5 November release (90dd199). Sources: docs/asset-xlsx-import.md,
 the 5 November delivery report and docs/tony-feedback/intake-20261105-secure-release.md.
 
+The delegated 5 November replies through 14:19 confirm FR as Phase in the newest
+ACC asset export, request a works-to-go field/list, configurable project signatories
+managed by QA and checksheet assignment to equipment. The two new XLSX originals
+are not acquired; their contents and joins remain unverified. Marco selected real
+Tony data with an import preview. An observed production Admin workspace contains
+305 tasks and no assets/programme; Tony's identity/project membership is unverified.
+The Northbank tour remains a separate local synthetic dataset. The offline P6
+review preserves 16,969 activities and 36,923 links, with compatibility blockers
+and no remote import. Source: docs/tony-feedback/intake-20261105-production-data.md.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.

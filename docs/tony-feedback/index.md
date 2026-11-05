@@ -104,3 +104,9 @@ sulle dipendenze preesistenti e le decisioni di dominio ancora mancanti.
 Main90dd199, Vercel Production success7573042780; XLSX/Overview, Gantt e catalogo
 completati inclusi.132unitari+10API e build locali verdi, smoke pubblico sola lettura.
 Audit produzione0;8moderate residue soltanto lint. Invio5nov12:40 consegnato, nessun reinvio.
+
+**Confronto dati e risposte5nov:** [produzione osservata e anteprima reale parziale](intake-20261105-production-data.md).
+Demo locale distinta dal remoto: sessioneAdmin AMS16Test0asset/0programma/305task.
+Marco sceglie dati reali; preview16969attività/36923legami conservati ma non importabili
+nel contratto corrente. Copertura delegata fino14:19,2nuoviXLSX censiti non acquisiti;
+FR→Phase e firme flessibili chiariti. Nessuna scrittura remota o nuova feature.
