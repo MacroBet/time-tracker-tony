@@ -1,5 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowUpRight, AlertTriangle, ChevronDown } from "lucide-react";
 import { useApp } from "../contexts/AppContext";
@@ -23,6 +24,7 @@ import {
 } from "@/lib/commissioning";
 import { ReportDialog, type ReportRequest } from "./CommissioningReport";
 import { TagProgressMatrix } from "./TagProgressMatrix";
+import { WorksToGoOverview } from "./WorksToGoWorkspace";
 import { taskProgress } from "@/lib/dashboard-progress";
 import { filterTasks, type TaskFilters } from "@/lib/commissioning";
 
@@ -92,6 +94,7 @@ function OverviewDetails({
   );
 }
 export function Overview() {
+  const router = useRouter();
   const data = useApp();
   const { selectedProjectId, projects } = data;
   const project = projects.find((p) => p.id === selectedProjectId);
@@ -136,8 +139,16 @@ export function Overview() {
   const canPlan = hasModule(data.currentUser, "commissioning");
   const canWork = hasModule(data.currentUser, "tasks");
   const gettingStarted =
-    !state.assets.length || !state.schedule.length || !tasks.length;
-  if (!state.assets.length && !state.schedule.length && !tasks.length) {
+    !state.assets.length ||
+    !(state.sourceProgrammeSummary?.activities ?? state.schedule.length) ||
+    !tasks.length;
+  if (
+    !state.assets.length &&
+    !state.schedule.length &&
+    !state.sourceProgrammeSummary &&
+    !tasks.length &&
+    !state.checksheets?.worksToGo.length
+  ) {
     return (
       <AppShell title="Overview" wide>
         <ProjectGettingStarted
@@ -151,6 +162,14 @@ export function Overview() {
   }
   return (
     <AppShell title="Overview" wide>
+      {canPlan && (
+        <WorksToGoOverview
+          state={state.checksheets}
+          onOpen={() => {
+            router.push("/checksheets");
+          }}
+        />
+      )}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h2 className="text-xl font-semibold">Project progress</h2>
@@ -809,8 +828,11 @@ function ProjectGettingStarted({
       description:
         "The dates, durations and dependencies that sequence the work.",
       href: "/schedule",
-      action: state.schedule.length ? "Open programme" : "Plan activities",
-      count: state.schedule.length,
+      action:
+        (state.sourceProgrammeSummary?.activities ?? state.schedule.length)
+          ? "Open programme"
+          : "Plan activities",
+      count: state.sourceProgrammeSummary?.activities ?? state.schedule.length,
       unit: "planned activities",
       allowed: canPlan,
     },

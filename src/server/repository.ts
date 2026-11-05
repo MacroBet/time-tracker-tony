@@ -1,6 +1,12 @@
 import { assignmentQuery } from "./db/assignment";
 import { attachmentInsertQuery } from "./db/attachment-insert";
-import { taskUpdateQuery } from "./db/task-update";
+import {
+  inventoryRestoreQuery,
+  guardedTaskInsertQuery,
+  guardedTaskUpdateQuery,
+  guardedTagTasksQuery,
+  guardedTaskPlanQuery,
+} from "./db/inventory-restore";
 import {
   appendProjectAuditQuery,
   commissioningWithAudit,
@@ -70,6 +76,7 @@ export async function saveCommissioning(
   projectId: string,
   state: import("@/lib/commissioning").Commissioning,
   expectedVersion: number,
+  unreferencedAssetIds?: string[],
 ) {
   if (usingDemo()) {
     const project = demo().data.projects.find((p) => p.id === projectId);
@@ -78,8 +85,40 @@ export async function saveCommissioning(
       409,
       "Project changed. Refresh before saving.",
     );
+    requireCondition(
+      !demo().data.tasks.some(
+        (task) =>
+          task.projectId === projectId &&
+          unreferencedAssetIds?.includes(task.cx?.assetId ?? ""),
+      ),
+      409,
+      "An asset acquired task references. Refresh before restoring.",
+    );
     const recorded = (project.commissioning as AuditState | undefined)?._audit;
-    project.commissioning = { ...state, _audit: recorded ?? [] } as AuditState;
+    const source = Object.hasOwn(state, "sourceProgramme")
+      ? state.sourceProgramme
+      : project.commissioning?.sourceProgramme;
+    project.commissioning = {
+      ...state,
+      ...(source ? { sourceProgramme: source } : {}),
+      _audit: recorded ?? [],
+    } as AuditState;
+    return;
+  }
+  if (unreferencedAssetIds?.length) {
+    const result = await db().execute(
+      inventoryRestoreQuery(
+        projectId,
+        state,
+        expectedVersion,
+        unreferencedAssetIds,
+      ),
+    );
+    requireCondition(
+      result.rows.length,
+      409,
+      "The project or an asset reference changed. Refresh before restoring.",
+    );
     return;
   }
   const result = await db()
@@ -89,6 +128,9 @@ export async function saveCommissioning(
       and(
         eq(tables.projects.id, projectId),
         sql`coalesce((${tables.projects.commissioning}->>'version')::integer, 0) = ${expectedVersion}`,
+        unreferencedAssetIds?.length
+          ? sql`NOT EXISTS (SELECT 1 FROM tasks WHERE project_id = ${projectId} AND cx->>'assetId' IN (SELECT jsonb_array_elements_text(${JSON.stringify(unreferencedAssetIds)}::jsonb)))`
+          : undefined,
       ),
     )
     .returning({ id: tables.projects.id });
@@ -127,17 +169,14 @@ export async function insertTagTasks(tasks: Task[]) {
             old.cx.level === t.cx?.level,
         ),
     );
+    for (const task of missing) guardDemoTaskAsset(task);
     demo().data.tasks.push(...missing);
     return missing.length;
   }
   if (!tasks.length) return 0;
   // A single statement and unique asset/level index keep repeated generation idempotent.
-  const inserted = await db()
-    .insert(tables.tasks)
-    .values(tasks)
-    .onConflictDoNothing()
-    .returning({ id: tables.tasks.id });
-  return inserted.length;
+  const inserted = await db().execute(guardedTagTasksQuery(tasks));
+  return inserted.rows.length;
 }
 const publicUser = {
   id: tables.users.id,
@@ -191,7 +230,9 @@ export async function loadData(user: User): Promise<AppData> {
     return structuredClone(
       scopeData(user, {
         ...demo().data,
-        projects: demo().data.projects.map(withoutProjectAudit),
+        projects: demo().data.projects.map((project) =>
+          withoutProgrammeSource(withoutProjectAudit(project)),
+        ),
         attachments: demo().files.map((file) => ({
           id: file.id,
           taskId: file.taskId,
@@ -230,7 +271,12 @@ export async function loadData(user: User): Promise<AppData> {
   const [projects, users, companies, tasks, shiftRows, feedback] =
     await Promise.all([
       db()
-        .select()
+        .select({
+          ...getTableColumns(tables.projects),
+          commissioning: sql<
+            import("@/lib/commissioning").Commissioning | null
+          >`commissioning - 'sourceProgramme'`,
+        })
         .from(tables.projects)
         .where(inArray(tables.projects.id, projectIds)),
       db()
@@ -296,16 +342,30 @@ export async function loadData(user: User): Promise<AppData> {
     }),
   );
 }
+function guardDemoTaskAsset(task: Task, old?: Task) {
+  const assetId = task.cx?.assetId;
+  if (!assetId || assetId === old?.cx?.assetId) return;
+  const project = demo().data.projects.find((p) => p.id === task.projectId);
+  requireCondition(
+    project?.commissioning?.assets.some((a) => a.id === assetId),
+    409,
+    "The linked asset changed. Refresh before saving.",
+  );
+  project!.commissioning!.version++;
+}
 export async function insertTask(task: Task, activity: Activity) {
   if (usingDemo()) {
+    guardDemoTaskAsset(task);
     demo().data.tasks.push(task);
     demo().data.activities.push(activity);
     return;
   }
-  await db().batch([
-    db().insert(tables.tasks).values(task),
-    db().insert(tables.activities).values(activity),
-  ]);
+  const result = await db().execute(guardedTaskInsertQuery(task, activity));
+  requireCondition(
+    result.rows.length,
+    409,
+    "The linked asset changed. Refresh before creating this task.",
+  );
 }
 export async function updateTask(
   task: Task,
@@ -321,13 +381,14 @@ export async function updateTask(
       409,
       "This task changed. Refresh before saving again.",
     );
+    guardDemoTaskAsset(task, demo().data.tasks[index]);
     demo().data.tasks[index] = task;
     demo().data.activities.push(activity);
     return;
   }
   // One statement: the audit entry only exists if the versioned update succeeded.
   const result = await db().execute(
-    taskUpdateQuery(task, activity, expectedVersion),
+    guardedTaskUpdateQuery(task, activity, expectedVersion),
   );
   requireCondition(
     result.rows.length,
@@ -530,9 +591,9 @@ export async function planTask(
     await updateTask(task, activity, version);
     return;
   }
-  const result = await db().execute(sql`
-    WITH changed AS (UPDATE tasks SET title=${task.title},description=${task.description},priority=${task.priority ?? null},due_date=${task.dueDate ?? null},discipline=${task.discipline},location=${task.location},cx=${JSON.stringify(task.cx ?? null)}::jsonb,version=version+1,updated_at=${task.updatedAt} WHERE id=${task.id} AND version=${version} RETURNING id)
-    INSERT INTO task_activities(id,task_id,actor_id,actor_name,action,note,created_at) SELECT ${activity.id},id,${activity.actorId},${activity.actorName},${activity.action},${activity.note},${activity.createdAt}::timestamptz FROM changed RETURNING id`);
+  const result = await db().execute(
+    guardedTaskPlanQuery(task, activity, version),
+  );
   requireCondition(
     result.rows.length,
     409,
@@ -632,6 +693,73 @@ export async function setProjectAccess(
 type AuditState = import("@/lib/commissioning").Commissioning & {
   _audit?: ProjectAuditEvent[];
 };
+function withoutProgrammeSource<
+  T extends {
+    commissioning?: import("@/lib/commissioning").Commissioning | null;
+  },
+>(project: T): T {
+  if (!project.commissioning) return project;
+  const state = { ...project.commissioning };
+  delete state.sourceProgramme;
+  return { ...project, commissioning: state };
+}
+
+/** Internal read behind an already authenticated normal app action. */
+export async function loadProjectCommissioning(
+  projectId: string,
+  userId: string,
+) {
+  if (usingDemo()) {
+    requireCondition(
+      demo().data.memberships.some(
+        (m) => m.projectId === projectId && m.userId === userId,
+      ),
+      404,
+      "Project not found.",
+    );
+    return structuredClone(
+      withoutProgrammeSource(
+        withoutProjectAudit(
+          demo().data.projects.find((p) => p.id === projectId)!,
+        ),
+      ).commissioning,
+    );
+  }
+  const rows = await db()
+    .select({ state: sql`p.commissioning - 'sourceProgramme' - '_audit'` })
+    .from(sql`projects p`)
+    .where(
+      sql`p.id = ${projectId} AND EXISTS (SELECT 1 FROM project_memberships m WHERE m.project_id = p.id AND m.user_id = ${userId})`,
+    );
+  requireCondition(rows.length, 404, "Project not found.");
+  return clean<import("@/lib/commissioning").Commissioning | undefined>(
+    rows[0].state,
+  );
+}
+
+export async function loadProgrammeSource(projectId: string, userId: string) {
+  if (usingDemo()) {
+    requireCondition(
+      demo().data.memberships.some(
+        (m) => m.projectId === projectId && m.userId === userId,
+      ),
+      404,
+      "Project not found.",
+    );
+    return demo().data.projects.find((p) => p.id === projectId)?.commissioning
+      ?.sourceProgramme;
+  }
+  const rows = await db()
+    .select({ source: sql`p.commissioning->'sourceProgramme'` })
+    .from(sql`projects p`)
+    .where(
+      sql`p.id = ${projectId} AND EXISTS (SELECT 1 FROM project_memberships m WHERE m.project_id = p.id AND m.user_id = ${userId})`,
+    );
+  requireCondition(rows.length, 404, "Project not found.");
+  return clean<import("@/lib/programme-source").SourceProgramme | undefined>(
+    rows[0].source,
+  );
+}
 function withoutProjectAudit<
   T extends {
     commissioning?: import("@/lib/commissioning").Commissioning | null;

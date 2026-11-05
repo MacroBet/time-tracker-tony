@@ -617,6 +617,20 @@ test("commissioning register, P6 revisions, tag generation, failed tests and fea
     })
   ).json();
   assert(generated.created > 0);
+  // New asset links advance the project version so a stale inventory restore
+  // cannot remove equipment while tasks are being attached to it.
+  assert.equal(
+    (
+      await request(endpoint, manager, "PATCH", {
+        action: "generate-tags",
+        version: project.commissioning.version,
+        reason: "Stale generation must refresh its project snapshot",
+      })
+    ).status,
+    409,
+  );
+  data = await load(admin);
+  project = data.projects[0];
   assert.equal(
     (
       await (

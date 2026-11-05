@@ -31,6 +31,7 @@ import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
 import { ProjectAudit } from "./ProjectAudit";
 import { TagLevel } from "./TagLevel";
 import { DocumentRequirementsEditor } from "./DocumentRequirements";
+import { InventoryBatchControls } from "./InventoryBatchControls";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
 import {
   type Project,
@@ -940,12 +941,26 @@ function ProjectWorkspace({
   ) : null;
   return (
     <fieldset disabled={busy} className="min-w-0 space-y-5">
+      {!admin && !reports && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">
+            Equipment entries and assigned commissioning work.
+          </p>
+          <Button variant="outline" asChild className="min-h-11">
+            <Link href="/checksheets">Checksheets and works to go</Link>
+          </Button>
+        </div>
+      )}
+      {canEdit && !reports && (
+        <InventoryBatchControls projectId={project.id} state={state} />
+      )}
       {(admin || reports) && (
         <div>
           <h2 className="text-xl font-semibold">{project.name}</h2>
           <p className="text-sm text-slate-500 mt-1">
-            {state.assets.length} assets · {state.schedule.length} schedule
-            activities · Revision {state.version}
+            {state.assets.length} assets ·{" "}
+            {state.sourceProgrammeSummary?.activities ?? state.schedule.length}{" "}
+            schedule activities · Revision {state.version}
           </p>
         </div>
       )}
@@ -1135,7 +1150,9 @@ function ProjectWorkspace({
                     Programme ID: {state.programmeId || "No reference"}
                   </p>
                   <p className="mt-1 text-xs text-slate-600">
-                    {state.assets.length} assets · {state.schedule.length}{" "}
+                    {state.assets.length} assets ·{" "}
+                    {state.sourceProgrammeSummary?.activities ??
+                      state.schedule.length}{" "}
                     programme activities · Revision {state.version}
                   </p>
                 </div>

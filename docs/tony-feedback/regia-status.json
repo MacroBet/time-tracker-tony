@@ -1,42 +1,41 @@
 {
   "schemaVersion": 1,
   "projectId": "bd6c50d4-8a6d-43e3-b535-fc3dc538df8e",
-  "assignmentId": "tony-production-data-reconciliation-20261105",
-  "requestId": "tony-production-data-reconciliation-request-20261105",
+  "assignmentId": "tony-test-ready-delivery-20261105",
+  "requestId": "tony-test-ready-delivery-request-20261105",
   "intakeId": null,
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-  "status": "completed",
-  "executionState": "offline-real-data-preview-complete-no-import-authorized",
-  "observedAt": "2026-11-05T16:09:09.138920+00:00",
-  "startedAt": "2026-11-05T14:41:46+00:00",
-  "completedAt": "2026-11-05T16:01:58.871108+00:00",
+  "status": "in-progress",
+  "executionState": "validated-local-build-ready-for-commit-push-deploy",
+  "observedAt": "2026-11-05T17:10:13.535540+00:00",
+  "startedAt": "2026-11-05T16:35:41.153505+00:00",
+  "completedAt": null,
   "deadline": "2026-11-05",
   "executors": [
     {
       "name": "/root",
-      "threadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-      "role": "source integration, selected inventory review, exact plan and documentary closure",
+      "role": "integration, shared schemas/handlers, validation and release owner",
       "subagent": false
     },
     {
-      "name": "/root/asset_organisation_audit",
-      "role": "read-only asset workbook source mapping",
+      "name": "/root/p6_lhr11_delivery",
+      "role": "lossless source programme and persistence SQL tests",
       "subagent": true
     },
     {
-      "name": "/root/document_catalog_review",
-      "role": "read-only requirements workbook inspection",
+      "name": "/root/inventory_restore_delivery",
+      "role": "scoped inventory/restore SQL guards and bounded video evidence",
       "subagent": true
     },
     {
-      "name": "/root/tony_inventory_candidate",
-      "role": "native child of supervisor; selected offline payload/manifest and independent validation, no app execution",
+      "name": "/root/checksheet_workstogo_delivery",
+      "role": "checksheets/works-to-go, API integration and independent scope/data-loss review",
       "subagent": true
     }
   ],
-  "outcome": "Two supplied originals analysed; four supplied accounts and roles confirmed from Admin Team. Selected inventory-only proposal1354assets passed schema/JSON/CSV/offline idempotence; source fields retained. No remote preview/import. Normal app plan awaits exact target/payload consent and current version/live preview. Full deletion rollback absent from current merge-only flow, explicitly recorded.305tasks and18workerassignments preserved.",
-  "turnReportTerminal": true,
+  "outcome": "Implementation and local verification complete for full source P6, scoped inventory/restore, checksheets/signatories/works-to-go and bounded MP4 evidence. Production push/deploy/import still to verify; named normal-app handoff ready.",
+  "turnReportTerminal": false,
   "evidence": [
     {
       "kind": "agent-report",
@@ -316,6 +315,11 @@
       "source": "supervisor relay in active job; native child report supplied5Nov",
       "scope": "Prepare one inventory-only proposal with application IDs, Product/System equipmentType, FR phase, levels[], normal app flow and precise rollback/visibility plan; no import/new feature/remote writes authorized",
       "remoteWriteApproval": false
+    },
+    "testReadyDelivery5Nov": {
+      "userMessageId": "01a1ac8a-c70f-7973-b5bc-983ee3fcfcf5",
+      "verifiedBy": "native read_thread",
+      "scope": "necessary implementation, normal commit/push/deploy and scoped real-data app writes in named production-as-test environment; non-obvious Tony clarification only, no new secrets/services/spend"
     }
   },
   "sourceCoverage": {
@@ -674,23 +678,19 @@
   },
   "blockers": [
     {
-      "kind": "specific-plan-approval-not-granted",
-      "reason": "Target/source correspondence, selected payload hash/ID manifest, levels[], saved FR caches and partial projection require specific review approval."
-    },
-    {
-      "kind": "live-state-and-preview-not-exercised",
-      "reason": "Before save, authorized normal app current state/export/version, ID collision/task-reference checks and fresh preview required. No new SQL privilege or Neon credential needed/proposed."
-    },
-    {
-      "kind": "full-removal-rollback-unavailable",
-      "reason": "Existing merge import does not delete omitted assets or restore prior state. Targeted untouched manifest-only removal with version/hash/link guards must have agreed supported path before writing; no SQL bypass."
+      "kind": "lhr11-location-specific-approval",
+      "source": "reported native child auto-review rejection via supervisor",
+      "action": "final click creating new LHR11 project with provisional Project location",
+      "reason": "provisional location not specifically approved; source PROJECT.location_id empty",
+      "specificHumanQuestionAlreadyPendingInRegia": true,
+      "noRetryOrBypass": true,
+      "independentAms16BranchCanProceed": true
     }
   ],
   "nextActions": [
-    "Preparation complete: review single selected inventory payload and concrete target/mapping/ID/levels/FR-cache proposal",
-    "Use existing normal app import only after exact consent; fresh state/export/version and live preview before any save, stop on changed baseline/collisions",
-    "Possible separate mandate: prepare/verify supported controlled restoration before loading. Current analysis complete, import not execution-ready. No pilot is reversible and no SQL/endpoint/feature/permission change is included.",
-    "Worker end-to-end linkage/assignment is separate specific proposal; inventory alone does not guarantee worker visibility. P6/requirement/signature implementation remains separate"
+    "Commit/push validated code normally; verify exact Vercel Production success",
+    "Execute named scoped normal-app import and live receipt through existing authenticated Admin browser",
+    "Record project IDs, real dataset counts,305/18preservation plus new explicit assigned test path; no four-session impersonation claim"
   ],
   "outgoingDrafts": [
     {
@@ -761,7 +761,7 @@
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "Offline real-data preview complete; selected1354asset payload+manifest in inventory-selected, four accounts verified in Team. No import approved. See current report for exact normal-app target/preview/version plan and missing removal rollback; no SQL/new secrets/worker assignment implied."
+    "resumeFrom": "Current manual test-ready delivery job: local implementation/build/UI/API validations passed. See current report and compact production-ui-handoff; push/deploy/import verification remain. Prior preview job terminal."
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -2125,6 +2125,78 @@
       "remoteImportApproved": false,
       "rollbackSupported": false,
       "newSqlEndpointFeatureOrPermission": false
+    }
+  },
+  "latestTestReadyDelivery5Nov": {
+    "jobId": "tony-test-ready-delivery-20261105",
+    "requestId": "tony-test-ready-delivery-request-20261105",
+    "humanSource": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a1ac8a-c70f-7973-b5bc-983ee3fcfcf5",
+      "verifiedBy": "native read_thread5Nov"
+    },
+    "scope": "Deliver real data and functions to named production-as-test app; preserve existing records. Separate LHR11 source programme, selected1354inventory, checksheets/signatories/works-to-go, real assigned-worker path.",
+    "remoteScopedAppWritesAuthorized": true,
+    "targetAlias": "https://time-tracker-tony.vercel.app",
+    "inventoryTargetProjectId": "fcdb866f-12d4-4e85-a6b2-004ca1d53701",
+    "newProgrammeProject": "LHR11, distinct project",
+    "actualWritesYet": false,
+    "rolesChanged": false,
+    "existingTaskCountToPreserve": 305,
+    "existingWorkerAssignmentsToPreserve": 18,
+    "quotaStart": 78,
+    "quotaStopNewBatches": 85,
+    "quotaCeiling": 90,
+    "ordinaryUsageAllowed": true,
+    "sourcePrivate": true,
+    "children": [
+      "/root/p6_lhr11_delivery",
+      "/root/inventory_restore_delivery",
+      "/root/checksheet_workstogo_delivery"
+    ],
+    "sharedSchemaAndHandlerWriter": "/root",
+    "newApiKeyPaidCallOrServiceAuthorized": false,
+    "previousPreviewJobClosed": true,
+    "liveVerificationNeededViaRegiaCua": true,
+    "status": "local-validated-awaiting-production-release-and-load",
+    "reportRef": "docs/tony-feedback/intake-20261105-test-ready.md",
+    "handoffRef": "output/tony/test-ready-delivery-20261105/production-ui-handoff.private.json",
+    "validation": {
+      "unitInitial": 152,
+      "additionalVideoUnit": 5,
+      "additionalSourceDbUnit": 4,
+      "regressionApi": 10,
+      "newApiIntegration": 1,
+      "typecheck": "passed",
+      "lint": "passed targeted and broad lint before final targeted fixes",
+      "build": "passed",
+      "browser": "full real source/inventory,quality/worker/MP4 playback passed in isolated local demo",
+      "independentReview": "no concrete authorization/data-loss blocker found; live verification pending",
+      "nextEnvPreserved": true,
+      "rawPrivateInGit": false
+    },
+    "liveBaseline": {
+      "project": "AMS16 · Test",
+      "projectId": "fcdb866f-12d4-4e85-a6b2-004ca1d53701",
+      "assets": 0,
+      "programme": 0,
+      "tasks": 305,
+      "workerAssignments": 18,
+      "workerOpen": 16,
+      "workerComplete": 2,
+      "registerFileBackup": "empty UI export disabled; no backup file created; retain native baseline/version evidence"
+    },
+    "quotaLatestReported": 80,
+    "localBrowserStopped": true,
+    "liveWritesByThisOwner": false,
+    "lhr11CreationGate": {
+      "state": "blocked pending specific human location value/approval already requested by regia",
+      "reportedSource": "supervisor native delegation; auto-review rejected final creation click for unapproved provisional Project location",
+      "sourceLocationField": "PROJECT.location_id empty; no source location value",
+      "created": false,
+      "projectId": null,
+      "noRetryOrAlternateChannel": true,
+      "continueIndependentAms16Branch": true
     }
   }
 }

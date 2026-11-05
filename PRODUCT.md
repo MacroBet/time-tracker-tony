@@ -111,11 +111,17 @@ All four supplied accounts/roles are confirmed in Admin Team, without direct log
 Observed AMS16 · Test has 305 tasks, 18 worker assignments and no assets/programme;
 these remain untouched. Managers/admins/supervisors retain project-scoped register
 access; inventory alone does not give a worker assigned work or visible new assets.
-The plan uses normal app import with fresh preview/version and specific approval,
-without new SQL privileges or credentials. Full removal rollback is absent from
-the current merge-only import and must be resolved before saving. Northbank remains
-local synthetic data. P6 retains 16,969 activities and 36,923 links for a separate
-lossless contract. Source: docs/tony-feedback/intake-20261105-workbooks-preview.md.
+The subsequent human mandate authorizes delivery to the named test environment.
+Scoped add-only inventory batches and controlled restore now preserve record
+ownership, versions, references and audit. The normal app flow needs no new SQL
+privileges or credentials. Northbank remains local synthetic data. The separate
+P6 source programme preserves all 16,969 activities, 36,923 links, calendars and
+source fields; its saved dates are not recalculated by the working-day engine.
+Equipment checksheets, project signatories and Works to go persist independently
+of task status; answers and signatures begin empty. Bounded MP4 evidence uses the
+existing authorized task storage, without another provider. Local tests/build/UI
+are verified; exact production deployment/import outcomes are recorded in
+docs/tony-feedback/intake-20261105-test-ready.md.
 
 ## Product Principles
 

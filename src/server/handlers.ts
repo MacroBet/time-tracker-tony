@@ -4,7 +4,12 @@ import { currentUser, requireUser, signIn, signOut, digest } from "./auth";
 import { dataMode } from "./config";
 import * as repo from "./repository";
 import { json, readBody, readJson } from "./http";
-import { requireCondition } from "./errors";
+import { requireCondition, HttpError } from "./errors";
+import {
+  maybeMp4Evidence,
+  inspectMp4Evidence,
+  VideoEvidenceError,
+} from "@/lib/video-evidence";
 import { canManage, isProjectMember } from "@/lib/permissions";
 import { taskUpdateError } from "@/lib/workflow";
 import { commissioning, hasModule, linkError } from "@/lib/commissioning";
@@ -334,6 +339,15 @@ export async function updateShift(request: Request, id: string) {
   return json(shift);
 }
 function fileType(buffer: Buffer) {
+  if (maybeMp4Evidence(buffer)) {
+    try {
+      return inspectMp4Evidence(buffer);
+    } catch (error) {
+      if (error instanceof VideoEvidenceError)
+        throw new HttpError(415, error.message);
+      throw error;
+    }
+  }
   if (
     buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
   )
@@ -369,7 +383,7 @@ export async function uploadAttachment(request: Request, taskId: string) {
   requireCondition(
     type && buffer.length,
     415,
-    "Choose a PNG, JPEG, WebP image or PDF (maximum 2 MB).",
+    "Choose a PNG, JPEG, WebP, PDF or supported H.264 MP4 (maximum 2 MB; video up to 30 seconds).",
   );
   const rawName = decodeURIComponent(
     request.headers.get("x-file-name") || `evidence.${type.extension}`,
@@ -392,7 +406,7 @@ export async function uploadAttachment(request: Request, taskId: string) {
   );
   return json({ id: file.id, name: file.name }, 201);
 }
-export async function getAttachment(_request: Request, id: string) {
+export async function getAttachment(request: Request, id: string) {
   const user = await requireUser();
   const data = await repo.loadData(user);
   requireCondition(
@@ -402,13 +416,62 @@ export async function getAttachment(_request: Request, id: string) {
   );
   const file = await repo.attachment(id);
   requireCondition(file, 404, "Evidence not found.");
-  await repo.insertTaskActivity(
-    activity(file.taskId, user, "Evidence download prepared", file.name),
-  );
-  return new Response(Buffer.from(file.data, "base64"), {
+  const bytes = Buffer.from(file.data, "base64"),
+    inline =
+      file.contentType === "video/mp4" &&
+      new URL(request.url).searchParams.get("inline") === "1";
+  let start = 0,
+    end = bytes.length - 1,
+    status = 200;
+  const range = inline ? request.headers.get("range") : null;
+  if (range) {
+    const match = /^bytes=(\d*)-(\d*)$/.exec(range);
+    if (!match || (!match[1] && !match[2]))
+      return new Response(null, {
+        status: 416,
+        headers: {
+          "Content-Range": `bytes */${bytes.length}`,
+          "Cache-Control": "private, no-store",
+        },
+      });
+    if (match[1]) {
+      start = Number(match[1]);
+      end = match[2]
+        ? Math.min(Number(match[2]), bytes.length - 1)
+        : bytes.length - 1;
+    } else {
+      start = Math.max(0, bytes.length - Number(match[2]));
+    }
+    if (
+      !Number.isSafeInteger(start) ||
+      !Number.isSafeInteger(end) ||
+      start < 0 ||
+      start > end ||
+      start >= bytes.length
+    )
+      return new Response(null, {
+        status: 416,
+        headers: {
+          "Content-Range": `bytes */${bytes.length}`,
+          "Cache-Control": "private, no-store",
+        },
+      });
+    status = 206;
+  }
+  if (start === 0)
+    await repo.insertTaskActivity(
+      activity(file.taskId, user, "Evidence download prepared", file.name),
+    );
+  return new Response(bytes.subarray(start, end + 1), {
+    status,
     headers: {
       "Content-Type": file.contentType,
-      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(file.name)}`,
+      "Content-Disposition": `${inline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(file.name)}`,
+      "Content-Length": String(end - start + 1),
+      ...(inline ? { "Accept-Ranges": "bytes" } : {}),
+      ...(status === 206
+        ? { "Content-Range": `bytes ${start}-${end}/${bytes.length}` }
+        : {}),
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy": "sandbox; default-src 'none'",

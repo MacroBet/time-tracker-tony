@@ -13,6 +13,12 @@ import { json, readJson } from "./http";
 import { requireCondition } from "./errors";
 import { canManage } from "@/lib/permissions";
 import {
+  inventoryApplySchema,
+  inventoryRestoreSchema,
+  applyInventoryBatch,
+  restoreInventoryBatch,
+} from "@/lib/inventory-batch";
+import {
   commissioning,
   configSchema,
   documentRequirementChanges,
@@ -38,6 +44,22 @@ export async function updateRegister(request: Request, projectId: string) {
   );
   const input = z
     .discriminatedUnion("action", [
+      z
+        .object({
+          ...base,
+          action: z.literal("inventory-apply"),
+          data: inventoryApplySchema,
+          preview: z.boolean().default(false),
+        })
+        .strict(),
+      z
+        .object({
+          ...base,
+          action: z.literal("inventory-restore"),
+          data: inventoryRestoreSchema,
+          preview: z.boolean().default(false),
+        })
+        .strict(),
       z
         .object({
           ...base,
@@ -140,6 +162,47 @@ export async function updateRegister(request: Request, projectId: string) {
         next.config.documentRequirements,
       ),
     );
+  } else if (
+    input.action === "inventory-apply" ||
+    input.action === "inventory-restore"
+  ) {
+    const context = {
+      projectId,
+      actorId: user.id,
+      at: new Date().toISOString(),
+      expectedVersion: input.version,
+      tasks: data.tasks,
+      assetReferences: [
+        ...(state.checksheets?.sheets ?? []).map((sheet) => ({
+          assetId: sheet.assetId,
+          label: "Associated checksheet",
+        })),
+        ...(state.checksheets?.worksToGo ?? [])
+          .filter((work) => work.assetId)
+          .map((work) => ({ assetId: work.assetId!, label: "Works to go" })),
+      ],
+    };
+    const result =
+      input.action === "inventory-apply"
+        ? await applyInventoryBatch(state, input.data, context)
+        : await restoreInventoryBatch(state, input.data, context);
+    if (input.preview)
+      return json({
+        changes: result.changes,
+        errors: result.errors,
+        assets: result.assets.length,
+        schedule: state.schedule.length,
+        insertedCount: result.insertedCount,
+        removedCount: result.removedCount,
+        version: state.version,
+      });
+    requireCondition(!result.errors.length, 409, result.errors.join(" "));
+    changes = result.changes;
+    next = {
+      ...state,
+      assets: result.assets,
+      inventoryBatches: result.batches,
+    };
   } else {
     const registerData =
       input.action === "schedule"
@@ -195,7 +258,16 @@ export async function updateRegister(request: Request, projectId: string) {
       },
     ],
   };
-  await saveCommissioning(projectId, next, state.version);
+  await saveCommissioning(
+    projectId,
+    next,
+    state.version,
+    input.action === "inventory-restore"
+      ? state.assets
+          .filter((asset) => !next.assets.some((row) => row.id === asset.id))
+          .map((asset) => asset.id)
+      : undefined,
+  );
   return json({ updated: true, version: next.version });
 }
 

@@ -37,6 +37,7 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
+import { inspectMp4Evidence } from "@/lib/video-evidence";
 export function TaskDetail({ taskId }: { taskId: string }) {
   const data = useApp();
   const task = data.tasks.find((t) => t.id === taskId);
@@ -104,6 +105,9 @@ function TaskContent({ task }: { task: Task }) {
     }
     setBusy(true);
     try {
+      if (file.type === "video/mp4" || /\.mp4$/i.test(file.name)) {
+        inspectMp4Evidence(new Uint8Array(await file.arrayBuffer()));
+      }
       await mutate(`/api/tasks/${task.id}/attachments`, {
         method: "POST",
         body: file,
@@ -307,20 +311,38 @@ function TaskContent({ task }: { task: Task }) {
               </p>
             )}
             {files.map((f) => (
-              <a
-                key={f.id}
-                href={`/api/attachments/${f.id}`}
-                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-slate-50"
-              >
-                <FileText className="size-5 text-blue-600 shrink-0" />
-                <span className="min-w-0 flex-1">
-                  <span className="text-sm block truncate">{f.name}</span>
-                  <span className="text-xs text-slate-500">
-                    {Math.ceil(f.size / 1024)} KB
+              <div key={f.id} className="space-y-2">
+                <a
+                  href={`/api/attachments/${f.id}`}
+                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-slate-50"
+                >
+                  <FileText className="size-5 text-blue-600 shrink-0" />
+                  <span className="min-w-0 flex-1">
+                    <span className="text-sm block truncate">{f.name}</span>
+                    <span className="text-xs text-slate-500">
+                      {Math.ceil(f.size / 1024)} KB
+                      {f.contentType === "video/mp4" ? " · Download MP4" : ""}
+                    </span>
                   </span>
-                </span>
-                <ArrowUpRight className="size-4 text-slate-400" />
-              </a>
+                  <ArrowUpRight className="size-4 text-slate-400" />
+                </a>
+                {f.contentType === "video/mp4" && (
+                  <video
+                    controls
+                    muted
+                    playsInline
+                    preload="none"
+                    aria-label={`Video evidence: ${f.name}`}
+                    className="w-full max-h-80 rounded-lg bg-slate-950"
+                  >
+                    <source
+                      src={`/api/attachments/${f.id}?inline=1`}
+                      type="video/mp4"
+                    />
+                    Your browser cannot play this video. Download the MP4 above.
+                  </video>
+                )}
+              </div>
             ))}
             {!closed && (
               <>
@@ -328,7 +350,7 @@ function TaskContent({ task }: { task: Task }) {
                   ref={inputRef}
                   type="file"
                   aria-label="Upload activity evidence"
-                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  accept="image/png,image/jpeg,image/webp,application/pdf,video/mp4"
                   className="sr-only"
                   onChange={(e) => upload(e.target.files?.[0])}
                   disabled={busy || !isOnline}
@@ -342,10 +364,16 @@ function TaskContent({ task }: { task: Task }) {
                   <Upload className="size-4" />
                   {isTag
                     ? "Attach test sheet / evidence"
-                    : "Add photo or document"}
+                    : "Add photo, video or document"}
                 </Button>
                 <p className="text-xs text-slate-500">
-                  PNG, JPEG, WebP or PDF · up to 2 MB each.
+                  PNG, JPEG, WebP, PDF or H.264 MP4 · up to 2 MB each. MP4
+                  videos must be 30 seconds or shorter. Up to 20 files per
+                  activity.
+                </p>
+                <p className="text-xs text-slate-500">
+                  Videos start muted. For speech or important visual details,
+                  add a written description in the activity notes.
                 </p>
               </>
             )}

@@ -15,6 +15,11 @@ import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { ProjectAudit } from "./ProjectAudit";
 import { ProgrammeReference } from "./ProgrammeReference";
+import {
+  SourceProgrammeImport,
+  SourceProgrammeRestore,
+  SourceProgrammeWorkspace,
+} from "./SourceProgrammeWorkspace";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
@@ -74,7 +79,32 @@ export function ScheduleWorkspace() {
       {!allowed ? (
         <p>Programme planning requires commissioning management access.</p>
       ) : project ? (
-        <Programme key={project.id} project={project} />
+        <div className="space-y-6" key={project.id}>
+          {commissioning(project).sourceProgrammeSummary ? (
+            <SourceProgrammeWorkspace
+              projectId={project.id}
+              summary={commissioning(project).sourceProgrammeSummary!}
+            />
+          ) : (
+            <Programme project={project} />
+          )}
+          <SourceProgrammeImport
+            projectId={project.id}
+            version={commissioning(project).version}
+            onImported={app.refreshData}
+          />
+          {app.currentUser.role === "admin" &&
+            commissioning(project).sourceProgrammeSummary && (
+              <SourceProgrammeRestore
+                projectId={project.id}
+                version={commissioning(project).version}
+                sourceSha256={
+                  commissioning(project).sourceProgrammeSummary!.sha256
+                }
+                onRestored={app.refreshData}
+              />
+            )}
+        </div>
       ) : (
         <p>No project assigned.</p>
       )}

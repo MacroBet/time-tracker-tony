@@ -161,6 +161,12 @@ export function AppShell({
           : []),
       ];
   const utilities: NavigationItem[] = [
+    {
+      label: "Checksheets & works to go",
+      href: "/checksheets",
+      icon: ShieldCheck,
+      module: "commissioning",
+    },
     ...(!worker
       ? [
           {

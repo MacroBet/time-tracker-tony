@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -57,6 +57,15 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
 - **Nessuna scrittura DB remota**: servono target esatto, isolamento, dry run,
   idempotenza, rollback e nuova approvazione del piano. Non aggirare il precedente
   blocco auto-review. P6 solo riferimento; programma autorevole dentro l'app.
+- **Mandato umano successivo5nov2026**, verificato nella regia nel messaggio
+  `01a1ac8a-c70f-7973-b5bc-983ee3fcfcf5`: consegna test-ready e dati reali attraverso
+  normali azioni app scoped su `https://time-tracker-tony.vercel.app`, produzione
+  dichiarata ambiente di test. Autorizza codice necessario, commit/push/deploy e
+  caricamento dopo snapshot/versione/idempotenza/restore; preservare305task e
+  18assegnazioni esistenti. Nuovo job `tony-test-ready-delivery-20261105`, non riapre
+  quello della preview. Nessun SQL amministrativo, nuovo segreto/provider/servizio,
+  ruolo o spesa impliciti. Non amplia il heartbeat: è un incarico manuale distinto.
+  [Implementazione, prove e limiti](docs/tony-feedback/intake-20261105-test-ready.md).
 - Copilot consegnato con controlli reali e proposte confermabili; provider live
   **DISATTIVATO**. Marco fornirà la chiave più avanti: applicare il credential gate
   openai-platform-api-key al setup, senza ripetere la domanda, creare/riusare segreti,

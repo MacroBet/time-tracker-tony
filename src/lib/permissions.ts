@@ -1,5 +1,6 @@
 import { type AppData, type Task, type User, type Shift } from "./domain";
 import { commissioning, hasModule } from "./commissioning";
+import { scopeChecksheetState } from "./checksheets";
 export const canManage = (user: User) => user.role !== "worker";
 export const isProjectMember = (
   user: User,
@@ -68,6 +69,14 @@ export function scopeData(user: User, data: AppData): AppData {
           ...p,
           commissioning: {
             ...state,
+            inventoryBatches: undefined,
+            sourceProgramme: undefined,
+            sourceProgrammeSummary: undefined,
+            checksheets: scopeChecksheetState(state.checksheets, {
+              actor: user,
+              assets,
+              tasks: mine,
+            }),
             assets,
             revisions: [],
             schedule: state.schedule.filter(

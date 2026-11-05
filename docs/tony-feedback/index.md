@@ -113,3 +113,8 @@ tramite normale app, consenso preciso e preview/versione prima di salvare; rollb
 di rimozione oggi assente. Il worker non riceve lavoro/asset senza assegnazione.
 P6 e52requisiti fuori da questa tranche; copertura delegata14:19, gap storici conservati.
 [Diagnosi iniziale](intake-20261105-production-data.md) conservata come storico.
+
+**Nuova consegna test-ready5nov:** [implementazione, prove, rilascio e percorso Tony](intake-20261105-test-ready.md).
+Mandato umano successivo autorizza normali scritture app scoped nell’ambiente test;
+P6/LHR11 distinto, inventario/restore, schede/firmatari/Works to go e MP4 breve.
+Preview precedente storica, nessuna fonte privata in Git.

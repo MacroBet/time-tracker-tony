@@ -1,5 +1,20 @@
 # Registro operativo — Tony
 
+## Nuovo mandato5nov — consegna test con dati reali in corso
+
+Mandato umano verificato `01a1ac8a-c70f-7973-b5bc-983ee3fcfcf5` nella regia:
+finire la consegna e consentire test online; produzione dichiarata ambiente di test.
+Nuovo job `tony-test-ready-delivery-20261105`, request omonima con `-request-`.
+Autorizzati sviluppo necessario, commit/push/deploy e normali scritture app scoped
+con guardie/snapshot/versione/rollback, preservando305task e18assegnazioni.
+P6/LHR11 progetto distinto, inventario1354, checksheet/firmatari/Works to go;
+nessun nuovo segreto, API pagata, servizio o ruolo. Tre child paralleli, root unico
+writer schemi/handler; quota iniziale78%, stop nuovi lotti85/cap90. Nessuna nuova
+scrittura live ancora. Codice e build locali verificati: P6 completo, inventario/restore,
+checksheet/Works to go e video breve MP4. [Prove e collaudo](intake-20261105-test-ready.md).
+Preview precedente conclusa, non riaperta. Stato corrente
+in `regia-status.json#latestTestReadyDelivery5Nov`. Il monitor resta ristretto.
+
 ## Anteprima reale5nov — inventario1354asset validato offline
 
 Mandato corrente `tony-production-data-reconciliation-20261105`, request
@@ -347,7 +362,12 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
 
-**Priorità corrente5nov:** riconciliazione dati e anteprima reale scelta da Marco.
+**Priorità corrente5nov:** nuovo mandato di consegna test-ready con import scoped autorizzato.
+[Stato implementazione/rilascio e piano di collaudo](intake-20261105-test-ready.md).
+La preview riportata sotto è storica, conclusa; il nuovo mandato ne supera i limiti
+operativi con guardie/restore implementati.
+
+**Preview precedente:** riconciliazione dati e anteprima reale scelta da Marco.
 Preparazione conclusa:2originali analizzati,4account/ruoli verificati da Team admin,
 1354asset della sola proposta inventario validati offline; nessun import approvato.
 [Payload selezionato, mapping, visibilità per ruolo e piano](intake-20261105-workbooks-preview.md).
