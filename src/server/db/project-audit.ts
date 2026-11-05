@@ -19,5 +19,10 @@ export function appendProjectAuditQuery(
 
 /** Use the current persisted audit array, never a client's snapshot of it. */
 export function commissioningWithAudit(state: Commissioning) {
-  return sql`jsonb_set(${JSON.stringify(state)}::jsonb, '{_audit}', coalesce(commissioning->'_audit', '[]'::jsonb))`;
+  const next = JSON.stringify(state);
+  return sql`jsonb_set(
+    CASE WHEN commissioning ? 'sourceProgramme' AND NOT ${Object.hasOwn(state, "sourceProgramme")}
+      THEN jsonb_set(${next}::jsonb, '{sourceProgramme}', commissioning->'sourceProgramme')
+      ELSE ${next}::jsonb END,
+    '{_audit}', coalesce(commissioning->'_audit', '[]'::jsonb))`;
 }

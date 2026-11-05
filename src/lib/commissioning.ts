@@ -1,4 +1,10 @@
 import { z } from "zod";
+import type { InventoryBatch } from "./inventory-batch";
+import type { ProjectChecksheetState } from "./checksheets";
+import type {
+  SourceProgramme,
+  SourceProgrammeSummary,
+} from "./programme-source";
 import {
   isClosed,
   projectDate,
@@ -233,6 +239,11 @@ export type CommissioningTask = z.infer<typeof cxSchema>;
 export type ProjectConfig = z.infer<typeof configSchema>;
 export interface Commissioning {
   version: number;
+  inventoryBatches?: InventoryBatch[];
+  checksheets?: ProjectChecksheetState;
+  sourceProgramme?: SourceProgramme;
+  sourceProgrammeContentHash?: string;
+  sourceProgrammeSummary?: SourceProgrammeSummary;
   programmeId?: string;
   config: ProjectConfig;
   assets: Asset[];
