@@ -88,3 +88,7 @@ qui versionato è il riferimento da sincronizzare, attualmente byte-identico.
 `quick_validate` superato; la nuova skill sarà disponibile al caricamento del catalogo
 di una nuova chat/sessione. Non serve per avviare Tony: quello dipende solo da AGENTS
 e dai documenti di questa cartella.
+
+**Ripresa manuale5nov:** [nuovi testi, confronto e lotto locale](intake-20261105-resume.md).
+Copertura fino5nov08:11; editor rapido Gantt e template CSV vuoto verificati solo localmente.
+Nessun invio o pubblicazione; import XLSX, sequenze comuni, approvatori e video restano distinti.

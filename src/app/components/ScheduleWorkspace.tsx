@@ -6,6 +6,7 @@ import {
   ArrowRight,
   CalendarDays,
   List,
+  Pencil,
   Plus,
   X,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import { ProjectAudit } from "./ProjectAudit";
 import { ProgrammeReference } from "./ProgrammeReference";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Popover, PopoverAnchor, PopoverContent } from "./ui/popover";
 import {
   commissioning,
   hasModule,
@@ -449,7 +451,13 @@ function Programme({ project }: { project: Project }) {
                 </ol>
               )}
               <div className={mobileTimeline ? "block" : "hidden md:block"}>
-                <Gantt rows={visible} all={state.schedule} onEdit={edit} />
+                <Gantt
+                  rows={visible}
+                  all={state.schedule}
+                  project={project}
+                  version={state.version}
+                  onEdit={edit}
+                />
               </div>
             </>
           ) : (
@@ -525,11 +533,15 @@ function ActivityEditor({
   activity,
   version,
   onClose,
+  compact = false,
+  onBusyChange,
 }: {
   project: Project;
   activity: ScheduleActivity;
   version: number;
   onClose: () => void;
+  compact?: boolean;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const { mutate, isOnline } = useApp();
   const state = commissioning(project);
@@ -543,16 +555,22 @@ function ActivityEditor({
   const [error, setError] = useState("");
   const editorRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    editorRef.current?.scrollIntoView({
-      block: "start",
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "instant"
-        : "smooth",
-    });
+    onBusyChange?.(busy);
+  }, [busy, onBusyChange]);
+  useEffect(() => {
+    if (!compact)
+      editorRef.current?.scrollIntoView({
+        block: "start",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+      });
     editorRef.current
-      ?.querySelector<HTMLInputElement>('input[name="name"]')
+      ?.querySelector<HTMLInputElement>(
+        compact ? 'input[name="notBefore"]' : 'input[name="name"]',
+      )
       ?.focus({ preventScroll: true });
-  }, []);
+  }, [compact]);
   const stale = version !== state.version;
   let referenceNumber = state.schedule.length + 1;
   while (
@@ -651,8 +669,12 @@ function ActivityEditor({
   return (
     <section
       ref={editorRef}
-      className="rounded-xl border border-blue-200 bg-white p-4 sm:p-6 space-y-4 scroll-mt-52"
-      aria-label="Activity editor"
+      className={
+        compact
+          ? "space-y-4"
+          : "rounded-xl border border-blue-200 bg-white p-4 sm:p-6 space-y-4 scroll-mt-52"
+      }
+      aria-label={compact ? "Quick activity editor" : "Activity editor"}
     >
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-semibold">
@@ -670,6 +692,9 @@ function ActivityEditor({
           Close
         </Button>
       </div>
+      {compact && (
+        <p className="text-sm text-slate-600 break-words">{activity.name}</p>
+      )}
       {stale && (
         <p role="alert" className="text-sm text-red-700">
           The programme changed while this editor was open. Close and reopen the
@@ -682,8 +707,14 @@ function ActivityEditor({
           disabled={busy || stale}
           className="space-y-4 [&_input]:min-h-11 [&_select]:min-h-11"
         >
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <label className="text-sm">
+          <div
+            className={
+              compact
+                ? "grid sm:grid-cols-2 gap-3"
+                : "grid sm:grid-cols-2 lg:grid-cols-3 gap-3"
+            }
+          >
+            <label className={compact ? "hidden" : "text-sm"}>
               Reference
               <Input
                 name="activityId"
@@ -694,7 +725,7 @@ function ActivityEditor({
                 placeholder="e.g. INSTALL-001"
               />
             </label>
-            <label className="text-sm sm:col-span-2">
+            <label className={compact ? "hidden" : "text-sm sm:col-span-2"}>
               Activity name
               <Input
                 name="name"
@@ -742,7 +773,10 @@ function ActivityEditor({
           {state.schedule.some(
             (row) => row.activityId !== activity.activityId,
           ) && (
-            <details open={links.length > 0} className="border-t pt-3">
+            <details
+              open={!compact && links.length > 0}
+              className="border-t pt-3"
+            >
               <summary className="cursor-pointer min-h-11 text-sm font-medium">
                 Dependencies
                 {links.length ? ` (${links.length})` : " · optional"}
@@ -914,10 +948,14 @@ function ActivityEditor({
 function Gantt({
   rows,
   all,
+  project,
+  version,
   onEdit,
 }: {
   rows: ScheduleActivity[];
   all: ScheduleActivity[];
+  project: Project;
+  version: number;
   onEdit: (r: ScheduleActivity) => void;
 }) {
   const first =
@@ -925,7 +963,22 @@ function Gantt({
   const [anchor, setAnchor] = useState<string | null>(null);
   const [zoom, setZoom] = useState("week");
   const [showLinks, setShowLinks] = useState(false);
-  const tableWidth = showLinks ? 620 : 430;
+  const [quickEditing, setQuickEditing] = useState<{
+    activity: ScheduleActivity;
+    version: number;
+    anchor: HTMLElement;
+  } | null>(null);
+  const [quickBusy, setQuickBusy] = useState(false);
+  function quickEdit(activity: ScheduleActivity, anchor: HTMLElement) {
+    if (quickBusy) return;
+    setQuickEditing({ activity, version, anchor });
+  }
+  function closeQuickEdit() {
+    setQuickBusy(false);
+    setQuickEditing(null);
+    quickEditing?.anchor.focus({ preventScroll: true });
+  }
+  const tableWidth = showLinks ? 670 : 480;
   const start = anchor ?? shiftDate(first, -2);
   const span = zoom === "day" ? 35 : zoom === "week" ? 100 : 365;
   const unit = zoom === "day" ? 26 : zoom === "week" ? 12 : 4;
@@ -937,304 +990,390 @@ function Gantt({
   const clipped = (n: number) => Math.max(0, Math.min(width, n));
   const todayX = x(projectDate());
   return (
-    <section
-      className="rounded-xl border bg-white overflow-hidden"
-      aria-label="Project Gantt"
+    <Popover
+      open={!!quickEditing}
+      onOpenChange={(open) => {
+        if (!open && !quickBusy) closeQuickEdit();
+      }}
     >
-      <div className="flex flex-wrap gap-3 items-center justify-between px-4 py-3 border-b">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Earlier dates"
-            onClick={() => setAnchor(shiftDate(start, -Math.floor(span / 2)))}
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
-          <span className="text-sm tabular-nums">
-            {formatDate(start)} – {formatDate(shiftDate(start, span - 1))}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label="Later dates"
-            onClick={() => setAnchor(shiftDate(start, Math.floor(span / 2)))}
-          >
-            <ArrowRight className="size-4" />
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-3 items-center">
-          <label className="text-xs">
-            Go to date
-            <Input
-              aria-label="Gantt go to date"
-              type="date"
-              value={start}
-              onChange={(e) => {
-                if (e.target.value) setAnchor(e.target.value);
-              }}
-            />
-          </label>
-          <label className="text-xs">
-            Scale
-            <select
-              aria-label="Gantt scale"
-              value={zoom}
-              onChange={(e) => setZoom(e.target.value)}
-              className="field-select mt-1"
-            >
-              <option value="day">Days</option>
-              <option value="week">Weeks</option>
-              <option value="month">Months</option>
-            </select>
-          </label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAnchor(shiftDate(projectDate(), -7))}
-          >
-            Today
-          </Button>
-          <label className="flex items-center gap-2 text-xs">
-            <input
-              type="checkbox"
-              checked={showLinks}
-              onChange={(e) => setShowLinks(e.target.checked)}
-            />
-            Dependency columns
-          </label>
-        </div>
-      </div>
-      <div
-        className="overflow-x-auto"
-        tabIndex={0}
-        role="region"
-        aria-label="Scrollable programme table and timeline"
+      <section
+        className="rounded-xl border bg-white overflow-hidden"
+        aria-label="Project Gantt"
       >
-        <div className="flex" style={{ minWidth: tableWidth + width }}>
-          <table
-            className="text-xs border-collapse table-fixed shrink-0 tabular-nums"
-            style={{ width: tableWidth }}
-          >
-            <caption className="sr-only">
-              Programme activities. Select an activity to edit its dates and
-              dependencies.
-            </caption>
-            <thead>
-              <tr className="h-14 bg-slate-50 text-slate-600 text-left">
-                <th className="px-3 w-44">Activity / asset</th>
-                <th className="px-2 w-16">Days</th>
-                <th className="px-2 w-24">Start</th>
-                <th className="px-2 w-24">Finish</th>
-                {showLinks && <th className="px-2">Predecessors</th>}
-                {showLinks && <th className="px-2">Successors</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const successors = all.filter((s) =>
-                  s.predecessors?.some((p) => p.activityId === r.activityId),
-                );
-                return (
-                  <tr
-                    key={r.activityId}
-                    className="h-12 border-t hover:bg-blue-50/40"
-                  >
-                    <td className="px-3">
-                      <button
-                        className="text-xs text-left w-full hover:text-blue-700 focus-visible:outline-blue-600"
-                        onClick={() => onEdit(r)}
-                      >
-                        <strong className="block truncate" title={r.name}>
-                          {r.name}
-                        </strong>
-                        <span
-                          className="block truncate text-slate-600"
-                          title={r.activityId}
-                        >
-                          {r.activityId}
-                        </span>
-                      </button>
-                    </td>
-                    <td className="px-2">
-                      {r.durationDays ??
-                        (r.start && r.finish
-                          ? workingDuration(r.start, r.finish)
-                          : "—")}{" "}
-                      wd
-                    </td>
-                    <td className="px-2">{r.start ?? "Not set"}</td>
-                    <td className="px-2">{r.finish ?? "Not set"}</td>
-                    {showLinks && (
-                      <td
-                        className="px-2 truncate"
-                        title={r.predecessors
-                          ?.map((p) => `${p.activityId} FS+${p.lagDays}`)
-                          .join(", ")}
-                      >
-                        {r.predecessors
-                          ?.map(
-                            (p) =>
-                              `${p.activityId}${p.lagDays ? ` +${p.lagDays}wd` : ""}`,
-                          )
-                          .join(", ") || "—"}
-                      </td>
-                    )}
-                    {showLinks && (
-                      <td
-                        className="px-2 truncate"
-                        title={successors.map((s) => s.activityId).join(", ")}
-                      >
-                        {successors.map((s) => s.activityId).join(", ") || "—"}
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <div className="relative shrink-0 border-l" style={{ width }}>
-            <div className="h-14 relative bg-slate-50 border-b text-xs text-slate-600">
-              {Array.from({ length: Math.ceil(span / 7) }, (_, i) => (
-                <span
-                  key={i}
-                  className="absolute top-5 pl-2 border-l border-slate-300"
-                  style={{ left: i * 7 * unit }}
-                >
-                  {formatDate(shiftDate(start, i * 7))}
-                </span>
-              ))}
-            </div>
-            <div className="relative" style={{ height: rows.length * 48 }}>
-              <svg
-                className="absolute inset-0 pointer-events-none"
-                width={width}
-                height={rows.length * 48}
-                aria-hidden="true"
+        <div className="flex flex-wrap gap-3 items-center justify-between px-4 py-3 border-b">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Earlier dates"
+              onClick={() => setAnchor(shiftDate(start, -Math.floor(span / 2)))}
+            >
+              <ArrowLeft className="size-4" />
+            </Button>
+            <span className="text-sm tabular-nums">
+              {formatDate(start)} – {formatDate(shiftDate(start, span - 1))}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Later dates"
+              onClick={() => setAnchor(shiftDate(start, Math.floor(span / 2)))}
+            >
+              <ArrowRight className="size-4" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-3 items-center">
+            <label className="text-xs">
+              Go to date
+              <Input
+                aria-label="Gantt go to date"
+                type="date"
+                value={start}
+                onChange={(e) => {
+                  if (e.target.value) setAnchor(e.target.value);
+                }}
+              />
+            </label>
+            <label className="text-xs">
+              Scale
+              <select
+                aria-label="Gantt scale"
+                value={zoom}
+                onChange={(e) => setZoom(e.target.value)}
+                className="field-select mt-1"
               >
-                <defs>
-                  <marker
-                    id="dependency-arrow"
-                    viewBox="0 0 10 10"
-                    refX="8"
-                    refY="5"
-                    markerWidth="5"
-                    markerHeight="5"
-                    orient="auto-start-reverse"
-                  >
-                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
-                  </marker>
-                </defs>
-                {Array.from({ length: Math.ceil(span / 7) }, (_, i) => (
-                  <line
-                    key={i}
-                    x1={i * 7 * unit}
-                    x2={i * 7 * unit}
-                    y1={0}
-                    y2={rows.length * 48}
-                    stroke="#e2e8f0"
-                  />
-                ))}
-                {rows.flatMap((r, i) =>
-                  (r.predecessors ?? []).map((p) => {
-                    const predecessor = positions.get(p.activityId);
-                    if (!predecessor?.row.finish || !r.start) return null;
-                    const from =
-                        x(
-                          predecessor.row.actualFinish ??
-                            predecessor.row.finish,
-                        ) + unit,
-                      to = x(r.start);
-                    if (from < 0 || to > width || to < 0 || from > width)
-                      return null;
-                    const mid = Math.max(from + 6, to - 8);
-                    return (
-                      <path
-                        key={`${r.activityId}-${p.activityId}`}
-                        d={`M ${from} ${predecessor.index * 48 + 24} H ${mid} V ${i * 48 + 24} H ${to}`}
-                        fill="none"
-                        stroke="#64748b"
-                        strokeWidth="1.25"
-                        markerEnd="url(#dependency-arrow)"
-                      />
-                    );
-                  }),
-                )}
-                {todayX >= 0 && todayX <= width && (
-                  <line
-                    x1={todayX}
-                    x2={todayX}
-                    y1={0}
-                    y2={rows.length * 48}
-                    stroke="#dc2626"
-                    strokeDasharray="4 3"
-                  />
-                )}
-              </svg>
-              {rows.map((r) => {
-                const left = r.start ? x(r.start) : -1,
-                  right = r.finish ? x(r.finish) + unit : -1;
-                const baselineLeft = r.baselineStart ? x(r.baselineStart) : -1;
-                const baselineRight = r.baselineFinish
-                  ? x(r.baselineFinish) + unit
-                  : -1;
-                return (
-                  <div key={r.activityId} className="h-12 border-b relative">
-                    {baselineRight > 0 &&
-                      baselineLeft < width &&
-                      r.baselineStart && (
-                        <span
-                          className="absolute h-1 bg-slate-400 rounded-sm top-10"
-                          style={{
-                            left: clipped(baselineLeft),
-                            width: Math.max(
-                              2,
-                              clipped(baselineRight) - clipped(baselineLeft),
-                            ),
+                <option value="day">Days</option>
+                <option value="week">Weeks</option>
+                <option value="month">Months</option>
+              </select>
+            </label>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAnchor(shiftDate(projectDate(), -7))}
+            >
+              Today
+            </Button>
+            <label className="flex items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={showLinks}
+                onChange={(e) => setShowLinks(e.target.checked)}
+              />
+              Dependency columns
+            </label>
+          </div>
+        </div>
+        <div
+          className="overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Scrollable programme table and timeline"
+        >
+          <div className="flex" style={{ minWidth: tableWidth + width }}>
+            <table
+              className="text-xs border-collapse table-fixed shrink-0 tabular-nums"
+              style={{ width: tableWidth }}
+            >
+              <caption className="sr-only">
+                Programme activities. Select an activity to edit its dates and
+                dependencies.
+              </caption>
+              <thead>
+                <tr className="h-14 bg-slate-50 text-slate-600 text-left">
+                  <th className="px-3 w-44">Activity / asset</th>
+                  <th className="w-12">
+                    <span className="sr-only">Quick edit</span>
+                  </th>
+                  <th className="px-2 w-16">Days</th>
+                  <th className="px-2 w-24">Start</th>
+                  <th className="px-2 w-24">Finish</th>
+                  {showLinks && <th className="px-2">Predecessors</th>}
+                  {showLinks && <th className="px-2">Successors</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const successors = all.filter((s) =>
+                    s.predecessors?.some((p) => p.activityId === r.activityId),
+                  );
+                  return (
+                    <tr
+                      key={r.activityId}
+                      className="h-12 border-t hover:bg-blue-50/40"
+                      onContextMenu={(event) => {
+                        event.preventDefault();
+                        quickEdit(
+                          r,
+                          event.currentTarget.querySelector<HTMLButtonElement>(
+                            "button",
+                          )!,
+                        );
+                      }}
+                    >
+                      <td className="px-3">
+                        <button
+                          className="text-xs text-left w-full hover:text-blue-700 focus-visible:outline-blue-600"
+                          onClick={() => onEdit(r)}
+                          onKeyDown={(event) => {
+                            if (
+                              event.key === "ContextMenu" ||
+                              (event.shiftKey && event.key === "F10")
+                            ) {
+                              event.preventDefault();
+                              quickEdit(r, event.currentTarget);
+                            }
                           }}
-                          title={`Baseline ${r.baselineStart} → ${r.baselineFinish}`}
-                        />
+                        >
+                          <strong className="block truncate" title={r.name}>
+                            {r.name}
+                          </strong>
+                          <span
+                            className="block truncate text-slate-600"
+                            title={r.activityId}
+                          >
+                            {r.activityId}
+                          </span>
+                        </button>
+                      </td>
+                      <td className="px-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="min-h-11 min-w-11"
+                          aria-label={`Quick edit ${r.activityId}`}
+                          onClick={(event) => quickEdit(r, event.currentTarget)}
+                        >
+                          <Pencil className="size-4" aria-hidden="true" />
+                        </Button>
+                      </td>
+                      <td className="px-2">
+                        {r.durationDays ??
+                          (r.start && r.finish
+                            ? workingDuration(r.start, r.finish)
+                            : "—")}{" "}
+                        wd
+                      </td>
+                      <td className="px-2">{r.start ?? "Not set"}</td>
+                      <td className="px-2">{r.finish ?? "Not set"}</td>
+                      {showLinks && (
+                        <td
+                          className="px-2 truncate"
+                          title={r.predecessors
+                            ?.map((p) => `${p.activityId} FS+${p.lagDays}`)
+                            .join(", ")}
+                        >
+                          {r.predecessors
+                            ?.map(
+                              (p) =>
+                                `${p.activityId}${p.lagDays ? ` +${p.lagDays}wd` : ""}`,
+                            )
+                            .join(", ") || "—"}
+                        </td>
                       )}
-                    {r.start && r.finish && right > 0 && left < width ? (
-                      <button
-                        className="absolute top-3 h-6 rounded-sm bg-blue-100 border border-blue-400 text-blue-950 overflow-hidden text-[10px] hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-blue-700"
-                        style={{
-                          left: clipped(left),
-                          width: Math.max(6, clipped(right) - clipped(left)),
-                        }}
-                        title={`${r.activityId}: ${r.name}; ${r.start} → ${r.finish}; ${r.progress ?? "unrecorded"}%`}
-                        aria-label={`Edit ${r.activityId}: ${r.name}, ${r.start} to ${r.finish}`}
-                        onClick={() => onEdit(r)}
-                      >
-                        <span
-                          className="absolute left-0 inset-y-0 bg-blue-400/50"
-                          style={{ width: `${r.progress ?? 0}%` }}
+                      {showLinks && (
+                        <td
+                          className="px-2 truncate"
+                          title={successors.map((s) => s.activityId).join(", ")}
+                        >
+                          {successors.map((s) => s.activityId).join(", ") ||
+                            "—"}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div className="relative shrink-0 border-l" style={{ width }}>
+              <div className="h-14 relative bg-slate-50 border-b text-xs text-slate-600">
+                {Array.from({ length: Math.ceil(span / 7) }, (_, i) => (
+                  <span
+                    key={i}
+                    className="absolute top-5 pl-2 border-l border-slate-300"
+                    style={{ left: i * 7 * unit }}
+                  >
+                    {formatDate(shiftDate(start, i * 7))}
+                  </span>
+                ))}
+              </div>
+              <div className="relative" style={{ height: rows.length * 48 }}>
+                <svg
+                  className="absolute inset-0 pointer-events-none"
+                  width={width}
+                  height={rows.length * 48}
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <marker
+                      id="dependency-arrow"
+                      viewBox="0 0 10 10"
+                      refX="8"
+                      refY="5"
+                      markerWidth="5"
+                      markerHeight="5"
+                      orient="auto-start-reverse"
+                    >
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b" />
+                    </marker>
+                  </defs>
+                  {Array.from({ length: Math.ceil(span / 7) }, (_, i) => (
+                    <line
+                      key={i}
+                      x1={i * 7 * unit}
+                      x2={i * 7 * unit}
+                      y1={0}
+                      y2={rows.length * 48}
+                      stroke="#e2e8f0"
+                    />
+                  ))}
+                  {rows.flatMap((r, i) =>
+                    (r.predecessors ?? []).map((p) => {
+                      const predecessor = positions.get(p.activityId);
+                      if (!predecessor?.row.finish || !r.start) return null;
+                      const from =
+                          x(
+                            predecessor.row.actualFinish ??
+                              predecessor.row.finish,
+                          ) + unit,
+                        to = x(r.start);
+                      if (from < 0 || to > width || to < 0 || from > width)
+                        return null;
+                      const mid = Math.max(from + 6, to - 8);
+                      return (
+                        <path
+                          key={`${r.activityId}-${p.activityId}`}
+                          d={`M ${from} ${predecessor.index * 48 + 24} H ${mid} V ${i * 48 + 24} H ${to}`}
+                          fill="none"
+                          stroke="#64748b"
+                          strokeWidth="1.25"
+                          markerEnd="url(#dependency-arrow)"
                         />
-                        <span className="relative whitespace-nowrap px-1">
-                          {r.progress !== undefined
-                            ? `${r.progress}%`
-                            : r.activityId}
+                      );
+                    }),
+                  )}
+                  {todayX >= 0 && todayX <= width && (
+                    <line
+                      x1={todayX}
+                      x2={todayX}
+                      y1={0}
+                      y2={rows.length * 48}
+                      stroke="#dc2626"
+                      strokeDasharray="4 3"
+                    />
+                  )}
+                </svg>
+                {rows.map((r) => {
+                  const left = r.start ? x(r.start) : -1,
+                    right = r.finish ? x(r.finish) + unit : -1;
+                  const baselineLeft = r.baselineStart
+                    ? x(r.baselineStart)
+                    : -1;
+                  const baselineRight = r.baselineFinish
+                    ? x(r.baselineFinish) + unit
+                    : -1;
+                  return (
+                    <div
+                      key={r.activityId}
+                      className="h-12 border-b relative"
+                      tabIndex={-1}
+                      onContextMenu={(event) => {
+                        event.preventDefault();
+                        quickEdit(
+                          r,
+                          event.currentTarget.querySelector<HTMLButtonElement>(
+                            "button",
+                          ) ?? event.currentTarget,
+                        );
+                      }}
+                    >
+                      {baselineRight > 0 &&
+                        baselineLeft < width &&
+                        r.baselineStart && (
+                          <span
+                            className="absolute h-1 bg-slate-400 rounded-sm top-10"
+                            style={{
+                              left: clipped(baselineLeft),
+                              width: Math.max(
+                                2,
+                                clipped(baselineRight) - clipped(baselineLeft),
+                              ),
+                            }}
+                            title={`Baseline ${r.baselineStart} → ${r.baselineFinish}`}
+                          />
+                        )}
+                      {r.start && r.finish && right > 0 && left < width ? (
+                        <button
+                          className="absolute top-3 h-6 rounded-sm bg-blue-100 border border-blue-400 text-blue-950 overflow-hidden text-[10px] hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+                          style={{
+                            left: clipped(left),
+                            width: Math.max(6, clipped(right) - clipped(left)),
+                          }}
+                          title={`${r.activityId}: ${r.name}; ${r.start} → ${r.finish}; ${r.progress ?? "unrecorded"}%`}
+                          aria-label={`Edit ${r.activityId}: ${r.name}, ${r.start} to ${r.finish}`}
+                          onClick={() => onEdit(r)}
+                        >
+                          <span
+                            className="absolute left-0 inset-y-0 bg-blue-400/50"
+                            style={{ width: `${r.progress ?? 0}%` }}
+                          />
+                          <span className="relative whitespace-nowrap px-1">
+                            {r.progress !== undefined
+                              ? `${r.progress}%`
+                              : r.activityId}
+                          </span>
+                        </button>
+                      ) : (
+                        <span className="absolute left-3 top-4 text-xs text-slate-500">
+                          {r.start && r.finish
+                            ? "Outside this date window"
+                            : "Dates not set"}
                         </span>
-                      </button>
-                    ) : (
-                      <span className="absolute left-3 top-4 text-xs text-slate-500">
-                        {r.start && r.finish
-                          ? "Outside this date window"
-                          : "Dates not set"}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <p className="px-4 py-3 text-xs text-slate-600">
-        Blue: programme and recorded progress. Grey: original baseline. Dashed
-        red: today. Arrows show finish-to-start links between the activities
-        visible on this page. Select an activity or bar to edit.
-      </p>
-    </section>
+        <p className="px-4 py-3 text-xs text-slate-600">
+          Blue: programme and recorded progress. Grey: original baseline. Dashed
+          red: today. Arrows show finish-to-start links between the activities
+          visible on this page. Select an activity or bar to edit. Right-click a
+          row or use its pencil for quick changes here.
+        </p>
+      </section>
+      {quickEditing && (
+        <>
+          <PopoverAnchor virtualRef={{ current: quickEditing.anchor }} />
+          <PopoverContent
+            align="start"
+            side="bottom"
+            collisionPadding={12}
+            className="w-[min(36rem,calc(100vw-1.5rem))] max-h-[min(42rem,var(--radix-popover-content-available-height))] overflow-y-auto rounded-xl p-4 sm:p-5"
+            aria-label={`Quick edit ${quickEditing.activity.activityId}`}
+            onOpenAutoFocus={(event) => event.preventDefault()}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+            onInteractOutside={(event) => {
+              if (quickBusy) event.preventDefault();
+            }}
+            onEscapeKeyDown={(event) => {
+              if (quickBusy) event.preventDefault();
+            }}
+          >
+            <ActivityEditor
+              key={quickEditing.activity.activityId}
+              project={project}
+              activity={quickEditing.activity}
+              version={quickEditing.version}
+              compact
+              onBusyChange={setQuickBusy}
+              onClose={closeQuickEdit}
+            />
+          </PopoverContent>
+        </>
+      )}
+    </Popover>
   );
 }

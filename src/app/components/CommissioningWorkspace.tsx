@@ -26,7 +26,7 @@ import {
   type ScheduleActivity,
 } from "@/lib/commissioning";
 import { type RegisterImport } from "@/lib/commissioning-import";
-import { parseRegisterFile } from "@/lib/asset-transfer";
+import { exportAssetCsv, parseRegisterFile } from "@/lib/asset-transfer";
 import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
 import { ProjectAudit } from "./ProjectAudit";
 import { TagLevel } from "./TagLevel";
@@ -411,6 +411,18 @@ function ProjectWorkspace({
         },
       ],
     });
+  }
+  function downloadAssetTemplate() {
+    const url = URL.createObjectURL(
+      new Blob(["\uFEFF" + exportAssetCsv([])], {
+        type: "text/csv;charset=utf-8;",
+      }),
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "fieldtrack-assets-template.csv";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function downloadRegister(format: "json" | "csv") {
     setBusy(true);
@@ -1667,7 +1679,8 @@ function ProjectWorkspace({
             <p className="text-sm text-slate-600">
               CSV imports equipment. JSON also includes programme activities.
               Include area and phase to filter the asset list after import. You
-              will review a preview before anything is saved.
+              will review a preview before anything is saved. Edit the CSV
+              template in Excel and save as CSV before importing.
             </p>
             <label className="block text-sm font-medium">
               Choose CSV or JSON
@@ -1706,12 +1719,17 @@ function ProjectWorkspace({
               <Button
                 className="h-11 sm:h-9"
                 variant="outline"
-                disabled={busy || !isOnline}
+                onClick={downloadAssetTemplate}
+              >
+                Download blank CSV template
+              </Button>
+              <Button
+                className="h-11 sm:h-9"
+                variant="outline"
+                disabled={busy || !isOnline || !state.assets.length}
                 onClick={() => void downloadRegister("csv")}
               >
-                {state.assets.length
-                  ? "Export assets CSV"
-                  : "Download CSV template"}
+                Export assets CSV
               </Button>
               <Button
                 className="h-11 sm:h-9"
