@@ -7,8 +7,8 @@
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "in-progress",
-  "executionState": "published-ui-server-follow-up-validated-live-upload-permission-pending",
-  "observedAt": "2026-11-05T17:19:23.316944+00:00",
+  "executionState": "awaiting-human-file-selection-software-deployed",
+  "observedAt": "2026-11-05T17:25:56.715874+00:00",
   "startedAt": "2026-11-05T16:35:41.153505+00:00",
   "completedAt": null,
   "deadline": "2026-11-05",
@@ -34,7 +34,7 @@
       "subagent": true
     }
   ],
-  "outcome": "Software deployed Production success db9ab84; scoped app modules and local real-data tests passed. Server follow-up avoids duplicate large P6 SQL parameter and handles NULL commissioning in new projects. LHR11 created after specific human location consent. Real imports not performed: native file chooser needs manual extension permission action already requested by regia; no bypass.",
+  "outcome": "Software edb272e pushed and Vercel Production success verified.163unique local unit/SQL tests across runs,11API cases and real-file local desktop/mobile flows passed. LHR11 project exists with specifically approved location. No real dataset upload/import/template/new task performed: manual file selection pending in the prepared normal app chooser. Same job stays in progress, no polling or extra development.",
   "turnReportTerminal": false,
   "evidence": [
     {
@@ -678,20 +678,20 @@
   },
   "blockers": [
     {
-      "kind": "chrome-extension-manual-file-url-permission",
-      "reason": "chooser.setFiles blocked without file URL access; chrome://extensions denied by browser policy, alternative/CDP forbidden",
-      "humanConsentGranted": true,
-      "actualPermissionChanged": false,
-      "manualActionAlreadyRequestedByRegia": true,
-      "waitingForHumanDone": true,
-      "finalDisableManual": true,
-      "noRetryBeforeChangedState": true
+      "kind": "human-manual-file-selection",
+      "state": "waiting for human selection in already prepared Inventory JSON chooser",
+      "humanChoice": "dimmi che file caricare lo metto io",
+      "lastObservation": "No file chosen; preview disabled",
+      "datasetWrites": false,
+      "extensionPermissionChangedByAgent": false,
+      "bypassOrPolling": false
     }
   ],
   "nextActions": [
-    "Commit/push validated code normally; verify exact Vercel Production success",
-    "Execute named scoped normal-app import and live receipt through existing authenticated Admin browser",
-    "Record project IDs, real dataset counts,305/18preservation plus new explicit assigned test path; no four-session impersonation claim"
+    "Regia retains manual file-selection handoff; no polling or duplicate chooser attempts",
+    "After actual human selection observed, resume same job normal-app preview/save; preserve all old305tasks/18assignments and record real before/after counts",
+    "Select templates/P6 files manually one at a time; P6 software/deploy gate cleared, reuse existing LHR11 UUID",
+    "Report actual dataset outcomes and final four-role test matrix, not software-only completion"
   ],
   "outgoingDrafts": [
     {
@@ -762,7 +762,7 @@
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "Current manual test-ready delivery job: local implementation/build/UI/API validations passed. See current report and compact production-ui-handoff; push/deploy/import verification remain. Prior preview job terminal."
+    "resumeFrom": "edb272e Production success, all software gates clear; LHR11 created. Root code work and local validation finished. Same job in-progress awaiting human selection in Inventory JSON chooser held by regia. No real imports yet; compact private .md handoff and JSON have exact files/hashes/actions. No new development or polling."
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -2159,9 +2159,9 @@
     "newApiKeyPaidCallOrServiceAuthorized": false,
     "previousPreviewJobClosed": true,
     "liveVerificationNeededViaRegiaCua": true,
-    "status": "local-validated-awaiting-production-release-and-load",
+    "status": "in-progress-awaiting-human-file-selection",
     "reportRef": "docs/tony-feedback/intake-20261105-test-ready.md",
-    "handoffRef": "output/tony/test-ready-delivery-20261105/production-ui-handoff.private.json",
+    "handoffRef": "output/tony/test-ready-delivery-20261105/production-ui-handoff.private.md",
     "validation": {
       "unitInitial": 152,
       "additionalVideoUnit": 5,
@@ -2175,7 +2175,8 @@
       "independentReview": "no concrete authorization/data-loss blocker found; live verification pending",
       "nextEnvPreserved": true,
       "rawPrivateInGit": false,
-      "sourceTransport": "single32,631,197byte archive parameter; HTTP parameter JSON40,397,201bytes; new-project NULL snapshot handled; no real DB test claim"
+      "sourceTransport": "single32,631,197byte archive parameter; HTTP parameter JSON40,397,201bytes; new-project NULL snapshot handled; no real DB test claim",
+      "unitTotalUniqueAcrossRuns": 163
     },
     "liveBaseline": {
       "project": "AMS16 · Test",
@@ -2205,12 +2206,14 @@
       "noFurtherQuestionNeeded": true
     },
     "softwareDeployment": {
-      "sha": "db9ab845f9c21ba417ea5ecff3dc442618b79f8a",
+      "state": "cleared",
+      "requiredCommit": "edb272e024925fb37598e5267507d1b1056b14a5",
+      "deploymentId": 7580380236,
+      "vercelId": "6PFiPQURkzXdXSVUrXcTJB6tTkZy",
       "environment": "Production",
-      "state": "success",
-      "deploymentId": 7580184310,
-      "vercelId": "4Gj3nV6rjqxUw21Nof2UXW5qYT1K",
-      "at": "2026-11-05T17:11:53Z"
+      "result": "success",
+      "at": "2026-11-05T17:20:13Z",
+      "sha": "edb272e024925fb37598e5267507d1b1056b14a5"
     },
     "lhr11Project": {
       "id": "08ef7190-c42e-46fc-9e2e-873d5c84dd0b",
@@ -2221,17 +2224,47 @@
       "operator": "Test admin, normal UI via regia child after specific human consent"
     },
     "uploadPermissionGate": {
-      "state": "manual Chrome extension file-URL permission activation pending",
-      "humanConsent": "Sì, abilitalo e poi disattivalo",
-      "questionItemId": "call_48b314af99de424da55217c21e4b446b,0",
-      "toolLimit": "chrome://extensions denied by browser URL policy; alternative surfaces/CDP forbidden",
-      "actualPermissionChanged": false,
-      "manualActionAlreadyRequestedByRegia": true,
-      "awaitingHumanDone": true,
-      "importsExecuted": false,
-      "finalDisableMustBeHumanAndVerified": true
+      "state": "awaiting human manual file selection in prepared normal-app chooser",
+      "humanChoice": "dimmi che file caricare lo metto io",
+      "lastObserved": "Inventory JSON: No file chosen; preview disabled",
+      "extensionPermissionChangedByAgent": false,
+      "permissionGrantToRestoreByAgent": false,
+      "alternativeUrlOrCdpUsed": false,
+      "pollingEnabled": false,
+      "filesToBeSelectedManuallyOneAtATime": true
     },
     "actualWritesScope": "Regia normal UI created LHR11 project only; owner has performed no remote dataset import",
-    "datasetImportsExecuted": false
+    "datasetImportsExecuted": false,
+    "softwareReady": true,
+    "realDatasetReady": false,
+    "completionClaimed": false,
+    "actualDatasetImport": {
+      "inventory": 0,
+      "templates": 0,
+      "associations": 0,
+      "newTasks": 0,
+      "programmeActivities": 0,
+      "programmeRelationships": 0
+    },
+    "expectedDatasetCounts": {
+      "inventory": 1354,
+      "templates": 2,
+      "requirements": 52,
+      "explicitTestAssociations": 1,
+      "newAssignedTestTasks": 1,
+      "programmeActivities": 16969,
+      "programmeRelationships": 36923
+    },
+    "p6UploadGate": {
+      "state": "cleared",
+      "requiredCommit": "edb272e024925fb37598e5267507d1b1056b14a5",
+      "deploymentId": 7580380236,
+      "vercelId": "6PFiPQURkzXdXSVUrXcTJB6tTkZy",
+      "environment": "Production",
+      "result": "success",
+      "at": "2026-11-05T17:20:13Z"
+    },
+    "quotaLatestMeasured": 81,
+    "allRootLocalProcessesStopped": true
   }
 }

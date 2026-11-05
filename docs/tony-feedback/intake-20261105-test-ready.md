@@ -76,7 +76,10 @@ Push normale su main riuscito: contratti `e53291a`, integrazione
 Il follow-up server riduce a un solo parametro l'archivio P6 di32,63MB: richiesta
 parametri40,40MB misurata offline, senza duplicazione. Copre anche lo snapshot
 commissioning NULL dei progetti nuovi. Sei test SQL pertinenti e nuova build verdi;
-nessun reimport locale P6/inventario ripetuto. SHA/deploy follow-up da verificare.
+nessun reimport locale P6/inventario ripetuto. Follow-up
+**edb272e024925fb37598e5267507d1b1056b14a5**, push normale e **Vercel Production
+success7580380236 /6PFiPQURkzXdXSVUrXcTJB6tTkZy**,5nov17:20:13UTC, verificati.
+Smoke pubblico anonimo distinto dal collaudo autenticato; ricevuta privata dedicata.
 Gli import reali non sono ancora eseguiti: test locali e rilascio restano distinti.
 Sessione browser della regia già autenticata Test admin/Admin su FieldTrack Test.
 Baseline nativa: AMS16 · Test, UUID`fcdb866f-12d4-4e85-a6b2-004ca1d53701`,
@@ -91,15 +94,16 @@ normale UI ha creato LHR11, FieldTrack Test, UUID
 specificata nella fonte — import di test». Nessuna creazione parallela. Al primo
 riscontro solo Test admin ha il nuovo progetto; gli altri tre account conservano AMS16.
 
-**Limite upload corrente:** chooser.setFiles non può leggere i file locali perché
-l'estensione ChatGPT non ha «Consenti accesso agli URL dei file». Marco ha approvato
-l'attivazione temporanea e successiva disattivazione; il tool browser blocca però
-chrome://extensions e vieta alternative/CDP. Non è stato cambiato alcun permesso,
-non c'è un grant automatico da ripristinare. La regia ha chiesto l'azione manuale
-esatta in Chrome e attende «Fatto». Nessun file, preview live, import, template o
-nuova task creati;305task e18assegnazioni ancora intatti. Non aggirare questo limite
-con fetch, cookie, un altro browser o percorsi indiretti. La disattivazione finale
-sarà manuale, da ottenere/verificare, non promessa come automatica.
+**Handoff umano corrente:** dopo il blocco file URL e l'impossibilità del tool di
+aprire chrome://extensions, Marco ha scelto «dimmi che file caricare lo metto io».
+Il chooser Inventory JSON della normale app è preparato; un solo controllo passivo
+mostra ancora No file chosen. Nessun upload o preview live, inventario/template/
+nuova task ancora0. Nessun permesso estensione è stato modificato dall'agente.
+L'attesa è selezione manuale dei tre file uno alla volta, non un GO generico.
+La regia tiene l'handoff; nessun polling, canale alternativo o nuovo sviluppo.
+**Job inProgress/awaiting human file selection**, non concluso: software pronto
+online, dati reali non ancora caricati. Si riprende questo stesso job quando la
+selezione/import è osservata. Nessuna sorveglianza continua promessa.
 
 Pacchetto operativo privato: `output/tony/test-ready-delivery-20261105/production-ui-handoff.private.json`.
 Ordine: inventario scoped in AMS16, verifica/no-op/preview restore; template senza

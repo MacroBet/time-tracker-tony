@@ -10,9 +10,14 @@ con guardie/snapshot/versione/rollback, preservando305task e18assegnazioni.
 P6/LHR11 progetto distinto, inventario1354, checksheet/firmatari/Works to go;
 nessun nuovo segreto, API pagata, servizio o ruolo. Tre child paralleli, root unico
 writer schemi/handler; quota iniziale78%, stop nuovi lotti85/cap90. Nessuna nuova
-scrittura live ancora. Codice e build locali verificati: P6 completo, inventario/restore,
-checksheet/Works to go e video breve MP4. [Prove e collaudo](intake-20261105-test-ready.md).
-Preview precedente conclusa, non riaperta. Stato corrente
+scrittura live ancora. Codice/build locali verificati e software pubblicato:
+`edb272e`, Vercel Production success7580380236,5nov17:20:13UTC. Inventario/restore,
+P6 completo, schede/Works to go e MP4 breve pronti. LHR11 creato dalla regia,
+UUID`08ef7190-c42e-46fc-9e2e-873d5c84dd0b`, dopo consenso specifico sulla località.
+**Import reali ancora0**: Marco selezionerà manualmente i file nel chooser pronto.
+AMS16 resta0asset/0programma/305task/18assegnazioni; nessun grant estensione
+modificato dall'agente. Job **inProgress/awaiting human file selection**, non completed.
+[Prove, vincoli e collaudo](intake-20261105-test-ready.md). Preview precedente conclusa, non riaperta. Stato corrente
 in `regia-status.json#latestTestReadyDelivery5Nov`. Il monitor resta ristretto.
 
 ## Anteprima reale5nov — inventario1354asset validato offline
