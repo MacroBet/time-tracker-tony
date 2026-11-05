@@ -49,7 +49,7 @@ lavoro assegnato. Salvataggi ordinari preservano sorgente e audit fuori snapshot
 
 ## Prove locali concluse
 
-- 152test unitari iniziali,5test MP4 e4test SQL di persistenza sorgente:161pass
+- 152test unitari iniziali,5test MP4 e6test SQL di persistenza/trasporto sorgente:163pass
   complessivi nei rispettivi run; PGlite usa migrazioni reali. Gli interleaving SQL
   ordinati sono verificati; non è una prova di contesa con più backend live.
 - 10API di regressione:9pass al primo run, test generazione corretto per la nuova
@@ -70,18 +70,36 @@ payload, screenshot e ricevute restano privati sotto output e fuori Git.
 
 ## Rilascio e caricamento
 
-Build pronta; SHA push/deploy e risultati live si registrano solo dopo verifica.
+Push normale su main riuscito: contratti `e53291a`, integrazione
+`db9ab845f9c21ba417ea5ecff3dc442618b79f8a`. **Vercel Production success** verificato
+5nov17:11:53UTC, deployment7580184310 /4Gj3nV6rjqxUw21Nof2UXW5qYT1K.
+Il follow-up server riduce a un solo parametro l'archivio P6 di32,63MB: richiesta
+parametri40,40MB misurata offline, senza duplicazione. Copre anche lo snapshot
+commissioning NULL dei progetti nuovi. Sei test SQL pertinenti e nuova build verdi;
+nessun reimport locale P6/inventario ripetuto. SHA/deploy follow-up da verificare.
+Gli import reali non sono ancora eseguiti: test locali e rilascio restano distinti.
 Sessione browser della regia già autenticata Test admin/Admin su FieldTrack Test.
 Baseline nativa: AMS16 · Test, UUID`fcdb866f-12d4-4e85-a6b2-004ca1d53701`,
 0asset/0programma/305task; worker18assegnazioni,16aperte/2complete. Export JSON/CSV
 vuoto disabilitato: nessun backup file creato, limite documentato. Prima dell'import
 verificare nuovamente versione e baseline, conservare ricevuta del registro vuoto.
 
-**Limite corrente LHR11:** la regia riferisce un rifiuto auto-review del click finale
-creazione progetto perché il valore provvisorio Project location non era approvato
-specificamente. PROJECT.location_id nella fonte è vuoto. Nessun progetto creato o
-ID assegnato. La regia ha già chiesto a Marco il testo/consenso preciso; nessun retry,
-API alternativa o cambio codice per aggirare il rifiuto. Deploy e ramo AMS16 proseguono.
+**Creazione LHR11 conclusa:** dopo il rifiuto iniziale della località provvisoria,
+Marco ha risposto «Sì, usa questo valore provvisorio» alla domanda specifica. La
+normale UI ha creato LHR11, FieldTrack Test, UUID
+`08ef7190-c42e-46fc-9e2e-873d5c84dd0b`, con il valore esatto «Località non
+specificata nella fonte — import di test». Nessuna creazione parallela. Al primo
+riscontro solo Test admin ha il nuovo progetto; gli altri tre account conservano AMS16.
+
+**Limite upload corrente:** chooser.setFiles non può leggere i file locali perché
+l'estensione ChatGPT non ha «Consenti accesso agli URL dei file». Marco ha approvato
+l'attivazione temporanea e successiva disattivazione; il tool browser blocca però
+chrome://extensions e vieta alternative/CDP. Non è stato cambiato alcun permesso,
+non c'è un grant automatico da ripristinare. La regia ha chiesto l'azione manuale
+esatta in Chrome e attende «Fatto». Nessun file, preview live, import, template o
+nuova task creati;305task e18assegnazioni ancora intatti. Non aggirare questo limite
+con fetch, cookie, un altro browser o percorsi indiretti. La disattivazione finale
+sarà manuale, da ottenere/verificare, non promessa come automatica.
 
 Pacchetto operativo privato: `output/tony/test-ready-delivery-20261105/production-ui-handoff.private.json`.
 Ordine: inventario scoped in AMS16, verifica/no-op/preview restore; template senza

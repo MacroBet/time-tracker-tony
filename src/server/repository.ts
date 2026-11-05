@@ -66,7 +66,7 @@ function usingDemo() {
   return mode === "demo";
 }
 function clean<T>(value: unknown): T {
-  if (value === undefined) return undefined as T;
+  if (value === undefined || value === null) return undefined as T;
   return JSON.parse(
     JSON.stringify(value, (_key, v) => (v === null ? undefined : v)),
   ) as T;

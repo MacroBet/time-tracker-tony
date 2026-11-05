@@ -49,6 +49,63 @@ const audit = (id: string): ProjectAuditEvent => ({
   detail: "Fixture evidence; no remote database or real client data",
 });
 
+test("large source programme is bound once in the serverless database request", () => {
+  const programme = source("a");
+  programme.tables.NOTE = {
+    fields: ["text"],
+    rows: [["x".repeat(900000)], ["y".repeat(900000)]],
+    lines: [10, 11],
+  };
+  const query = new PgDialect().sqlToQuery(
+    commissioningWithAudit({
+      ...commissioning(),
+      sourceProgramme: programme,
+      sourceProgrammeSummary: sourceProgrammeSummary(programme),
+    }),
+  );
+  const archives = query.params.filter(
+    (value) => typeof value === "string" && value.length > 1024 * 1024,
+  );
+  assert.equal(
+    archives.length,
+    1,
+    "Do not duplicate large archives in the database HTTP request",
+  );
+  assert(Buffer.byteLength(JSON.stringify(query.params)) < 2 * 1024 * 1024);
+});
+
+test("a newly provisioned project with a NULL commissioning column accepts its first source snapshot", async () => {
+  const pg = new PGlite(),
+    dialect = new PgDialect();
+  try {
+    await pg.exec(
+      "CREATE TABLE projects (id text PRIMARY KEY, commissioning jsonb); INSERT INTO projects VALUES ('new-project',NULL)",
+    );
+    const empty = await pg.query<{ state: unknown }>(
+      "SELECT commissioning - 'sourceProgramme' - '_audit' AS state FROM projects",
+    );
+    assert.equal(empty.rows[0].state, null);
+    const programme = source("a"),
+      state = {
+        ...commissioning(),
+        version: 1,
+        sourceProgramme: programme,
+        sourceProgrammeSummary: sourceProgrammeSummary(programme),
+      };
+    const compiled = dialect.sqlToQuery(
+      sql`UPDATE projects SET commissioning=${commissioningWithAudit(state)} WHERE id='new-project' AND coalesce((commissioning->>'version')::integer,0)=0 RETURNING commissioning`,
+    );
+    const saved = await pg.query<{
+      commissioning: Commissioning & { _audit: unknown[] };
+    }>(compiled.sql, compiled.params);
+    assert.equal(saved.rows.length, 1);
+    assert.deepEqual(saved.rows[0].commissioning.sourceProgramme, programme);
+    assert.deepEqual(saved.rows[0].commissioning._audit, []);
+  } finally {
+    await pg.close();
+  }
+});
+
 test("PostgreSQL saves preserve omitted source data and audit, replace explicit source, and remove only an explicitly cleared source", async (t) => {
   const pg = new PGlite();
   const dialect = new PgDialect();

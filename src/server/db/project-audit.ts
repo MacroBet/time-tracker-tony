@@ -19,10 +19,12 @@ export function appendProjectAuditQuery(
 
 /** Use the current persisted audit array, never a client's snapshot of it. */
 export function commissioningWithAudit(state: Commissioning) {
-  const next = JSON.stringify(state);
-  return sql`jsonb_set(
-    CASE WHEN commissioning ? 'sourceProgramme' AND NOT ${Object.hasOwn(state, "sourceProgramme")}
-      THEN jsonb_set(${next}::jsonb, '{sourceProgramme}', commissioning->'sourceProgramme')
-      ELSE ${next}::jsonb END,
-    '{_audit}', coalesce(commissioning->'_audit', '[]'::jsonb))`;
+  // Bind large source archives once; repeating a parameter duplicates the JSON
+  // in the serverless database request even if only one CASE branch is used.
+  const incoming = sql`${JSON.stringify(state)}::jsonb`;
+  const next = Object.hasOwn(state, "sourceProgramme")
+    ? incoming
+    : sql`(${incoming} || CASE WHEN commissioning ? 'sourceProgramme'
+    THEN jsonb_build_object('sourceProgramme',commissioning->'sourceProgramme') ELSE '{}'::jsonb END)`;
+  return sql`jsonb_set(${next}, '{_audit}', coalesce(commissioning->'_audit', '[]'::jsonb))`;
 }
