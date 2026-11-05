@@ -56,6 +56,17 @@ interno: riferimenti cliente e nomi ripetuti non vengono deduplicati. I normali
 controlli su livelli, parent e attività continuano a valere. Un'attività può
 essere aggiunta e collegata nello stesso import, con verifica sull'insieme finale.
 
+Anche gli altri campi asset opzionali omessi da un file JSON, inclusi posizione,
+consegna prevista e collegamenti alle attività, conservano i valori registrati
+prima dell'anteprima. Il file deve comunque fornire `id`, `name`, `equipmentType`
+e `levels`; un ID nuovo non eredita i dati di altri asset. I valori espliciti
+restano soggetti alla validazione originale: `location:""`, `clientSupplied:null`
+e `levelActivities:{}` possono cancellare quei valori. Per cancellare
+`deliveryActivityId` o `expectedDelivery`, che non accettano vuoto/null nel JSON,
+usare il modulo asset oppure una cella vuota nella relativa colonna CSV.
+Questa preservazione riguarda il lettore dei file; il modulo conserva le sue
+cancellazioni esplicite e tutti i salvataggi passano da anteprima e conferma.
+
 Il JSON del registro conserva il Programme ID alla radice, per esempio:
 
 ```json

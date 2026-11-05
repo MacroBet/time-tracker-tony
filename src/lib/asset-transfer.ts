@@ -241,7 +241,37 @@ export function parseRegisterFile(
 ): RegisterImport {
   if (name.toLowerCase().endsWith(".csv"))
     return parseAssetCsv(text, existingAssets);
-  if (name.toLowerCase().endsWith(".json"))
-    return registerImportSchema.parse(JSON.parse(text));
+  if (name.toLowerCase().endsWith(".json")) {
+    const input: unknown = JSON.parse(text);
+    if (input && typeof input === "object" && !Array.isArray(input)) {
+      const fields = input as Record<string, unknown>;
+      if (Array.isArray(fields.assets)) {
+        const existing = new Map(
+          existingAssets.map((asset) => [asset.id, asset]),
+        );
+        fields.assets = fields.assets.map((row: unknown) => {
+          if (!row || typeof row !== "object" || Array.isArray(row)) return row;
+          const values = row as Record<string, unknown>;
+          const saved = existing.get(
+            typeof values.id === "string" ? values.id.trim() : "",
+          );
+          if (!saved) return row;
+          // A partial file may omit optional columns. Preserve them before
+          // schema defaults are applied; required fields must still be supplied.
+          // Keep this at the file boundary so form omissions can still clear dates.
+          return {
+            ...Object.fromEntries(
+              Object.entries(saved).filter(
+                ([key]) =>
+                  !["id", "name", "equipmentType", "levels"].includes(key),
+              ),
+            ),
+            ...values,
+          };
+        });
+      }
+    }
+    return registerImportSchema.parse(input);
+  }
   throw new Error("Choose an exported .csv or .json register.");
 }

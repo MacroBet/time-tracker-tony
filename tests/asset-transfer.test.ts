@@ -167,6 +167,119 @@ test("complete JSON register is importable and cannot overwrite an existing base
   );
 });
 
+test("partial JSON files preserve omitted asset metadata, delivery dates and activity links", () => {
+  const saved = {
+    ...asset,
+    phase: "Phase 2",
+    floor: "02",
+    area: "East",
+    owner: "Engineer",
+    clientAssetId: "CLIENT-AHU",
+    programmeActivityId: "TEST-1",
+  };
+  const prior = { ...state, assets: [saved] };
+  const snapshot = structuredClone(prior);
+  const text = JSON.stringify({
+    assets: [
+      {
+        id: ` ${asset.id} `,
+        name: "Updated AHU",
+        equipmentType: asset.equipmentType,
+        levels: asset.levels,
+      },
+    ],
+  });
+  const imported = parseRegisterFile("partial.json", text, prior.assets);
+  assert.deepEqual(imported.assets, [{ ...saved, name: "Updated AHU" }]);
+  const result = mergeRegister(prior, imported);
+  assert.deepEqual(result.errors, []);
+  assert.deepEqual(result.schedule, prior.schedule);
+  assert.deepEqual(result.changes, [`${asset.id}: asset updated`]);
+  const repeated = parseRegisterFile("partial.json", text, result.assets);
+  assert.deepEqual(
+    mergeRegister({ ...prior, assets: result.assets }, repeated).changes,
+    [],
+  );
+  assert.deepEqual(
+    prior,
+    snapshot,
+    "File preview leaves saved records untouched.",
+  );
+});
+
+test("JSON file fields still clear explicitly and form omissions still clear delivery fields", () => {
+  const imported = parseRegisterFile(
+    "clear.json",
+    JSON.stringify({
+      assets: [
+        {
+          id: asset.id,
+          name: asset.name,
+          equipmentType: asset.equipmentType,
+          levels: asset.levels,
+          location: "",
+          clientSupplied: null,
+          levelActivities: {},
+        },
+      ],
+    }),
+    [asset],
+  );
+  const result = mergeRegister(state, imported);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.assets[0].location, "");
+  assert.equal(result.assets[0].clientSupplied, null);
+  assert.deepEqual(result.assets[0].levelActivities, {});
+  assert.equal(result.assets[0].expectedDelivery, asset.expectedDelivery);
+  assert.equal(result.assets[0].deliveryActivityId, asset.deliveryActivityId);
+
+  const formEdit = { ...asset };
+  delete formEdit.expectedDelivery;
+  delete formEdit.deliveryActivityId;
+  const cleared = mergeRegister(state, { assets: [formEdit], schedule: [] });
+  assert.deepEqual(cleared.errors, []);
+  assert.equal(cleared.assets[0].expectedDelivery, undefined);
+  assert.equal(cleared.assets[0].deliveryActivityId, undefined);
+});
+
+test("JSON preservation does not supply missing required fields or relax validation", () => {
+  const required = {
+    id: asset.id,
+    name: asset.name,
+    equipmentType: asset.equipmentType,
+    levels: asset.levels,
+  };
+  for (const key of ["id", "name", "equipmentType", "levels"] as const) {
+    const row: Record<string, unknown> = { ...required };
+    delete row[key];
+    assert.throws(() =>
+      parseRegisterFile("partial.json", JSON.stringify({ assets: [row] }), [
+        asset,
+      ]),
+    );
+  }
+  for (const row of [
+    { ...required, expectedDelivery: "not-a-date" },
+    { ...required, unexpected: "data" },
+    null,
+    [],
+  ]) {
+    assert.throws(() =>
+      parseRegisterFile("invalid.json", JSON.stringify({ assets: [row] }), [
+        asset,
+      ]),
+    );
+  }
+  const newAsset = parseRegisterFile(
+    "new.json",
+    JSON.stringify({ assets: [{ ...required, id: "NEW-AHU" }] }),
+    [asset],
+  ).assets[0];
+  assert.equal(newAsset.location, "");
+  assert.equal(newAsset.deliveryActivityId, undefined);
+  assert.equal(newAsset.levelActivities, undefined);
+});
+
 test("optional project metadata preserves legacy config and validates canonical phase presentation", () => {
   assert.deepEqual(configSchema.parse(state.config), state.config);
   const config = {
