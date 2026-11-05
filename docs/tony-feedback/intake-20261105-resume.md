@@ -112,10 +112,64 @@ Preservati tutti gli edit preesistenti, compreso next-env.d.ts; nessun reset/sta
 Commit locale mirato **aa84ee4** (codice, intake e indice). **Nessun push o deploy**: il mandato
 corrente li esclude. La consegna locale non risponde ancora a tutti i requisiti nuovi.
 
+## Audit dei residui e secondo intervento locale — 5nov08:34UTC
+
+Prosecuzione manuale dell'incarico sopra, con la successiva richiesta di Marco
+di verificare se tutto il lavoro eseguibile fosse stato fatto, riferita dal
+supervisore. Non è un ampliamento del heartbeat. Nessuna nuova lettura WhatsApp,
+mail o altre chat: riusate le14 fonti e l'analisi già salvate. L'audit distingue
+lavoro tecnico residuo e decisioni mancanti; la seconda categoria non blocca
+automaticamente la prima.
+
+| Richiesta                             | Stato effettivo dopo l'audit                                                                                                                                       | Parte indipendente / prossimo lavoro                                                                                                                                                                                                                                                                                     | Domanda che blocca davvero la parte restante                                                                                                                           |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modifica rapida Gantt                 | Consegnata localmente in aa84ee4 con preview/conferma/versione/baseline                                                                                            | Nessun altro intervento chiaro necessario su questo ingresso                                                                                                                                                                                                                                                             | Nessuna per il tasto destro già richiesto                                                                                                                              |
+| Date manuali, logica P6 e dipendenze  | Motore lun–ven, FS/lag nonnegativo, baseline e actual; incompatibilità P6 già documentate                                                                          | Controlli esistenti per riferimenti, cicli, date, actual e baseline verificati staticamente; riproduzione sintetica di start/finish invertiti respinta. Nessun bug schedule confermato né conversione XER improvvisata                                                                                                   | Per generare sequenze: un esempio asset→tag→attività/dipendenze e regole modificabili. Per fedeltà P6 completa: calendario e relazioni richieste sul programma pilota  |
+| Tabelle Excel / template asset        | Template CSV vuoto disponibile; le19 colonne asset sono già definite, non vanno richieste di nuovo                                                                 | **Lavoro tecnico aperto:** adattatore XLSX sullo schema esistente. Package e lock non contengono lettori XLSX/ZIP/XML runtime; openpyxl è già usato soltanto dagli script di revisione. Nessuna nuova dipendenza/accesso installati in questa prosecuzione. Il preflight reviewOnly non viene fatto passare per importer | Nessuna nuova domanda sulle colonne asset. Serve chiarire il contenuto soltanto per tabelle programma/checklist ulteriori, non per bloccare il registro asset canonico |
+| Import senza perdita di dati          | **Difetto riprodotto e corretto in 5f4cd7c:** JSON parziale cancellava posizione, consegna e link omessi; CSV già li conservava                                    | Lettore JSON integra solo campi opzionali dell'asset esistente prima dei default Zod; campi obbligatori, ID nuovi e validazione restano tali. Merge e modulo asset invariati                                                                                                                                             | Nessuna; non dipende da nuova sequenza o da P6                                                                                                                         |
+| Dashboard più semplice                | Overview per ruolo, stato, completati/late e drilldown, tag e lista overdue già presenti                                                                           | Una revisione della gerarchia visiva può usare le metriche attuali senza attendere Project Health; resta lavoro distinto, non dichiarato consegnato da questo fix. Nessun nuovo calcolo o redesign arbitrario in questo intervento                                                                                       | Solo per un rating Health: criteri On/At/Off Track e perimetro. Non serve riproporre la domanda per i contatori già definiti                                           |
+| Admin assegna esecutori e approvatori | Assegnazione esecutore già presente con worker membro del progetto, ruoli manager/supervisor/admin, motivo/versione/audit; approvatore nominativo distinto assente | Riutilizzare il flusso esecutore esistente; nuovo campo approvatore e gate non aggiunti come semplice copia di assignedTo                                                                                                                                                                                                | Chi può approvare, a quali passi/tag si applica, eventuale separazione da esecutore e quali firme provvisorie/finali sono richieste nella checklist autorevole         |
+| Foto asset/location e video30s        | Foto/PDF su task già collegate all'asset/tag/location; autorizzazione download presente. Nessun archivio location indipendente; video assenti                      | Tracciabilità task→asset già presente, non richiede storage nuovo. Il contratto video resta distinto da un cambio di provider; nessun limite inventato o servizio attivato                                                                                                                                               | File-size, conservazione e accesso; se serve prova direttamente su location senza asset/task. Durata30s richiesta non definisce da sola il contratto di caricamento    |
+| Strutture checklist per tutti i tag   | Materiale aggiuntivo annunciato ma non presente nei14 testi; catalogo manuale già locale                                                                           | Nessuna compilazione automatica, checklist generata o approvazione dedotta                                                                                                                                                                                                                                               | Checklist/revisione da implementare e regole passi/prove/NC/firme                                                                                                      |
+| Quando il prossimo aggiornamento      | Due interventi locali pronti per revisione, non pubblicati                                                                                                         | Bozza breve preparata solo localmente, senza data promessa                                                                                                                                                                                                                                                               | Eventuale invio richiede approvazione di Marco sul testo esatto corrente                                                                                               |
+
+### Correzione e verifica mirata
+
+Il problema era nel confine file JSON, prima dei default schema: un import con
+soltanto `id/name/equipmentType/levels` sostituiva posizione e rimuoveva i collegamenti
+di consegna e per livello. Non si è estesa la whitelist di `mergeRegister`, perché
+il modulo usa legittimamente omissioni per cancellare le date. Il fix riutilizza
+solo l'asset dello stesso ID nella lista corrente fornita dal chiamante.
+
+Restano obbligatori tutti i quattro campi core. Valori espliciti vuoti/null sono
+ammessi solo dove già previsti dallo schema; unknown e date non valide restano
+respinti. In JSON l'omissione di `deliveryActivityId/expectedDelivery` ora conserva
+il valore: per cancellarli usare modulo o cella CSV esplicitamente vuota. Il
+[contratto identificativi](../programme-identifiers.md) descrive questa differenza.
+
+**29/29 test mirati** (`asset-transfer`, `commissioning`, `programme-identifiers`),
+typecheck, lint dei due file TS e formato passati. Tre nuovi casi coprono perdita
+riprodotta/idempotenza/sorgente invariata, clear esplicito e clear dal modulo,
+validazione/ID nuovo. Revisione indipendente del subagente riusato: nessun rilievo
+bloccante. Le115 prove e i10 API del primo lotto non sono stati ripetuti o contati
+come nuove prove; nessuna nuova build o sessione browser necessaria per questo
+adattatore di input puro. Nessun import reale o database contattato.
+
+Fetch origin riuscito prima degli edit; main era12 commit avanti e0 indietro.
+Commit locale **5f4cd7c** (lettore, test, contratto), senza push/deploy. Modifiche
+preesistenti e next-env.d.ts preservati. Quota conto nativa52% all'avvio e53% al
+controllo08:34UTC, uso ordinario consentito: variazione globale non attribuibile
+come consumo di questo incarico; nessun reset/credito aggiuntivo usato.
+
+Bozza inglese breve soltanto in `output/tony/next-questions-20261105.private.txt`;
+stato non approvato e non inviato, nessun composer. La versione esatta e il suo
+hash sono nel report metadata. La bozza distingue il risultato locale dall'XLSX
+ancora da implementare e domanda soltanto sequenza, checklist/ruoli e video.
+
 ## Prossimo passo concreto
 
-Marco può revisionare questo lotto locale. Prima del successivo lavoro di generazione
-servono un esempio di sequenza comune con ID/tag/dipendenze e le regole che l’utente
-può cambiare, più il tipo di tabella Excel da supportare. Poi approvatore distinto,
-checklist/gate e video/storage vanno trattati come lotti separati con i loro contratti.
-Non serve alcuna operazione fisica di Marco per questa lettura WhatsApp.
+Revisionare il risultato locale e la matrice: **non tutto è completato**.
+L'adattatore XLSX e la semplificazione della dashboard restano lavoro tecnico
+distinto dalle decisioni su sequenze, approvatori e video; non è corretto chiamare
+tutti questi punti un unico blocco di chiarimenti. La bozza può essere rivista in
+Codex; nessuna approvazione precedente autorizza l'invio o una pubblicazione.

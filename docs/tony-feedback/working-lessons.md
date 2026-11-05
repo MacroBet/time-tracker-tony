@@ -23,6 +23,17 @@ Le righe seguenti non concedono nuove autorizzazioni.
 | L-12 · H    | Modelli diversi avranno memoria perfetta/identica; importo Tony valido come prezzo standard; gruppo padre equivale a scheda condivisa.                             | Ipotesi respinte: documenti verificabili, prezzi contestuali e semantica gruppi ancora da definire.                                                                               |
 | L-13 · E    | Sincronizzare main prima del lavoro: fetch e confronto; pull ff-only soltanto su main pulito se necessario. Preservare le modifiche, senza reset/stash automatici. | Nuova istruzione di Marco, riferita dalla chat operativa il 16/10. In UX-004 fetch riuscito, HEAD/origin/main 0/0; nessun pull necessario, next-env.d.ts preesistente preservato. |
 
+## Preservazione degli import parziali — 5 novembre
+
+**T, dimostrato in 5f4cd7c:** distinguere un campo omesso da un file da una
+cancellazione nel modulo. I default schema possono cancellare metadati prima del
+merge: il lettore JSON integra i campi opzionali salvati prima della validazione,
+senza riempire i campi obbligatori. Non cambiare il merge condiviso quando i moduli
+usano l'omissione per cancellare date. Prova: regressione sintetica, reimport
+idempotente, sorgente invariata, clear del modulo e validazione,29 test mirati.
+Ambito: file asset JSON con lista esistente dello stesso progetto; non autorizza
+inferenze, conversioni dei workbook cliente o scritture remote.
+
 ## Proposta trasversale ancora da definire — 16 ottobre
 
 Resoconto della chat operativa: Marco vuole coordinamento tra progetti semplice

@@ -1,5 +1,22 @@
 # Registro operativo — Tony
 
+## Audit residui5nov — correzione JSON locale
+
+Proseguito il mandato manuale già registrato, senza nuove letture o invii.
+Difetto riprodotto: JSON asset parziale cancellava posizione, consegna e link omessi.
+Corretto nel solo lettore file prima dei default schema, mantenendo campi obbligatori,
+validazione e cancellazioni del modulo. Commit locale **5f4cd7c**,29 test mirati,
+typecheck/lint/formato e revisione indipendente passati; nessun push o deploy.
+[Matrice residui e prove](intake-20261105-resume.md#audit-dei-residui-e-secondo-intervento-locale--5nov0834utc).
+
+Lo schema asset è già definito: XLSX resta lavoro tecnico, non una domanda da
+ripetere sulle colonne. Anche semplificare la dashboard con metriche esistenti è
+distinto da definire Health. Sequenze comuni, checklist/approvatori e video hanno
+invece decisioni specifiche ancora mancanti. Non tutto completato, né tutto bloccato.
+Bozza breve inglese soltanto privata e non approvata; nessun composer. Metadata in
+`latestManualResidualReview5Nov`. Quota conto52→53%, uso ordinario consentito,
+variazione globale non attribuita al job. Copertura Tony resta5nov08:11Roma.
+
 ## Ripresa manuale5nov — nuovi testi e lotto locale
 
 Nuovo mandato diretto Marco verificato nella regia, user

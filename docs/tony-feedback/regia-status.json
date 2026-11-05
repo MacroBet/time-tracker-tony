@@ -1269,5 +1269,89 @@
     "newAutomation": false,
     "blocker": null,
     "applicationCommit": "aa84ee4af6ba65c27d6ec3c433e2fbf6c0c5ae1c"
+  },
+  "latestManualResidualReview5Nov": {
+    "observedAt": "2026-11-05T08:36:02.478138+00:00",
+    "assignmentCorrelation": "tony-new-whatsapp-feedback-20261017",
+    "scope": "Continuation of existing manual local mandate; supervisor relayed follow-up asking what remained independently executable. Not an expansion of the heartbeat.",
+    "priorVerifiedHumanSource": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a1aaa9-a311-7b30-a6b2-788755692e67",
+      "verifiedInPriorLot": true,
+      "newHumanMessageReadThisContinuation": false
+    },
+    "status": "local JSON preservation fix complete; residual technical work and product decisions separated",
+    "analysisRef": "docs/tony-feedback/intake-20261105-resume.md",
+    "applicationCommit": "5f4cd7c7c77f6a1da1af15ee3bbe4002e8c94a05",
+    "change": "JSON file reader preserves omitted optional asset fields before schema defaults; required fields and strict validation remain; merge and form clear semantics unchanged",
+    "independentAudit": {
+      "reusedAgent": "/root/nov5_scope_audit",
+      "confirmedFinding": "Partial JSON asset file erased location, expected delivery and delivery/tag activity links; reproduced synthetically and fixed",
+      "scheduleFinding": null,
+      "scheduleReproduction": "Partial import inverting legacy start/finish correctly rejected",
+      "review": "No blocking finding; JSON omission now preserves delivery fields, explicit clear remains available in form/CSV",
+      "newAgentsOrSchedulers": false
+    },
+    "technicalWorkRemaining": [
+      "Native XLSX adapter on already defined 19-column asset schema; no runtime XLSX/ZIP/XML reader installed, no dependency/access added",
+      "Dashboard visual hierarchy using existing metrics can be considered separately from undefined Project Health"
+    ],
+    "decisionsStillRequired": [
+      "Worked common asset/tag/activity/dependency sequence and user-adjustable rules",
+      "Authoritative checklist revision and approver eligibility/separation/provisional-final gates",
+      "Video bytes/access/retention and whether independent location evidence is required",
+      "P6 pilot calendar and relation fidelity if complete conversion is requested",
+      "Project Health rating rules only for that new metric"
+    ],
+    "verification": {
+      "targetedTests": 29,
+      "newRegressionCases": 3,
+      "testFiles": [
+        "tests/asset-transfer.test.ts",
+        "tests/commissioning.test.ts",
+        "tests/programme-identifiers.test.ts"
+      ],
+      "typecheck": true,
+      "targetedLint": true,
+      "format": "Changed TS/docs and new JSON fragment verified; pre-existing status formatting preserved",
+      "full115And10ApiRerun": false,
+      "newBuildOrBrowserRun": false,
+      "syntheticDataOnly": true
+    },
+    "questionDraft": {
+      "id": "tony-next-questions-20261105",
+      "privateRef": "output/tony/next-questions-20261105.private.txt",
+      "sha256Utf8": "30fdc2a546bda9fa00f77728e5dddda337bad24c9bf0e05d433a8b11185d1d0e",
+      "wordCount": 37,
+      "status": "local-only-unapproved",
+      "approved": false,
+      "sent": false,
+      "composerTouched": false
+    },
+    "git": {
+      "fetch": "succeeded before edits",
+      "aheadBefore": 12,
+      "behindBefore": 0,
+      "localCommitOnly": true,
+      "pullResetStashForce": false,
+      "preexistingEditsAndNextEnvPreserved": true
+    },
+    "quota": {
+      "ordinaryUsageAllowed": true,
+      "usedPercentAtStart": 52,
+      "usedPercentLatest": 53,
+      "lastNativeSampleUtc": "2026-11-05T08:33:59Z",
+      "scope": "Global account observations; change is not attributable as this job consumption",
+      "jobTokenUsage": null,
+      "resetOrExtraCreditsUsed": false
+    },
+    "sourceCoverageExtended": false,
+    "customerSend": false,
+    "composerTyped": false,
+    "remoteDbWriteOrRealImport": false,
+    "liveAiOrPaidApi": false,
+    "pushed": false,
+    "deployed": false,
+    "publisherRequestsEventsAclOrCallbackWritten": false
   }
 }
