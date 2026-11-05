@@ -189,6 +189,22 @@ non offre cancellazione/ripristino: omettere record o importare un file vuoto no
 annulla le aggiunte.** La rimozione completa non è oggi eseguibile con quel flusso;
 questa disponibilità va concordata prima di salvare, senza workaround SQL. Nessuna
 funzione di rollback è stata sviluppata e nessuna scrittura viene avviata.
+
+Verifica negativa indipendente del child,5nov16:04:35UTC: fixture pura con20asset,
+reimport di1record→restano20; file vuoto respinto dallo schema; merge interno vuoto
+e import di soli metadati→restano20. I305placeholder opachi della fixture restano
+invariati: non sono letture/prove dei task live. Nessuna eliminazione singola/manuale
+è esposta da UI o PATCH; `saveCommissioning` è persistenza interna, non un percorso
+di ripristino utilizzabile. Un pilot20 ridurrebbe il volume senza renderlo reversibile:
+non è una nuova tranche selezionata né una soluzione al rollback.
+Rapporto completo e impronta in `inventory-selected/ROLLBACK.private.md` e
+`rollback-review.private.json`, sotto la cartella privata del batch.
+
+**Preparazione anteprima conclusa; import remoto non pronto all'esecuzione.** Mancano
+corrispondenza target approvata, stato/versione correnti, preview live e consenso
+specifico, oltre a un percorso di ripristino supportato. Un eventuale intervento
+successivo può preparare e verificare quel ripristino prima del caricamento, con
+mandato separato. Non sono stati aggiunti SQL, endpoint, feature o permessi.
 Istanze multipasso/risposte/firme e P6 completo richiedono contratto e mandato di
 implementazione separati; non sono inclusi silenziosamente nel lotto equipment.
 

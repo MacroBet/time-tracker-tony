@@ -8,7 +8,7 @@
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "completed",
   "executionState": "offline-real-data-preview-complete-no-import-authorized",
-  "observedAt": "2026-11-05T16:01:58.871108+00:00",
+  "observedAt": "2026-11-05T16:09:09.138920+00:00",
   "startedAt": "2026-11-05T14:41:46+00:00",
   "completedAt": "2026-11-05T16:01:58.871108+00:00",
   "deadline": "2026-11-05",
@@ -689,7 +689,7 @@
   "nextActions": [
     "Preparation complete: review single selected inventory payload and concrete target/mapping/ID/levels/FR-cache proposal",
     "Use existing normal app import only after exact consent; fresh state/export/version and live preview before any save, stop on changed baseline/collisions",
-    "Resolve supported targeted full-undo path before save; no task/tag/programme/role changes, no SQL/credential workaround",
+    "Possible separate mandate: prepare/verify supported controlled restoration before loading. Current analysis complete, import not execution-ready. No pilot is reversible and no SQL/endpoint/feature/permission change is included.",
     "Worker end-to-end linkage/assignment is separate specific proposal; inventory alone does not guarantee worker visibility. P6/requirement/signature implementation remains separate"
   ],
   "outgoingDrafts": [
@@ -1876,7 +1876,7 @@
     "jobId": "tony-production-data-reconciliation-20261105",
     "requestId": "tony-production-data-reconciliation-request-20261105",
     "status": "offline-preview-complete-awaiting-specific-plan-approval",
-    "observedAt": "2026-11-05T16:01:58.871108+00:00",
+    "observedAt": "2026-11-05T16:09:09.138920+00:00",
     "reportRef": "docs/tony-feedback/intake-20261105-workbooks-preview.md",
     "choice": {
       "realData": true,
@@ -1983,7 +1983,8 @@
       "normalAppFlowNotExercised": true,
       "finalReceiptRef": "output/tony/data-reconciliation-20261105/final-preview-validation.private.json",
       "localLinks": "passed",
-      "privateArtifactsIgnored": "passed38files, originals and payload included"
+      "privateArtifactsIgnored": "passed38files, originals and payload included",
+      "negativeRollbackReview": "Native child pure fixture20 records: reimport1/internal empty/metadata-only leave20; empty schema rejected. UI/PATCH no delete; saveCommissioning internal persistence not authorized restore. Owner read report, no test rerun or live data."
     },
     "remoteDbQueriesOrWrites": false,
     "publicAppObservationDelegated": true,
@@ -2093,7 +2094,37 @@
       "commit": "see final closure receipt for exact SHA after commit",
       "pushed": false,
       "deployed": false,
-      "applicationChanges": false
+      "applicationChanges": false,
+      "supplementaryRollbackEvidenceCommit": "exact SHA in private closure receipt after commit"
+    },
+    "remoteExecutionReady": false,
+    "analysisPreparationComplete": true,
+    "independentNegativeRollbackEvidence": {
+      "observedAt": "2026-11-05T16:09:09.138920+00:00",
+      "source": "native child /root/tony_inventory_candidate report relayed by supervisor, read by owner; not owner-reexecuted tests",
+      "reportRef": "output/tony/data-reconciliation-20261105/inventory-selected/ROLLBACK.private.md",
+      "sha256": "0676d019af1f2b14493477afc5d83fdd13b5a32351543d3d5ba8ee441246d4dd",
+      "bytes": 5323,
+      "fixtureTestedAt": "2026-11-05T16:04:35.868Z",
+      "fixtureAssetCount": 20,
+      "reimportOneLeaves": 20,
+      "internalEmptyMergeLeaves": 20,
+      "metadataOnlyImportLeaves": 20,
+      "emptyRegisterRejected": true,
+      "fixturePlaceholdersNotLiveTasks": 305,
+      "liveReadsOrWrites": false,
+      "manualUiOrPatchDeleteAvailable": false,
+      "internalPersistenceIsRestoreRoute": false,
+      "pilotProvidesRollback": false,
+      "pilotChosenAsAlternativePayload": false,
+      "selectedFullPayloadUnchanged": true,
+      "preparationComplete": true,
+      "remoteExecutionReady": false,
+      "sourceProjectCorrespondenceApproved": false,
+      "snapshotAndVersionVerified": false,
+      "remoteImportApproved": false,
+      "rollbackSupported": false,
+      "newSqlEndpointFeatureOrPermission": false
     }
   }
 }

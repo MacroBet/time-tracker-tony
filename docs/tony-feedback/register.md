@@ -30,6 +30,9 @@ salvare;1354aggiunte sono ipotetiche, diff reale ignoto. Nessun nuovo gate SQL/N
 Limite concreto: import fa merge, non rimuove record omessi; rollback completo
 richiede un percorso di rimozione mirata oggi assente, da concordare prima della
 scrittura. Nessuna nuova funzione sviluppata per aggirarlo.
+Conferma indipendente: fixture20asset, reimport1/merge vuoto→restano20; file vuoto
+respinto. Nessuna cancellazione manuale UI/PATCH esistente. Pilot20 non reversibile;
+non selezionato come nuova tranche. Analisi conclusa, import non pronto all'esecuzione.
 Admin/manager/supervisor autorizzati vedrebbero il registro secondo i permessi;
 il worker non riceve nuovo lavoro né asset visibili senza task assegnati collegati.
 Nessun collegamento automatico ai305task o cambio ruoli/membership. Test worker
