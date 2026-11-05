@@ -1,5 +1,23 @@
 # Registro operativo — Tony
 
+## Ripresa manuale5nov — nuovi testi e lotto locale
+
+Nuovo mandato diretto Marco verificato nella regia, user
+`01a1aaa9-a311-7b30-a6b2-788755692e67`. WhatsApp Mac letto da sovrapposizione
+all’outgoing20ott11:43 fino all’incoming **5nov08:11 Europe/Rome**:
+**14 nuovi testi**, nessun nuovo allegato visibile. I heartbeat precedenti non
+avevano esteso la copertura; i gap storici restano. Fonti private fuori Git.
+[Intake, confronto e priorità](intake-20261105-resume.md).
+
+Lotto locale: editor rapido sulla riga/barra Gantt (tasto destro, matita e tastiera)
+con anteprima/conferma/versione e baseline esistenti; template asset CSV vuoto
+sempre scaricabile, distinto dall’export dati. Commit locale **aa84ee4**:
+115 unitari,10 API, typecheck/lint/build/formato e desktop/mobile passati.
+Non equivale a import XLSX o motore MS Project completo. Nessun invio, push o deploy. Metadata e prove nel campo
+`latestManualResume5Nov` di `regia-status.json`. Prossimo passo: definire la regola
+comune asset→tag→sequenza e il formato Excel desiderato prima di automatizzarli;
+separare assegnazione approvatore/gate e contratto video/storage.
+
 ## Batch mail20ott - analisi conclusa7/7
 
 Mandato diretto di Marco verificato in regia, user

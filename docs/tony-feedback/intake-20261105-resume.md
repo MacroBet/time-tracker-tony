@@ -109,7 +109,7 @@ nessun reset/acquisto/credito aggiuntivo utilizzato, token del job non misurati.
 Git: fetch riuscito5nov senza modifiche a chiavi/accessi. HEAD iniziale8d9e95c,
 10commit avanti alla ref origin/main aggiornata; nessun pull su checkout modificato.
 Preservati tutti gli edit preesistenti, compreso next-env.d.ts; nessun reset/stash/force.
-Commit locale mirato da registrare a chiusura. **Nessun push o deploy**: il mandato
+Commit locale mirato **aa84ee4** (codice, intake e indice). **Nessun push o deploy**: il mandato
 corrente li esclude. La consegna locale non risponde ancora a tutti i requisiti nuovi.
 
 ## Prossimo passo concreto

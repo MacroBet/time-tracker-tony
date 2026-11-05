@@ -1189,5 +1189,85 @@
     },
     "publisher": "Mea handles request/event outcome; no callback or ACL write by executor",
     "readerDelivery": "local Markdown existing file viewer/report bridge; no new UI/cloud/navigation"
+  },
+  "latestManualResume5Nov": {
+    "observedAt": "2026-11-05T08:15:33.408081+00:00",
+    "assignmentCorrelation": "tony-new-whatsapp-feedback-20261017",
+    "authorization": {
+      "threadId": "01a1493a-ee0b-7d62-a861-d8d546bf013c",
+      "userMessageId": "01a1aaa9-a311-7b30-a6b2-788755692e67",
+      "verifiedBy": "native read_thread5Nov",
+      "scope": "Read new Tony material and resume clear reversible local work; local commits only, no push/deploy/customer send"
+    },
+    "identity": "Native WhatsApp selected individual Tony McIntyre and matching header; no unique contact ID attested",
+    "coverage": {
+      "previousIncoming": "2026-10-19T20:53 Europe/Rome",
+      "overlap": "2026-10-20T11:43 outgoing",
+      "newIncomingFrom": "2026-10-20T12:27 Europe/Rome",
+      "through": "2026-11-05T08:11 Europe/Rome",
+      "newTextBubbles": 14,
+      "newAttachmentsObserved": 0,
+      "historicalGapsRemain": true,
+      "sourceMethod": "native CUA AX plus two screenshots for omitted bubbles"
+    },
+    "privateSourceRef": "output/tony/read-resume-20261105.private.json",
+    "privateSourceSha256": "d9a358979e479ece208ed111847d4744211b1529f46cf4b61b3ac8d904b88be1",
+    "analysisRef": "docs/tony-feedback/intake-20261105-resume.md",
+    "localApplicationChanges": [
+      "Gantt row/bar right-click and pencil quick editor using existing preview/save/version/baseline rules",
+      "Blank 19-column asset CSV template available with populated register, separate from data export"
+    ],
+    "limitations": [
+      "No native XLSX import",
+      "No inferred project template logic or IDs",
+      "No new approver assignment/signoff gates",
+      "No video or object storage implementation",
+      "Dashboard simplification scope still open"
+    ],
+    "verification": {
+      "unitTests": 115,
+      "apiTests": 10,
+      "typecheck": true,
+      "lint": true,
+      "impeccableDetectorFindings": 0,
+      "build": "passed final isolated Next build",
+      "browser": [
+        "1440x1000 desktop",
+        "390x844 mobile",
+        "right-click row and bar",
+        "pencil entry",
+        "Shift+F10 and Escape focus restoration",
+        "preview rejected completed successor conflict",
+        "valid progress saved and retained after reload",
+        "blank CSV downloaded: BOM and 19 headers only",
+        "mobile document overflow absent; no console errors observed"
+      ],
+      "screenshots": [
+        "output/playwright/nov5/desktop-quick-edit.png",
+        "output/playwright/nov5/mobile-quick-edit.png",
+        "output/playwright/nov5/mobile-template.png"
+      ],
+      "independentReview": "one fallback focus issue fixed with tabIndex=-1",
+      "format": true,
+      "cleanup": "temporary browser tab closed; viewport reset; local demo server terminated"
+    },
+    "quota": {
+      "ordinaryUsageAllowed": true,
+      "usedPercentAtStart": 51,
+      "usedPercentLatest": 52,
+      "measuredAtUtc": "2026-11-05T08:15:33.408081+00:00",
+      "resetOrCreditsUsed": false
+    },
+    "gitFetch": "succeeded5Nov; HEAD 10 commits ahead of fetched origin/main before local work; no pull/reset/stash/push",
+    "customerSend": false,
+    "composerTyped": false,
+    "audioRead": false,
+    "remoteDbWrite": false,
+    "liveAiCall": false,
+    "pushed": false,
+    "deployed": false,
+    "newAutomation": false,
+    "blocker": null,
+    "applicationCommit": "aa84ee4af6ba65c27d6ec3c433e2fbf6c0c5ae1c"
   }
 }
