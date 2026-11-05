@@ -6,26 +6,36 @@
   "intakeId": null,
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-  "status": "needs-input",
-  "executionState": "partial-real-data-preview-ready",
-  "observedAt": "2026-11-05T15:03:55.418375+00:00",
+  "status": "completed",
+  "executionState": "offline-real-data-preview-complete-no-import-authorized",
+  "observedAt": "2026-11-05T16:01:58.871108+00:00",
   "startedAt": "2026-11-05T14:41:46+00:00",
-  "completedAt": null,
+  "completedAt": "2026-11-05T16:01:58.871108+00:00",
   "deadline": "2026-11-05",
   "executors": [
     {
       "name": "/root",
       "threadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
-      "role": "security patch, validation, normal main push and production verification",
+      "role": "source integration, selected inventory review, exact plan and documentary closure",
       "subagent": false
     },
     {
-      "name": "/root/nov5_scope_audit",
-      "role": "independent read-only pending-document and dependency review",
+      "name": "/root/asset_organisation_audit",
+      "role": "read-only asset workbook source mapping",
+      "subagent": true
+    },
+    {
+      "name": "/root/document_catalog_review",
+      "role": "read-only requirements workbook inspection",
+      "subagent": true
+    },
+    {
+      "name": "/root/tony_inventory_candidate",
+      "role": "native child of supervisor; selected offline payload/manifest and independent validation, no app execution",
       "subagent": true
     }
   ],
-  "outcome": "Local Northbank is synthetic and never transferred. Delegated authenticated Production UI Test admin / AMS16Test has0assets/0programme but305tasks. Marco selected real Tony data. Complete-source P6 review preserved16969activities/36923links offline; not importable under current semantics. New2XLSX and exact target/crosswalk pending; no remote writes or new deployment.",
+  "outcome": "Two supplied originals analysed; four supplied accounts and roles confirmed from Admin Team. Selected inventory-only proposal1354assets passed schema/JSON/CSV/offline idempotence; source fields retained. No remote preview/import. Normal app plan awaits exact target/payload consent and current version/live preview. Full deletion rollback absent from current merge-only flow, explicitly recorded.305tasks and18workerassignments preserved.",
   "turnReportTerminal": true,
   "evidence": [
     {
@@ -301,6 +311,11 @@
       "locked": true,
       "remoteWriteApproval": false,
       "verifiedBy": "direct native read_thread5Nov"
+    },
+    "latestInventoryPreparationScope": {
+      "source": "supervisor relay in active job; native child report supplied5Nov",
+      "scope": "Prepare one inventory-only proposal with application IDs, Product/System equipmentType, FR phase, levels[], normal app flow and precise rollback/visibility plan; no import/new feature/remote writes authorized",
+      "remoteWriteApproval": false
     }
   },
   "sourceCoverage": {
@@ -429,7 +444,7 @@
     },
     "currentIncomingWatermark": "2026-11-05 14:19 Europe/Rome",
     "currentOutgoingWatermark": "2026-11-05 12:40 Europe/Rome delivered; not read receipt",
-    "currentCoverageRef": "docs/tony-feedback/intake-20261105-production-data.md",
+    "currentCoverageRef": "docs/tony-feedback/intake-20261105-workbooks-preview.md",
     "extendedDuringSecurityRelease": false,
     "historicalWindowsRetained": true,
     "latestDelegatedWindow": {
@@ -473,32 +488,24 @@
     }
   ],
   "attachments": {
-    "verifiedReceivedTotal": 29,
+    "verifiedReceivedTotal": 30,
     "newAudioFilesAcquired": 0,
     "audioHash": null,
-    "newAttachmentIds": [
-      "ATT-019",
-      "ATT-020",
-      "ATT-021",
-      "ATT-022",
-      "ATT-023",
-      "ATT-024",
-      "ATT-025",
-      "ATT-026",
-      "ATT-027",
-      "ATT-028",
-      "ATT-029"
-    ],
+    "newAttachmentIds": ["ATT-030"],
     "oldExcelAttemptedThisCycle": false,
     "newPngNamesObservedNotAcquired": 0,
     "newImageOriginalsAcquired": 9,
     "newPdfOriginalsAcquired": 1,
-    "newXlsOriginalsAcquired": 1
+    "newXlsOriginalsAcquired": 1,
+    "newCopies5Nov": 2,
+    "uniqueNewBinaries5Nov": 1,
+    "repeatedAssetBinary5Nov": "ATT-014",
+    "mailInputsSeparate": 7
   },
   "work": {
-    "applicationChangesThisCycle": true,
+    "applicationChangesThisCycle": false,
     "headBeforeEdits": "c9c187fd5226643330190550ad8b9804e8e6a34d",
-    "gitFetch": "not attempted in this continuation: SSH explicitly excluded; previous publickey failure preserved",
+    "gitFetch": "passed5Nov;HEAD13f4a7c,origin/main9cd994b,1ahead0behind before documentary commit; no pull",
     "pull": "not performed; SSH fetch failed; preserve preexisting next-env and local metadata commits",
     "applicationTestsRun": true,
     "applicationTestsReason": "New specific local catalog scope; all checks after final phase/UI changes.",
@@ -654,34 +661,36 @@
       "customerSent": false,
       "jobUsage": null
     },
-    "previousPublishedApplicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83"
+    "previousPublishedApplicationCommit": "c12deeae5ec625cef8faf0f141b96014479b2a83",
+    "currentCycle5NovPreview": {
+      "headBeforeDocumentation": "13f4a7c890543e0490cf2c8bbfb744f08f24fa17",
+      "applicationChanges": false,
+      "localDocumentaryCommit": "exact SHA in private closure receipt after commit",
+      "pushed": false,
+      "deployed": false,
+      "nextEnvPreserved": true,
+      "privateFinalReceipt": "output/tony/data-reconciliation-20261105/final-preview-validation.private.json"
+    }
   },
   "blockers": [
     {
-      "kind": "newest-source-files-not-acquired",
-      "files": 2,
-      "sourceUiTimes": [
-        "2026-11-05 14:12 Europe/Rome",
-        "2026-11-05 14:18 Europe/Rome"
-      ],
-      "reason": "bounded native attachment input failed noWindowsAvailable/frontmostApplicationChanged;0downloads",
-      "humanActionAlreadyRequestedByRegia": "Attach the exact2new XLSX originals here; no repeated generic request to Tony"
+      "kind": "specific-plan-approval-not-granted",
+      "reason": "Target/source correspondence, selected payload hash/ID manifest, levels[], saved FR caches and partial projection require specific review approval."
     },
     {
-      "kind": "target-and-crosswalk-pending",
-      "reason": "Observed Admin UI is not verified Tony account; application projectID/Neon target/version/record snapshot unknown. No approved asset-ActivityID-checksheet join."
+      "kind": "live-state-and-preview-not-exercised",
+      "reason": "Before save, authorized normal app current state/export/version, ID collision/task-reference checks and fresh preview required. No new SQL privilege or Neon credential needed/proposed."
     },
     {
-      "kind": "p6-fidelity-current-contract",
-      "reason": "16969sourceactivities exceed15000perrequest; unsupported nonFS/negative lags/calendars/milestones and6activities>100predecessors; no truncation or lossy conversion"
+      "kind": "full-removal-rollback-unavailable",
+      "reason": "Existing merge import does not delete omitted assets or restore prior state. Targeted untouched manifest-only removal with version/hash/link guards must have agreed supported path before writing; no SQL bypass."
     }
   ],
   "nextActions": [
-    "Use the already locked choice: real Tony data with import preview, no online demo",
-    "Receive the2new XLSX originals already requested by regia; retain hashes and inspect locally without substituting ATT014 or old check sheets",
-    "Verify existing target account/project IDs, membership, version and authorized current snapshot; preserve305observed tasks",
-    "Complete offline field mappings and source-asset-ActivityID-checksheet crosswalk; separately specify lossless P6 compatibility work",
-    "Only after concrete preview request exact remote-write approval including target, payload, diff, isolation, idempotence and rollback; no genericGO, customer send or credential request"
+    "Preparation complete: review single selected inventory payload and concrete target/mapping/ID/levels/FR-cache proposal",
+    "Use existing normal app import only after exact consent; fresh state/export/version and live preview before any save, stop on changed baseline/collisions",
+    "Resolve supported targeted full-undo path before save; no task/tag/programme/role changes, no SQL/credential workaround",
+    "Worker end-to-end linkage/assignment is separate specific proposal; inventory alone does not guarantee worker visibility. P6/requirement/signature implementation remains separate"
   ],
   "outgoingDrafts": [
     {
@@ -723,13 +732,13 @@
   "usage": {
     "measuredTokens": null,
     "scope": "account weekly window, not task token measurement",
-    "source": "native get_usage_limits18Oct analytical continuation",
-    "accountUsedPercent": 15,
+    "source": "native get_usage_limits5Nov final preparation checkpoint",
+    "accountUsedPercent": 77,
     "ordinaryUsageAllowed": true,
     "humanCeilingPercent": 90,
     "stopNewBatchesUsedPercent": 85,
     "resetOrExtraCreditsConsumed": false,
-    "observedAt": "2026-10-18T11:08:12.629586+00:00",
+    "observedAt": "2026-11-05T16:01:58.871108+00:00",
     "checkpointHistory": [
       {
         "usedPercent": 39,
@@ -745,13 +754,14 @@
     ],
     "resetOrExtraCreditsConsumedByThisExecutor": false,
     "priorPercentageDropCause": "not verified; no reset/purchase performed by this executor",
-    "observationTimeQualification": "15measured at start of analytical continuation; not task tokens"
+    "observationTimeQualification": "Shared account usage, not job cost;75checkpoint crossed; finishing existing preparation only",
+    "nextCheckpointUsedPercent": 85
   },
   "contextHandoff": {
     "entrypoint": "AGENTS.md",
     "summaryRef": "docs/tony-feedback/register.md#stato-corrente-per-ripresa",
     "lessonsRef": "docs/tony-feedback/working-lessons.md",
-    "resumeFrom": "Roadmap layout/connections read;29originals. Human development proof cursor2633 recovered. Local catalog draft stopped at reported gate, not committed/delivered.101tests/typecheck pre-fix, API/browser/build pending. Existing restricted heartbeat unchanged."
+    "resumeFrom": "Offline real-data preview complete; selected1354asset payload+manifest in inventory-selected, four accounts verified in Team. No import approved. See current report for exact normal-app target/preview/version plan and missing removal rollback; no SQL/new secrets/worker assignment implied."
   },
   "automation": {
     "id": "agente-progetto-tony",
@@ -1865,9 +1875,9 @@
   "latestDataReconciliation5Nov": {
     "jobId": "tony-production-data-reconciliation-20261105",
     "requestId": "tony-production-data-reconciliation-request-20261105",
-    "status": "partial-preview-ready-needs-source-and-target",
-    "observedAt": "2026-11-05T15:03:55.418375+00:00",
-    "reportRef": "docs/tony-feedback/intake-20261105-production-data.md",
+    "status": "offline-preview-complete-awaiting-specific-plan-approval",
+    "observedAt": "2026-11-05T16:01:58.871108+00:00",
+    "reportRef": "docs/tony-feedback/intake-20261105-workbooks-preview.md",
     "choice": {
       "realData": true,
       "onlineDemo": false,
@@ -1883,14 +1893,16 @@
       "method": "reported native CUA screenshot reading; transcript read by owner, not own CUA",
       "originalsAcquired": 0,
       "audioAcquired": false,
-      "historicalGapsRetained": true
+      "historicalGapsRetained": true,
+      "acquiredLaterFromHumanExplicitAttachments": 2,
+      "uniqueNewBinaryCount": 1
     },
     "privateTranscriptRef": "output/tony/data-reconciliation-20261105/reply.private.md",
     "privateTranscriptSha256": "4bb8fb6dbb34600a25d270b6dbc55e76ee7205e0d0d0a45172aae62969db01ba",
     "uiObservation": {
       "reader": "/root/tony_reply_reader",
       "privateRef": "output/tony/data-reconciliation-20261105/production-ui-observation.private.md",
-      "sha256": "714f86f0e567949926e8ea19a0097f896f7ffc9100a62a66dad3479ea882851a",
+      "sha256": "6bf46b6d1cac54a987b1747740794500ff74a0db310096c55dfae741a675de53",
       "domain": "https://time-tracker-tony.vercel.app",
       "accountLabel": "Test admin",
       "role": "Admin",
@@ -1917,28 +1929,42 @@
       "projectApprovedForImport": false,
       "teamVisiblePeople": 5,
       "tonyMatchedInVisibleTeamScope": false,
-      "tonyGlobalAbsenceProven": false
+      "tonyGlobalAbsenceProven": false,
+      "confirmedAccountProject": "AMS16 · Test",
+      "confirmedAccountProjectId": "fcdb866f-12d4-4e85-a6b2-004ca1d53701",
+      "confirmedAccountCompany": "FieldTrack Test",
+      "workerAssignedTasks": {
+        "total": 18,
+        "open": 16,
+        "review": 0,
+        "completed": 2,
+        "displayedPercent": 11
+      },
+      "directFourSessionLoginTest": false
     },
     "offlineRealDataPreview": {
       "readableRef": "output/tony/data-reconciliation-20261105/real-data-preview.private.md",
       "manifestRef": "output/tony/data-reconciliation-20261105/real-data-preview.private.json",
       "sourceId": "MAIL20-07",
-      "sourceAuthority": "already acquired P6 candidate; exact project correspondence with latest asset export pending",
+      "sourceAuthority": "Two explicit human-attached originals, asset SHA matches ATT-014; existing retained P6 parse; no project join inferred",
       "sourceActivities": 16969,
       "sourceRelationships": 36923,
       "idsPreserved": true,
       "sourceRowsDiscarded": 0,
       "importableCompleteBatch": false,
       "targetRecordDiff": null,
-      "newAssetRows": null,
-      "newChecksheetRows": null,
-      "artifactsIgnoredByGit": true
+      "newAssetRows": 1354,
+      "newChecksheetRows": 52,
+      "artifactsIgnoredByGit": true,
+      "sourceIds": ["ATT-014 redelivery5Nov", "ATT-030", "MAIL20-07"],
+      "assetMeaning": "Selected offline inventory proposal only",
+      "checksheetMeaning": "Source requirements, not executed steps or signatures",
+      "selectedInventoryPayloadSha256": "47b96185fb6951bc811492491bb1b1f6301f3080404ee37c1ebb46b3f05b30fa"
     },
     "pendingInputs": [
-      "2latestXLSX originals already requested",
-      "Tony login identity (username/email, no password) already asked by regia; membership and approved target correspondence",
-      "target version/record snapshot and explicit asset-ActivityID-checksheet crosswalk",
-      "lossless P6 compatibility plan"
+      "Target/source correspondence, selected payload hash/ID manifest, levels[], saved FR caches and partial projection require specific review approval.",
+      "Before save, authorized normal app current state/export/version, ID collision/task-reference checks and fresh preview required. No new SQL privilege or Neon credential needed/proposed.",
+      "Existing merge import does not delete omitted assets or restore prior state. Targeted untouched manifest-only removal with version/hash/link guards must have agreed supported path before writing; no SQL bypass."
     ],
     "validation": {
       "offlineSourceIdAndLinkIntegrity": "passed;16969uniqueActivityIDs,36923resolved links, no renaming/drop",
@@ -1946,10 +1972,18 @@
       "dependencyAuditRepeated": false,
       "nextEnvPreserved": true,
       "independentReview": "passed; source counts, observed UI baseline and unknown target diff kept separate",
-      "formatting": "passed",
-      "privateReceiptRef": "output/tony/data-reconciliation-20261105/validation.private.json",
+      "formatting": "passed targeted7documents/json",
+      "privateReceiptRef": "output/tony/data-reconciliation-20261105/inventory-selected-owner-review.private.json",
       "jsonlHashAndLineCount": "passed16969/36923",
-      "observedTasksReconciled": "279+22+0+4=305"
+      "observedTasksReconciled": "279+22+0+4=305",
+      "workbooksReadOnly": "completed; originals hashes preserved",
+      "sourceCounts": "1354assets,52requirements/87significantrows,2147code references; P6 counts unchanged",
+      "selectedInventory": "1354schemas,actualJSONreader,CSVroundtrip,puremerge1354adds and repeat0changes; native child report and central all-row/source/ID/hash review passed",
+      "fullRemovalRollback": "unavailable in existing merge-only import; plan explicitly states prerequisite, no empty-import undo claim",
+      "normalAppFlowNotExercised": true,
+      "finalReceiptRef": "output/tony/data-reconciliation-20261105/final-preview-validation.private.json",
+      "localLinks": "passed",
+      "privateArtifactsIgnored": "passed38files, originals and payload included"
     },
     "remoteDbQueriesOrWrites": false,
     "publicAppObservationDelegated": true,
@@ -1962,11 +1996,104 @@
     "publisherRequestsEventsAclOrCallbackWritten": false,
     "quota": {
       "usedPercentStart": 71,
-      "usedPercentLatest": 71,
+      "usedPercentLatest": 77,
       "ordinaryUsageAllowed": true,
       "globalNotJobCost": true,
       "jobTokenUsage": null,
-      "resetsOrCreditsUsed": false
+      "resetsOrCreditsUsed": false,
+      "checkpoint75Crossed": true,
+      "newBatchesStartedAfterCheckpoint": false
+    },
+    "resumedWithWorkbooksAt": "2026-11-05T15:34:02.423029+00:00",
+    "suppliedAccountAddresses": {
+      "values": [
+        "worker@test.com",
+        "supervisor@test.com",
+        "manager@test.com",
+        "admin@test.com"
+      ],
+      "source": "exact human reply relayed by supervisor",
+      "rolesInferredFromAddresses": false,
+      "uiVerification": "exact email matches and roles observed in Team from already authenticated admin session",
+      "accountImpersonation": false
+    },
+    "newOriginals": [
+      {
+        "kind": "asset-list",
+        "sourceExplicitlyAttachedPath": "/Users/marcobellia/Downloads/Example Asset List (Match Formatting).xlsx",
+        "privateOriginal": "/Users/marcobellia/Desktop/wip/Mobile Time Tracking App/output/tony/data-reconciliation-20261105/originals/asset-list-20261105.original.xlsx",
+        "bytes": 1417083,
+        "sha256": "f613b7e55277a39589389051665b616eca6705824beb7e06001d389132b57dfc",
+        "zipSignature": "504b0304",
+        "acquiredAt": "2026-11-05T15:30:46.364996+00:00",
+        "byteIdenticalCopy": true
+      },
+      {
+        "kind": "checksheet",
+        "sourceExplicitlyAttachedPath": "/Users/marcobellia/Downloads/CxGuide - Mech - ALL - gPOR 3.3.10 _ 20 Temp Cx Facilities - v2 - Released (1).xlsx",
+        "privateOriginal": "/Users/marcobellia/Desktop/wip/Mobile Time Tracking App/output/tony/data-reconciliation-20261105/originals/checksheet-20261105.original.xlsx",
+        "bytes": 32055,
+        "sha256": "62c29b84f04f6c69238cfb6431069b26c5eaa77545682886b589955b963e1304",
+        "zipSignature": "504b0304",
+        "acquiredAt": "2026-11-05T15:30:46.365902+00:00",
+        "byteIdenticalCopy": true
+      }
+    ],
+    "assetWorkbookMatchesAtt014BySha256": true,
+    "verifiedAccountMapping": [
+      {
+        "email": "worker@test.com",
+        "name": "Test worker",
+        "role": "worker"
+      },
+      {
+        "email": "supervisor@test.com",
+        "name": "Test supervisor",
+        "role": "supervisor"
+      },
+      {
+        "email": "manager@test.com",
+        "name": "Test manager",
+        "role": "manager"
+      },
+      {
+        "email": "admin@test.com",
+        "name": "Test admin",
+        "role": "admin"
+      }
+    ],
+    "completedAt": "2026-11-05T16:01:58.871108+00:00",
+    "initialHistoricalReportRef": "docs/tony-feedback/intake-20261105-production-data.md",
+    "workbookAnalysisComplete": true,
+    "selectedInventoryProposal": {
+      "path": "output/tony/data-reconciliation-20261105/inventory-selected/inventory-register.proposed.private.json",
+      "sha256": "47b96185fb6951bc811492491bb1b1f6301f3080404ee37c1ebb46b3f05b30fa",
+      "bytes": 385223,
+      "rows": 1354,
+      "manifestRef": "output/tony/data-reconciliation-20261105/inventory-selected/inventory-manifest.proposed.private.json",
+      "validationRef": "output/tony/data-reconciliation-20261105/inventory-selected/validation.private.json",
+      "ownerReviewRef": "output/tony/data-reconciliation-20261105/inventory-selected-owner-review.private.json",
+      "selectedVariant": "supervisor native child proposal; prior alternate IDs superseded, never mix",
+      "proposedInternalIdsOnly": true,
+      "sourceClientIdsInvented": false,
+      "offlineIdempotenceChanges": 0,
+      "actualCsvRoundtrip": "passed",
+      "targetApproved": false,
+      "remoteWriteApproval": false
+    },
+    "normalAppImportProposed": true,
+    "newSqlOrNeonCredentialRequired": false,
+    "livePreviewExecuted": false,
+    "remoteWriteApproval": false,
+    "workerRoleVisibilityRef": "executionPlanForReview.roleVisibility in private preview",
+    "fullRemovalRollbackAvailable": false,
+    "rolesAndAccountsQuestionClosed": true,
+    "documentaryCommit": {
+      "mode": "local-only",
+      "commit": "see final closure receipt for exact SHA after commit",
+      "pushed": false,
+      "deployed": false,
+      "applicationChanges": false
     }
   }
 }

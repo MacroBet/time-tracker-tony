@@ -148,3 +148,20 @@ resta29. Inventario privato con nomi/percorso: `output/tony/mail-batch-20261020/
 | MAIL20-05 | XLSX/OOXML              |   877009 | `70a9caaf09d2ed5649093e38f90fc8dfb725a1301e6a4de25b80ffa8529fca34` |
 | MAIL20-06 | PPTX/OOXML              |  1138091 | `ad7a67e7dd611ec3e4a449f90611c828f87b96b498764ebbbe8257e39df742f8` |
 | MAIL20-07 | PrimaveraXER15.2/cp1252 | 23590083 | `8e0b1b7766212b85457a3abec2c6ac83e6e1379ff916e6a0ddf138b6542111b5` |
+
+## Originali forniti da Marco5nov2026
+
+Due percorsi allegati esplicitamente, copie byte-identiche acquisite e lette senza
+riscrivere/ricalcolare workbook. Download WhatsApp precedente fallito: non è la
+provenienza di queste copie. Dettagli privati in
+`output/tony/data-reconciliation-20261105/new-originals.private.json`.
+
+| ID                      | Copia privata relativa al batch5nov         |    Byte | SHA256                                                           | Esito                                                                  |
+| ----------------------- | ------------------------------------------- | ------: | ---------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| ATT-014, nuova consegna | originals/asset-list-20261105.original.xlsx | 1417083 | f613b7e55277a39589389051665b616eca6705824beb7e06001d389132b57dfc | Stesso binario ATT-014,1354candidate. Non è un nuovo originale univoco |
+| ATT-030                 | originals/checksheet-20261105.original.xlsx |   32055 | 62c29b84f04f6c69238cfb6431069b26c5eaa77545682886b589955b963e1304 | Nuovo workbook,52requisiti e liste, nessun campo risposta/firma        |
+
+Totale corrente:30binari univoci nel catalogo Tony, più7input mail separati;
+due nuove copie, un solo nuovo binario. Fonti/celle, cache e limiti nel
+[report5nov](../intake-20261105-workbooks-preview.md). Originali e contenuti privati
+restano ignorati da Git, nessun import reale o invio implicito.

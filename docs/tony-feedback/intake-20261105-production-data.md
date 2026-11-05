@@ -1,5 +1,13 @@
 # Confronto dati locali e produzione — 5 novembre 2026
 
+**Diagnosi iniziale storica.** Il successivo
+[report originali, inventario e piano](intake-20261105-workbooks-preview.md)
+supera i limiti sotto sui due file e quattro account: entrambi gli originali sono
+acquisiti, ruoli confermati dalla vista Team admin,1354asset proposti validati
+offline. Nessun import remoto. Il primo target proposto è il progetto già osservato;
+restano consenso specifico, stato/versione e preview live prima di salvare, oltre
+al limite esplicito del rollback di rimozione assente dall'import corrente.
+
 Job `tony-production-data-reconciliation-20261105`, request
 `tony-production-data-reconciliation-request-20261105`, owner Tony.
 Mandato umano verificato nella regia, messaggio

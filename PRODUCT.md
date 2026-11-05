@@ -101,13 +101,21 @@ the 5 November delivery report and docs/tony-feedback/intake-20261105-secure-rel
 
 The delegated 5 November replies through 14:19 confirm FR as Phase in the newest
 ACC asset export, request a works-to-go field/list, configurable project signatories
-managed by QA and checksheet assignment to equipment. The two new XLSX originals
-are not acquired; their contents and joins remain unverified. Marco selected real
-Tony data with an import preview. An observed production Admin workspace contains
-305 tasks and no assets/programme; Tony's identity/project membership is unverified.
-The Northbank tour remains a separate local synthetic dataset. The offline P6
-review preserves 16,969 activities and 36,923 links, with compatibility blockers
-and no remote import. Source: docs/tony-feedback/intake-20261105-production-data.md.
+managed by QA and checksheet assignment to equipment. Both supplied XLSX originals
+are now analysed: the Asset List is byte-identical to ATT-014; ATT-030 contains
+52 requirements, with no response/signature columns. Marco selected real Tony data.
+The inventory-only proposal has 1,354 schema-valid assets, proposed internal IDs,
+Product/System as equipmentType, FR as phase and empty commissioning levels.
+JSON/CSV readers and offline repeat-import checks pass; no remote import occurred.
+All four supplied accounts/roles are confirmed in Admin Team, without direct logins.
+Observed AMS16 · Test has 305 tasks, 18 worker assignments and no assets/programme;
+these remain untouched. Managers/admins/supervisors retain project-scoped register
+access; inventory alone does not give a worker assigned work or visible new assets.
+The plan uses normal app import with fresh preview/version and specific approval,
+without new SQL privileges or credentials. Full removal rollback is absent from
+the current merge-only import and must be resolved before saving. Northbank remains
+local synthetic data. P6 retains 16,969 activities and 36,923 links for a separate
+lossless contract. Source: docs/tony-feedback/intake-20261105-workbooks-preview.md.
 
 ## Product Principles
 

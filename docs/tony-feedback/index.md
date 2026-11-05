@@ -105,8 +105,11 @@ Main90dd199, Vercel Production success7573042780; XLSX/Overview, Gantt e catalog
 completati inclusi.132unitari+10API e build locali verdi, smoke pubblico sola lettura.
 Audit produzione0;8moderate residue soltanto lint. Invio5nov12:40 consegnato, nessun reinvio.
 
-**Confronto dati e risposte5nov:** [produzione osservata e anteprima reale parziale](intake-20261105-production-data.md).
-Demo locale distinta dal remoto: sessioneAdmin AMS16Test0asset/0programma/305task.
-Marco sceglie dati reali; preview16969attività/36923legami conservati ma non importabili
-nel contratto corrente. Copertura delegata fino14:19,2nuoviXLSX censiti non acquisiti;
-FR→Phase e firme flessibili chiariti. Nessuna scrittura remota o nuova feature.
+**Anteprima reale5nov:** [originali analizzati,1354asset proposti, prove e piano](intake-20261105-workbooks-preview.md).
+Due file acquisiti, un nuovo binarioATT-030; quattro account/ruoli verificati da Team
+admin. Unico payload inventario selezionato, schema/readerJSON/CSV e idempotenza
+offline passati.305task/18assegnazioni preservati; nessun import remoto. Piano
+tramite normale app, consenso preciso e preview/versione prima di salvare; rollback
+di rimozione oggi assente. Il worker non riceve lavoro/asset senza assegnazione.
+P6 e52requisiti fuori da questa tranche; copertura delegata14:19, gap storici conservati.
+[Diagnosi iniziale](intake-20261105-production-data.md) conservata come storico.

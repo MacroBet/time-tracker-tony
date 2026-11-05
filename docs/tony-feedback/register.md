@@ -1,43 +1,47 @@
 # Registro operativo — Tony
 
-## Diagnosi dati5nov — produzione con305task, anteprima reale parziale
+## Anteprima reale5nov — inventario1354asset validato offline
 
 Mandato corrente `tony-production-data-reconciliation-20261105`, request
 `tony-production-data-reconciliation-request-20261105`. Marco ha scelto **dati reali di Tony con anteprima**;
-scelta fissata, nessuna demo online. [Diagnosi, prova UI, preview e prerequisiti](intake-20261105-production-data.md).
-Northbank28asset/100programma/120task del tour è fixture sintetica locale mai
-trasferita. Il child reale della regia ha letto produzione già autenticata:
-Test admin/Admin, FieldTrack Test, AMS16 · Test, **0asset/0programma ma305task**
-(279unassigned,22assigned,0review,4closed). Non è un DB globalmente vuoto;
-Progetto osservato ID`fcdb866f-12d4-4e85-a6b2-004ca1d53701`; corrispondenza
-all’import/account/membership di Tony e origine dei305record non verificati.
-I305task vanno preservati. Nessun login, API/SQL, cambio accessi o scrittura.
+scelta fissata, nessuna demo online. [Fonti, tranche concreta, prove e piano](intake-20261105-workbooks-preview.md).
+I due originali forniti da Marco sono acquisiti e analizzati: Asset List identica
+SHA adATT-014; nuovo workbookATT-030 con52requisiti, senza colonne risposta/firma.
+Due copie, un nuovo binario:30originali univoci nel catalogo Tony, più7mail distinti.
+Non chiedere ancora file/account: i quattro indirizzi e ruoli sono confermati
+nella vista Team admin, non tramite quattro login. Produzione osservata:
+FieldTrack Test / AMS16 · Test, ID`fcdb866f-12d4-4e85-a6b2-004ca1d53701`,
+0asset/0programma/**305task**,18assegnazioni del worker da preservare.
 
-Nuovi testi delegati: outgoing12:40→incoming **5nov14:19 Europe/Rome**,
-14bolle=12testi+2XLSX con caption. **0nuovi file acquisiti**, download fallito
-noWindowsAvailable/frontmostApplicationChanged; originali29WhatsApp+7mail invariati.
-La regia ha già chiesto i2nuovi Excel e username/email usato da Tony a Marco.
-People/Team5persone senza corrispondenza Tony nella vista non prova assenza globale. FR→Phase e configurabilità firmatari
-QA per progetto ora chiariti; P6 contiene già predecessori/successori. Non ripetere
-queste domande, non sostituire il nuovo export ACC migliore conATT014 o i nuovi
-checksheet con vecchi PDF. Copertura owner via trascrizione privata del lettore,
-non propria lettura CUA; i gap storici restano.
+**Unica proposta selezionata:1354asset, Product/System→equipmentType, FR→phase,
+levels[] e ID applicativi deterministici proposti**, non ID cliente/BIM.
+SHA payload`47b96185fb6951bc811492491bb1b1f6301f3080404ee37c1ebb46b3f05b30fa`.
+Schema, readerJSON, roundtripCSV e merge puro passati; reimport identico0modifiche.
+179gruppi di nomi ripetuti preservati,12trim nativi documentati;1321FR da cache
+non ricalcolate. Tutte le16colonne sorgente conservate fuori Git. L'altra variante
+locale di ID è superata, non va mescolata. Preview leggibile:
+`output/tony/data-reconciliation-20261105/real-data-preview.private.md`.
+Payload/manifest/verifiche in `output/tony/data-reconciliation-20261105/inventory-selected/`.
 
-Anteprima P6 **parziale pronta**, solo offline:16969ActivityID univoci e36923legami
-con righe/campi sorgente conservati nei JSONL privati. Non sono record pronti al
-caricamento: limite15000perrichiesta,8607nonFS,14lagnegativi,2099duratezero,
-6attività oltre100predecessori, calendari/WBS/risorse da rappresentare. Nessun
-nuovo parser nell’app, conversione lossy, taglio di righe o ricalcolo reale.
-TargetID/versione/snapshot e join con i nuovi2file pending; aggiunte/aggiornamenti
-**ignoti**, non zero. Manifest/anteprima privata in
-`output/tony/data-reconciliation-20261105/real-data-preview.private.md` e `.json`.
+Preparazione conclusa, **nessun import o preview live eseguiti**. Il piano usa il
+normale import app dell'admin nel progetto osservato: approvazione precisa di
+target/proiezione/payload, poi stato/export/versione e nuova preview prima di
+salvare;1354aggiunte sono ipotetiche, diff reale ignoto. Nessun nuovo gate SQL/Neon.
+Limite concreto: import fa merge, non rimuove record omessi; rollback completo
+richiede un percorso di rimozione mirata oggi assente, da concordare prima della
+scrittura. Nessuna nuova funzione sviluppata per aggirarlo.
+Admin/manager/supervisor autorizzati vedrebbero il registro secondo i permessi;
+il worker non riceve nuovo lavoro né asset visibili senza task assegnati collegati.
+Nessun collegamento automatico ai305task o cambio ruoli/membership. Test worker
+con task↔asset e assegnazione è un passo separato da approvare.
 
-Prossimo passo:2originali nuovi, target esatto e crosswalk; poi preview definitiva
-e approvazione specifica di scrittura con isolamento/idempotenza/rollback. Nessun
-GO generico, nuova chiave, messaggio cliente, test completi o deploy necessario.
-Quota globale71%, uso ordinario consentito; token jobnull, nessun reset/spesa.
-Metadata `latestDataReconciliation5Nov`. Limite CUA sotto è storico del solo owner,
-la copertura è avanzata grazie al lettore delegato.
+P6 conserva16969attività/36923legami; requisiti52 e riferimenti famiglia2147
+restano fonti, fuori dal caricamento inventario. Contratto P6 completo e istanze
+checksheet/firme richiedono mandato distinto. Copertura incoming invariata
+**5nov14:19 Europe/Rome**, via lettore delegato; gap storici preservati, audio esclusi.
+Nessun invio, query/scrittura DB, provider live, push o deploy in questa ripresa.
+Quota globale77%, uso ordinario consentito; checkpoint75superato, solo chiusura,
+token jobnull, nessun reset/spesa. Metadata `latestDataReconciliation5Nov`.
 
 ## Monitor5nov — computer use non disponibile nella sessione corrente
 
@@ -341,15 +345,18 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 ## Stato corrente per ripresa
 
 **Priorità corrente5nov:** riconciliazione dati e anteprima reale scelta da Marco.
-Produzione osservata Admin AMS16 · Test:0asset/0programma/305task, accountTony e
-targetID non verificati. Preview P6 parziale offline e2XLSX nuovi ancora da acquisire;
-[stato e prerequisiti esatti](intake-20261105-production-data.md). Copertura incoming
-ora5nov14:19 tramite lettore delegato; nessun import o nuovo invio.
+Preparazione conclusa:2originali analizzati,4account/ruoli verificati da Team admin,
+1354asset della sola proposta inventario validati offline; nessun import approvato.
+[Payload selezionato, mapping, visibilità per ruolo e piano](intake-20261105-workbooks-preview.md).
+Progetto proposto AMS16 · Test già identificato; prima di salvare servono consenso
+specifico e preview live/versione. Rollback di rimozione non disponibile nell'import
+attuale; nessun SQL/nuove credenziali come alternativa.305task/18assegnazioni protetti.
+Copertura incoming5nov14:19 tramite lettore delegato; nessun nuovo invio.
 
 **Ultimo mandato5nov:** rilascio autorizzato del lotto completato dopo patch sicurezza;
 push main90dd199 e Vercel Production success verificati nel [report corrente](intake-20261105-secure-release.md).
 Le consegne sotto e i vecchi limiti di pubblicazione sono storici. Ultima copertura
-incoming Tony5nov08:11; outgoing5nov12:40 consegnato, consenso consumato.
+incoming Tony5nov14:19 (lettore delegato); outgoing5nov12:40 consegnato, consenso consumato.
 
 **Missione e avvio:** FieldTrack per Tony McIntyre, gestione su richiesta di Marco.
 Qualsiasi nuova chat nella cartella parte da [AGENTS](../../AGENTS.md),
