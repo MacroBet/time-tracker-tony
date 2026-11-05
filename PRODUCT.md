@@ -90,6 +90,14 @@ gates and is not published. No live AI, automatic issue generation
 or imported real data is implied.
 Source: docs/tony-feedback/intake-20261018-status.md.
 
+The 5 November local continuation adds canonical asset XLSX import and a blank
+text-formatted Excel template, using the existing preview, validation and save
+pipeline. One visible worksheet is supported; formulas, external connections and
+ambiguous workbook structures are rejected. The Overview now puts the existing
+summary and work needing attention first, with deeper analyses behind disclosure
+controls. Metrics and role/project boundaries are unchanged; neither change is
+published. Sources: docs/asset-xlsx-import.md and the 5 November delivery report.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.

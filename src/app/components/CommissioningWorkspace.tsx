@@ -412,17 +412,31 @@ function ProjectWorkspace({
       ],
     });
   }
-  function downloadAssetTemplate() {
-    const url = URL.createObjectURL(
-      new Blob(["\uFEFF" + exportAssetCsv([])], {
-        type: "text/csv;charset=utf-8;",
-      }),
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "fieldtrack-assets-template.csv";
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  async function downloadAssetTemplate(format: "csv" | "xlsx") {
+    setBusy(true);
+    try {
+      const blob =
+        format === "xlsx"
+          ? new Blob(
+              [(await import("@/lib/asset-xlsx")).exportAssetXlsxTemplate()],
+              {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              },
+            )
+          : new Blob(["\uFEFF" + exportAssetCsv([])], {
+              type: "text/csv;charset=utf-8;",
+            });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `fieldtrack-assets-template.${format}`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      toast.error("Unable to prepare the template. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
   async function downloadRegister(format: "json" | "csv") {
     setBusy(true);
@@ -1677,17 +1691,20 @@ function ProjectWorkspace({
               Use an existing asset register
             </h3>
             <p className="text-sm text-slate-600">
-              CSV imports equipment. JSON also includes programme activities.
-              Include area and phase to filter the asset list after import. You
-              will review a preview before anything is saved. Edit the CSV
-              template in Excel and save as CSV before importing.
+              Excel (.xlsx) and CSV import equipment. JSON also includes
+              programme activities. Include area and phase to filter the asset
+              list after import. You will review a preview before anything is
+              saved. Use one asset sheet with the template headers. Keep IDs and
+              other text columns as text; use YYYY-MM-DD or Excel date cells for
+              expected delivery. Paste values instead of formulas, and remove
+              external links.
             </p>
             <label className="block text-sm font-medium">
-              Choose CSV or JSON
+              Choose Excel, CSV or JSON
               <Input
                 className="mt-2 h-11"
                 type="file"
-                accept=".json,.csv,application/json,text/csv"
+                accept=".xlsx,.json,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/json,text/csv"
                 disabled={busy || !isOnline}
                 onChange={async (event) => {
                   const input = event.currentTarget;
@@ -1697,13 +1714,17 @@ function ProjectWorkspace({
                   try {
                     if (file.size > 8 * 1024 * 1024)
                       throw new Error("Maximum file size is 8 MB.");
-                    await stage(
-                      parseRegisterFile(
-                        file.name,
-                        await file.text(),
-                        state.assets,
-                      ),
-                    );
+                    const payload = file.name.toLowerCase().endsWith(".xlsx")
+                      ? (await import("@/lib/asset-xlsx")).parseAssetXlsx(
+                          new Uint8Array(await file.arrayBuffer()),
+                          state.assets,
+                        )
+                      : parseRegisterFile(
+                          file.name,
+                          await file.text(),
+                          state.assets,
+                        );
+                    await stage(payload);
                   } catch (error) {
                     toast.error(
                       error instanceof Error ? error.message : "Invalid file",
@@ -1719,7 +1740,16 @@ function ProjectWorkspace({
               <Button
                 className="h-11 sm:h-9"
                 variant="outline"
-                onClick={downloadAssetTemplate}
+                disabled={busy}
+                onClick={() => void downloadAssetTemplate("xlsx")}
+              >
+                Download blank Excel template
+              </Button>
+              <Button
+                className="h-11 sm:h-9"
+                variant="outline"
+                disabled={busy}
+                onClick={() => void downloadAssetTemplate("csv")}
               >
                 Download blank CSV template
               </Button>

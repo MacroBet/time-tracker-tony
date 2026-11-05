@@ -133,7 +133,15 @@ export function parseAssetCsv(
   text: string,
   existingAssets: Asset[] = [],
 ): RegisterImport {
-  const [rawHeaders, ...rows] = csvRows(text);
+  return parseAssetRows(csvRows(text), existingAssets);
+}
+
+/** Shared table validation for CSV and XLSX; values have already been decoded. */
+export function parseAssetRows(
+  table: string[][],
+  existingAssets: Asset[] = [],
+): RegisterImport {
+  const [rawHeaders, ...rows] = table;
   if (!rawHeaders || !rows.length)
     throw new Error("CSV needs a header and at least one asset.");
   const headers = rawHeaders.map((h) => h.trim());
