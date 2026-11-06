@@ -45,5 +45,10 @@ latenza DB/rete di produzione e il cold start resta un costo reale.
 Prove private `output/playwright/p6-gantt-20261106/` e
 `output/tony/p6-performance-20261106/measurement.private.json`; originali invariati,
 nessuna fonte privata in Git. Scope di questa correzione concluso localmente;
-rilascio da verificare. Job globale resta aperto: template, associazione e nuovo
+rilascio verificato sotto. Job globale resta aperto: template, associazione e nuovo
 worker task non ancora attestati online. Nessun import/DB remoto/WhatsApp/AI live.
+
+Rilascio verificato: applicazione **e924c22**, push normale su main, Vercel
+Production **success7596645304**,6nov09:20:14UTC (10:20:14Europe/Rome).
+Ricevuta privata `output/playwright/p6-gantt-20261106/deploy.private.json`.
+Nessuna nuova verifica autenticata in produzione; latenza online non misurata.

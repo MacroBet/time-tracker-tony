@@ -7,7 +7,7 @@
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "in-progress",
-  "executionState": "p6-import-observed-ui-gantt-correction-release-pending",
+  "executionState": "p6-gantt-correction-deployed-global-delivery-in-progress",
   "observedAt": "2026-11-05T17:25:56.715874+00:00",
   "startedAt": "2026-11-05T16:35:41.153505+00:00",
   "completedAt": null,
@@ -2223,13 +2223,14 @@
     },
     "softwareDeployment": {
       "state": "cleared",
-      "requiredCommit": "6430eb06ccfc00019f4e799ac1f36c49a53a97f8",
-      "deploymentId": 7596075280,
-      "vercelId": "9LjiMKo4GUrH6MXAjWeKBt48rya6",
+      "requiredCommit": "e924c22297e8a32588d1b0aedb17b601f0da4303",
+      "sha": "e924c22297e8a32588d1b0aedb17b601f0da4303",
+      "deploymentId": 7596645304,
+      "vercelId": "Fqi7ihbCPsTjbR3xCu2udFwXfv6b",
       "environment": "Production",
       "result": "success",
-      "at": "2026-11-06T08:47:56Z",
-      "sha": "6430eb06ccfc00019f4e799ac1f36c49a53a97f8"
+      "at": "2026-11-06T09:20:14Z",
+      "url": "https://time-tracker-tony-9p1cw7bil-macrobets-projects.vercel.app"
     },
     "lhr11Project": {
       "id": "08ef7190-c42e-46fc-9e2e-873d5c84dd0b",
@@ -2328,7 +2329,7 @@
   },
   "latestP6GanttCorrection6Nov": {
     "jobId": "tony-test-ready-delivery-20261105",
-    "status": "validated-local-release-pending",
+    "status": "software-deployed",
     "source": "regia delegation; root/tony_reply_reader6nov UI observation",
     "liveSourceCounts": {
       "activities": 16969,
@@ -2347,6 +2348,18 @@
     },
     "tests": "20 targeted, typecheck/lint/build, isolated complete-P6 desktop/mobile UI passed",
     "reportRef": "docs/tony-feedback/intake-20261106-p6-gantt.md",
-    "customerDataModified": false
+    "customerDataModified": false,
+    "commit": "e924c22297e8a32588d1b0aedb17b601f0da4303",
+    "deployment": {
+      "state": "cleared",
+      "requiredCommit": "e924c22297e8a32588d1b0aedb17b601f0da4303",
+      "sha": "e924c22297e8a32588d1b0aedb17b601f0da4303",
+      "deploymentId": 7596645304,
+      "vercelId": "Fqi7ihbCPsTjbR3xCu2udFwXfv6b",
+      "environment": "Production",
+      "result": "success",
+      "at": "2026-11-06T09:20:14Z",
+      "url": "https://time-tracker-tony-9p1cw7bil-macrobets-projects.vercel.app"
+    }
   }
 }

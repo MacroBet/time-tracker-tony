@@ -1367,3 +1367,8 @@ Correzione importer6nov pubblicata: main6430eb0, deployment Production7596075280
 UI sintetica desktop/mobile e cambio progetto verificati. Nessun import reale
 eseguito; stato dataset live attuale non osservato. Ricevuta privata
 `output/playwright/inventory-ux-20261106/deploy.private.json`.
+
+Rilascio verificato: applicazione **e924c22**, push normale su main, Vercel
+Production **success7596645304**,6nov09:20:14UTC (10:20:14Europe/Rome).
+Ricevuta privata `output/playwright/p6-gantt-20261106/deploy.private.json`.
+Nessuna nuova verifica autenticata in produzione; latenza online non misurata.
