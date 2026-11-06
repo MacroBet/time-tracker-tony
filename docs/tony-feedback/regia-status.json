@@ -2285,11 +2285,16 @@
   },
   "latestInventoryImporterUx6Nov": {
     "jobId": "tony-test-ready-delivery-20261105",
-    "status": "validated-local-release-pending",
+    "status": "software-deployed-real-import-unverified",
     "flow": "Select inventory JSON, preview, import; automatic file identity and audit reason",
     "provenance": "Selected JSON SHA only; legacy source receipt retained; no Excel provenance invented",
     "guards": "CAS/add-only/scoped removal unchanged; project switch remounts form",
     "tests": "8 inventory tests, typecheck/lint/build, isolated desktop/mobile UI",
-    "liveImportsPerformed": 0
+    "liveImportsPerformed": 0,
+    "commit": "6430eb06ccfc00019f4e799ac1f36c49a53a97f8",
+    "deploymentId": 7596075280,
+    "deploymentState": "success",
+    "verifiedAt": "2026-11-06T08:47:56Z",
+    "projectSwitchUi": "passed in isolated local build"
   }
 }

@@ -1331,3 +1331,9 @@ un modello default; tariffa non associabile senza modello osservato, costi null.
 [Prove e limiti](../openai-metering.md#pending-coverage-correction--18-october-2026).
 Nessun restart, push/deploy o recupero storico account; adozione server in esecuzione
 resta distinta dalla compatibilità verificata. Fetch ancora bloccato da SSH publickey.
+
+Correzione importer6nov pubblicata: main6430eb0, deployment Production7596075280
+**success**6nov08:47:56UTC (09:47:56Europe/Rome). Build e8test mirati verdi;
+UI sintetica desktop/mobile e cambio progetto verificati. Nessun import reale
+eseguito; stato dataset live attuale non osservato. Ricevuta privata
+`output/playwright/inventory-ux-20261106/deploy.private.json`.

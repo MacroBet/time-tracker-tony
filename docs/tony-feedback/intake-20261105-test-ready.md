@@ -146,3 +146,9 @@ il trasferimento generale preesistente rimane per file con struttura completa.
 Rimozione sotto «Previous imports and removal», con preview e guardie invariate.
 8 test inventario, typecheck/lint/detector passati; UI locale sintetica desktop/mobile.
 Nessun payload privato o file fonte modificato; caricamento reale ancora non verificato.
+
+Correzione importer6nov pubblicata: main6430eb0, deployment Production7596075280
+**success**6nov08:47:56UTC (09:47:56Europe/Rome). Build e8test mirati verdi;
+UI sintetica desktop/mobile e cambio progetto verificati. Nessun import reale
+eseguito; stato dataset live attuale non osservato. Ricevuta privata
+`output/playwright/inventory-ux-20261106/deploy.private.json`.
