@@ -952,7 +952,11 @@ function ProjectWorkspace({
         </div>
       )}
       {canEdit && !reports && (
-        <InventoryBatchControls projectId={project.id} state={state} />
+        <InventoryBatchControls
+          key={project.id}
+          projectId={project.id}
+          state={state}
+        />
       )}
       {(admin || reports) && (
         <div>

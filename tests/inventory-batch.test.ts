@@ -4,6 +4,7 @@ import { commissioning, type Asset } from "../src/lib/commissioning";
 import type { Task } from "../src/lib/domain";
 import {
   applyInventoryBatch,
+  inventoryFileIdentity,
   restoreInventoryBatch,
   inventoryApplySchema,
   inventoryFingerprint,
@@ -254,4 +255,23 @@ test("full sized fixture preserves all1354 rows and restores completely without 
   assert.deepEqual(result.errors, []);
   assert.equal(result.assets.length, 0);
   assert.equal(result.removedCount, 1354);
+});
+
+test("JSON identity retries applied imports and allocates a new attempt after removal", async () => {
+  const digest = "b".repeat(64);
+  const fresh = inventoryFileIdentity(digest, []);
+  assert.equal(fresh.sourceSha256, digest);
+  const state = await applied();
+  assert.deepEqual(inventoryFileIdentity(digest, state.inventoryBatches!), {
+    batchId: "inventory-a",
+    sourceSha256: "a".repeat(64),
+  });
+  const receipt = {
+    ...state.inventoryBatches![0],
+    id: fresh.batchId,
+    status: "restored" as const,
+  };
+  const next = inventoryFileIdentity(digest, [receipt]);
+  assert.equal(next.batchId, fresh.batchId + "-2");
+  assert.deepEqual(inventoryFileIdentity(digest, [receipt]), next);
 });

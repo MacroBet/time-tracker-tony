@@ -240,7 +240,12 @@
       "ceilingUsedPercent": 90,
       "stopNewBatchesUsedPercent": 85,
       "finalizationReservePoints": 5,
-      "checkpointsUsedPercent": [40, 60, 75, 85],
+      "checkpointsUsedPercent": [
+        40,
+        60,
+        75,
+        85
+      ],
       "ordinaryUsageFalseOrExhausted": "STOP",
       "noResetPurchaseOrExtraCredits": true
     },
@@ -495,7 +500,9 @@
     "verifiedReceivedTotal": 30,
     "newAudioFilesAcquired": 0,
     "audioHash": null,
-    "newAttachmentIds": ["ATT-030"],
+    "newAttachmentIds": [
+      "ATT-030"
+    ],
     "oldExcelAttemptedThisCycle": false,
     "newPngNamesObservedNotAcquired": 0,
     "newImageOriginalsAcquired": 9,
@@ -1653,7 +1660,9 @@
       "globalNotAttributableToThisJob": true,
       "jobTokenUsage": null,
       "resetsOrExtraCreditsUsed": false,
-      "checkpointsObserved": [60]
+      "checkpointsObserved": [
+        60
+      ]
     },
     "sourceCoverageExtended": false,
     "customerSend": false,
@@ -1709,7 +1718,10 @@
       "sharp": "0.35.5",
       "sourceMapJs": "1.2.2",
       "zod": "4.6.7",
-      "braceExpansion": ["1.1.21", "5.0.12"]
+      "braceExpansion": [
+        "1.1.21",
+        "5.0.12"
+      ]
     },
     "auditProduction": {
       "total": 0,
@@ -1957,7 +1969,11 @@
       "newAssetRows": 1354,
       "newChecksheetRows": 52,
       "artifactsIgnoredByGit": true,
-      "sourceIds": ["ATT-014 redelivery5Nov", "ATT-030", "MAIL20-07"],
+      "sourceIds": [
+        "ATT-014 redelivery5Nov",
+        "ATT-030",
+        "MAIL20-07"
+      ],
       "assetMeaning": "Selected offline inventory proposal only",
       "checksheetMeaning": "Source requirements, not executed steps or signatures",
       "selectedInventoryPayloadSha256": "47b96185fb6951bc811492491bb1b1f6301f3080404ee37c1ebb46b3f05b30fa"
@@ -2266,5 +2282,14 @@
     },
     "quotaLatestMeasured": 81,
     "allRootLocalProcessesStopped": true
+  },
+  "latestInventoryImporterUx6Nov": {
+    "jobId": "tony-test-ready-delivery-20261105",
+    "status": "validated-local-release-pending",
+    "flow": "Select inventory JSON, preview, import; automatic file identity and audit reason",
+    "provenance": "Selected JSON SHA only; legacy source receipt retained; no Excel provenance invented",
+    "guards": "CAS/add-only/scoped removal unchanged; project switch remounts form",
+    "tests": "8 inventory tests, typecheck/lint/build, isolated desktop/mobile UI",
+    "liveImportsPerformed": 0
   }
 }

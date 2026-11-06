@@ -132,3 +132,17 @@ Restano da concordare le regole universali di sequenza/applicabilità e rating
 Health; i materiali non le definiscono. Non impediscono il collaudo dei controlli
 espliciti consegnati e non sono sostituite da automatismi inventati. Video oltre
 il profilo corrente o archivi location indipendenti richiedono un contratto distinto.
+
+
+## Correzione UX6nov — stesso mandato
+
+L’importer inventario ora chiede solo il JSON: Preview import, conteggi e Import
+inventory. Reference, impronta e motivo audit sono automatici; dettagli tecnici
+in disclosure. La fonte è il JSON selezionato: non si inventa la provenienza
+Excel. Ricevute legacy conservano sourceSHA; retry applicato è no-op, dopo
+rimozione una nuova identità deterministica consente nuova anteprima.
+Il percorso «Import inventory» aggiunge solo inventario senza livelli/programma;
+il trasferimento generale preesistente rimane per file con struttura completa.
+Rimozione sotto «Previous imports and removal», con preview e guardie invariate.
+8 test inventario, typecheck/lint/detector passati; UI locale sintetica desktop/mobile.
+Nessun payload privato o file fonte modificato; caricamento reale ancora non verificato.

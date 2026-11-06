@@ -342,3 +342,24 @@ export async function restoreInventoryBatch(
     removedCount: ids.size,
   };
 }
+
+/** The selected JSON is the source unless a retained receipt records older provenance.
+ * Reuse an applied receipt; after removal allocate a new deterministic attempt.
+ */
+export function inventoryFileIdentity(
+  payloadSha256: string,
+  batches: readonly InventoryBatch[],
+) {
+  const previous = batches.filter(
+    (batch) => batch.payloadSha256 === payloadSha256,
+  );
+  const applied = previous.find((batch) => batch.status === "applied");
+  if (applied)
+    return { batchId: applied.id, sourceSha256: applied.sourceSha256 };
+  const base = `json-${payloadSha256}`;
+  let batchId = base;
+  let attempt = 1;
+  while (batches.some((batch) => batch.id === batchId))
+    batchId = `${base}-${++attempt}`;
+  return { batchId, sourceSha256: payloadSha256 };
+}

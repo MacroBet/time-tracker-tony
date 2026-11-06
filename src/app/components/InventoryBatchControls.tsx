@@ -3,9 +3,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import type { Commissioning } from "@/lib/commissioning";
-import { inventoryApplySchema } from "@/lib/inventory-batch";
+import {
+  inventoryApplySchema,
+  inventoryFileIdentity,
+} from "@/lib/inventory-batch";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 
 export function InventoryBatchControls({
   projectId,
@@ -15,10 +17,7 @@ export function InventoryBatchControls({
   state: Commissioning;
 }) {
   const { mutate, isOnline } = useApp();
-  const [file, setFile] = useState<File | null>(null),
-    [source, setSource] = useState(""),
-    [batchId, setBatchId] = useState(""),
-    [reason, setReason] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<{
     action: "inventory-apply" | "inventory-restore";
@@ -75,8 +74,7 @@ export function InventoryBatchControls({
         b.toString(16).padStart(2, "0"),
       ).join("");
       const data = inventoryApplySchema.parse({
-        batchId,
-        sourceSha256: source,
+        ...inventoryFileIdentity(payloadSha256, state.inventoryBatches ?? []),
         payloadSha256,
         assets: raw.assets,
       });
@@ -100,18 +98,20 @@ export function InventoryBatchControls({
           action: plan.action,
           data: plan.data,
           version: plan.version,
-          reason,
+          reason:
+            plan.action === "inventory-restore"
+              ? "Remove unchanged assets from the selected inventory import"
+              : "Import inventory from selected JSON file; source digest identifies JSON, not original Excel",
           preview: false,
         }),
       });
       toast.success(
         plan.action === "inventory-restore"
-          ? "Inventory batch restored; history retained"
-          : "Inventory batch saved",
+          ? "Imported assets removed; history retained"
+          : "Inventory imported",
       );
       setPlan(null);
       setFile(null);
-      setReason("");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed");
     } finally {
@@ -121,40 +121,13 @@ export function InventoryBatchControls({
   return (
     <details className="rounded-xl border bg-white p-4 sm:p-5">
       <summary className="min-h-11 cursor-pointer font-semibold">
-        Scoped inventory import and restore
+        Import inventory
       </summary>
       <div className="mt-4 space-y-4">
         <p className="max-w-prose text-sm text-slate-600">
-          Add source inventory entries without creating commissioning tasks or
-          asserting installed equipment. The batch keeps its source and record
-          hashes. Restore removes only its unchanged, unreferenced additions.
+          Choose an inventory JSON file, review the changes, then import.
+          Existing assets, tasks and assignments are preserved.
         </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="text-sm font-medium">
-            Batch reference
-            <Input
-              className="mt-1 min-h-11"
-              value={batchId}
-              onChange={(e) => {
-                setBatchId(e.target.value);
-                setPlan(null);
-              }}
-              maxLength={150}
-            />
-          </label>
-          <label className="text-sm font-medium">
-            Original source SHA256
-            <Input
-              className="mt-1 min-h-11"
-              value={source}
-              onChange={(e) => {
-                setSource(e.target.value);
-                setPlan(null);
-              }}
-              maxLength={64}
-            />
-          </label>
-        </div>
         <label className="block text-sm font-medium">
           Inventory JSON
           <input
@@ -170,44 +143,11 @@ export function InventoryBatchControls({
         <Button
           variant="outline"
           className="min-h-11"
-          disabled={
-            busy ||
-            !isOnline ||
-            !file ||
-            !batchId.trim() ||
-            !/^[a-f0-9]{64}$/.test(source)
-          }
+          disabled={busy || !isOnline || !file}
           onClick={() => void prepareFile()}
         >
-          Preview inventory batch
+          Preview import
         </Button>
-        {(state.inventoryBatches ?? []).length > 0 && (
-          <div className="space-y-2 border-t pt-4">
-            <h3 className="text-sm font-semibold">Saved batches</h3>
-            {state.inventoryBatches?.map((batch) => (
-              <div
-                key={batch.id}
-                className="flex flex-wrap items-center justify-between gap-3 py-2"
-              >
-                <p className="min-w-0 break-words text-sm">
-                  {batch.id} · {batch.inserted.length} entries · {batch.status}
-                </p>
-                {batch.status === "applied" && (
-                  <Button
-                    className="min-h-11"
-                    variant="outline"
-                    disabled={busy || !isOnline}
-                    onClick={() =>
-                      void preview("inventory-restore", { batchId: batch.id })
-                    }
-                  >
-                    Preview restore
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
         {plan && (
           <section
             aria-label="Inventory batch preview"
@@ -230,15 +170,30 @@ export function InventoryBatchControls({
                 The project changed. Preview again before saving.
               </p>
             )}
-            <label className="block text-sm font-medium">
-              Reason for this change
-              <Input
-                className="mt-1 min-h-11"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                maxLength={1000}
-              />
-            </label>
+            {plan.action === "inventory-apply" && (
+              <details className="text-sm text-slate-600">
+                <summary className="min-h-11 cursor-pointer">
+                  Technical details
+                </summary>
+                <p className="break-all">
+                  Import reference: {(plan.data as { batchId: string }).batchId}
+                </p>
+                <p className="break-all">
+                  JSON SHA256:{" "}
+                  {(plan.data as { payloadSha256: string }).payloadSha256}
+                </p>
+                <p>
+                  The selected file is JSON. Its fingerprint does not identify
+                  the original Excel. Any previously recorded source provenance
+                  is retained.
+                </p>
+              </details>
+            )}
+            {!plan.errors.length && !plan.changes.length && (
+              <p className="text-sm text-slate-600">
+                No changes to save. This operation has already been completed.
+              </p>
+            )}
             <Button
               className="min-h-11"
               disabled={
@@ -246,16 +201,62 @@ export function InventoryBatchControls({
                 !isOnline ||
                 plan.errors.length > 0 ||
                 !plan.changes.length ||
-                plan.version !== state.version ||
-                reason.trim().length < 10
+                plan.version !== state.version
               }
               onClick={() => void save()}
             >
               {plan.action === "inventory-restore"
-                ? "Confirm scoped restore"
-                : "Confirm inventory import"}
+                ? "Remove imported assets"
+                : "Import inventory"}
             </Button>
           </section>
+        )}
+        {(state.inventoryBatches ?? []).length > 0 && (
+          <details className="space-y-2 border-t pt-4">
+            <summary className="min-h-11 cursor-pointer font-medium">
+              Previous imports and removal
+            </summary>
+            <p className="text-sm text-slate-600">
+              Remove only unchanged imported assets with no task or checksheet
+              links. History is retained.
+            </p>
+
+            {state.inventoryBatches?.map((batch) => (
+              <div
+                key={batch.id}
+                className="flex flex-wrap items-center justify-between gap-3 py-2"
+              >
+                <div className="min-w-0 break-words text-sm">
+                  {new Date(batch.appliedAt).toLocaleDateString()} ·{" "}
+                  {batch.inserted.length} assets · {batch.status}
+                  <details>
+                    <summary className="cursor-pointer">
+                      Technical details
+                    </summary>
+                    <span className="break-all">
+                      Import reference: {batch.id}
+                      <br />
+                      Source SHA256: {batch.sourceSha256}
+                      <br />
+                      JSON SHA256: {batch.payloadSha256}
+                    </span>
+                  </details>
+                </div>
+                {batch.status === "applied" && (
+                  <Button
+                    className="min-h-11"
+                    variant="outline"
+                    disabled={busy || !isOnline}
+                    onClick={() =>
+                      void preview("inventory-restore", { batchId: batch.id })
+                    }
+                  >
+                    Preview removal
+                  </Button>
+                )}
+              </div>
+            ))}
+          </details>
         )}
       </div>
     </details>

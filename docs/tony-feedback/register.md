@@ -1,5 +1,15 @@
 # Registro operativo — Tony
 
+## Correzione importer6nov
+
+Mandato incrementale dello stesso job test-ready: selezione JSON → anteprima →
+importazione, senza reference/hash/motivo tecnico manuali. Identità automatica
+dal JSON selezionato, nessuna attribuzione della sua SHA all’Excel originale.
+Ricevute precedenti riusate; dopo rimozione nuova identità automatica.
+Rimozione scoped separata sotto «Previous imports and removal»; CAS/audit/
+add-only invariati. Nessun import reale, browser produzione o WhatsApp.
+
+
 ## Nuovo mandato5nov — consegna test con dati reali in corso
 
 Mandato umano verificato `01a1ac8a-c70f-7973-b5bc-983ee3fcfcf5` nella regia:
