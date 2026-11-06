@@ -152,3 +152,19 @@ Correzione importer6nov pubblicata: main6430eb0, deployment Production7596075280
 UI sintetica desktop/mobile e cambio progetto verificati. Nessun import reale
 eseguito; stato dataset live attuale non osservato. Ricevuta privata
 `output/playwright/inventory-ux-20261106/deploy.private.json`.
+
+
+## Riscontro UI6nov — inventario presente, P6 ancora da caricare
+
+Marco conferma di aver importato1354asset. Il lettore CUA delegato della regia
+`root/tony_reply_reader6nov` osserva come Test admin sia LHR11
+(`08ef7190-c42e-46fc-9e2e-873d5c84dd0b`) sia AMS16
+(`fcdb866f-12d4-4e85-a6b2-004ca1d53701`): UI1354asset/revisione1,
+Programme0, «Plan your first activity», Programme ID non registrato.
+Sono riscontri UI delegati, non verifica API/hash/DB o mapping asset↔P6.
+Il precedente inventario0 è baseline storica5nov. Pannello P6 LHR11 aperto;
+Marco deve selezionare manualmente il .gz già consegnato. Chooser non attestato,
+altra tab utente attiva; nessun focus forzato. Template, associazione e nuovo task
+worker non ancora attestati. Nessun import o accesso browser eseguito da questo
+owner. Job globale in corso, non completo. Release corrente6430eb0 verificata;
+import inventario con metadati automatici, nessun batch/hash da compilare.

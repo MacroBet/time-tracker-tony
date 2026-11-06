@@ -39,18 +39,16 @@ test("daily columns retain weekends and leap dates across calendar boundaries", 
   assert.equal(year.columns[1].label, "01 Jan");
 });
 
-test("Weeks and Months preserve their span, width and weekly header ticks", () => {
-  for (const [scale, span, unit] of [
-    ["week", 100, 12],
-    ["month", 365, 4],
-  ] as const) {
-    const axis = ganttAxis("2026-10-13", scale);
-    assert.equal(axis.span, span);
-    assert.equal(axis.unit, unit);
-    assert.equal(axis.width, span * unit);
-    assert.equal(axis.columns.length, Math.ceil(span / 7));
-    assert.equal(axis.columns[0].label, "13 Oct 26");
-    assert.equal(axis.columns[1].date, "2026-10-20");
-    assert.equal(axis.columns[1].left, 7 * unit);
-  }
+test("Weeks retain weekly ticks; Months use readable calendar-month spacing", () => {
+  const week = ganttAxis("2026-10-13", "week");
+  assert.equal(week.columns[1].date, "2026-10-20");
+  assert.equal(week.columns[1].left, 84);
+  const month = ganttAxis("2026-10-13", "month");
+  assert.equal(month.span, 365);
+  assert.equal(month.unit, 4);
+  assert.equal(month.width, 1460);
+  assert.equal(month.columns[0].label, "Oct 26");
+  assert.equal(month.columns[1].date, "2026-11-01");
+  for (let i = 1; i < month.columns.length; i++)
+    assert(month.columns[i].left - month.columns[i - 1].left >= 56);
 });

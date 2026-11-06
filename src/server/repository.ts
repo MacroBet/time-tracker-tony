@@ -1,3 +1,13 @@
+import {
+  programmeSourceMetadataQuery,
+  programmeSourceProjectionQuery,
+} from "./db/programme-source-read";
+import { programmeSourceCache } from "./programme-source-cache";
+import {
+  indexSourceProgramme,
+  type SourceProgramme,
+  type SourceProgrammeSummary,
+} from "@/lib/programme-source";
 import { assignmentQuery } from "./db/assignment";
 import { attachmentInsertQuery } from "./db/attachment-insert";
 import {
@@ -78,6 +88,7 @@ export async function saveCommissioning(
   expectedVersion: number,
   unreferencedAssetIds?: string[],
 ) {
+  programmeSourceCache.invalidate(projectId);
   if (usingDemo()) {
     const project = demo().data.projects.find((p) => p.id === projectId);
     requireCondition(
@@ -737,7 +748,17 @@ export async function loadProjectCommissioning(
   );
 }
 
-export async function loadProgrammeSource(projectId: string, userId: string) {
+/** Small fresh membership/version lookup precedes every index-cache read. */
+export async function loadProgrammeSourceIndex(
+  projectId: string,
+  userId: string,
+) {
+  let metadata: {
+    version: number;
+    contentHash?: string;
+    summary?: SourceProgrammeSummary;
+  };
+  let projection: SourceProgramme | undefined;
   if (usingDemo()) {
     requireCondition(
       demo().data.memberships.some(
@@ -746,19 +767,57 @@ export async function loadProgrammeSource(projectId: string, userId: string) {
       404,
       "Project not found.",
     );
-    return demo().data.projects.find((p) => p.id === projectId)?.commissioning
-      ?.sourceProgramme;
-  }
-  const rows = await db()
-    .select({ source: sql`p.commissioning->'sourceProgramme'` })
-    .from(sql`projects p`)
-    .where(
-      sql`p.id = ${projectId} AND EXISTS (SELECT 1 FROM project_memberships m WHERE m.project_id = p.id AND m.user_id = ${userId})`,
+    const state = demo().data.projects.find(
+      (p) => p.id === projectId,
+    )?.commissioning;
+    metadata = {
+      version: state?.version ?? 0,
+      contentHash: state?.sourceProgrammeContentHash,
+      summary: state?.sourceProgrammeSummary,
+    };
+    projection = state?.sourceProgramme;
+  } else {
+    const rows = await db().execute(
+      programmeSourceMetadataQuery(projectId, userId),
     );
-  requireCondition(rows.length, 404, "Project not found.");
-  return clean<import("@/lib/programme-source").SourceProgramme | undefined>(
-    rows[0].source,
+    requireCondition(rows.rows.length, 404, "Project not found.");
+    metadata = clean<typeof metadata>(rows.rows[0]);
+  }
+  if (!metadata.summary) {
+    programmeSourceCache.invalidate(projectId);
+    return undefined;
+  }
+  const revision = `${metadata.version}:${metadata.contentHash ?? metadata.summary.sha256}`;
+  const cached = programmeSourceCache.get(projectId, revision);
+  if (cached) return cached;
+  if (!usingDemo()) {
+    const rows = await db().execute(
+      programmeSourceProjectionQuery(
+        projectId,
+        userId,
+        metadata.version,
+        metadata.contentHash,
+      ),
+    );
+    requireCondition(
+      rows.rows.length,
+      409,
+      "Programme or project access changed. Refresh and try again.",
+    );
+    projection = clean<SourceProgramme>(rows.rows[0].source);
+  }
+  if (!projection) return undefined;
+  const index = indexSourceProgramme(projection, metadata.summary);
+  // Raw strings/records and maps can coexist during construction; charge a
+  // conservative triple of projected JSON bytes against the process budget.
+  const relevant = Object.fromEntries(
+    ["TASK", "TASKPRED", "PROJWBS", "CALENDAR", "PROJECT"].flatMap((name) =>
+      projection.tables[name] ? [[name, projection.tables[name]]] : [],
+    ),
   );
+  const bytes = Buffer.byteLength(JSON.stringify(relevant)) * 3;
+  programmeSourceCache.set(projectId, revision, index, bytes);
+  return index;
 }
 function withoutProjectAudit<
   T extends {

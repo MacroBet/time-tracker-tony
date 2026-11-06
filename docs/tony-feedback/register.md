@@ -1,5 +1,35 @@
 # Registro operativo — Tony
 
+## P6 osservato6nov — correzione Gantt e lettura rapida
+
+Il lettore CUA della regia conferma P6 salvato nel Programme LHR11 normale:
+16969attività/36923relazioni/13calendari/3073WBS,1–50/16969. La precedente
+attesa file è storica superata; nessun reimport necessario. Default Months e
+ancora6nov tagliavano le prime attività terminate a settembre/ottobre; tacche
+mensili sovrapposte. Nuovo mandato incrementale dello stesso job: Days di default,
+ancora sulle date reali di pagina, griglia e weekend leggibili, nomi/date compatti,
+barre per stato e milestone, relazioni reali facoltative e dettaglio modale senza
+scrolljump. Nessuna data/durata/calendario sorgente ricalcolati o riscritti.
+Lettura indicizzata e cache limitata con auth/membership fresca e chiave revisione;
+fonti complete conservate. [Prove e limiti](intake-20261106-p6-gantt.md).
+
+
+## Riscontro UI6nov precedente — inventario presente, P6 allora da caricare
+
+Marco conferma di aver importato1354asset. Il lettore CUA delegato della regia
+`root/tony_reply_reader6nov` osserva come Test admin sia LHR11
+(`08ef7190-c42e-46fc-9e2e-873d5c84dd0b`) sia AMS16
+(`fcdb866f-12d4-4e85-a6b2-004ca1d53701`): UI1354asset/revisione1,
+Programme0, «Plan your first activity», Programme ID non registrato.
+Sono riscontri UI delegati, non verifica API/hash/DB o mapping asset↔P6.
+Il precedente inventario0 è baseline storica5nov. Pannello P6 LHR11 aperto;
+Marco deve selezionare manualmente il .gz già consegnato. Chooser non attestato,
+altra tab utente attiva; nessun focus forzato. Template, associazione e nuovo task
+worker non ancora attestati. Nessun import o accesso browser eseguito da questo
+owner. Job globale in corso, non completo. Release corrente6430eb0 verificata;
+import inventario con metadati automatici, nessun batch/hash da compilare.
+
+
 ## Correzione importer6nov
 
 Mandato incrementale dello stesso job test-ready: selezione JSON → anteprima →
@@ -24,8 +54,8 @@ scrittura live ancora. Codice/build locali verificati e software pubblicato:
 `edb272e`, Vercel Production success7580380236,5nov17:20:13UTC. Inventario/restore,
 P6 completo, schede/Works to go e MP4 breve pronti. LHR11 creato dalla regia,
 UUID`08ef7190-c42e-46fc-9e2e-873d5c84dd0b`, dopo consenso specifico sulla località.
-**Import reali ancora0**: Marco selezionerà manualmente i file nel chooser pronto.
-AMS16 resta0asset/0programma/305task/18assegnazioni; nessun grant estensione
+**Stato5nov superato dal riscontro UI6nov sopra**: inventario presente, P6 pending.
+Baseline storica AMS16:0asset/0programma/305task/18assegnazioni; nessun grant estensione
 modificato dall'agente. Job **inProgress/awaiting human file selection**, non completed.
 [Prove, vincoli e collaudo](intake-20261105-test-ready.md). Preview precedente conclusa, non riaperta. Stato corrente
 in `regia-status.json#latestTestReadyDelivery5Nov`. Il monitor resta ristretto.

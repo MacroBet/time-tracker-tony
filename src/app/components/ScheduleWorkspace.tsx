@@ -82,6 +82,7 @@ export function ScheduleWorkspace() {
         <div className="space-y-6" key={project.id}>
           {commissioning(project).sourceProgrammeSummary ? (
             <SourceProgrammeWorkspace
+              key={commissioning(project).sourceProgrammeSummary!.sha256}
               projectId={project.id}
               summary={commissioning(project).sourceProgrammeSummary!}
             />

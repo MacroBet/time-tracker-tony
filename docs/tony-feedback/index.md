@@ -118,3 +118,5 @@ P6 e52requisiti fuori da questa tranche; copertura delegata14:19, gap storici co
 Mandato umano successivo autorizza normali scritture app scoped nell’ambiente test;
 P6/LHR11 distinto, inventario/restore, schede/firmatari/Works to go e MP4 breve.
 Preview precedente storica, nessuna fonte privata in Git.
+
+**P6/Gantt6nov:** [vista giornaliera, programma già importato e lettura indicizzata](intake-20261106-p6-gantt.md). Fonte fedele e dati cliente conservati, nessun reimport; prove desktop/mobile e misure locali distinte dalla latenza produzione.

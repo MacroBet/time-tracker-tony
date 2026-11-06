@@ -7,7 +7,7 @@
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "in-progress",
-  "executionState": "awaiting-human-file-selection-software-deployed",
+  "executionState": "p6-import-observed-ui-gantt-correction-release-pending",
   "observedAt": "2026-11-05T17:25:56.715874+00:00",
   "startedAt": "2026-11-05T16:35:41.153505+00:00",
   "completedAt": null,
@@ -2175,7 +2175,7 @@
     "newApiKeyPaidCallOrServiceAuthorized": false,
     "previousPreviewJobClosed": true,
     "liveVerificationNeededViaRegiaCua": true,
-    "status": "in-progress-awaiting-human-file-selection",
+    "status": "in-progress-p6-import-observed-ui",
     "reportRef": "docs/tony-feedback/intake-20261105-test-ready.md",
     "handoffRef": "output/tony/test-ready-delivery-20261105/production-ui-handoff.private.md",
     "validation": {
@@ -2223,13 +2223,13 @@
     },
     "softwareDeployment": {
       "state": "cleared",
-      "requiredCommit": "edb272e024925fb37598e5267507d1b1056b14a5",
-      "deploymentId": 7580380236,
-      "vercelId": "6PFiPQURkzXdXSVUrXcTJB6tTkZy",
+      "requiredCommit": "6430eb06ccfc00019f4e799ac1f36c49a53a97f8",
+      "deploymentId": 7596075280,
+      "vercelId": "9LjiMKo4GUrH6MXAjWeKBt48rya6",
       "environment": "Production",
       "result": "success",
-      "at": "2026-11-05T17:20:13Z",
-      "sha": "edb272e024925fb37598e5267507d1b1056b14a5"
+      "at": "2026-11-06T08:47:56Z",
+      "sha": "6430eb06ccfc00019f4e799ac1f36c49a53a97f8"
     },
     "lhr11Project": {
       "id": "08ef7190-c42e-46fc-9e2e-873d5c84dd0b",
@@ -2240,27 +2240,27 @@
       "operator": "Test admin, normal UI via regia child after specific human consent"
     },
     "uploadPermissionGate": {
-      "state": "awaiting human manual file selection in prepared normal-app chooser",
+      "state": "P6 now observed saved in normal Programme; no reimport needed",
       "humanChoice": "dimmi che file caricare lo metto io",
-      "lastObserved": "Inventory JSON: No file chosen; preview disabled",
+      "lastObserved": "P6 LHR11 panel open; chooser not attested",
       "extensionPermissionChangedByAgent": false,
       "permissionGrantToRestoreByAgent": false,
       "alternativeUrlOrCdpUsed": false,
       "pollingEnabled": false,
       "filesToBeSelectedManuallyOneAtATime": true
     },
-    "actualWritesScope": "Regia normal UI created LHR11 project only; owner has performed no remote dataset import",
-    "datasetImportsExecuted": false,
+    "actualWritesScope": "LHR11 created previously; human inventory import reported6Nov,1354assets/rev1 visible in both projects; owner no remote dataset writes",
+    "datasetImportsExecuted": "human import reported; inventory observed in delegated UI",
     "softwareReady": true,
     "realDatasetReady": false,
     "completionClaimed": false,
     "actualDatasetImport": {
-      "inventory": 0,
-      "templates": 0,
-      "associations": 0,
-      "newTasks": 0,
-      "programmeActivities": 0,
-      "programmeRelationships": 0
+      "inventory": "1354 observed in UI in each named project; exact payload unverified",
+      "templates": null,
+      "associations": null,
+      "newTasks": null,
+      "programmeActivities": 16969,
+      "programmeRelationships": 36923
     },
     "expectedDatasetCounts": {
       "inventory": 1354,
@@ -2281,7 +2281,8 @@
       "at": "2026-11-05T17:20:13Z"
     },
     "quotaLatestMeasured": 81,
-    "allRootLocalProcessesStopped": true
+    "allRootLocalProcessesStopped": true,
+    "p6ImportEvidence": "delegated UI counts, not DB/hash verification"
   },
   "latestInventoryImporterUx6Nov": {
     "jobId": "tony-test-ready-delivery-20261105",
@@ -2296,5 +2297,56 @@
     "deploymentState": "success",
     "verifiedAt": "2026-11-06T08:47:56Z",
     "projectSwitchUi": "passed in isolated local build"
+  },
+  "latestTestReadyUiObservation6Nov": {
+    "date": "2026-11-06",
+    "source": "supervisor delegation from root/tony_reply_reader6nov",
+    "evidenceKind": "delegated UI observation, not API/hash/DB verification",
+    "humanReport": "Marco confirms importing1354assets",
+    "projects": [
+      {
+        "id": "08ef7190-c42e-46fc-9e2e-873d5c84dd0b",
+        "name": "LHR11",
+        "uiAssets": 1354,
+        "uiRevision": 1,
+        "uiProgrammeActivities": 0,
+        "programmeId": "Not recorded"
+      },
+      {
+        "id": "fcdb866f-12d4-4e85-a6b2-004ca1d53701",
+        "name": "AMS16",
+        "uiAssets": 1354,
+        "uiRevision": 1,
+        "uiProgrammeActivities": 0,
+        "programmeId": "Not recorded"
+      }
+    ],
+    "assetProgrammeMappingVerified": false,
+    "templatesAssociationsWorkerTask": "not yet attested",
+    "p6State": "pending human manual selection of supplied gzip; panel open, chooser not attested; another user tab active",
+    "ownerNewRemoteOperations": false
+  },
+  "latestP6GanttCorrection6Nov": {
+    "jobId": "tony-test-ready-delivery-20261105",
+    "status": "validated-local-release-pending",
+    "source": "regia delegation; root/tony_reply_reader6nov UI observation",
+    "liveSourceCounts": {
+      "activities": 16969,
+      "relationships": 36923,
+      "calendars": 13,
+      "wbs": 3073
+    },
+    "uiFix": "Days default, source-date page anchor, readable date/weekday/weekend grid, real optional relationships, no-scroll-jump detail",
+    "performance": {
+      "offlineBeforeMedianMs": 255.75,
+      "offlineWarmMedianMs": 1.61,
+      "coldProjectionBytes": 14338842,
+      "warmArchiveBytes": 0,
+      "coldIndexMs": 252,
+      "productionLatencyMeasured": false
+    },
+    "tests": "20 targeted, typecheck/lint/build, isolated complete-P6 desktop/mobile UI passed",
+    "reportRef": "docs/tony-feedback/intake-20261106-p6-gantt.md",
+    "customerDataModified": false
   }
 }

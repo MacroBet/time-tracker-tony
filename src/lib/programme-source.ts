@@ -194,6 +194,10 @@ export type SourceProgrammePage = {
     calendars: { id: string; name: string }[];
     statuses: string[];
   };
+  pageLinks?: Pick<
+    SourceRelationshipView,
+    "predecessorId" | "successorId" | "type" | "sourceLine"
+  >[];
   detail?: {
     activity: SourceActivityView;
     sourceLine: number;
@@ -212,16 +216,37 @@ export type SourceProgrammeQuery = {
   internalId?: string;
 };
 
-/** Every record remains stored; only the requested page/detail is sent to a viewer. */
-export function querySourceProgramme(
+/** Query index holds only the five tables used by this view, never resource archives. */
+export type SourceProgrammeIndex = {
+  summary: SourceProgrammeSummary;
+  activities: SourceActivityView[];
+  byId: Map<
+    string,
+    {
+      activity: SourceActivityView;
+      fields: SourceRecord;
+      sourceLine: number;
+      relationships: SourceRelationshipView[];
+    }
+  >;
+  filters: SourceProgrammePage["filters"];
+  search: string[];
+  wbsSearch: string[];
+  links: SourceRelationshipView[];
+};
+
+/** Build once per saved source revision. Original fields and dates remain unchanged. */
+export function indexSourceProgramme(
   programme: SourceProgramme,
-  query: SourceProgrammeQuery = {},
-): SourceProgrammePage {
+  summary = sourceProgrammeSummary(programme),
+): SourceProgrammeIndex {
   const tasks = sourceRecords(programme.tables.TASK);
-  const byId = new Map(tasks.map((task) => [task.task_id, task]));
+  const taskCodes = new Map(
+    tasks.map((task) => [task.task_id, task.task_code]),
+  );
   const calendars = sourceRecords(programme.tables.CALENDAR);
   const calendarNames = new Map(
-    calendars.map((calendar) => [calendar.clndr_id, calendar.clndr_name]),
+    calendars.map((record) => [record.clndr_id, record.clndr_name]),
   );
   const wbs = new Map(
     sourceRecords(programme.tables.PROJWBS).map((record) => [
@@ -229,12 +254,11 @@ export function querySourceProgramme(
       record,
     ]),
   );
-  const pathCache = new Map<string, string>();
-  function wbsPath(id: string) {
-    const cached = pathCache.get(id);
-    if (cached !== undefined) return cached;
-    const names: string[] = [];
-    const seen = new Set<string>();
+  const paths = new Map<string, string>();
+  const wbsPath = (id: string) => {
+    if (paths.has(id)) return paths.get(id)!;
+    const names: string[] = [],
+      seen = new Set<string>();
     let current = id;
     while (current && !seen.has(current)) {
       seen.add(current);
@@ -244,101 +268,131 @@ export function querySourceProgramme(
       current = record.parent_wbs_id;
     }
     const path = names.join(" / ");
-    pathCache.set(id, path);
+    paths.set(id, path);
     return path;
-  }
-  const links = sourceRecords(programme.tables.TASKPRED);
-  const incoming = new Map<string, number>();
-  const outgoing = new Map<string, number>();
+  };
+  const incoming = new Map<string, SourceRelationshipView[]>(),
+    outgoing = new Map<string, SourceRelationshipView[]>();
+  const links = sourceRecords(programme.tables.TASKPRED).map(
+    (record, i): SourceRelationshipView => ({
+      sourceLine: programme.tables.TASKPRED.lines[i],
+      predecessorId: record.pred_task_id,
+      predecessorActivityId:
+        taskCodes.get(record.pred_task_id) ?? record.pred_task_id,
+      successorId: record.task_id,
+      successorActivityId: taskCodes.get(record.task_id) ?? record.task_id,
+      type: record.pred_type,
+      lagHours: record.lag_hr_cnt,
+      fields: record,
+    }),
+  );
   for (const link of links) {
-    incoming.set(link.task_id, (incoming.get(link.task_id) ?? 0) + 1);
-    outgoing.set(link.pred_task_id, (outgoing.get(link.pred_task_id) ?? 0) + 1);
+    const from = outgoing.get(link.predecessorId) ?? [];
+    from.push(link);
+    outgoing.set(link.predecessorId, from);
+    const to = incoming.get(link.successorId) ?? [];
+    to.push(link);
+    incoming.set(link.successorId, to);
   }
-  function view(record: SourceRecord): SourceActivityView {
-    return {
-      internalId: record.task_id,
-      activityId: record.task_code,
-      name: record.task_name,
-      wbsId: record.wbs_id ?? "",
-      wbsPath: wbsPath(record.wbs_id),
-      calendarId: record.clndr_id ?? "",
-      calendarName: calendarNames.get(record.clndr_id) ?? record.clndr_id ?? "",
-      status: record.status_code ?? "",
-      taskType: record.task_type ?? "",
-      milestone: /(?:Mile|Milestone)/i.test(record.task_type ?? ""),
-      durationHours: record.target_drtn_hr_cnt ?? "",
-      predecessorCount: incoming.get(record.task_id) ?? 0,
-      successorCount: outgoing.get(record.task_id) ?? 0,
-      ...sourceActivityDates(record),
-    };
-  }
-  const search = query.q?.trim().toLowerCase();
-  const wbsSearch = query.wbs?.trim().toLowerCase();
-  const filtered = tasks.filter(
-    (record) =>
-      (!search ||
-        `${record.task_code} ${record.task_name}`
-          .toLowerCase()
-          .includes(search)) &&
-      (!wbsSearch ||
-        `${record.wbs_id} ${wbsPath(record.wbs_id)} ${wbs.get(record.wbs_id)?.wbs_name ?? ""}`
-          .toLowerCase()
-          .includes(wbsSearch)) &&
-      (!query.calendar || record.clndr_id === query.calendar) &&
-      (!query.status || record.status_code === query.status),
+  const activities = tasks.map((record): SourceActivityView => ({
+    internalId: record.task_id,
+    activityId: record.task_code,
+    name: record.task_name,
+    wbsId: record.wbs_id ?? "",
+    wbsPath: wbsPath(record.wbs_id),
+    calendarId: record.clndr_id ?? "",
+    calendarName: calendarNames.get(record.clndr_id) ?? record.clndr_id ?? "",
+    status: record.status_code ?? "",
+    taskType: record.task_type ?? "",
+    milestone: /(?:Mile|Milestone)/i.test(record.task_type ?? ""),
+    durationHours: record.target_drtn_hr_cnt ?? "",
+    predecessorCount: incoming.get(record.task_id)?.length ?? 0,
+    successorCount: outgoing.get(record.task_id)?.length ?? 0,
+    ...sourceActivityDates(record),
+  }));
+  return {
+    summary,
+    activities,
+    links,
+    byId: new Map(
+      tasks.map((record, i) => [
+        record.task_id,
+        {
+          activity: activities[i],
+          fields: record,
+          sourceLine: programme.tables.TASK.lines[i],
+          relationships: [
+            ...(incoming.get(record.task_id) ?? []),
+            ...(outgoing.get(record.task_id) ?? []),
+          ]
+            .filter((link, i, all) => all.indexOf(link) === i)
+            .sort((a, b) => a.sourceLine - b.sourceLine),
+        },
+      ]),
+    ),
+    filters: {
+      calendars: calendars.map((record) => ({
+        id: record.clndr_id,
+        name: record.clndr_name,
+      })),
+      statuses: [...new Set(activities.map((a) => a.status))].filter(Boolean),
+    },
+    search: activities.map((a) => `${a.activityId} ${a.name}`.toLowerCase()),
+    wbsSearch: activities.map((a) =>
+      `${a.wbsId} ${a.wbsPath} ${wbs.get(a.wbsId)?.wbs_name ?? ""}`.toLowerCase(),
+    ),
+  };
+}
+
+/** Every record remains stored; only the requested page/detail is sent to a viewer. */
+export function querySourceProgrammeIndex(
+  index: SourceProgrammeIndex,
+  query: SourceProgrammeQuery = {},
+): SourceProgrammePage {
+  const search = query.q?.trim().toLowerCase(),
+    wbsSearch = query.wbs?.trim().toLowerCase();
+  const filtered = index.activities.filter(
+    (a, i) =>
+      (!search || index.search[i].includes(search)) &&
+      (!wbsSearch || index.wbsSearch[i].includes(wbsSearch)) &&
+      (!query.calendar || a.calendarId === query.calendar) &&
+      (!query.status || a.status === query.status),
   );
   const pageSize = Math.min(100, Math.max(1, Math.floor(query.pageSize || 50)));
   const page = Math.min(
     Math.max(0, Math.floor(query.page || 0)),
     Math.max(0, Math.ceil(filtered.length / pageSize) - 1),
   );
+  const activities = filtered.slice(page * pageSize, (page + 1) * pageSize),
+    ids = new Set(activities.map((a) => a.internalId));
   const result: SourceProgrammePage = {
-    summary: sourceProgrammeSummary(programme),
-    activities: filtered
-      .slice(page * pageSize, (page + 1) * pageSize)
-      .map(view),
+    summary: index.summary,
+    activities,
     total: filtered.length,
     page,
     pageSize,
-    filters: {
-      calendars: calendars.map((record) => ({
-        id: record.clndr_id,
-        name: record.clndr_name,
+    filters: index.filters,
+    pageLinks: index.links
+      .filter(
+        (link) => ids.has(link.predecessorId) && ids.has(link.successorId),
+      )
+      .map(({ predecessorId, successorId, type, sourceLine }) => ({
+        predecessorId,
+        successorId,
+        type,
+        sourceLine,
       })),
-      statuses: [...new Set(tasks.map((record) => record.status_code))].filter(
-        Boolean,
-      ),
-    },
   };
   if (query.internalId) {
-    const record = byId.get(query.internalId);
-    if (record) {
-      result.detail = {
-        activity: view(record),
-        sourceLine:
-          programme.tables.TASK.lines[tasks.findIndex((row) => row === record)],
-        fields: record,
-        relationships: links.flatMap((link, index) =>
-          link.task_id === query.internalId ||
-          link.pred_task_id === query.internalId
-            ? [
-                {
-                  sourceLine: programme.tables.TASKPRED.lines[index],
-                  predecessorId: link.pred_task_id,
-                  predecessorActivityId:
-                    byId.get(link.pred_task_id)?.task_code ?? link.pred_task_id,
-                  successorId: link.task_id,
-                  successorActivityId:
-                    byId.get(link.task_id)?.task_code ?? link.task_id,
-                  type: link.pred_type,
-                  lagHours: link.lag_hr_cnt,
-                  fields: link,
-                },
-              ]
-            : [],
-        ),
-      };
-    }
+    const detail = index.byId.get(query.internalId);
+    if (detail) result.detail = detail;
   }
   return result;
+}
+
+export function querySourceProgramme(
+  programme: SourceProgramme,
+  query: SourceProgrammeQuery = {},
+): SourceProgrammePage {
+  return querySourceProgrammeIndex(indexSourceProgramme(programme), query);
 }

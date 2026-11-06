@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -13,6 +13,9 @@ import { dayNumber } from "@/lib/scheduling";
 import { projectDate } from "@/lib/domain";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { SourceProgrammeGantt } from "./SourceProgrammeGantt";
+import { sourcePageAnchor } from "@/lib/source-gantt";
+import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 
 const number = (value: number) => value.toLocaleString("en-GB");
 
@@ -319,8 +322,14 @@ export function SourceProgrammeWorkspace({
   const [calendar, setCalendar] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(0);
-  const [scale, setScale] = useState<GanttScale>("month");
-  const [anchor, setAnchor] = useState(projectDate());
+  const [scale, setScale] = useState<GanttScale>("day");
+  const [manualAnchor, setAnchor] = useState<string | null>(null);
+  const [showLinks, setShowLinks] = useState(false);
+  const detailTrigger = useRef<HTMLElement | null>(null);
+  const detailContent = useRef<HTMLDivElement | null>(null);
+  const detailRequest = useRef<AbortController | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  useEffect(() => () => detailRequest.current?.abort(), []);
   const [data, setData] = useState<SourceProgrammePage | null>(null);
   const [detail, setDetail] = useState<SourceProgrammePage["detail"]>();
   const [loading, setLoading] = useState(true);
@@ -328,41 +337,46 @@ export function SourceProgrammeWorkspace({
   const [refresh, setRefresh] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      setError("");
-      const params = new URLSearchParams({
-        q: query,
-        wbs,
-        calendar,
-        status,
-        page: String(page),
-      });
-      try {
-        const response = await fetch(
-          `/api/projects/${projectId}/programme-source?${params}`,
-          { signal: controller.signal },
-        );
-        const result = await response.json();
-        if (!response.ok)
-          throw new Error(result.error || "Could not load programme.");
-        setData(result);
-      } catch (failure) {
-        if (!controller.signal.aborted)
-          setError(
-            failure instanceof Error
-              ? failure.message
-              : "Could not load programme.",
+    const timer = setTimeout(
+      async () => {
+        setLoading(true);
+        setError("");
+        const params = new URLSearchParams({
+          q: query,
+          wbs,
+          calendar,
+          status,
+          page: String(page),
+        });
+        try {
+          const response = await fetch(
+            `/api/projects/${projectId}/programme-source?${params}`,
+            { signal: controller.signal },
           );
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    }, 250);
+          const result = await response.json();
+          if (!response.ok)
+            throw new Error(result.error || "Could not load programme.");
+          setData(result);
+        } catch (failure) {
+          if (!controller.signal.aborted)
+            setError(
+              failure instanceof Error
+                ? failure.message
+                : "Could not load programme.",
+            );
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      },
+      query || wbs ? 200 : 0,
+    );
     return () => {
       clearTimeout(timer);
       controller.abort();
     };
   }, [projectId, summary.sha256, query, wbs, calendar, status, page, refresh]);
+  const anchor =
+    manualAnchor ?? sourcePageAnchor(data?.activities ?? []) ?? projectDate();
   const axis = ganttAxis(anchor, scale);
   const firstDay = dayNumber(anchor);
   const visible = data?.activities ?? [];
@@ -373,19 +387,31 @@ export function SourceProgrammeWorkspace({
         .slice(0, 10),
     );
   }
-  async function openDetail(internalId: string) {
+  async function openDetail(internalId: string, trigger: HTMLElement) {
+    detailRequest.current?.abort();
+    const controller = new AbortController();
+    detailRequest.current = controller;
+    detailTrigger.current = trigger;
+    setDetailLoading(true);
     try {
       const response = await fetch(
         `/api/projects/${projectId}/programme-source?${new URLSearchParams({ internalId })}`,
+        { signal: controller.signal },
       );
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.error || "Could not load activity.");
-      setDetail((result as SourceProgrammePage).detail);
+      if (!controller.signal.aborted)
+        setDetail((result as SourceProgrammePage).detail);
     } catch (failure) {
-      toast.error(
-        failure instanceof Error ? failure.message : "Could not load activity.",
-      );
+      if (!controller.signal.aborted)
+        toast.error(
+          failure instanceof Error
+            ? failure.message
+            : "Could not load activity.",
+        );
+    } finally {
+      if (!controller.signal.aborted) setDetailLoading(false);
     }
   }
   return (
@@ -422,6 +448,7 @@ export function SourceProgrammeWorkspace({
             onChange={(event) => {
               setQuery(event.target.value);
               setPage(0);
+              setAnchor(null);
             }}
             placeholder="Find an activity"
           />
@@ -435,6 +462,7 @@ export function SourceProgrammeWorkspace({
             onChange={(event) => {
               setWbs(event.target.value);
               setPage(0);
+              setAnchor(null);
             }}
             placeholder="Search a work package"
           />
@@ -451,6 +479,7 @@ export function SourceProgrammeWorkspace({
             onChange={(event) => {
               setCalendar(event.target.value);
               setPage(0);
+              setAnchor(null);
             }}
           >
             <option value="">All calendars</option>
@@ -473,6 +502,7 @@ export function SourceProgrammeWorkspace({
             onChange={(event) => {
               setStatus(event.target.value);
               setPage(0);
+              setAnchor(null);
             }}
           >
             <option value="">All statuses</option>
@@ -496,6 +526,7 @@ export function SourceProgrammeWorkspace({
           </Button>
         </div>
       )}
+      <h3 className="text-lg font-semibold text-slate-950">Programme Gantt</h3>
       <div className="flex flex-wrap items-end gap-3">
         <label
           htmlFor={`${id}-anchor`}
@@ -549,15 +580,31 @@ export function SourceProgrammeWorkspace({
           className="min-h-11"
           disabled={!visible.some((row) => row.start)}
           onClick={() => {
-            const starts = visible
-              .flatMap((row) => (row.start ? [row.start] : []))
-              .sort();
-            if (starts[0]) setAnchor(starts[0]);
+            setAnchor(null);
           }}
         >
           Go to page dates
         </Button>
       </div>
+      <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
+        <label className="flex min-h-11 items-center gap-2">
+          <input
+            type="checkbox"
+            checked={showLinks}
+            onChange={(e) => setShowLinks(e.target.checked)}
+          />
+          Show dependencies on this page
+        </label>
+        <span>
+          Blue: not started · Amber: in progress · Green: complete · Diamond:
+          milestone · Slate: other source status
+        </span>
+      </div>
+      <p className="max-w-3xl text-xs text-slate-600">
+        Weekend shading marks calendar dates, not the source working calendar.{" "}
+        {showLinks &&
+          "Connections show saved relationship endpoints; source lag hours are available in activity details."}
+      </p>
       <p className="text-sm text-slate-600 tabular-nums" aria-live="polite">
         {loading
           ? "Loading programme…"
@@ -569,133 +616,14 @@ export function SourceProgrammeWorkspace({
           calendar or status.
         </p>
       ) : (
-        <div
-          className="overflow-x-auto rounded-xl border border-slate-200 bg-white"
-          aria-busy={loading}
-          tabIndex={0}
-          aria-label="Programme timeline, scroll horizontally for dates"
-        >
-          <table
-            className="w-full border-collapse text-sm"
-            style={{ minWidth: axis.width + 660 }}
-          >
-            <thead className="bg-slate-50 text-left text-slate-700">
-              <tr>
-                <th scope="col" className="w-80 px-4 py-3">
-                  Activity
-                </th>
-                <th scope="col" className="w-44 px-4 py-3">
-                  Saved dates
-                </th>
-                <th scope="col" className="w-40 px-4 py-3">
-                  Status / duration
-                </th>
-                <th scope="col" className="relative p-0">
-                  <div className="relative h-12" style={{ width: axis.width }}>
-                    {axis.columns.map((column) => (
-                      <span
-                        key={column.date}
-                        className="absolute top-4 text-xs tabular-nums"
-                        style={{ left: column.left + 4 }}
-                      >
-                        {column.label}
-                      </span>
-                    ))}
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((row) => {
-                const start = row.start
-                  ? dayNumber(row.start) - firstDay
-                  : null;
-                const finish = row.finish
-                  ? dayNumber(row.finish) - firstDay
-                  : start;
-                const left =
-                  start === null ? 0 : Math.max(0, start) * axis.unit;
-                const right =
-                  finish === null
-                    ? 0
-                    : Math.min(axis.span, finish + 1) * axis.unit;
-                const inWindow =
-                  start !== null &&
-                  finish !== null &&
-                  start < axis.span &&
-                  finish >= 0 &&
-                  finish >= start;
-                return (
-                  <tr
-                    key={row.internalId}
-                    className="border-t border-slate-200 align-top hover:bg-slate-50"
-                  >
-                    <td className="px-4 py-3">
-                      <button
-                        className="min-h-11 text-left text-blue-800 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-blue-700"
-                        onClick={() => openDetail(row.internalId)}
-                      >
-                        <span className="block font-medium">
-                          {row.activityId}
-                          {row.milestone ? " · Milestone" : ""}
-                        </span>
-                        <span className="block text-slate-800 no-underline">
-                          {row.name}
-                        </span>
-                      </button>
-                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                        {row.wbsPath}
-                      </p>
-                    </td>
-                    <td className="px-4 py-3 text-xs tabular-nums">
-                      <p>{row.start || "Start not recorded"}</p>
-                      <p>{row.finish || "Finish not recorded"}</p>
-                      <p className="mt-2 text-slate-600">{row.calendarName}</p>
-                    </td>
-                    <td className="px-4 py-3">
-                      <p>{statusLabel(row.status)}</p>
-                      <p className="mt-1 text-xs text-slate-600 tabular-nums">
-                        {row.durationHours === ""
-                          ? "Duration not recorded"
-                          : `${row.durationHours} source hours`}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-600 tabular-nums">
-                        {row.predecessorCount} predecessors ·{" "}
-                        {row.successorCount} successors
-                      </p>
-                    </td>
-                    <td className="relative p-0">
-                      <div
-                        className="relative min-h-24 overflow-hidden"
-                        style={{ width: axis.width }}
-                      >
-                        {axis.columns.map((column) => (
-                          <span
-                            key={column.date}
-                            className="absolute inset-y-0 border-l border-slate-100"
-                            style={{ left: column.left }}
-                          />
-                        ))}
-                        {inWindow && (
-                          <span
-                            className={`absolute top-8 h-4 ${row.milestone ? "rotate-45 bg-slate-800" : "rounded-sm bg-blue-700"}`}
-                            style={{
-                              left,
-                              width: row.milestone
-                                ? 12
-                                : Math.max(2, right - left),
-                            }}
-                            title={`${row.activityId}: ${row.start} to ${row.finish}`}
-                          />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <SourceProgrammeGantt
+          data={data}
+          anchor={anchor}
+          scale={scale}
+          showLinks={showLinks}
+          loading={loading}
+          onSelect={openDetail}
+        />
       )}
       <nav
         aria-label="Programme pages"
@@ -711,7 +639,10 @@ export function SourceProgrammeWorkspace({
             variant="outline"
             className="min-h-11"
             disabled={loading || !data || data.page === 0}
-            onClick={() => setPage((value) => Math.max(0, value - 1))}
+            onClick={() => {
+              setPage((value) => Math.max(0, value - 1));
+              setAnchor(null);
+            }}
           >
             Previous 50
           </Button>
@@ -721,86 +652,129 @@ export function SourceProgrammeWorkspace({
             disabled={
               loading || !data || (data.page + 1) * data.pageSize >= data.total
             }
-            onClick={() => setPage((value) => value + 1)}
+            onClick={() => {
+              setPage((value) => value + 1);
+              setAnchor(null);
+            }}
           >
             Next 50
           </Button>
         </div>
       </nav>
-      {detail && (
-        <section
-          className="space-y-4 rounded-xl border border-slate-200 bg-white p-5"
-          aria-label="Source activity details"
+      <Dialog
+        open={Boolean(detail) || detailLoading}
+        onOpenChange={(open) => {
+          if (!open) {
+            detailRequest.current?.abort();
+            setDetailLoading(false);
+            setDetail(undefined);
+          }
+        }}
+      >
+        <DialogContent
+          ref={detailContent}
+          className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-3xl"
+          aria-describedby={undefined}
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            detailContent.current?.focus({ preventScroll: true });
+          }}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            detailTrigger.current?.focus({ preventScroll: true });
+          }}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="font-semibold">
-                {detail.activity.activityId} · {detail.activity.name}
-              </h3>
-              <p className="mt-1 text-sm text-slate-600">
-                Source TASK line {detail.sourceLine}. Dates and raw values are
-                retained as exported.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              className="min-h-11"
-              onClick={() => setDetail(undefined)}
-            >
-              Close details
-            </Button>
-          </div>
-          <details>
-            <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">
-              All source activity fields
-            </summary>
-            <dl className="grid max-h-96 gap-x-5 gap-y-2 overflow-auto sm:grid-cols-[max-content_1fr] text-sm">
-              {Object.entries(detail.fields).map(([field, value]) => (
-                <div key={field} className="contents">
-                  <dt className="font-medium break-all">{field}</dt>
-                  <dd className="break-all whitespace-pre-wrap text-slate-700">
-                    {value || "Not recorded"}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </details>
-          <h4 className="text-sm font-medium">
-            Predecessors and successors ({number(detail.relationships.length)})
-          </h4>
-          <p className="text-xs text-slate-600">
-            Lag values are source hours. Unknown relationship codes and repeated
-            pairs remain unchanged.
-          </p>
-          <div className="max-h-96 overflow-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr>
-                  <th className="p-2">Predecessor</th>
-                  <th className="p-2">Successor</th>
-                  <th className="p-2">Type</th>
-                  <th className="p-2">Lag hours</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detail.relationships.map((link) => (
-                  <tr
-                    key={link.sourceLine}
-                    className="border-t border-slate-200"
+          <DialogTitle className="pr-8">Source activity details</DialogTitle>
+          {detailLoading ? (
+            <p role="status">Loading activity…</p>
+          ) : (
+            detail && (
+              <div className="space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="font-semibold">
+                      {detail.activity.activityId} · {detail.activity.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Source TASK line {detail.sourceLine}. Dates and raw values
+                      are retained as exported.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => {
+                      setDetail(undefined);
+                      setDetailLoading(false);
+                    }}
                   >
-                    <td className="p-2">{link.predecessorActivityId}</td>
-                    <td className="p-2">{link.successorActivityId}</td>
-                    <td className="p-2">{link.type}</td>
-                    <td className="p-2 tabular-nums">
-                      {link.lagHours || "Not recorded"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      )}
+                    Close details
+                  </Button>
+                </div>
+                <p className="text-sm text-slate-600">
+                  {statusLabel(detail.activity.status)} ·{" "}
+                  {detail.activity.durationHours || "No recorded duration"}
+                  {detail.activity.durationHours ? " source hours" : ""} ·{" "}
+                  {detail.activity.calendarName}
+                </p>
+                <p className="text-sm text-slate-600 break-words">
+                  {detail.activity.wbsPath}
+                </p>
+                <details>
+                  <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">
+                    All source activity fields
+                  </summary>
+                  <dl className="grid max-h-96 gap-x-5 gap-y-2 overflow-auto sm:grid-cols-[max-content_1fr] text-sm">
+                    {Object.entries(detail.fields).map(([field, value]) => (
+                      <div key={field} className="contents">
+                        <dt className="font-medium break-all">{field}</dt>
+                        <dd className="break-all whitespace-pre-wrap text-slate-700">
+                          {value || "Not recorded"}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </details>
+                <h4 className="text-sm font-medium">
+                  Predecessors and successors (
+                  {number(detail.relationships.length)})
+                </h4>
+                <p className="text-xs text-slate-600">
+                  Lag values are source hours. Unknown relationship codes and
+                  repeated pairs remain unchanged.
+                </p>
+                <div className="max-h-96 overflow-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr>
+                        <th className="p-2">Predecessor</th>
+                        <th className="p-2">Successor</th>
+                        <th className="p-2">Type</th>
+                        <th className="p-2">Lag hours</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detail.relationships.map((link) => (
+                        <tr
+                          key={link.sourceLine}
+                          className="border-t border-slate-200"
+                        >
+                          <td className="p-2">{link.predecessorActivityId}</td>
+                          <td className="p-2">{link.successorActivityId}</td>
+                          <td className="p-2">{link.type}</td>
+                          <td className="p-2 tabular-nums">
+                            {link.lagHours || "Not recorded"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )
+          )}
+        </DialogContent>
+      </Dialog>
       <details className="border-t border-slate-200 pt-3 text-sm text-slate-600">
         <summary className="min-h-11 cursor-pointer content-center font-medium">
           Programme source

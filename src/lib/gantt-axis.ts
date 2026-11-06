@@ -8,13 +8,28 @@ export function ganttAxis(start: string, scale: GanttScale) {
   const unit = scale === "day" ? 48 : scale === "week" ? 12 : 4;
   const step = scale === "day" ? 1 : 7;
   const startDay = dayNumber(start);
-  const columns = Array.from({ length: Math.ceil(span / step) }, (_, i) => {
-    const date = new Date((startDay + i * step) * 86_400_000);
+  const offsets =
+    scale === "month"
+      ? [0]
+      : Array.from({ length: Math.ceil(span / step) }, (_, i) => i * step);
+  if (scale === "month") {
+    const first = new Date(startDay * 86400000);
+    for (let month = 1; month <= 12; month++) {
+      const date = new Date(
+        Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + month, 1),
+      );
+      const offset = Math.round(date.getTime() / 86400000) - startDay;
+      if (offset < span && offset >= 14 && span - offset >= 14)
+        offsets.push(offset);
+    }
+  }
+  const columns = offsets.map((offset) => {
+    const date = new Date((startDay + offset) * 86_400_000);
     return {
       date: date.toISOString().slice(0, 10),
-      left: i * step * unit,
+      left: offset * unit,
       label: new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
+        ...(scale === "month" ? {} : { day: "2-digit" as const }),
         month: "short",
         ...(scale === "day" ? {} : { year: "2-digit" }),
         timeZone: "UTC",

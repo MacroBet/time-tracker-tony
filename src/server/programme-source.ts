@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { requireUser } from "./auth";
 import {
-  loadProgrammeSource,
+  loadProgrammeSourceIndex,
   loadData,
   loadProjectCommissioning,
   saveCommissioning,
@@ -15,7 +15,7 @@ import { commissioning, hasModule } from "@/lib/commissioning";
 import {
   sourceProgrammeSchema,
   sourceProgrammeSummary,
-  querySourceProgramme,
+  querySourceProgrammeIndex,
 } from "@/lib/programme-source";
 
 async function authorizedProgrammeUser() {
@@ -29,11 +29,11 @@ async function authorizedProgrammeUser() {
 }
 export async function getSourceProgramme(request: Request, projectId: string) {
   const user = await authorizedProgrammeUser();
-  const programme = await loadProgrammeSource(projectId, user.id);
+  const programme = await loadProgrammeSourceIndex(projectId, user.id);
   requireCondition(programme, 404, "No source programme in this project.");
   const query = new URL(request.url).searchParams;
   return json(
-    querySourceProgramme(programme, {
+    querySourceProgrammeIndex(programme, {
       q: query.get("q") ?? undefined,
       wbs: query.get("wbs") ?? undefined,
       calendar: query.get("calendar") ?? undefined,
