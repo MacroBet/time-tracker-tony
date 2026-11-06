@@ -101,7 +101,7 @@ export function InventoryBatchControls({
           reason:
             plan.action === "inventory-restore"
               ? "Remove unchanged assets from the selected inventory import"
-              : "Import inventory from selected JSON file; source digest identifies JSON, not original Excel",
+              : "Import inventory from selected JSON file",
           preview: false,
         }),
       });
