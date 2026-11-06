@@ -51,4 +51,17 @@ worker task non ancora attestati online. Nessun import/DB remoto/WhatsApp/AI liv
 Rilascio verificato: applicazione **e924c22**, push normale su main, Vercel
 Production **success7596645304**,6nov09:20:14UTC (10:20:14Europe/Rome).
 Ricevuta privata `output/playwright/p6-gantt-20261106/deploy.private.json`.
-Nessuna nuova verifica autenticata in produzione; latenza online non misurata.
+Collaudo autenticato delegato ora concluso sotto; latenza online non misurata.
+
+## Collaudo online conclusivo6nov — Gantt READY
+
+Fonte delegata: regia, lettore `root/tony_reply_reader6nov`, releasee924c22.
+Dopo un’unica osservazione passiva, LHR11 risulta READY senza errori:
+16969attività/36923relazioni/13calendari,1–50/16969, Days, ancora2026-03-28
+prima dell’inizio2026-03-30. Date e weekday non sovrapposti, griglia/weekend
+distinti e barre ambra coerenti con In progress e legenda. La precedente cattura
+«Loading programme…» immediata dopo cambio progetto era transitoria. Nessun
+nuovo reload/intervento; tab preservata. Tempo completo di caricamento non
+misurato: i3223ms osservati altrove non sono latenza P6 e non vengono usati.
+Rettifica Gantt conclusa; job generale aperto per template/percorso worker non
+attestati. Nessun nuovo sviluppo, test, import o invio Tony.

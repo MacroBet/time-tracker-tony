@@ -4,7 +4,7 @@ import { sourcePageAnchor, sourceBar } from "../src/lib/source-gantt";
 import type { SourceActivityView } from "../src/lib/programme-source";
 const row = (values: Partial<SourceActivityView>) =>
   ({ milestone: false, ...values }) as SourceActivityView;
-test("source view opens on earliest page date with margin, including finish-only milestones", () => {
+test("source view opens near the recorded page date cluster, including finish-only milestones", () => {
   assert.equal(
     sourcePageAnchor([
       row({ start: "2026-09-18" }),
@@ -15,6 +15,14 @@ test("source view opens on earliest page date with margin, including finish-only
   assert.equal(
     sourcePageAnchor([row({ milestone: true, finish: "2026-10-15" })]),
     "2026-10-13",
+  );
+  assert.equal(
+    sourcePageAnchor([
+      row({ start: "2026-03-30" }),
+      row({ start: "2026-09-21" }),
+      row({ start: "2026-09-21" }),
+    ]),
+    "2026-09-19",
   );
   assert.equal(sourcePageAnchor([]), undefined);
 });

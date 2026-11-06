@@ -30,6 +30,7 @@ import {
 } from "@/lib/commissioning";
 import { calendarDays, dayNumber, workingDuration } from "@/lib/scheduling";
 import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
+import { GanttRuler } from "./GanttRuler";
 import { projectDate, type Project, type Task } from "@/lib/domain";
 import type { Asset } from "@/lib/commissioning";
 
@@ -1192,25 +1193,8 @@ function Gantt({
               </tbody>
             </table>
             <div className="relative shrink-0 border-l" style={{ width }}>
-              <div className="h-14 relative bg-slate-50 border-b text-xs text-slate-600">
-                {columns.map((column) => (
-                  <span
-                    key={column.date}
-                    className={
-                      zoom === "day"
-                        ? `absolute inset-y-0 flex flex-col items-center justify-center gap-1 border-l border-slate-200 tabular-nums ${column.weekend ? "bg-slate-100" : ""}`
-                        : "absolute top-5 pl-2 border-l border-slate-300"
-                    }
-                    style={{
-                      left: column.left,
-                      ...(zoom === "day" ? { width: unit } : {}),
-                    }}
-                    title={column.date}
-                  >
-                    <time dateTime={column.date}>{column.label}</time>
-                    {zoom === "day" && <span>{column.weekday}</span>}
-                  </span>
-                ))}
+              <div className="border-b">
+                <GanttRuler start={start} scale={zoom} />
               </div>
               <div className="relative" style={{ height: rows.length * 48 }}>
                 <svg

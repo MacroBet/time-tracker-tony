@@ -3,11 +3,16 @@ import { dayNumber } from "./scheduling";
 
 /** Position the source view, without changing any source date or duration. */
 export function sourcePageAnchor(rows: readonly SourceActivityView[]) {
-  const dates = rows
-    .flatMap((row) =>
-      row.start ? [row.start] : row.finish ? [row.finish] : [],
-    )
-    .sort();
+  const counts = new Map<string, number>();
+  for (const row of rows) {
+    const date = row.start ?? row.finish;
+    if (date) counts.set(date, (counts.get(date) ?? 0) + 1);
+  }
+  // A few long-running procurement rows must not hide the page's main work.
+  // Pick a recorded date cluster; ties use the earliest date, never today.
+  const dates = [...counts.keys()].sort(
+    (a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b),
+  );
   return dates[0]
     ? new Date((dayNumber(dates[0]) - 2) * 86400000).toISOString().slice(0, 10)
     : undefined;

@@ -120,3 +120,5 @@ P6/LHR11 distinto, inventario/restore, schede/firmatari/Works to go e MP4 breve.
 Preview precedente storica, nessuna fonte privata in Git.
 
 **P6/Gantt6nov:** [vista giornaliera, programma già importato e lettura indicizzata](intake-20261106-p6-gantt.md). Fonte fedele e dati cliente conservati, nessun reimport; prove desktop/mobile e misure locali distinte dalla latenza produzione.
+
+**Parità visiva P6/Gantt6nov:** [confronto con Gantt normale, righello e scroll](intake-20261106-p6-gantt-parity.md). Il precedente PASS tecnico non equivaleva ad accettazione visiva; nuova conferma desktop/mobile con screenshot privati.

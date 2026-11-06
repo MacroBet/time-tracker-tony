@@ -324,7 +324,7 @@ export function SourceProgrammeWorkspace({
   const [page, setPage] = useState(0);
   const [scale, setScale] = useState<GanttScale>("day");
   const [manualAnchor, setAnchor] = useState<string | null>(null);
-  const [showLinks, setShowLinks] = useState(false);
+  const [showLinks, setShowLinks] = useState(true);
   const detailTrigger = useRef<HTMLElement | null>(null);
   const detailContent = useRef<HTMLDivElement | null>(null);
   const detailRequest = useRef<AbortController | null>(null);
@@ -526,94 +526,14 @@ export function SourceProgrammeWorkspace({
           </Button>
         </div>
       )}
-      <h3 className="text-lg font-semibold text-slate-950">Programme Gantt</h3>
-      <div className="flex flex-wrap items-end gap-3">
-        <label
-          htmlFor={`${id}-anchor`}
-          className="space-y-2 text-sm font-medium"
-        >
-          Timeline start
-          <Input
-            id={`${id}-anchor`}
-            className="min-h-11"
-            type="date"
-            value={anchor}
-            onChange={(event) => {
-              if (event.target.value) setAnchor(event.target.value);
-            }}
-          />
-        </label>
-        <label
-          htmlFor={`${id}-scale`}
-          className="space-y-2 text-sm font-medium"
-        >
-          Scale
-          <select
-            id={`${id}-scale`}
-            className="block min-h-11 rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-            value={scale}
-            onChange={(event) => setScale(event.target.value as GanttScale)}
-          >
-            <option value="day">Days</option>
-            <option value="week">Weeks</option>
-            <option value="month">Months</option>
-          </select>
-        </label>
-        <Button
-          variant="outline"
-          className="min-h-11"
-          onClick={() => shift(-1)}
-          aria-label="Earlier timeline"
-        >
-          <ArrowLeft className="size-4" />
-        </Button>
-        <Button
-          variant="outline"
-          className="min-h-11"
-          onClick={() => shift(1)}
-          aria-label="Later timeline"
-        >
-          <ArrowRight className="size-4" />
-        </Button>
-        <Button
-          variant="outline"
-          className="min-h-11"
-          disabled={!visible.some((row) => row.start)}
-          onClick={() => {
-            setAnchor(null);
-          }}
-        >
-          Go to page dates
-        </Button>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
-        <label className="flex min-h-11 items-center gap-2">
-          <input
-            type="checkbox"
-            checked={showLinks}
-            onChange={(e) => setShowLinks(e.target.checked)}
-          />
-          Show dependencies on this page
-        </label>
-        <span>
-          Blue: not started · Amber: in progress · Green: complete · Diamond:
-          milestone · Slate: other source status
-        </span>
-      </div>
-      <p className="max-w-3xl text-xs text-slate-600">
-        Weekend shading marks calendar dates, not the source working calendar.{" "}
-        {showLinks &&
-          "Connections show saved relationship endpoints; source lag hours are available in activity details."}
-      </p>
       <p className="text-sm text-slate-600 tabular-nums" aria-live="polite">
         {loading
           ? "Loading programme…"
           : `${number(data?.total ?? 0)} matching activities`}
       </p>
       {data && !visible.length ? (
-        <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-          No activities match these filters. Clear the search or choose another
-          calendar or status.
+        <p className="text-sm text-slate-600">
+          No activities match these filters.
         </p>
       ) : (
         <SourceProgrammeGantt
@@ -623,6 +543,77 @@ export function SourceProgrammeWorkspace({
           showLinks={showLinks}
           loading={loading}
           onSelect={openDetail}
+          onGoTo={(row) => {
+            const value = sourcePageAnchor([row]);
+            if (value) setAnchor(value);
+          }}
+          controls={
+            <div className="flex flex-wrap items-end gap-3">
+              <label htmlFor={`${id}-anchor`} className="text-xs">
+                Go to date
+                <Input
+                  id={`${id}-anchor`}
+                  aria-label="Gantt go to date"
+                  className="min-h-11"
+                  type="date"
+                  value={anchor}
+                  onChange={(event) => {
+                    if (event.target.value) setAnchor(event.target.value);
+                  }}
+                />
+              </label>
+              <label htmlFor={`${id}-scale`} className="text-xs">
+                Scale
+                <select
+                  id={`${id}-scale`}
+                  aria-label="Gantt scale"
+                  className="block min-h-11 rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                  value={scale}
+                  onChange={(event) =>
+                    setScale(event.target.value as GanttScale)
+                  }
+                >
+                  <option value="day">Days</option>
+                  <option value="week">Weeks</option>
+                  <option value="month">Months</option>
+                </select>
+              </label>
+              <Button
+                variant="outline"
+                className="min-h-11"
+                onClick={() => shift(-1)}
+                aria-label="Earlier timeline"
+              >
+                <ArrowLeft className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="min-h-11"
+                onClick={() => shift(1)}
+                aria-label="Later timeline"
+              >
+                <ArrowRight className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                className="min-h-11"
+                disabled={!visible.some((row) => row.start)}
+                onClick={() => {
+                  setAnchor(null);
+                }}
+              >
+                Go to page dates
+              </Button>
+              <label className="flex min-h-11 items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={showLinks}
+                  onChange={(e) => setShowLinks(e.target.checked)}
+                />
+                Dependencies
+              </label>
+            </div>
+          }
         />
       )}
       <nav

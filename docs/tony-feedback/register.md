@@ -1,6 +1,18 @@
 # Registro operativo — Tony
 
-## P6 osservato6nov — correzione Gantt e lettura rapida
+## Rettifica visiva P6 Gantt6nov
+
+Il PASS tecnico precedente non equivaleva a parità visiva accettata. Corretti
+colonne Activity/Hours/Start/Finish, righe48px, righello condiviso/sticky e layering;
+finestra sul cluster settembre con frecce reali e navigazione alle altre date.
+[Confronto visivo, misure e limiti](intake-20261106-p6-gantt-parity.md).
+Nessun reimport o modifica sorgenti; confronto locale completato, rilascio in corso.
+
+## P6 verificato online6nov — Gantt corretto
+
+Releasee924c22, Production7596645304success; collaudo CUA delegato READY,
+Days/ancora2026-03-28/griglia/barre corretti. Nessun errore, latenza non misurata.
+Rettifica conclusa; job generale aperto per template e percorso worker non attestati.
 
 Il lettore CUA della regia conferma P6 salvato nel Programme LHR11 normale:
 16969attività/36923relazioni/13calendari/3073WBS,1–50/16969. La precedente
@@ -1371,4 +1383,17 @@ eseguito; stato dataset live attuale non osservato. Ricevuta privata
 Rilascio verificato: applicazione **e924c22**, push normale su main, Vercel
 Production **success7596645304**,6nov09:20:14UTC (10:20:14Europe/Rome).
 Ricevuta privata `output/playwright/p6-gantt-20261106/deploy.private.json`.
-Nessuna nuova verifica autenticata in produzione; latenza online non misurata.
+Collaudo autenticato delegato ora concluso sotto; latenza online non misurata.
+
+## Collaudo online conclusivo6nov — Gantt READY
+
+Fonte delegata: regia, lettore `root/tony_reply_reader6nov`, releasee924c22.
+Dopo un’unica osservazione passiva, LHR11 risulta READY senza errori:
+16969attività/36923relazioni/13calendari,1–50/16969, Days, ancora2026-03-28
+prima dell’inizio2026-03-30. Date e weekday non sovrapposti, griglia/weekend
+distinti e barre ambra coerenti con In progress e legenda. La precedente cattura
+«Loading programme…» immediata dopo cambio progetto era transitoria. Nessun
+nuovo reload/intervento; tab preservata. Tempo completo di caricamento non
+misurato: i3223ms osservati altrove non sono latenza P6 e non vengono usati.
+Rettifica Gantt conclusa; job generale aperto per template/percorso worker non
+attestati. Nessun nuovo sviluppo, test, import o invio Tony.
