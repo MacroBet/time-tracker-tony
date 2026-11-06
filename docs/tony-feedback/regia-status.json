@@ -7,7 +7,7 @@
   "intakeIdProvenance": "publisher intake requested; numerical ID not verified by executor",
   "ownerThreadId": "01a1407b-ee5f-72a0-bc3e-f883cdd78130",
   "status": "in-progress",
-  "executionState": "p6-visual-parity-release-pending-global-delivery-in-progress",
+  "executionState": "p6-visual-parity-deployed-awaiting-regia-cua-global-delivery-in-progress",
   "observedAt": "2026-11-05T17:25:56.715874+00:00",
   "startedAt": "2026-11-05T16:35:41.153505+00:00",
   "completedAt": null,
@@ -2223,14 +2223,14 @@
     },
     "softwareDeployment": {
       "state": "cleared",
-      "requiredCommit": "e924c22297e8a32588d1b0aedb17b601f0da4303",
-      "sha": "e924c22297e8a32588d1b0aedb17b601f0da4303",
-      "deploymentId": 7596645304,
-      "vercelId": "Fqi7ihbCPsTjbR3xCu2udFwXfv6b",
+      "requiredCommit": "058d69805410ebb45819954abc59872d5ddb40a1",
+      "sha": "058d69805410ebb45819954abc59872d5ddb40a1",
+      "deploymentId": 7597912343,
+      "vercelId": "CjaNz4LL2MFUrsKdbrBhghXAPxVq",
       "environment": "Production",
       "result": "success",
-      "at": "2026-11-06T09:20:14Z",
-      "url": "https://time-tracker-tony-9p1cw7bil-macrobets-projects.vercel.app"
+      "at": "2026-11-06T10:29:36Z",
+      "url": "https://time-tracker-tony-pffmokh62-macrobets-projects.vercel.app"
     },
     "lhr11Project": {
       "id": "08ef7190-c42e-46fc-9e2e-873d5c84dd0b",
@@ -2381,11 +2381,12 @@
       "latencyMeasured": false,
       "browserTabPreserved": true,
       "newReloadOrImport": false
-    }
+    },
+    "visualAcceptance": "technical pass superseded by latestP6VisualParity6Nov; use latest release and acceptance scope"
   },
   "latestP6VisualParity6Nov": {
     "jobId": "tony-test-ready-delivery-20261105",
-    "status": "local-visual-review-accepted-release-pending",
+    "status": "deployed-local-visual-accepted-awaiting-regia-production-cua",
     "priorPassScope": "Days/data technical verification, insufficient for visual acceptance",
     "implementation": "shared GanttRuler; normal-style Activity/Hours/Start/Finish,48pxrows, isolated sticky ruler and real dependencies default",
     "anchor": "most frequent saved page start with2daymargin; current file2026-09-19",
@@ -2401,6 +2402,19 @@
     "sourcePageBeforeAfterIdentical": true,
     "humanBrowserTouched": false,
     "customerDataModified": false,
-    "reviewerConfirmation": "regia inspected normal/P6 desktop full+mid and mobile full+mid; no blocking issues; production CUA follows deployment"
+    "reviewerConfirmation": "regia inspected normal/P6 desktop full+mid and mobile full+mid; no blocking issues; production CUA follows deployment",
+    "commit": "058d69805410ebb45819954abc59872d5ddb40a1",
+    "deployment": {
+      "state": "cleared",
+      "requiredCommit": "058d69805410ebb45819954abc59872d5ddb40a1",
+      "sha": "058d69805410ebb45819954abc59872d5ddb40a1",
+      "deploymentId": 7597912343,
+      "vercelId": "CjaNz4LL2MFUrsKdbrBhghXAPxVq",
+      "environment": "Production",
+      "result": "success",
+      "at": "2026-11-06T10:29:36Z",
+      "url": "https://time-tracker-tony-pffmokh62-macrobets-projects.vercel.app"
+    },
+    "productionCua": "pending single final observation by regia; owner did not touch human browser"
   }
 }

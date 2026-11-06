@@ -6,7 +6,8 @@ Il PASS tecnico precedente non equivaleva a parità visiva accettata. Corretti
 colonne Activity/Hours/Start/Finish, righe48px, righello condiviso/sticky e layering;
 finestra sul cluster settembre con frecce reali e navigazione alle altre date.
 [Confronto visivo, misure e limiti](intake-20261106-p6-gantt-parity.md).
-Nessun reimport o modifica sorgenti; confronto locale completato, rilascio in corso.
+Nessun reimport o modifica sorgenti; confronto locale accolto. App058d698,
+Production7597912343success6nov10:29:36UTC. Atteso singolo CUA finale della regia.
 
 ## P6 verificato online6nov — Gantt corretto
 

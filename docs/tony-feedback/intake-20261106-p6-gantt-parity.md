@@ -45,3 +45,12 @@ blue700su blue50. Nessun ulteriore ciclo di polishing o suite generale.
 Backend lossless/caching precedente intatto, nessuna nuova misura latenza online.
 Screenshot/fonti private esclusi da Git; next-env.d.ts preesistente preservato.
 Pubblicazione e accettazione online vanno distinte dal confronto locale.
+
+## Rilascio verificato
+
+Applicazione **058d69805410ebb45819954abc59872d5ddb40a1**, push normale su main,
+Vercel Production **success7597912343**,6nov10:29:36UTC (11:29:36Europe/Rome).
+Confronto visivo desktop/mobile accolto dalla regia; resta il singolo CUA finale
+a scorrimento in produzione a cura della regia. Non dichiarato già eseguito.
+Ricevuta privata `output/playwright/p6-parity-20261106/deploy.private.json`.
+Backend/cache e dati cliente invariati. Nessun import o invio; next-env preservato.
