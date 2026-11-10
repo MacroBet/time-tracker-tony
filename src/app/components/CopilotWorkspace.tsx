@@ -263,7 +263,14 @@ function CopilotSession({ projectId }: { projectId: string }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-600">
           {context.summary.assets} assets · {context.summary.tasks} tasks ·{" "}
-          {context.summary.programmeActivities} programme activities
+          {context.summary.managedProgrammeActivities} managed app activities
+          {context.summary.importedProgrammeActivities !== null && (
+            <>
+              {" "}
+              · {context.summary.importedProgrammeActivities} imported P6
+              activities
+            </>
+          )}
         </p>
         <Button
           variant="ghost"
@@ -564,7 +571,8 @@ function ProjectChecks({ context }: { context: CopilotContext }) {
   const noRecords = !(
     context.summary.assets +
     context.summary.tasks +
-    context.summary.programmeActivities
+    context.summary.managedProgrammeActivities +
+    (context.summary.importedProgrammeActivities ?? 0)
   );
   return (
     <section aria-label="Saved project checks" className="space-y-5">

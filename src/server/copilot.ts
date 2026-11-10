@@ -155,7 +155,7 @@ const tool = (
 const TOOLS: CopilotFunctionTool[] = [
   tool(
     "project_summary",
-    "Read counts and limitations from saved records in the current project.",
+    "Read current-project counts and limitations. Managed app activities and imported P6 source activity counts are separate; full imported source rows are not included.",
     objectSchema({}),
   ),
   tool(

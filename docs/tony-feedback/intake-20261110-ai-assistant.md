@@ -215,3 +215,38 @@ nessuna configurazione o migrazione eseguita da questo owner; non duplicare brow
 
 Identità del piano migratorio revisionabile: `0006_openai_meter_observations.sql`,
 SHA256 `cbaecd91b57e339d5577c86a439509ec690e90186b8fc2afe70e7e5966a95c04`. Il normale build verificato non lo esegue.
+
+## Collaudo Production delegato e correzione conteggi P6
+
+Il10nov la regia riferisce CUA reale come Test admin/Admin nel progettoLHR11
+`08ef7190-c42e-46fc-9e2e-873d5c84dd0b`: registro1354asset; chiller0 e rispostaAI0
+coerenti; secondo controllo su un tipo presente, registro2 e rispostaAI2, entrambi
+mostrati. Il link di un risultato apre la scheda corretta nello stesso progetto.
+Due query chat, nessun audio/edit o risultato esterno osservato. È prova delegata,
+non una seconda sessione di questo owner né misura del numero di chiamate provider.
+
+Difetto emerso: il riepilogo Copilot chiamava «programme activities» soltanto le
+righe gestite nell’app, mostrando0 mentre il P6 sorgente contiene16969attività.
+Correzione minima: conteggi distinti `managedProgrammeActivities` e
+`importedProgrammeActivities` (null se nessuna sorgente importata). Il secondo usa
+soltanto `sourceProgrammeSummary.activities` già disponibile, senza leggere/esportare
+l’archivio. Header, stato vuoto, descrizione del tool esistente `project_summary`
+e limitations distinguono le due nature. Le verifiche e scadenze legate all’app
+continuano a usare le attività gestite; nessun ricalcolo delle date P6 o accessoAI
+alle16969righe, relazioni o calendari viene dichiarato.
+
+Verifica della correzione:6test mirati (2nuovi), lint, detector UI e build normali
+superati. Nessuna migrazione/DBwrite o nuovo toolAI. Ricerca e link già PASS non
+ripetuti a pagamento. `next-env.d.ts` preesistente ripristinato byte per byte.
+
+Metering: schema/journal Production verificati in attivazione. Il successo delle
+risposte è evidenza indiretta del percorso che attende intent e finale suNeon;
+non è una lettura diretta delle righe collector. L’owner non dispone di accesso al
+collector Production: token misurati e costo billed restano null.821token sono
+soltanto della precedente prova sintetica locale. Nessuna nuova esportazione,
+connessione locale promossa a Production o endpoint metering aggiunto.
+
+Bozza inglese di conferma conservata privatamente in `output/tony/ai-assistant-20261110/`,
+pronta solo dopo verifica della release corretta; nessun invio/composer o vecchio
+consenso riutilizzato. Testo raw fuoriGit. Quota nativa prima/dopo fix86%, ordinary
+allowed, cap90; questo è chiusura di difetto del lotto esistente.

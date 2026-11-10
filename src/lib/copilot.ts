@@ -62,7 +62,8 @@ export type CopilotTask = Pick<
 export type CopilotSummary = {
   assets: number;
   groups: number;
-  programmeActivities: number;
+  managedProgrammeActivities: number;
+  importedProgrammeActivities: number | null;
   tasks: number;
   openTasks: number;
   overdueTasks: number;
@@ -193,7 +194,9 @@ export function buildCopilotContext(
   const summary: CopilotSummary = {
     assets: state.assets.length,
     groups: groups.length,
-    programmeActivities: state.schedule.length,
+    managedProgrammeActivities: state.schedule.length,
+    importedProgrammeActivities:
+      state.sourceProgrammeSummary?.activities ?? null,
     tasks: tasks.length,
     openTasks: open.length,
     overdueTasks: overdue.length,
@@ -278,6 +281,7 @@ export function buildCopilotContext(
       "Task proposals support title, description and priority only. Programme dates, assignments, test results and approvals are outside this operation.",
       "Group membership follows explicit parentAssetId links; shared group test-sheet tasks are not implemented.",
       "Checks use saved records and do not attest physical completion, compliance or readiness.",
+      "Programme checks and linked deadlines use managed app activities. Imported P6 activity counts are source metadata only: full source rows, relationships, calendars and schedule recalculation are not included in this AI context.",
     ],
     examples: [
       "List all chillers in this project.",

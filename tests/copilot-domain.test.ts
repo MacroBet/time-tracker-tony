@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createDemoData } from "../src/lib/demo-data";
+import { commissioning } from "../src/lib/commissioning";
 import {
   buildCopilotContext,
   canUseCopilot,
@@ -9,6 +10,78 @@ import {
   searchCopilotTasks,
 } from "../src/lib/copilot";
 const now = new Date("2026-10-15T18:00:00.000Z");
+test("copilot separates imported P6 metadata from managed activities without exporting the source archive", () => {
+  const data = createDemoData(now);
+  const project = data.projects.find((item) => item.id === "p1")!;
+  const managed = commissioning(project);
+  project.commissioning = {
+    ...managed,
+    sourceProgrammeSummary: {
+      format: "p6-xer-v1",
+      fileName: "private-source.xer",
+      sha256: "a".repeat(64),
+      projectId: "synthetic-p6",
+      projectName: "Private source project",
+      activities: 16969,
+      relationships: 36923,
+      calendars: 13,
+      wbs: 3073,
+      sourceRecords: 60000,
+      recalculation: "source-dates-only",
+    },
+    sourceProgramme: {
+      format: "p6-xer-v1",
+      source: {
+        fileName: "private-source.xer",
+        sha256: "a".repeat(64),
+        encoding: "utf-8",
+        header: "private archive header",
+      },
+      tables: {
+        TASK: {
+          fields: ["task_id", "task_code", "task_name"],
+          rows: [["1", "A1", "private archive activity"]],
+          lines: [1],
+        },
+      },
+    },
+  };
+  const before = structuredClone(data);
+  const context = buildCopilotContext(data, "p1", now);
+  assert.equal(
+    context.summary.managedProgrammeActivities,
+    managed.schedule.length,
+  );
+  assert.equal(context.summary.importedProgrammeActivities, 16969);
+  assert(
+    context.limitations.some(
+      (line) =>
+        line.includes("source metadata only") && line.includes("not included"),
+    ),
+  );
+  const serialized = JSON.stringify(context);
+  assert(!serialized.includes("private-source.xer"));
+  assert(!serialized.includes("private archive activity"));
+  assert(!serialized.includes("Private source project"));
+  assert.deepEqual(data, before);
+  data.projects.push({
+    id: "other-programme",
+    name: "Other project",
+    location: "",
+    companyId: "c1",
+  });
+  const other = buildCopilotContext(data, "other-programme", now);
+  assert.equal(other.summary.importedProgrammeActivities, null);
+});
+test("a project without an imported programme reports no source count rather than inventing zero imported activities", () => {
+  const data = createDemoData(now);
+  const context = buildCopilotContext(data, "p1", now);
+  assert.equal(context.summary.importedProgrammeActivities, null);
+  assert.equal(
+    context.summary.managedProgrammeActivities,
+    commissioning(data.projects[0]).schedule.length,
+  );
+});
 test("copilot checks use saved project data and keep tests, review and missing records separate", () => {
   const data = createDemoData(now);
   const tag = data.tasks.find((task) => task.id === "demo-tag-0")!;
