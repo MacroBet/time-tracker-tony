@@ -120,3 +120,16 @@ lint mirato e build normale senza gate passati. Nessuna migrazione remota o gate
 approval impostato. File temporaneo plaintext per import eliminato dopo la ricevuta
 CLI e la verifica dei cinque nomi Production; chiave originale nel repo preservata.
 Quota verificata85% usato: nessun nuovo lotto; solo chiusura/revisione del presente piano.
+
+## Approvazione umana acquisita
+
+Il10nov Marco ha approvato nella regia `01a1493a-ee0b-7d62-a861-d8d546bf013c`
+la domanda sul solo registro consumi API nel DB Production del sito Tony e
+attivazione dopo verifiche, preservando asset, attività e programma esistenti.
+Risposta: «Approvo il piano di attivazione». Fonte diretta verificata con lettura
+nativa della regia: questionItemId `[request_user_input_async,
+call_cfb073ac9b6b49788c692a220bfbc776,0]`. Identità gate derivata letteralmente
+da quel riferimento: `request_user_input_async:call_cfb073ac9b6b49788c692a220bfbc776:0`.
+Nessun UUID di approvazione inventato. È acquisito il consenso specifico al presente
+piano v2; rimangono tutte le guardie e la sequenza sopra. Stato di esecuzione e
+prove effettive saranno riportati separatamente, senza dedurre il risultato dal consenso.
