@@ -159,3 +159,59 @@ La regia ha aperto le catture desktop/mobile/worker e non rileva altri blocchi
 visivi; non serve un altro giro di screenshot. Processi locali e Chrome di test
 chiusi. next-env.d.ts ripristinato byte-per-byte allo stato precedente al lotto;
 nessun file privato in Git. Rilascio applicativo ora pronto per commit/push normali.
+
+
+### Commit e blocco runtime verificato
+
+Commit applicativo **20a42ff3b4c72392a428c282f7bf6dc6027ede67**, push normale su
+main concluso; HEAD e origin/main coincidono. Il commit conserva anche il precedente
+5118217 già locale e non altera la cronologia. Deploy Vercel in verifica separata.
+
+La regia riferisce l'ultimo controllo CUA read-only: sessione Chrome autenticata,
+ma URL `vercel.com/macrobets-projects/time-tracker-tony` restituisce404/Not Found
+per quell'account. Non è un semplice login mancante: non sono visibili progetto,
+nomi env o valori. Nessun cambio account o retry. Occorre un account con accesso
+al team/progetto esatto per verificare configurazione e percorso migratorio cloud.
+Il codice runtime resta fail-closed finché enable/key/storage effettivi non sono pronti.
+Questa è una dipendenza operativa concreta, non una nuova domanda sulla chiave.
+
+Nomi da verificare senza reveal: `OPENAI_API_KEY` (solo quella di FieldTrack già
+autorizzata, senza sostituire secret diverso), `COPILOT_ENABLED`, eventuale
+`OPENAI_MODEL` (default nel codice se assente), `DATABASE_URL` per il database
+esistente. `OPENAI_METER_DIRECTORY` non è richiesto in produzione: l'adapter usa
+Neon e non usa un filesystem temporaneo. Nessuna chiave richiesta in chat.
+
+
+### Rilascio effettivo verificato
+
+Commit app **20a42ff3b4c72392a428c282f7bf6dc6027ede67**, pubblicato su main;
+GitHub Vercel check success e deployment **7691342676 / Production / success**,
+**10nov18:56:54UTC =19:56:54 Europe/Rome**. Vercel ID
+`7PxyGBaHRY5zM6eNuqVes6eJQH4E`.
+[Deploy](https://vercel.com/macrobets-projects/time-tracker-tony/7PxyGBaHRY5zM6eNuqVes6eJQH4E),
+[URL immutabile](https://time-tracker-tony-kz5p5gy9d-macrobets-projects.vercel.app),
+[alias pubblico](https://time-tracker-tony.vercel.app/).
+Alias risponde200 e restituisce Permissions-Policy microphone=(self).
+Questa prova non è collaudo autenticato online di ricerca/voce/Neon.
+
+**Stato finale: codice pubblicato; attivazione runtime bloccata**, non job completo.
+Nessuna migrazione remota applicata o presenza env cloud dichiarata. Account Vercel
+controllato dalla regia non accede al progetto; non ritentare quello stesso account.
+Prossimo passo preciso: account abilitato al team verifica target/env e normale
+Build Command; approvazione/applicazione della sola0006 secondo il piano sopra,
+quindi readiness e prova sintetica online. Riuso chiave già autorizzato, nessuna
+nuova domanda o nuova chiave. Quota finale82% usato, uso ordinario consentito.
+
+Ricevute private: `output/tony/ai-assistant-20261110/deploy.private.json` e
+`validation.private.json`. Aggiornamento documentale di chiusura locale distinto
+dal commit app; nessun ulteriore deploy richiesto per la sola documentazione.
+
+
+Aggiornamento umano successivo alla prova di deploy: Marco riferisce **«Ho aperto
+il progetto con l’account corretto»**. La regia ha incaricato lo stesso child di
+verificare target e soli nomi env. Il precedente404 è storico del primo account;
+non è più un blocco attuale confermato. Verifica nuova sessione ancora pendente,
+nessuna configurazione o migrazione eseguita da questo owner; non duplicare browser.
+
+Identità del piano migratorio revisionabile: `0006_openai_meter_observations.sql`,
+SHA256 `cbaecd91b57e339d5577c86a439509ec690e90186b8fc2afe70e7e5966a95c04`. Il normale build verificato non lo esegue.
