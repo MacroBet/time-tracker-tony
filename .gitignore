@@ -14,3 +14,4 @@ __pycache__/
 # Materiale privato ricevuto da Tony; il manifest resta versionabile.
 docs/tony-feedback/attachments/*
 !docs/tony-feedback/attachments/manifest.md
+.vercel
