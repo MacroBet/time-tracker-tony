@@ -1,8 +1,8 @@
 # Piano v2 — sola0006 nel build Production FieldTrack
 
 Piano **`tony-ai-activation-20261110-v2`**, stesso job manuale
-`tony-ai-assistant-entry-20261110`. Preparato e testato localmente; **non eseguito
-su DB remoto**. Sostituisce il match fisico richiesto dal [piano v1](activation-20261110-plan.md):
+`tony-ai-assistant-entry-20261110`. **Approvato ed eseguito nel Production esatto**, con prove nella sezione finale;
+collaudo autenticato ancora pendente. Sostituisce il match fisico richiesto dal [piano v1](activation-20261110-plan.md):
 la CLI Vercel restituisce DATABASE_URL redatta, limite rispettato senza tentativi
 di recupero del segreto. Il candidato DB locale NON viene promosso a target.
 
@@ -133,3 +133,30 @@ da quel riferimento: `request_user_input_async:call_cfb073ac9b6b49788c692a220bfb
 Nessun UUID di approvazione inventato. È acquisito il consenso specifico al presente
 piano v2; rimangono tutte le guardie e la sequenza sopra. Stato di esecuzione e
 prove effettive saranno riportati separatamente, senza dedurre il risultato dal consenso.
+
+## Esito verificato dell’attivazione Production
+
+Release `e3030d679a26f942f669a9d6121c3ab8559cbd03`, push normale main.
+Il build `dpl_9noaA1zRt3QQyFRXvsRrm26pMZbo` clona lo SHA e riporta alle
+19:38:40.853UTC10nov (20:38:40 Europe/Rome) `state=applied`, stesso target/SHA0006;
+la riuscita include preflight readonly, sola transazione0006 e verifica readonly
+finale di schema/journal. Deployment READY. Nessun SQL aggiuntivo o dato cliente modificato.
+
+Gate rimosso con successo e assenza verificata nell’elenco env Production.
+Aggiornato soltanto COPILOT_ENABLED a true e ridistribuita la stessa release:
+`dpl_FoHW1yL2afg1rQQvo8LW8pWW9nce`, READY, build concluso19:41:35.738UTC
+(20:41:35 Europe/Rome), alias `https://time-tracker-tony.vercel.app` HTTP200.
+Log finale: stesso commit, build normale, nessuna invocazione apply/migrazione.
+Endpoint pubblico sessione HTTP200 e modalità Neon; nessuna sessione autenticata
+nell’osservazione dell’owner.
+
+La regia riferisce browser delegato sulla pagina login e ha già chiesto a Marco
+l’accesso normale. Restano da attestare readiness autenticata, ricerca con totale/link
+e intent/finale reali; nessuna prova UI/API autenticata è dedotta dal deploy.
+Consumi e costo API Production: **null/non ancora misurati**. La prova sintetica
+locale821token precedente resta distinta. Nessun WhatsApp, cookie estratto o nuova
+richiesta di credenziali/permessi. Quota verificata85% usato, nessun nuovo lotto.
+
+Ricevute private: `output/tony/ai-assistant-20261110/activation-v2-production.private.json`,
+log build/inspect delle due release, operazioni gate/enable e verifica env finale
+nella stessa cartella. Originale chiave locale preservato; copia plaintext temporanea eliminata.
