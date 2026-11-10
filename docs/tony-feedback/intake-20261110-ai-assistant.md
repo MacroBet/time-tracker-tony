@@ -250,3 +250,23 @@ Bozza inglese di conferma conservata privatamente in `output/tony/ai-assistant-2
 pronta solo dopo verifica della release corretta; nessun invio/composer o vecchio
 consenso riutilizzato. Testo raw fuoriGit. Quota nativa prima/dopo fix86%, ordinary
 allowed, cap90; questo è chiusura di difetto del lotto esistente.
+
+### Prova finale della correzione e bozza pronta
+
+Commit/push `175bde5a11be53239efdc92cbb304f41070a5408`; Vercel Production
+`dpl_5davwWgByxFDufgfYKGygipST8iS` READY, build20:05:34.729UTC10nov
+(21:05:34 Europe/Rome). Alias pubblico verificato sullo stesso deployment, HTTP200;
+nessuna invocazione migrazione nel build. La lettura UI finale delegata della regia
+è PASS: LHR11 mostra1354asset,0task,0managed app activities e16969imported P6
+activities. Sono espliciti il limite ai metadata e l’esclusione dal contestoAI di
+righe complete, relazioni, calendari e ricalcolo. Nessuna queryAI/audio/edit aggiuntiva.
+
+Bozza inglese revision2, testo esatto richiesto dalla regia con test positivo sul
+tipo verificato, marcata READY per revisione di Marco. SHA256 del corpo privato:
+`1296e25763be4869a6ecb155ab718d29e074dd9e98f441db06826a6926d95ca8`.
+Invio non autorizzato, nessun composer toccato o vecchio consenso riusato.
+Token/costoProduction restano null senza lettura collector; nessuna prova voce
+end-to-endProduction o completamento di tutti i requisiti viene dichiarata.
+Ricevute private `production-cua-qa-20261110.private.json`,
+`copilot-programme-count-fix.private.json` e draft/body nella cartella del lotto.
+Quota finale verificata86% usato, ordinary allowed; nessun altro sviluppo o test.

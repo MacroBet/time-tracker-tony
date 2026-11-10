@@ -2,7 +2,7 @@
 
 Piano **`tony-ai-activation-20261110-v2`**, stesso job manuale
 `tony-ai-assistant-entry-20261110`. **Approvato ed eseguito nel Production esatto**, con prove nella sezione finale;
-collaudo autenticato ancora pendente. Sostituisce il match fisico richiesto dal [piano v1](activation-20261110-plan.md):
+collaudo autenticato ricerca/link e riepilogo superato; vedere il report finale. Sostituisce il match fisico richiesto dal [piano v1](activation-20261110-plan.md):
 la CLI Vercel restituisce DATABASE_URL redatta, limite rispettato senza tentativi
 di recupero del segreto. Il candidato DB locale NON viene promosso a target.
 
@@ -160,3 +160,11 @@ richiesta di credenziali/permessi. Quota verificata85% usato, nessun nuovo lotto
 Ricevute private: `output/tony/ai-assistant-20261110/activation-v2-production.private.json`,
 log build/inspect delle due release, operazioni gate/enable e verifica env finale
 nella stessa cartella. Originale chiave locale preservato; copia plaintext temporanea eliminata.
+
+
+Chiusura10nov: CUA delegata ricerca/totale/link PASS; successiva correzione dei
+conteggi app/P6metadata pubblicata come175bde5, ProductionREADY e UI finale PASS.
+[Fonti, prove prima/dopo, bozza e limiti](intake-20261110-ai-assistant.md#prova-finale-della-correzione-e-bozza-pronta).
+Il costo e i tokenProduction restano null senza lettura collector. Bozza pronta
+per revisione, nessun invio autorizzato. Le attese riportate sopra sono storiche
+rispetto a questa chiusura; nessuna ulteriore migrazione o queryAI è stata eseguita.
