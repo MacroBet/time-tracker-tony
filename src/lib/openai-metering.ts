@@ -20,7 +20,7 @@ export type ApiMeterEvent = {
   startedAt: string;
   endedAt: string;
   observedAt: string;
-  source: "fieldtrack-copilot-responses";
+  source: "fieldtrack-copilot-responses" | "fieldtrack-copilot-transcription";
   usage: TokenUsage;
   estimate: null;
   billed: null;
@@ -42,7 +42,32 @@ export type AttemptObservation = {
   providerRequestId: string | null;
   attemptNumber: number;
 };
-export type MeterRecorder = (observation: AttemptObservation) => void;
+export type MeterRecorder =
+  | ((observation: AttemptObservation) => void)
+  | ((observation: AttemptObservation) => Promise<void>);
+/** Bound persistence independently from provider timeouts. No transport retry on failure. */
+export async function awaitMeterRecording(
+  recorder: MeterRecorder | undefined,
+  observation: AttemptObservation,
+  timeoutMs = 5000,
+) {
+  if (!recorder) return;
+  const duration = Math.min(5000, Math.max(1, timeoutMs));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      Promise.resolve().then(() => recorder(structuredClone(observation))),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("API usage recording timed out.")),
+          duration,
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 const object = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)

@@ -43,6 +43,13 @@
       "when": 1790097980325,
       "tag": "0005_outgoing_daredevil",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794337200000,
+      "tag": "0006_openai_meter_observations",
+      "breakpoints": true
     }
   ]
 }

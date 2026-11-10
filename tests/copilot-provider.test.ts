@@ -536,3 +536,36 @@ test("oversized bodies are cancelled both from headers and streamed bytes", asyn
     assert.equal(body.locked, false);
   }
 });
+
+test("production readiness remains unavailable when durable metering cannot be verified", () => {
+  const script =
+    "const {getCopilotRuntimeStatus}=await import('./src/server/copilot-config.ts'); console.log(JSON.stringify(await getCopilotRuntimeStatus()));";
+  const output = execFileSync(
+    process.execPath,
+    [
+      "--conditions=react-server",
+      "--import",
+      "tsx",
+      "--input-type=module",
+      "-e",
+      script,
+    ],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        NODE_ENV: "production",
+        OPENAI_API_KEY: config.apiKey,
+        OPENAI_MODEL: config.model!,
+        COPILOT_ENABLED: "true",
+        DATABASE_URL: "",
+      OPENAI_METER_DIRECTORY: "",
+      },
+    },
+  );
+  const status = JSON.parse(output);
+  assert.equal(status.state, "not_configured");
+  assert(status.missing.includes("API_USAGE_STORAGE"));
+  assert(!output.includes(config.apiKey!));
+});

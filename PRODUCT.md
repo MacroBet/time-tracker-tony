@@ -22,8 +22,9 @@ dependencies) and Tasks (assigned work and test sheets). Tony also needs task/ch
 for individual asset tags and asset groups. The project copilot scaffold is delivered:
 saved-data checks, example questions, scoped tools and task proposals with separate
 preview and human confirmation. Chat requires an explicitly configured and enabled
-server provider; Marco will supply the API key later. No live provider calls or
-autonomous operations have been enabled. Recorded parent/child asset groups can be
+server provider; Marco authorized reuse of the existing repository key on 10 November. A bounded
+synthetic API test passed; cloud activation and durable metering remain separate
+verification gates. Autonomous operations have not been enabled. Recorded parent/child asset groups can be
 consulted; a shared task/check sheet for a group still requires its rules to be defined.
 
 ## Operating Context
@@ -122,6 +123,16 @@ of task status; answers and signatures begin empty. Bounded MP4 evidence uses th
 existing authorized task storage, without another provider. Local tests/build/UI
 are verified; exact production deployment/import outcomes are recorded in
 docs/tony-feedback/intake-20261105-test-ready.md.
+
+The 10 November increment adds a compact voice/keyboard assistant entry. Asset
+search uses the full authorized project inventory, returns exact totals and bounded
+pages, and links to the same filters in Assets. Voice starts only on explicit
+microphone permission and returns a transcript for review before sending. Existing
+management-only Copilot access and confirmed task proposals remain unchanged.
+Equipment status separates recorded tests, reviews, checksheet responses/signatures
+and open issues. Tasks shows saved equipment context in admin rows/details and
+worker cards. No source screenshot values or new assignments are inferred. Release,
+cloud configuration and durable metering evidence: docs/tony-feedback/intake-20261110-ai-assistant.md.
 
 ## Product Principles
 

@@ -1,7 +1,8 @@
 "use client";
+import { AssistantEntry } from "./AssistantEntry";
 import { hasModule, type Module } from "@/lib/commissioning";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CalendarClock,
@@ -70,6 +71,7 @@ export function AppShell({
   const [refreshing, setRefreshing] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const params = useSearchParams();
   const worker = currentUser.role === "worker";
   const view = params.get("view") || "tasks";
@@ -331,6 +333,7 @@ export function AppShell({
                 </p>
               )}
             </div>
+            <AssistantEntry />
             <span className="hidden sm:flex gap-1.5 items-center text-[11px] text-slate-500 mr-2">
               <span
                 className={`size-1.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-red-500"}`}
@@ -365,7 +368,14 @@ export function AppShell({
                   aria-label="Active project"
                   className="min-h-11 min-w-0 w-full sm:w-80 max-w-full rounded-md border bg-slate-50 px-3 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-600"
                   value={selectedProjectId}
-                  onChange={(e) => selectProject(e.target.value)}
+                  onChange={(e) => {
+                    if (
+                      params.has("projectId") &&
+                      params.get("projectId") !== e.target.value
+                    )
+                      router.replace(pathname);
+                    selectProject(e.target.value);
+                  }}
                 >
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>

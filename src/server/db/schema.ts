@@ -233,3 +233,27 @@ export const loginAttempts = pgTable("login_attempts", {
   count: integer().notNull().default(1),
   windowStart: time("window_start").notNull(),
 });
+
+/** Metadata-only append observations; never prompts, recordings, user names or credentials. */
+export const openaiMeterObservations = pgTable(
+  "openai_meter_observations",
+  {
+    attemptId: text("attempt_id").notNull(),
+    phase: text("phase").notNull(),
+    observation: jsonb("observation")
+      .$type<import("@/lib/openai-metering").AttemptObservation>()
+      .notNull(),
+    recordedAt: time("recorded_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({
+      name: "openai_meter_observations_pk",
+      columns: [t.attemptId, t.phase],
+    }),
+    check("openai_meter_phase", sql`${t.phase} IN ('pending','final')`),
+    check(
+      "openai_meter_payload",
+      sql`jsonb_typeof(${t.observation})='object' AND octet_length(${t.observation}::text)<=16000 AND ${t.observation}->'event'->>'attemptId'=${t.attemptId} AND ${t.observation}->'event'->>'provider'='openai' AND ((${t.phase}='pending' AND ${t.observation}->>'outcome'='started') OR (${t.phase}='final' AND ${t.observation}->>'outcome'<>'started'))`,
+    ),
+  ],
+);

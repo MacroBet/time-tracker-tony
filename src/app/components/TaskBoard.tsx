@@ -585,6 +585,18 @@ export function TaskBoard({
                   {task.location ||
                     projects.find((p) => p.id === task.projectId)?.name}
                 </p>
+                {!management && task.cx?.assetId && (
+                  <p className="mt-2 text-xs text-slate-600">
+                    Equipment:{" "}
+                    {projects
+                      .find((project) => project.id === task.projectId)
+                      ?.commissioning?.assets.find(
+                        (asset) => asset.id === task.cx?.assetId,
+                      )?.name || task.cx.assetId}
+                    {task.cx.level ? ` · ${task.cx.level}` : ""}
+                    {task.cx.kind === "tag" ? ` · Test: ${task.cx.result}` : ""}
+                  </p>
+                )}
                 <div className="flex gap-2 flex-wrap mt-3 items-center">
                   <TaskStatusBadge task={task} />
                   {task.importData && (

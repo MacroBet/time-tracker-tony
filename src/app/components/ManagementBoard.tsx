@@ -1,5 +1,10 @@
 "use client";
-import { dueDateFor, commissioning, taskAsset } from "@/lib/commissioning";
+import {
+  dueDateFor,
+  commissioning,
+  taskAsset,
+  tagReviewLabels,
+} from "@/lib/commissioning";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -20,6 +25,7 @@ import {
   statusLabels,
   projectDate,
 } from "@/lib/domain";
+import { checksheetProgress } from "@/lib/checksheets";
 import { tasksCsv } from "@/lib/csv";
 import { AssignmentDialog } from "./AssignmentDialog";
 import { TaskStatusBadge } from "./TaskBoard";
@@ -141,6 +147,24 @@ export function ManagementBoard() {
   const visible = filtered.slice(currentPage * 20, currentPage * 20 + 20);
   const selection = filtered.filter((t) => selected.includes(t.id));
   const task = tasks.find((t) => t.id === detail);
+  const detailProject = projects.find(
+    (project) => project.id === task?.projectId,
+  );
+  const detailAsset = task ? taskAsset(task, detailProject) : undefined;
+  const detailSheets =
+    commissioning(detailProject).checksheets?.sheets.filter(
+      (sheet) => sheet.assetId === detailAsset?.id,
+    ) ?? [];
+  function equipmentLabel(task: Task) {
+    const asset = taskAsset(
+      task,
+      projects.find((project) => project.id === task.projectId),
+    );
+    return task.cx?.assetId
+      ? `${asset?.name || task.cx.assetId}${task.cx.level ? ` · ${task.cx.level}` : ""}`
+      : null;
+  }
+
   function resetSelection() {
     setPage(0);
     setSelected([]);
@@ -494,6 +518,11 @@ export function ManagementBoard() {
                         {companies.find((c) => c.id === t.companyId)?.name} ·{" "}
                         {t.location || "No area"}
                       </span>
+                      {equipmentLabel(t) && (
+                        <span className="mt-1 block truncate text-xs text-slate-600">
+                          Equipment: {equipmentLabel(t)}
+                        </span>
+                      )}
                     </button>
                   </td>
                   <td className="pr-3">
@@ -543,6 +572,11 @@ export function ManagementBoard() {
                   <p className="text-xs text-slate-500 mt-1 truncate">
                     {companies.find((c) => c.id === t.companyId)?.name}
                   </p>
+                  {equipmentLabel(t) && (
+                    <p className="mt-1 text-xs text-slate-600">
+                      Equipment: {equipmentLabel(t)}
+                    </p>
+                  )}
                 </button>
               </div>
               <div className="flex justify-between items-center gap-2">
@@ -646,6 +680,74 @@ export function ManagementBoard() {
                   <CalendarDays className="size-4" />
                   {task.location || "No area specified"}
                 </p>
+
+                <section
+                  className="border-t border-slate-200 pt-4 space-y-3"
+                  aria-label="Equipment and checksheet records"
+                >
+                  <h3 className="text-sm font-semibold">
+                    Equipment & checksheets
+                  </h3>
+                  {detailAsset ? (
+                    <>
+                      <Link
+                        className="inline-flex min-h-11 items-center text-sm font-medium text-blue-700 underline underline-offset-4"
+                        href={`/commissioning?${new URLSearchParams({ projectId: task.projectId, asset: detailAsset.id })}`}
+                      >
+                        {detailAsset.name}
+                        {task.cx?.level ? ` · ${task.cx.level}` : ""}
+                      </Link>
+                      {task.cx?.kind === "tag" && (
+                        <dl className="grid grid-cols-2 gap-3 text-xs">
+                          <div>
+                            <dt className="text-slate-600">Test result</dt>
+                            <dd className="mt-1">{task.cx.result}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-slate-600">Tag review</dt>
+                            <dd className="mt-1">
+                              {task.cx.tagReview
+                                ? tagReviewLabels[task.cx.tagReview]
+                                : "Not recorded"}
+                            </dd>
+                          </div>
+                        </dl>
+                      )}
+                      {detailSheets.length ? (
+                        detailSheets.map((sheet) => {
+                          const progress = checksheetProgress(sheet);
+                          return (
+                            <div key={sheet.id} className="text-xs">
+                              <p className="font-medium">
+                                {sheet.templateName}
+                                {sheet.level ? ` · ${sheet.level}` : ""}
+                              </p>
+                              <p className="mt-1 text-slate-600">
+                                {progress.answered}/{progress.total} answered ·{" "}
+                                {progress.activeSignatures} signatures
+                              </p>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="text-xs text-slate-600">
+                          No checksheet assigned to this equipment.
+                        </p>
+                      )}
+                      <Link
+                        className="inline-flex min-h-11 items-center text-xs text-blue-700 underline underline-offset-4"
+                        href="/checksheets"
+                        onClick={() => setProject(task.projectId)}
+                      >
+                        Open equipment checksheets
+                      </Link>
+                    </>
+                  ) : (
+                    <p className="text-xs text-slate-600">
+                      No equipment link recorded.
+                    </p>
+                  )}
+                </section>
                 {task.notes && (
                   <div className="border-l-2 border-blue-300 pl-3">
                     <p className="text-xs text-slate-500 mb-1">Latest update</p>

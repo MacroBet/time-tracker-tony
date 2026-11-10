@@ -42,7 +42,10 @@ const eventSchema = z.object({
   startedAt: stamp,
   endedAt: stamp,
   observedAt: stamp,
-  source: z.literal("fieldtrack-copilot-responses"),
+  source: z.enum([
+    "fieldtrack-copilot-responses",
+    "fieldtrack-copilot-transcription",
+  ]),
   usage: z.object({
     inputTokens: token,
     cachedInputTokens: token,
@@ -75,6 +78,19 @@ const schema = z.object({
     .nullable(),
   attemptNumber: z.number().int().positive(),
 });
+/** Shared closed metadata boundary for private spool and durable database storage. */
+export function sanitizeMeterObservation(input: AttemptObservation) {
+  const observation = schema.parse({
+    ...input,
+    providerRequestId:
+      input.providerRequestId === null
+        ? null
+        : `sha256:${createHash("sha256").update(input.providerRequestId).digest("hex")}`,
+  });
+  if (observation.event.eventId !== observation.event.attemptId)
+    throw new Error("Meter event identity mismatch");
+  return observation;
+}
 function privateDirectory(directory: string) {
   if (
     !path.isAbsolute(directory) ||
@@ -135,14 +151,7 @@ function projectCollectorSnapshot(directory: string) {
 }
 export function createOpenAIMeterRecorder(directory: string) {
   return (input: AttemptObservation) => {
-    // Rebuild via a closed schema; discard all unrecognized fields, including nested payloads.
-    const observation = schema.parse({
-      ...input,
-      providerRequestId:
-        input.providerRequestId === null
-          ? null
-          : `sha256:${createHash("sha256").update(input.providerRequestId).digest("hex")}`,
-    });
+    const observation = sanitizeMeterObservation(input);
     privateDirectory(directory);
     const suffix = observation.outcome === "started" ? "pending" : "final";
     const filename = path.join(

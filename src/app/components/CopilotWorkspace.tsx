@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { CopilotVoiceInput } from "./CopilotVoiceInput";
 import {
   AlertCircle,
   ArrowRight,
@@ -51,7 +53,22 @@ function recentHistory(messages: Message[]): CopilotChatMessage[] {
 }
 
 export function CopilotWorkspace() {
-  const { projects, selectedProjectId, currentUser } = useApp();
+  const { projects, selectedProjectId, currentUser, selectProject } = useApp();
+  const params = useSearchParams();
+  const requestedProject = params.get("projectId");
+  const assignedRequest = projects.some((item) => item.id === requestedProject);
+  const linkedProjectApplied = useRef<string | null>(null);
+  useEffect(() => {
+    if (!requestedProject) {
+      linkedProjectApplied.current = null;
+      return;
+    }
+    if (assignedRequest && linkedProjectApplied.current !== requestedProject) {
+      linkedProjectApplied.current = requestedProject;
+      if (selectedProjectId !== requestedProject)
+        selectProject(requestedProject);
+    }
+  }, [requestedProject, assignedRequest, selectedProjectId, selectProject]);
   const project = projects.find((item) => item.id === selectedProjectId);
   return (
     <AppShell
@@ -59,11 +76,18 @@ export function CopilotWorkspace() {
       subtitle="Check saved project records and review changes before they are applied."
       wide
     >
-      {!canUseCopilot(currentUser) ? (
+      {requestedProject && !assignedRequest ? (
+        <p role="alert" className="text-sm text-red-700">
+          This project is not available to your account. Choose an assigned
+          project.
+        </p>
+      ) : !canUseCopilot(currentUser) ? (
         <p className="text-sm text-slate-600">
           Copilot requires management access to Tasks and Commissioning. Ask
           your administrator if you need access.
         </p>
+      ) : requestedProject && project?.id !== requestedProject ? (
+        <p role="status">Opening the linked project…</p>
       ) : project ? (
         <CopilotSession key={project.id} projectId={project.id} />
       ) : (
@@ -76,6 +100,7 @@ export function CopilotWorkspace() {
 }
 
 function CopilotSession({ projectId }: { projectId: string }) {
+  const params = useSearchParams();
   const { isOnline } = useApp();
   const [context, setContext] = useState<ContextResponse | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -98,6 +123,9 @@ function CopilotSession({ projectId }: { projectId: string }) {
   const composer = useRef<HTMLTextAreaElement>(null);
   const editorHeading = useRef<HTMLHeadingElement>(null);
   const transcriptEnd = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!loading && params.get("input") === "text") composer.current?.focus();
+  }, [loading, params]);
   const endpoint = `/api/projects/${encodeURIComponent(projectId)}/copilot`;
   useEffect(() => {
     mounted.current = true;
@@ -306,7 +334,63 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     </p>
                     {message.answer && (
                       <>
-                        <SourceList sources={message.answer.sources} />
+                        {message.answer.assetSearches?.map(
+                          (result, searchIndex) => (
+                            <section
+                              key={searchIndex}
+                              aria-label="Asset search results"
+                              className="space-y-3 rounded-lg border border-blue-200 bg-blue-50/40 p-3"
+                            >
+                              <p className="text-sm font-semibold tabular-nums">
+                                {result.total} matching assets
+                              </p>
+                              <p className="text-xs text-slate-600">
+                                {result.records.length
+                                  ? `Showing ${result.offset + 1}–${result.offset + result.records.length} of ${result.total}.`
+                                  : "No matching records."}{" "}
+                                Search covers this project’s saved asset
+                                register.
+                              </p>
+                              <ul className="divide-y divide-blue-100">
+                                {result.records.map((asset) => (
+                                  <li key={asset.id}>
+                                    <Link
+                                      href={asset.href}
+                                      className="flex min-h-11 flex-col justify-center gap-1 py-2 text-sm text-blue-800 underline underline-offset-4"
+                                    >
+                                      <span className="font-medium">
+                                        {asset.name}
+                                      </span>
+                                      <span className="text-xs text-slate-600">
+                                        {[
+                                          asset.equipmentType,
+                                          asset.location,
+                                          asset.phase,
+                                        ]
+                                          .filter(Boolean)
+                                          .join(" · ")}
+                                      </span>
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                              <Link
+                                href={result.href}
+                                className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-800 underline underline-offset-4"
+                              >
+                                Open all {result.total} in Assets
+                                <ArrowRight className="size-4" />
+                              </Link>
+                            </section>
+                          ),
+                        )}
+                        <SourceList
+                          sources={message.answer.sources.filter(
+                            (source) =>
+                              source.kind !== "asset" ||
+                              !message.answer?.assetSearches?.length,
+                          )}
+                        />
                         {message.answer.proposals.map(
                           (proposal, proposalIndex) => (
                             <div
@@ -386,9 +470,22 @@ function CopilotSession({ projectId }: { projectId: string }) {
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   disabled={chatBusy}
-                  placeholder="Ask about delays, test records or task priorities…"
+                  placeholder="List all chillers, find overdue work, or check test records…"
                 />
               </label>
+              <CopilotVoiceInput
+                projectId={projectId}
+                disabled={!ready || chatBusy || !isOnline}
+                onTranscript={(text) => {
+                  setDraft((previous) =>
+                    `${previous}${previous.trim() ? " " : ""}${text}`.slice(
+                      0,
+                      4000,
+                    ),
+                  );
+                  composer.current?.focus();
+                }}
+              />
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-slate-600">
                   {ready
@@ -579,7 +676,7 @@ function SourceList({ sources }: { sources: CopilotSource[] }) {
             : source.kind === "programme"
               ? "/schedule"
               : source.kind === "asset"
-                ? "/commissioning"
+                ? source.href
                 : "/overview";
         return (
           <li key={`${source.kind}-${source.id}-${index}`}>

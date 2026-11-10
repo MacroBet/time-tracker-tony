@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { matchesCopilotAssetFilters } from "@/lib/copilot";
 import { ArrowRight, FileText, Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
@@ -28,6 +30,7 @@ import {
 import { type RegisterImport } from "@/lib/commissioning-import";
 import { exportAssetCsv, parseRegisterFile } from "@/lib/asset-transfer";
 import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
+import { EquipmentStatusMatrix } from "./EquipmentStatusMatrix";
 import { ProjectAudit } from "./ProjectAudit";
 import { TagLevel } from "./TagLevel";
 import { DocumentRequirementsEditor } from "./DocumentRequirements";
@@ -54,8 +57,24 @@ export function CommissioningWorkspace({
   admin?: boolean;
   reports?: boolean;
 }) {
+  const params = useSearchParams();
+  const requestedProject = params.get("projectId");
   const app = useApp(),
     project = app.projects.find((p) => p.id === app.selectedProjectId);
+  const assignedRequest = app.projects.some((p) => p.id === requestedProject);
+  const linkedProjectApplied = useRef<string | null>(null);
+  const { selectedProjectId, selectProject } = app;
+  useEffect(() => {
+    if (!requestedProject) {
+      linkedProjectApplied.current = null;
+      return;
+    }
+    if (assignedRequest && linkedProjectApplied.current !== requestedProject) {
+      linkedProjectApplied.current = requestedProject;
+      if (selectedProjectId !== requestedProject)
+        selectProject(requestedProject);
+    }
+  }, [requestedProject, assignedRequest, selectedProjectId, selectProject]);
   return (
     <AppShell
       title={
@@ -74,9 +93,16 @@ export function CommissioningWorkspace({
       }
       wide
     >
-      {project ? (
+      {requestedProject && !assignedRequest ? (
+        <p role="alert" className="text-sm text-red-700">
+          This project is not available to your account. Choose an assigned
+          project.
+        </p>
+      ) : requestedProject && project?.id !== requestedProject ? (
+        <p role="status">Opening the linked project…</p>
+      ) : project ? (
         <ProjectWorkspace
-          key={`${project.id}-${admin}-${reports}`}
+          key={`${project.id}-${admin}-${reports}-${params.get("asset") ?? ""}`}
           project={project}
           admin={admin}
           reports={reports}
@@ -187,6 +213,16 @@ function ProjectWorkspace({
   admin: boolean;
   reports: boolean;
 }) {
+  const params = useSearchParams();
+  const router = useRouter();
+  const linkedFilters = {
+    query: params.get("query"),
+    equipmentType: params.get("equipmentType"),
+    location: params.get("location"),
+    phase: params.get("phase"),
+  };
+  const hasLinkedFilters = Object.values(linkedFilters).some(Boolean);
+  const linkedAssetId = params.get("asset");
   const { mutate, isOnline, currentUser, tasks, attachments, refreshData } =
       useApp(),
     state = commissioning(project);
@@ -203,10 +239,11 @@ function ProjectWorkspace({
     [areaFilter, setAreaFilter] = useState("all"),
     [phaseFilter, setPhaseFilter] = useState("all"),
     [assetPage, setAssetPage] = useState(0);
+  const [assetView, setAssetView] = useState<"register" | "status">("register");
   const [transferOpen, setTransferOpen] = useState(false),
     [reportsOpen, setReportsOpen] = useState(reports),
     [historyOpen, setHistoryOpen] = useState(false),
-    [tagsAssetId, setTagsAssetId] = useState<string | null>(null),
+    [tagsAssetId, setTagsAssetId] = useState<string | null>(linkedAssetId),
     [generateOpen, setGenerateOpen] = useState(false);
   const editorHeading = useRef<HTMLHeadingElement>(null),
     previewHeading = useRef<HTMLHeadingElement>(null),
@@ -475,13 +512,15 @@ function ProjectWorkspace({
     area: areaFilter,
     phase: phaseFilter,
     programmeId: state.programmeId,
-  });
+  }).filter((row) => matchesCopilotAssetFilters(row, linkedFilters));
   const hasAssetFilters =
+    hasLinkedFilters ||
     Boolean(assetQuery) ||
     supplyFilter !== "all" ||
     areaFilter !== "all" ||
     phaseFilter !== "all";
   function clearAssetFilters() {
+    if (hasLinkedFilters) router.replace("/commissioning");
     setAssetQuery("");
     setSupplyFilter("all");
     setAreaFilter("all");
@@ -1147,6 +1186,34 @@ function ProjectWorkspace({
             )
           ) : (
             <>
+              {hasLinkedFilters && (
+                <div
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900"
+                  role="status"
+                >
+                  <p>
+                    Assistant filters:{" "}
+                    {Object.entries(linkedFilters)
+                      .filter(([, value]) => value)
+                      .map(([name, value]) => `${name}: ${value}`)
+                      .join(" · ")}{" "}
+                    · {assetRows.length} matching assets
+                  </p>
+                  <Button
+                    variant="ghost"
+                    className="min-h-11 text-blue-900"
+                    onClick={clearAssetFilters}
+                  >
+                    Clear assistant filters
+                  </Button>
+                </div>
+              )}
+              {linkedAssetId &&
+                !state.assets.some((row) => row.id === linkedAssetId) && (
+                  <p role="alert" className="text-sm text-red-700">
+                    This asset is no longer available in this project.
+                  </p>
+                )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="font-semibold">Asset register</h3>
@@ -1179,6 +1246,24 @@ function ProjectWorkspace({
                     </Button>
                   </div>
                 )}
+              </div>
+              <div className="flex flex-wrap gap-2" aria-label="Asset views">
+                {(
+                  [
+                    ["register", "Register"],
+                    ["status", "Equipment status"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <Button
+                    key={id}
+                    className="h-11"
+                    variant={assetView === id ? "default" : "outline"}
+                    aria-pressed={assetView === id}
+                    onClick={() => setAssetView(id)}
+                  >
+                    {label}
+                  </Button>
+                ))}
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(12rem,1fr)_repeat(3,minmax(0,12rem))]">
                 <Input
@@ -1249,197 +1334,221 @@ function ProjectWorkspace({
                   </Button>
                 )}
               </div>
-              <div
-                className="hidden md:block overflow-x-auto focus-visible:outline-2 focus-visible:outline-blue-700"
-                role="region"
-                aria-label="Scrollable asset register"
-                tabIndex={0}
-              >
-                <table className="w-full min-w-[900px] text-sm text-left tabular-nums">
-                  <caption className="sr-only">
-                    Asset register. Open an asset to review required tags, test
-                    sheets and equipment details.
-                  </caption>
-                  <thead>
-                    <tr>
-                      {[
-                        "Asset",
-                        "Equipment / location",
-                        "Programme Activity ID",
-                        "Tags",
-                        "Delivery",
-                        "Supply",
-                        "",
-                      ].map((heading, index) => (
-                        <th
-                          scope="col"
-                          className="p-3 text-xs text-slate-600"
-                          key={index}
-                        >
-                          {heading}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {assetRows.slice(page * 50, (page + 1) * 50).map((row) => {
-                      const linked = projectTasks.filter(
-                        (task) => task.cx?.assetId === row.id,
-                      );
-                      const delivery = state.schedule.find(
-                        (activity) =>
-                          activity.activityId === row.deliveryActivityId,
-                      );
-                      return (
-                        <tr
-                          key={row.id}
-                          className="border-t align-top hover:bg-slate-50"
-                        >
-                          <td className="p-3">
-                            <button
-                              className="text-left font-semibold text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
-                              onClick={() => setTagsAssetId(row.id)}
+              {assetView === "status" ? (
+                <EquipmentStatusMatrix
+                  project={project}
+                  assets={assetRows.slice(page * 50, (page + 1) * 50)}
+                  tasks={projectTasks}
+                  onOpenAsset={setTagsAssetId}
+                />
+              ) : (
+                <>
+                  <div
+                    className="hidden md:block overflow-x-auto focus-visible:outline-2 focus-visible:outline-blue-700"
+                    role="region"
+                    aria-label="Scrollable asset register"
+                    tabIndex={0}
+                  >
+                    <table className="w-full min-w-[900px] text-sm text-left tabular-nums">
+                      <caption className="sr-only">
+                        Asset register. Open an asset to review required tags,
+                        test sheets and equipment details.
+                      </caption>
+                      <thead>
+                        <tr>
+                          {[
+                            "Asset",
+                            "Equipment / location",
+                            "Programme Activity ID",
+                            "Tags",
+                            "Delivery",
+                            "Supply",
+                            "",
+                          ].map((heading, index) => (
+                            <th
+                              scope="col"
+                              className="p-3 text-xs text-slate-600"
+                              key={index}
                             >
-                              {row.id}
-                            </button>
-                            <span className="mt-1 block text-xs text-slate-600">
-                              {row.name}
-                            </span>
-                            <span className="mt-1 block text-xs text-slate-600">
-                              Client ID: {row.clientAssetId || "No reference"}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            {row.equipmentType}
-                            <span className="mt-1 block text-xs text-slate-600">
-                              {assetLocationLabel(row) || "Location not set"}
-                            </span>
-                            <span className="mt-1 block text-xs text-slate-600">
-                              Area: {row.area?.trim() || "Not recorded"} ·
-                              Phase: {row.phase?.trim() || "Not recorded"}
-                            </span>
-                          </td>
-                          <td className="p-3 text-xs">
-                            {row.programmeActivityId || "No reference"}
-                          </td>
-                          <td className="p-3">
-                            <button
-                              className="text-left text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
-                              onClick={() => setTagsAssetId(row.id)}
-                            >
-                              {row.levels.length
-                                ? row.levels.join(", ")
-                                : "Choose tags"}
-                            </button>
-                            <span className="mt-1 block text-xs text-slate-600">
-                              {
-                                linked.filter((task) => task.cx?.kind === "tag")
-                                  .length
-                              }{" "}
-                              tag tasks created
-                            </span>
-                          </td>
-                          <td className="p-3 text-xs">
-                            {delivery?.actualFinish
-                              ? `Delivered ${delivery.actualFinish}`
-                              : delivery?.finish
-                                ? `${delivery.finish}${delivery.finish < projectDate() ? " · Late" : ""}`
-                                : "Not scheduled"}
-                            {row.expectedDelivery && (
-                              <span className="mt-1 block text-slate-600">
-                                Expected {row.expectedDelivery}
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-3 text-xs">
-                            {row.clientSupplied == null
-                              ? "Not classified"
-                              : row.clientSupplied
-                                ? "Client supplied"
-                                : "Contractor supplied"}
-                          </td>
-                          <td className="p-2">
-                            {canEdit && (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => openAsset(row)}
-                              >
-                                Edit
-                              </Button>
-                            )}
-                          </td>
+                              {heading}
+                            </th>
+                          ))}
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="md:hidden divide-y divide-slate-200">
-                {assetRows.slice(page * 50, (page + 1) * 50).map((row) => (
-                  <article key={row.id} className="py-4 first:pt-0 space-y-3">
-                    <div>
-                      <p className="font-semibold break-words">{row.id}</p>
-                      <p className="text-sm text-slate-700 mt-1">{row.name}</p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        {[row.equipmentType, assetLocationLabel(row)]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                      <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
-                        <div>
-                          <dt className="text-slate-600">Area</dt>
-                          <dd className="mt-1 break-words">
-                            {row.area?.trim() || "Not recorded"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-600">Phase</dt>
-                          <dd className="mt-1 break-words">
-                            {row.phase?.trim() || "Not recorded"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-600">Client asset ID</dt>
-                          <dd className="mt-1 break-words">
-                            {row.clientAssetId || "No reference"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt className="text-slate-600">
-                            Programme Activity ID
-                          </dt>
-                          <dd className="mt-1 break-words">
-                            {row.programmeActivityId || "No reference"}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-                    <p className="text-xs text-slate-600">
-                      Required tags: {row.levels.join(", ") || "Not selected"}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        className="h-11"
-                        variant="outline"
-                        onClick={() => setTagsAssetId(row.id)}
+                      </thead>
+                      <tbody>
+                        {assetRows
+                          .slice(page * 50, (page + 1) * 50)
+                          .map((row) => {
+                            const linked = projectTasks.filter(
+                              (task) => task.cx?.assetId === row.id,
+                            );
+                            const delivery = state.schedule.find(
+                              (activity) =>
+                                activity.activityId === row.deliveryActivityId,
+                            );
+                            return (
+                              <tr
+                                key={row.id}
+                                className="border-t align-top hover:bg-slate-50"
+                              >
+                                <td className="p-3">
+                                  <button
+                                    className="text-left font-semibold text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
+                                    onClick={() => setTagsAssetId(row.id)}
+                                  >
+                                    {row.id}
+                                  </button>
+                                  <span className="mt-1 block text-xs text-slate-600">
+                                    {row.name}
+                                  </span>
+                                  <span className="mt-1 block text-xs text-slate-600">
+                                    Client ID:{" "}
+                                    {row.clientAssetId || "No reference"}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  {row.equipmentType}
+                                  <span className="mt-1 block text-xs text-slate-600">
+                                    {assetLocationLabel(row) ||
+                                      "Location not set"}
+                                  </span>
+                                  <span className="mt-1 block text-xs text-slate-600">
+                                    Area: {row.area?.trim() || "Not recorded"} ·
+                                    Phase: {row.phase?.trim() || "Not recorded"}
+                                  </span>
+                                </td>
+                                <td className="p-3 text-xs">
+                                  {row.programmeActivityId || "No reference"}
+                                </td>
+                                <td className="p-3">
+                                  <button
+                                    className="text-left text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
+                                    onClick={() => setTagsAssetId(row.id)}
+                                  >
+                                    {row.levels.length
+                                      ? row.levels.join(", ")
+                                      : "Choose tags"}
+                                  </button>
+                                  <span className="mt-1 block text-xs text-slate-600">
+                                    {
+                                      linked.filter(
+                                        (task) => task.cx?.kind === "tag",
+                                      ).length
+                                    }{" "}
+                                    tag tasks created
+                                  </span>
+                                </td>
+                                <td className="p-3 text-xs">
+                                  {delivery?.actualFinish
+                                    ? `Delivered ${delivery.actualFinish}`
+                                    : delivery?.finish
+                                      ? `${delivery.finish}${delivery.finish < projectDate() ? " · Late" : ""}`
+                                      : "Not scheduled"}
+                                  {row.expectedDelivery && (
+                                    <span className="mt-1 block text-slate-600">
+                                      Expected {row.expectedDelivery}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3 text-xs">
+                                  {row.clientSupplied == null
+                                    ? "Not classified"
+                                    : row.clientSupplied
+                                      ? "Client supplied"
+                                      : "Contractor supplied"}
+                                </td>
+                                <td className="p-2">
+                                  {canEdit && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => openAsset(row)}
+                                    >
+                                      Edit
+                                    </Button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="md:hidden divide-y divide-slate-200">
+                    {assetRows.slice(page * 50, (page + 1) * 50).map((row) => (
+                      <article
+                        key={row.id}
+                        className="py-4 first:pt-0 space-y-3"
                       >
-                        Tags & test sheets
-                        <ArrowRight className="size-4" />
-                      </Button>
-                      {canEdit && (
-                        <Button
-                          className="h-11"
-                          variant="ghost"
-                          onClick={() => openAsset(row)}
-                        >
-                          Edit asset
-                        </Button>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
+                        <div>
+                          <p className="font-semibold break-words">{row.id}</p>
+                          <p className="text-sm text-slate-700 mt-1">
+                            {row.name}
+                          </p>
+                          <p className="text-xs text-slate-600 mt-1">
+                            {[row.equipmentType, assetLocationLabel(row)]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                          <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                            <div>
+                              <dt className="text-slate-600">Area</dt>
+                              <dd className="mt-1 break-words">
+                                {row.area?.trim() || "Not recorded"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-600">Phase</dt>
+                              <dd className="mt-1 break-words">
+                                {row.phase?.trim() || "Not recorded"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-600">
+                                Client asset ID
+                              </dt>
+                              <dd className="mt-1 break-words">
+                                {row.clientAssetId || "No reference"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-slate-600">
+                                Programme Activity ID
+                              </dt>
+                              <dd className="mt-1 break-words">
+                                {row.programmeActivityId || "No reference"}
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
+                        <p className="text-xs text-slate-600">
+                          Required tags:{" "}
+                          {row.levels.join(", ") || "Not selected"}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            className="h-11"
+                            variant="outline"
+                            onClick={() => setTagsAssetId(row.id)}
+                          >
+                            Tags & test sheets
+                            <ArrowRight className="size-4" />
+                          </Button>
+                          {canEdit && (
+                            <Button
+                              className="h-11"
+                              variant="ghost"
+                              onClick={() => openAsset(row)}
+                            >
+                              Edit asset
+                            </Button>
+                          )}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </>
+              )}
               {!assetRows.length && (
                 <p className="py-6 text-center text-sm text-slate-600">
                   No assets match these filters. Change a filter or clear them
