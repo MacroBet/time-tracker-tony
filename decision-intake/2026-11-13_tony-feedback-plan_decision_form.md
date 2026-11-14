@@ -1,76 +1,54 @@
-# FieldTrack — decisioni e responsabilità per il piano feedback Tony
+# FieldTrack — decisioni per il piano feedback Tony
 
-Data creazione: 2026-11-13
-Stato: in_review
-Scope: `tony-feedback-plan-20261113`, proposta R1–R5, sola pianificazione.
-Compilatore: Codex, owner Tony. Marco decide in chat; Codex sincronizza.
-Sessione decision board: non fissata. Deadline: null; nessuna scadenza concordata.
-Il 2026-11-17 è contesto della visita riferita, non una consegna acquisita.
+Creato il 13 novembre 2026; aggiornato il 14 novembre 2026.
+Stato: decisioni business acquisite, implementazione e collaudo locale conclusi.
+Nessuna scadenza concordata. La visita riferita del 17 novembre non è una deadline.
 
-Il form-first richiesto dalla regia mantiene i dettagli senza trasformarli in un
-questionario per Marco. **Le sole tre decisioni business iniziali proposte sono
-F04 vendor, F01 percentuale/colori, F03 approvatori.** F02/F14/F16 sono scelte
-future del rispettivo rollout. Gli altri dieci item sono responsabilità tecniche
-Codex, non ulteriori approvazioni umane obbligatorie.
+Il mandato iniziale di sola pianificazione è storico. Nella stessa chat Marco ha
+poi richiesto: «fai tutto quello che tony ha chiesto e committa via via se hai dubbi
+fammi domande poi voglio che implementi tutte le richieste». Il mandato comprende
+R2–R5 del [piano](../docs/tony-feedback/intake-20261113-feedback-plan.md), dopo R1 UI
+consegnato. [Implementazione, decisioni e prove](../docs/tony-feedback/intake-20261114-assistant-extension.md).
+Le risposte sotto sono dirette di Marco, non dedotte dalle annotazioni di Tony.
 
-R1 può essere scelto come lotto UI unitario senza chiudere tutti questi item:
-vendor e formula condizionano i report avanzati, non padding, copy o navigazione.
-Questo documento non acquisisce ora un mandato funzionale e non chiede un GO
-indifferenziato a tutte le tranche.
+## Decisioni business approvate il 14 novembre
 
-Piano/fonti: [piano integrato](../docs/tony-feedback/intake-20261113-feedback-plan.md).
-IMG/U/T… rimandano alle fonti del piano; originali e testo privato in
-`output/tony/feedback-plan-20261113/`, esclusi da Git. Le opzioni precompilate non
-sono risposte di Marco. `in_review` per un controllo tecnico indica lavoro di
-validazione Codex, non consenso umano mancante. Confidenza non significa consenso.
+| ID  | Decisione diretta                                                                                       | Stato    | Conseguenza implementata                                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F04 | «Solo fornitore equipment»                                                                              | approved | Asset.vendor esplicito, import/export/edit; nessuna equivalenza con owner, manufacturer o support contractor. Report e lookahead usano questo campo.                                                                                                                 |
+| F01 | «Sì: 60% dai passi, colori come indicato»; conferma dell'esempio 6/10 anche con approvazione in attesa. | approved | Passi obbligatori applicabili superati / obbligatori applicabili. N/A espliciti esclusi; firme/review separate. Precedenza rosso late, poi arancio completato con Works to go aperti, poi verde completato puntuale. Non ancora dovuto neutro; sconosciuto distinto. |
+| F03 | «Admin e manager confermano le proprie proposte»                                                        | approved | Preview supervisor; conferma admin/manager del proprio draft esatto, legato a sessione/versione/hash. Nessuna scrittura autonoma del modello o approvazione di altri utenti.                                                                                         |
 
-## Tre decisioni business prioritarie
+Fonte: risposte strutturate alla domanda call_58b3b6b41f7b4937b24b21d743dc29aa e
+conferma percentuale call_3608df0e6ef1498e9097dd00ad950578 nella chat esecutiva.
+Owner decisioni: Marco. Registrazione/implementazione: Codex. Deadline: null.
 
-| ID | Question | Answer | Confidence | Owner | Deadline | Status | major_change_id | source_ref | impact |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F04 | Vendor indica fornitore, fabbricante o soggetto di supporto? | Decisione prioritaria per U2/3/4/6: raccomandazione U6 = soggetto che esegue/supporta l’attività, associato esplicitamente. Fornitore equipment e fabbricante distinti. Marco conferma significato e responsabilità di validazione; Codex propone fonte/campo/mapping. Owner e companyId non sono sostituti impliciti. Risposta non acquisita. | alta sul gap, semantica da decidere | Marco | null | in_review | AI-01 | U2/3/6; assetSchema; piano AI-04 | Necessario per report vendor e supporto attività; nessun backfill inventato. |
-| F01 | Che cosa misura la % e quale precedenza hanno i colori? | Proposta: passi obbligatori applicabili superati / obbligatori applicabili; N/A esclusi solo esplicitamente. Firme/review separate. Rosso late prima di arancio residui, poi verde completato puntuale; neutro solo non completato/non scaduto, ignoto distinto. Alternativa: % livelli approvati/applicabili, con etichetta diversa. Risposta non acquisita. | media sulla proposta, alta sulla distinzione dei dati | Marco | null | in_review | GS-01 | T1112-1154; IMG3; piano GS-01 | Determina metrica comune, mapping, report e colonna Gantt; non blocca piccoli ritocchi R1. |
-| F03 | Admin soltanto o anche manager può confermare lo schedule? | Proposta: admin/manager confermano il proprio draft esatto, supervisor solo proponente senza grant nuovo. Alternativa: admin approva anche le proposte manager, con coda durevole tra utenti. Risposta non acquisita; policy attuale più ampia non è consenso alla nuova. | alta sul gap, media sulla proposta | Marco | null | in_review | AI-05 | U-PERM; server/copilot.ts; lib/permissions.ts | Cambia permessi e workflow; policy unica su AI, edit manuali e import schedule. |
+## Scelte di attuazione e limiti
 
-## Scelte di prodotto rinviate alla tranche pertinente
+| ID  | Esito                                                                                                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| F02 | Mandato R4 eseguito anche sugli ID reali LHR11: working overlay versionato, date e relazioni esplicite, nuove attività collegate a task/asset nello stesso Schedule. Prova offline 16.969 attività/36.923 relazioni/13 calendari. Nessun ricalcolo automatico delle date a valle o conversione P6 integrale. |
+| F14 | Lessons curate e versionate, collegate alla fonte e visibili nel progetto già autorizzato. Admin/manager salvano esplicitamente, supervisor legge. Attuazione conservativa del mandato R5: nessuna promozione automatica di note o ampliamento ACL.                                                          |
+| F16 | Nessuna deadline o impegno demo del 17 novembre acquisiti. Non blocca il mandato esecutivo del 14 novembre.                                                                                                                                                                                                  |
 
-Non sono prerequisiti aggiuntivi di R1. F02 riguarda obiettivo e rollout sui record
-reali LHR11; proposta architetturale, spike/prove e stima sono responsabilità Codex.
+## Controlli tecnici Codex
 
-| ID | Question | Answer | Confidence | Owner | Deadline | Status | major_change_id | source_ref | impact |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F02 | Quale rollout di prodotto serve prima sullo Schedule reale LHR11? | Pending R4. Proposta: prima anteprime sugli ID importati esistenti, poi date/dipendenze confermabili, infine creazione attività per asset. Codex deve prima dimostrare contratto selettivo/versionato, integrità grafo/calendari/riferimenti e fornire soluzione/stima. Overlay/proiezione e limite15000 vs16969 sono responsabilità tecniche Codex, non opzioni architetturali da scegliere aMarco. | alta sull’esito atteso; stima ancora null | Marco | null | pending | AI-05 | U7–9; piano sezione R4: proposta tecnica e prova | Scelta di perimetro/rollout prima delle mutazioni; non blocca UI e non è soddisfatta da nuove attività app scollegate. |
-| F14 | Chi cura e pubblica le lesson? | Pending R5. Proposta: record separato con autore/versione/fonte e visibilità esplicita; issue consultate alla fonte, note private non promosse automaticamente. | media | Marco | null | pending | KB-01 | T1111-1507; piano KB-01 | Nuovo contenuto persistente e responsabilità editoriale senza automatismi AI. |
-| F16 | Serve una demo per il 2026-11-17? | Nessuna deadline acquisita. Proposta eventuale MVP condizionato al GO: R1 + un report end-to-end R2/R3; non tutte le mutazioni o biblioteca. Durate/costi null fino a scope/dati/lock. | alta sull'assenza di deadline, media sulla proposta | Marco | null | pending | N/A | T1111-1505-b; mandato 2026-11-13 | Evita promessa implicita dalla visita del capo; preserva priorità dashboard. |
+Non sono ulteriori richieste di approvazione umana.
 
-## Vincoli e proposte tecniche di competenza Codex
+| ID  | Controllo verificato                                                                                                                | Prova/consegna                                       |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| F05 | WTG da record reali; disciplina esplicita/da link non ambigui, conflitti e assenti separati.                                        | 21 test report + API                                 |
+| F06 | Oggi…oggi+13 inclusivi, Europe/Amsterdam, ongoing sovrapposte incluse, overdue e senza data separati; solo forecast salvato.        | Test report/API, finestra fissata anche nel link     |
+| F07 | Ore sorgente conservate; giorni soltanto da calendario/unità attestati, toggle durata.                                              | R1 UI già consegnato, prova P6 invariato             |
+| F08 | Nome primario, riferimenti leggibili FT-00001 e ID stabili; righe vocali da snapshot filtri/versione.                               | Test snapshot e collisioni codici + browser          |
+| F09 | Copia della sola applicabilità tag con target/diff; mai esiti, firme o evidenze.                                                    | R1 UI + test esistenti                               |
+| F10 | Clone con nuove identità senza attestazioni/link ereditati.                                                                         | R1 UI + test clone/API                               |
+| F11 | Delete/restore proteggono task, figli, checksheet, WTG, storia, nuovi mapping working e fonti lesson.                               | Test dominio/PostgreSQL/API                          |
+| F12 | Whitelist CSV/JSON/XLSX, validazione parser e limiti aggiornati col campo supplier. Nessuna promessa di tutti i formati universali. | 27 test supplier/transfer/XLSX                       |
+| F13 | ACL prima di totali/facet/snippet; membership/moduli freschi, identità composta; nessuna condivisione globale.                      | Library 8 test + API/revoca                          |
+| F15 | Schedule, Project assistant, report sotto Overview e Overdue integrato con link compatibili.                                        | R1 UI già pubblicato, verifica finale desktop/mobile |
 
-ACL invariate, ID nuovi per le copie, nessuna copia di firme/esiti e whitelist
-corrente derivano da istruzioni/contratti esistenti citati. Vanno rispettati senza
-richiedere a Marco di approvarli nuovamente. Nessun nuovo lock è dichiarato.
-L'introduzione di diritti più ampi o di altri comportamenti sarebbe invece una
-scelta nuova da presentare specificamente; non è compresa nei default conservativi.
-
-| ID | Question | Answer | Confidence | Owner | Deadline | Status | major_change_id | source_ref | impact |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| F05 | Verificare la fonte della disciplina WTG e rappresentare i conflitti. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending R2/R3. Proposta: campo proprio oppure derivazione dichiarata da link asset/task non ambigui; conflitto e senza link separati. | media | Codex / owner Tony | null | in_review | AI-02 | U4; checksheets.ts worksToGoSchema | Evita attribuzioni e filtri falsi; non cambia stato delle task. |
-| F06 | Esplicitare finestra lookahead, timezone e fonte. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending R3. Proposta: oggi…oggi+13 inclusivi con data/timezone/fonte visibili, ongoing sovrapposte incluse; overdue e senza data separati. Solo forecast salvato, non predizione. | media | Codex / owner Tony | null | in_review | AI-03 | U5/6; programme-source.ts | Contratto temporale ripetibile e identico fra report/AI. |
-| F07 | Dimostrare la rappresentazione giorni/ore senza alterare il P6. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending sottolotto UI-05. Proposta: ore originali conservate; giorni solo da unità/calendario attestati, toggle visibilità durata. Nessuna divisione fissa. | alta sul vincolo, media sulla UI | Codex / owner Tony | null | in_review | UI-05 | IMG2; SourceActivityView | Preserva significato di durata e calendari; toggle non richiede nuovo motore. |
-| F08 | Progettare ID leggibili e risoluzione stabile dei riferimenti vocali. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending R2/R4. Proposta: nome primario, riferimento progetto secondario, ID interno stabile in dettaglio; riusare campo esistente soltanto se equivalente. Le righe visive si risolvono su snapshot+ID, mai rinumerazione sorgente. | media | Codex / owner Tony | null | in_review | AS-01 | IMG6; U7; assetSchema | Evita collegamenti rotti e ambiguità dopo sort/filtro. |
-| F09 | Proteggere applicabilità e copia della sola configurazione tag. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending R2. Proposta: sola applicabilità/configurazione, target esplicitamente selezionati e diff; mai esiti, firme, evidenze o completamenti. Drag successivo come scorciatoia accessibile. | alta | Codex / owner Tony | null | in_review | AS-03 | IMG6; AGENTS.md (non propagare risultati/approvazioni); piano AS-03 | Evita trasformare configurazione bulk in approvazione o cancellare storia. |
-| F10 | Creare nuove identità nelle duplicazioni, senza attestazioni ereditate. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending sottolotto R2. Proposta: nuovi ID e soli campi anagrafici/configurazione scelti; niente link o attestazioni ereditati implicitamente. Preview e idempotenza; separata dalla copia tag su asset esistenti. | alta | Codex / owner Tony | null | in_review | AS-04 | IMG6; AGENTS.md (ID e dati stabili); piano AS-04 | Crea una nuova anagrafica senza duplicare identità o evidenze. |
-| F11 | Proteggere riferimenti e storico nell’eliminazione. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending sottolotto R2. Proposta iniziale: delete solo non referenziato, preview e conferma; collegati bloccati con elenco riferimenti, nessuna cascata. Eventuale archiviazione distinta. | alta | Codex / owner Tony | null | in_review | AS-02 | IMG6; inventory restore; checksheet/WTG references | Protegge task, figli, checksheet, WTG e storia esistenti. |
-| F12 | Mantenere whitelist import e validare eventuali nuovi parser da esempi. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending sottolotto R2. Proposta: whitelist CSV/JSON/XLSX già esistente; altri soltanto da file campione e mapping validato, nessuna promessa universale. | alta | Codex / owner Tony | null | in_review | AS-02 | IMG6; docs/asset-xlsx-import.md; piano AS-02 | Determina parser/test e rischio dati; non blocca uso formati già supportati. |
-| F13 | Applicare le ACL già vigenti alla biblioteca federata. | Controllo/proposta tecnica da validare nel lotto, non approvazione business richiesta: Pending R5. Default conservativo proposto: soltanto membership/moduli consentiti attuali, ACL prima di totali/facet/snippet; nessuna condivisione globale o cross-tenant. | alta | Codex / owner Tony | null | in_review | KB-01 | AGENTS.md (membership/permessi); src/lib/permissions.ts; T1111-1507 | Preserva accessi; l'estensione oltre membership richiede una scelta diversa. |
-| F15 | Applicare le annotazioni copy/IA nel lotto UI unitario. | Proposta tecnica di R1: Project assistant, Schedule nel copy conservando titolo fonte P6, preview/report sotto summary e Overdue dentro Schedule con vecchio link compatibile. Nessuna approvazione separata di ogni etichetta: viene rivisto il risultato del lotto UI. | alta | Codex / owner Tony | null | in_review | N/A | IMG1/2/4/5 | Rende concreto il lotto UI senza rebranding o affermazione legale. |
-
-## Firma e congelamento input
-
-- Mandato umano verificato: sola analisi e piano, fonte nel report; non viene
-  ricreato un lock prodotto o un evento della regia.
-- Scelte prodotto: nessuna risposta/approvazione ancora acquisita in questo form.
-- Data chiusura form: null. Approvato da: null per implementazione e scelte nuove.
-- Codex registra le risposte esatte con source_ref e aggiorna piano/register/stato;
-  non attribuisce all'utente le raccomandazioni e non richiede lavoro editoriale.
-- Nessun invio, DBwrite, provider live, deploy o codice funzionale autorizzati qui.
-  Chiave/attivazione già risolte non sono oggetto di una nuova domanda.
+Nessuna nuova approvazione per provider/chiave: setup e attivazione del 10 novembre
+restano invariati; il collaudo corrente non effettua chiamate AI live o a pagamento.
+Nessuna scrittura DB remota, migrazione amministrativa, invio esterno o nuovo budget.
+Originali e ricevute restano privati fuori Git; storico precedente conservato in Git.

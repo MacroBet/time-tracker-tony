@@ -1,5 +1,10 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Estensione assistente 14nov implementata:** [decisioni, funzionalità e prove](intake-20261114-assistant-extension.md).
+Report tagging/WTG/lookahead/fornitori equipment, filtri cumulativi, % passi e semaforo,
+Schedule di lavoro confermabile sul P6 reale e biblioteca con lessons curate.
+Mandato diretto Marco supera lo stato inreview R2–R5 del piano precedente.
+
 **Impeccable su tutto il progetto 14nov:** [raffinamento UI e nuovo report inglese](intake-20261114-impeccable-project.md).
 Management/worker, controlli condivisi e mobile; codice6c31917 verificato online.
 

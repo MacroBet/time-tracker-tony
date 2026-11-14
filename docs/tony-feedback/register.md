@@ -1,5 +1,27 @@
 # Registro operativo — Tony
 
+## Assistente, report e Schedule di lavoro — 14 novembre 2026
+
+Mandato diretto Marco eseguito per tutte le richieste residue Tony R2–R5.
+[Decisioni, contratto e prove](intake-20261114-assistant-extension.md).
+Vendor=fornitore equipment; % passi obbligatori applicabili (6/10=60% anche senza
+approvazione); rosso late, arancio completato con WTG, verde completato puntuale.
+Admin/manager confermano le proprie proposte, supervisor preview. Report tagging,
+WTG, lookahead14giorni e fornitori condivisi UI/AI, filtri cumulativi, export completo;
+Gantt con stessa % e drilldown. Working overlay P6 con date/mapping/relazioni
+esplicite; nuova attività crea atomicamente un task non assegnato e stessa riga
+Schedule. Biblioteca consentita e lessons curate/versionate. Fonte P6 conservata,
+nessun ricalcolo automatico delle date a valle. Provider/configurazione invariati,
+nessuna chiamataAI live, nuova migrazione, scrittura DB remota o invio esterno.
+253 test unitari/PostgreSQL +15API e statici/build verdi; conferma finale28schermate
+desktop/mobile senza errori/overflow. Salvataggi attività/lesson e deep link/focus
+verificati nel browser locale; sorgente reale16969/36923/13 invariata nella prova.
+Commit progressivi0f556cc,3719727,d9279ac pushati su main; Vercel Production
+7791208123success sullo stesso SHA e alias pubblicoHTTP200 verificati.
+Dati reali senza supplier/mapping restano espliciti, non inferiti. Prossimo passo:
+normale utilizzo con dati registrati e feedback di Marco/Tony; nessun
+nuovo sviluppo o test AI a pagamento automatico. Modifiche preesistenti preservate.
+
 ## Passata Impeccable sull'intero progetto - 14 novembre 2026
 
 Mandato diretto Marco eseguito: UI management e worker, shell, controlli comuni,
@@ -446,6 +468,15 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Estensione assistente 14nov:** R2–R5 implementati su mandato diretto Marco,
+che supera le precedenti note inreview/attesa incarico sotto. [Prove e limiti](intake-20261114-assistant-extension.md).
+Decisioni F04/F01/F03 acquisite e [form aggiornato](../../decision-intake/2026-11-13_tony-feedback-plan_decision_form.md).
+Report/filtri, supplier equipment, % passi/semaforo, working Schedule P6 con conferma
+propria admin/manager e biblioteca/lessons. 253+15test, statici e browser locali PASS;
+code d9279ac su main e online, Production7791208123success/aliasHTTP200 verificati. Nessuna modifica ai dati remoti o chiamata
+AI live; P6 originale conservato, date a valle non ricalcolate automaticamente.
+Nessuna decisione business residua bloccante per il mandato implementato.
 
 **Passata completa UI 14nov:** richiesta Impeccable eseguita su management e
 worker; [prima/dopo esteso e prove](intake-20261114-impeccable-project.md).

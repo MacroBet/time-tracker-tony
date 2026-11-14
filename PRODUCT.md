@@ -143,6 +143,21 @@ identity; referenced deletion and level removal are blocked with a reviewable pr
 Source durations can display calendar-derived days while preserving original hours.
 Source: docs/tony-feedback/intake-20261114-ui-feedback.md.
 
+The 14 November assistant extension shares tagging, Works to go, 14-day saved
+lookahead and equipment-supplier reports between the UI and structured assistant
+tools. Vendor means the explicitly recorded equipment supplier. Step progress is
+passed required applicable steps, separate from approvals and signatures; the Gantt
+shows the same percentage and late / completed-with-remaining-work / on-time status.
+Versioned working overlays edit explicit P6 dates, equipment mappings and real
+dependency links while retaining the original source. Admins and managers confirm
+their own exact proposals; supervisors preview. Creating an asset activity saves
+one unassigned task and its working Schedule row atomically. Downstream P6 dates
+are not automatically recalculated. The project library searches only authorized
+projects and stores explicitly curated, source-linked lessons with versions.
+Live provider configuration is preserved; this extension was tested locally without
+paid AI calls or remote data changes. Evidence and release status:
+docs/tony-feedback/intake-20261114-assistant-extension.md.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.
