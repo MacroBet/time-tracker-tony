@@ -118,4 +118,9 @@ API admin-only mirata PASS. Browser: 37 controlli su desktop 1440 e mobile
 assenza di overflow o sovrapposizione testo/freccia. Nessun errore runtime.
 Un solo batch di correzione visiva e conferma finale; prove private sotto
 `output/tony/select-fix-20261114/` e `output/playwright/select-fix-20261114/`.
-Push/deploy del fix da registrare dopo verifica del target.
+Fix `719b7884290ef1bdbcb9d420a0f02f92002f2ce0` committato e pushato su main;
+Production `7793578510` **success**, Vercel **Ready** e alias HTTP200 verificati.
+API admin senza sessione ancora HTTP401/private/no-store. Nessuna migrazione,
+configurazione provider o scrittura cliente. Ricevuta privata:
+`output/tony/select-fix-20261114/code-release-receipt.json`.
+Prossimo passo: utilizzo delle select pubblicate; nessun altro intervento implicito.

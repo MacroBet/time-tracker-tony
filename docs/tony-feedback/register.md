@@ -502,7 +502,8 @@ alias200 e API anonima401 verificati. Prossimo passo: uso admin su dati registra
 Dati/provider cliente preservati; nessun backfill o billing aggiunto.
 Fix select richiesto da Marco: filtri AI e progetto con Radix Select, menu responsive,
 focus/tastiera e44px; 37controlli browser, 11dominio, APImirata e statici/build PASS.
-Push/deploy del fix da verificare; [dettagli e prove](intake-20261114-ai-usage.md#correzione-select--nuovo-mandato-diretto-14-novembre).
+Fix719b788 online: Production7793578510success, VercelReady, alias200/APIanonima401.
+[Dettagli e prove](intake-20261114-ai-usage.md#correzione-select--nuovo-mandato-diretto-14-novembre).
 
 **Fix chat urgente14nov online:** [implementazione, consenso0007 e prove](intake-20261114-chat-history.md).
 Decisione Marco: chat su DB; piano remoto approvato («Autorizzo migrazione 0007 e
