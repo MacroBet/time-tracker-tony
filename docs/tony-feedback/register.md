@@ -9,8 +9,9 @@ Markdown sicuro e risposta progressiva, composer utilizzabile durante attesa.
 282unit/PostgreSQL+16API, lint/typecheck/build/format PASS;33assert browser e
 12schermate finali desktop/mobile senza errori/overflow. Nessuna AI live.
 CLI Production macrobet/progetto verificati, nessun gate residuo. Approvazione
-AGENTS per sola0007 richiesta come ultimo passo; nessun apply remoto o deploy
-di questa patch prima della risposta. Modifiche preesistenti preservate.
+AGENTS per sola0007 acquisita: Marco «Autorizzo migrazione 0007 e deploy».
+Esecuzione autorizzata in corso; apply/deploy ancora da attestare. Modifiche
+preesistenti preservate.
 
 ## PDF inglese con nuove funzioni e guida test — 14 novembre 2026
 
@@ -492,9 +493,10 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 **Fix chat urgente14nov:** codice e collaudo conclusi, [piano DB0007 pronto](intake-20261114-chat-history.md).
 Decisione Marco: chat su DB. Cronologia privata per utente/progetto, Markdown e
-attesa non bloccante,282+16test e browser PASS. In attesa della sola approvazione
-esplicita del piano remoto richiesta da AGENTS, poi gate monouso/push/deploy e
-verifica esatta. Non rilanciare sviluppo/polish o test AI; nessun apply già fatto.
+attesa non bloccante,282+16test e browser PASS. Piano remoto approvato direttamente
+da Marco («Autorizzo migrazione 0007 e deploy», call_696654d2a0444e3ca1800d69c121000a).
+Gate monouso/push/apply/deploy autorizzati in corso; attestare esiti prima di
+dichiarare online. Non rilanciare sviluppo/polish o test AI.
 
 **Estensione assistente 14nov:** R2–R5 implementati su mandato diretto Marco,
 che supera le precedenti note inreview/attesa incarico sotto. [Prove e limiti](intake-20261114-assistant-extension.md).

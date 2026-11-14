@@ -34,9 +34,8 @@ Quota nativa iniziale20%, ordinaryUsageAllowed=true; cap90/stop nuovi85 invariat
 
 ## Piano concreto per la sola migrazione0007
 
-**Stato: pronto per revisione, apply remoto non ancora autorizzato né eseguito.**
-La richiesta di salvataggio DB autorizza il lavoro funzionale; per il cambiamento
-di schema remoto vale la conferma sul piano concreto prevista da AGENTS.md.
+**Stato: piano approvato direttamente da Marco il14novembre2026; esecuzione
+remota autorizzata.** Apply e deploy vengono attestati separatamente sotto.
 
 Target unico: database già configurato nella **Production** Vercel del progetto
 `macrobets-projects/time-tracker-tony`, project ID
@@ -88,4 +87,19 @@ Evidenze private in output/tony/chat-ux-20261114 e output/playwright/chat-ux-202
 CLI Vercel inizialmente senza sessione; login rinnovato come macrobet e progetto
 Production verificato. Nomi env confermati senza leggere i segreti: nessun gate
 migrazione residuo. Nessun gate/env Production impostato, nessun apply remoto o
-deploy di questa patch ancora eseguito. Approvazione specifica del piano in attesa.
+deploy di questa patch ancora eseguito. Approvazione specifica del piano acquisita nella risposta diretta sotto.
+
+## Approvazione specifica acquisita
+
+Risposta diretta Marco alla domanda strutturata
+`call_696654d2a0444e3ca1800d69c121000a`, item0:
+**«Autorizzo migrazione 0007 e deploy»**. Il testo della domanda identifica
+DB Production time-tracker-tony.vercel.app, sola tabella privata cronologia e
+journal, preflight, transazione, conservazione task/asset/P6/permessi e rollback
+applicativo senza DROP. Gate Config monouso associato a questa risposta:
+`chat-0007-call_696654d2a0444e3ca1800d69c121000a-0`.
+
+Account CLI macrobet, progetto/team esatti e assenza di gate residui verificati
+prima dell'esecuzione. Uso esclusivo di DATABASE_URL già iniettata nel build
+Production; nessun segreto letto o nuovo provider. Push/apply/deploy in corso;
+non ancora dichiarati verificati dalla sola approvazione.
