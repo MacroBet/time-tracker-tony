@@ -282,17 +282,38 @@ export function Overview() {
           <h2 className="text-lg font-semibold">Reports</h2>
           {hasModule(data.currentUser, "reports") && (
             <Link
-              href="/reports?view=equipment"
+              href={`/reports?projectId=${encodeURIComponent(project.id)}&report=tagging`}
               className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 hover:underline focus-visible:outline-blue-600"
             >
               Open reports <ArrowUpRight className="size-4" />
             </Link>
           )}
         </div>
+        {hasModule(data.currentUser, "reports") && (
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {(
+              [
+                ["tagging", "Tagging step progress"],
+                ["works-to-go", "Works to go"],
+                ["lookahead", "Next 14 days"],
+                ["vendors", "Equipment suppliers needed"],
+              ] as const
+            ).map(([kind, label]) => (
+              <Link
+                key={kind}
+                href={`/reports?projectId=${encodeURIComponent(project.id)}&report=${kind}`}
+                className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
+              >
+                {label}
+                <ArrowUpRight className="size-4" />
+              </Link>
+            ))}
+          </div>
+        )}
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           {[
             [
-              "Tagging status",
+              "Tag approvals",
               "tags",
               `${tags.completed} / ${tags.total} approved`,
             ],

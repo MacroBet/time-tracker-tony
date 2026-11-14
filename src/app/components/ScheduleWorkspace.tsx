@@ -20,6 +20,10 @@ import { ProjectAudit } from "./ProjectAudit";
 import { ProgrammeReference } from "./ProgrammeReference";
 import { OverdueList } from "./OverdueList";
 import { InfoPopover } from "./InfoPopover";
+import { useLinkedProject } from "./useLinkedProject";
+import { WorkingScheduleEditor } from "./WorkingScheduleEditor";
+import { GanttProgress } from "./GanttProgress";
+import { activityStepProgress } from "@/lib/project-reports";
 import {
   SourceProgrammeImport,
   SourceProgrammeRestore,
@@ -76,7 +80,8 @@ export function ScheduleWorkspace({
 }: { initialView?: "timeline" | "overdue" } = {}) {
   const app = useApp();
   const params = useSearchParams();
-  const project = app.projects.find((p) => p.id === app.selectedProjectId);
+  const linkedProject = useLinkedProject();
+  const project = linkedProject.project;
   const allowed =
     app.currentUser.role !== "worker" &&
     hasModule(app.currentUser, "commissioning");
@@ -94,38 +99,48 @@ export function ScheduleWorkspace({
       subtitle="Dates, durations and the order of your project work."
       wide
     >
-      {project && (allowed || canViewOverdue) && (
-        <nav
-          aria-label="Schedule views"
-          className="mb-5 flex flex-wrap items-center gap-1 border-b border-slate-200"
-        >
-          {allowed && (
-            <Link
-              href="/schedule"
-              aria-current={!overdue ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${!overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
-            >
-              <CalendarDays className="size-4" aria-hidden="true" />
-              Timeline
-            </Link>
-          )}
-          {canViewOverdue && (
-            <Link
-              href="/schedule?view=overdue"
-              aria-current={overdue ? "page" : undefined}
-              className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
-            >
-              Overdue <span className="tabular-nums">{overdueCount}</span>
-            </Link>
-          )}
-        </nav>
-      )}
-      {project && overdue ? (
+      {project &&
+        !linkedProject.unavailable &&
+        !linkedProject.opening &&
+        (allowed || canViewOverdue) && (
+          <nav
+            aria-label="Schedule views"
+            className="mb-5 flex flex-wrap items-center gap-1 border-b border-slate-200"
+          >
+            {allowed && (
+              <Link
+                href="/schedule"
+                aria-current={!overdue ? "page" : undefined}
+                className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${!overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
+              >
+                <CalendarDays className="size-4" aria-hidden="true" />
+                Timeline
+              </Link>
+            )}
+            {canViewOverdue && (
+              <Link
+                href="/schedule?view=overdue"
+                aria-current={overdue ? "page" : undefined}
+                className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
+              >
+                Overdue <span className="tabular-nums">{overdueCount}</span>
+              </Link>
+            )}
+          </nav>
+        )}
+      {linkedProject.unavailable ? (
+        <p role="alert">This project is not available to your account.</p>
+      ) : linkedProject.opening ? (
+        <p role="status">Opening the linked project…</p>
+      ) : project && overdue ? (
         <OverdueList key={project.id} project={project} tasks={app.tasks} />
       ) : !allowed ? (
         <p>Schedule planning requires commissioning management access.</p>
       ) : project ? (
-        <div className="space-y-6" key={project.id}>
+        <div
+          className="space-y-6"
+          key={`${project.id}-${params.get("activityId") ?? ""}`}
+        >
           {commissioning(project).sourceProgrammeSummary ? (
             <SourceProgrammeWorkspace
               key={commissioning(project).sourceProgrammeSummary!.sha256}
@@ -160,9 +175,11 @@ export function ScheduleWorkspace({
 }
 
 function Schedule({ project }: { project: Project }) {
-  const { tasks, isOnline, currentUser } = useApp();
+  const { tasks, isOnline, currentUser, refreshData } = useApp();
+  const [workingOpen, setWorkingOpen] = useState(false);
   const state = commissioning(project);
-  const [query, setQuery] = useState("");
+  const scheduleParams = useSearchParams();
+  const [query, setQuery] = useState(scheduleParams.get("activityId") ?? "");
   const [mobileTimeline, setMobileTimeline] = useState(false);
   const [page, setPage] = useState(0);
   const [assetId, setAssetId] = useState("");
@@ -218,14 +235,35 @@ function Schedule({ project }: { project: Project }) {
       </div>
     </details>
   );
-  const activityDialog = editing && (
-    <ActivityDialog
-      project={project}
-      activity={editing.activity}
-      version={editing.version}
-      anchor={editing.anchor}
-      onClose={() => setEditing(null)}
-    />
+  const activityDialog = (
+    <>
+      <div className="space-y-4">
+        <Button
+          variant="outline"
+          onClick={() => setWorkingOpen(!workingOpen)}
+          aria-expanded={workingOpen}
+        >
+          Add activity for an asset
+        </Button>
+        {workingOpen && (
+          <WorkingScheduleEditor
+            projectId={project.id}
+            sourceSha256="managed"
+            onSaved={refreshData}
+            onClose={() => setWorkingOpen(false)}
+          />
+        )}
+      </div>
+      {editing && (
+        <ActivityDialog
+          project={project}
+          activity={editing.activity}
+          version={editing.version}
+          anchor={editing.anchor}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </>
   );
   if (!state.schedule.length)
     return (
@@ -680,7 +718,9 @@ function ActivityEditor({
   onClose: () => void;
   onBusyChange?: (busy: boolean) => void;
 }) {
-  const { mutate, isOnline } = useApp();
+  const { mutate, isOnline, currentUser } = useApp();
+  const canConfirm =
+    currentUser.role === "admin" || currentUser.role === "manager";
   const state = commissioning(project);
   const [links, setLinks] = useState(activity.predecessors ?? []);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -1020,10 +1060,22 @@ function ActivityEditor({
               </ul>
               <Button
                 onClick={save}
-                disabled={busy || stale || !isOnline || !preview.changes.length}
+                disabled={
+                  busy ||
+                  stale ||
+                  !isOnline ||
+                  !preview.changes.length ||
+                  !canConfirm
+                }
               >
                 {busy ? "Saving…" : "Save schedule revision"}
               </Button>
+              {!canConfirm && (
+                <p className="text-sm text-slate-600">
+                  Only an administrator or manager can confirm a Schedule
+                  change. This preview has not been saved.
+                </p>
+              )}
             </>
           )}
         </div>
@@ -1043,13 +1095,19 @@ function Gantt({
   totalMatching: number;
   onEdit: (r: ScheduleActivity, anchor: HTMLElement) => void;
 }) {
+  const { projects, selectedProjectId, tasks } = useApp();
+  const project = projects.find((p) => p.id === selectedProjectId);
+  const progressState = commissioning(project);
+  const progressTasks = tasks.filter((t) => t.projectId === project?.id);
   const first =
-    rows.flatMap((r) => (r.start ? [r.start] : [])).sort()[0] ?? projectDate();
+    rows
+      .flatMap((r) => (r.start ? [r.start] : r.finish ? [r.finish] : []))
+      .sort()[0] ?? projectDate();
   const [anchor, setAnchor] = useState<string | null>(null);
   const [zoom, setZoom] = useState<GanttScale>("day");
   const [showLinks, setShowLinks] = useState(false);
   const [showDuration, setShowDuration] = useState(true);
-  const tableWidth = (showLinks ? 670 : 480) - (showDuration ? 0 : 64);
+  const tableWidth = (showLinks ? 734 : 544) - (showDuration ? 0 : 64);
   const start = anchor ?? shiftDate(first, -2);
   const { span, unit, width, columns } = ganttAxis(start, zoom);
   const positions = new Map(
@@ -1194,6 +1252,12 @@ function Gantt({
                       </button>
                     </th>
                   )}
+                  <th
+                    className="px-1 w-16"
+                    title="Passed required applicable steps; approval is separate"
+                  >
+                    Steps %
+                  </th>
                   <th className="px-2 w-24">Start</th>
                   <th className="px-2 w-24">Finish</th>
                   {showLinks && <th className="px-2">Predecessors</th>}
@@ -1202,6 +1266,11 @@ function Gantt({
               </thead>
               <tbody>
                 {rows.map((r) => {
+                  const stepProgress = activityStepProgress(
+                    progressState,
+                    progressTasks,
+                    r.activityId,
+                  );
                   const successors = all.filter((s) =>
                     s.predecessors?.some((p) => p.activityId === r.activityId),
                   );
@@ -1264,6 +1333,14 @@ function Gantt({
                           wd
                         </td>
                       )}
+                      <td className="px-1">
+                        <GanttProgress
+                          percent={stepProgress.percent}
+                          status={stepProgress.status}
+                          href={`/reports?projectId=${encodeURIComponent(project?.id ?? "")}&report=tagging&activity=${encodeURIComponent(`managed:${r.activityId}`)}`}
+                          description={stepProgress.unknownReason}
+                        />
+                      </td>
                       <td className="whitespace-nowrap px-2 text-[13px]">
                         {r.start ?? "Not set"}
                       </td>
@@ -1457,6 +1534,23 @@ function Gantt({
                                 : r.activityId}
                             </span>
                           </span>
+                        </button>
+                      ) : !r.start &&
+                        r.finish &&
+                        x(r.finish) >= 0 &&
+                        x(r.finish) < width ? (
+                        <button
+                          className="absolute top-0.5 flex h-11 min-w-11 items-center justify-center text-xs text-blue-800 underline"
+                          style={{
+                            left: Math.min(
+                              Math.max(0, x(r.finish) - 22),
+                              width - 44,
+                            ),
+                          }}
+                          onClick={(event) => onEdit(r, event.currentTarget)}
+                          aria-label={`Deadline ${r.activityId}: ${r.finish}. Start not recorded`}
+                        >
+                          Due
                         </button>
                       ) : (
                         <span className="absolute left-3 top-4 text-xs text-slate-500">

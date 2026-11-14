@@ -35,6 +35,14 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { InfoPopover } from "./InfoPopover";
+import { useLinkedProject } from "./useLinkedProject";
+import { AssistantResultPanels } from "./AssistantResultPanels";
+import {
+  scheduleViewSnapshotSchema,
+  scheduleViewStorageKey,
+  type ScheduleViewSnapshot,
+} from "@/lib/schedule-view-context";
+import type { AssistantReportState } from "@/lib/assistant-report-state";
 
 type ContextResponse = CopilotContext & { configuration: CopilotStatus };
 type Message = CopilotChatMessage & { answer?: CopilotAnswer };
@@ -54,23 +62,11 @@ function recentHistory(messages: Message[]): CopilotChatMessage[] {
 }
 
 export function CopilotWorkspace() {
-  const { projects, selectedProjectId, currentUser, selectProject } = useApp();
-  const params = useSearchParams();
-  const requestedProject = params.get("projectId");
+  const { projects, currentUser } = useApp();
+  const linked = useLinkedProject(),
+    project = linked.project,
+    requestedProject = linked.requested;
   const assignedRequest = projects.some((item) => item.id === requestedProject);
-  const linkedProjectApplied = useRef<string | null>(null);
-  useEffect(() => {
-    if (!requestedProject) {
-      linkedProjectApplied.current = null;
-      return;
-    }
-    if (assignedRequest && linkedProjectApplied.current !== requestedProject) {
-      linkedProjectApplied.current = requestedProject;
-      if (selectedProjectId !== requestedProject)
-        selectProject(requestedProject);
-    }
-  }, [requestedProject, assignedRequest, selectedProjectId, selectProject]);
-  const project = projects.find((item) => item.id === selectedProjectId);
   return (
     <AppShell
       title="Project assistant"
@@ -87,10 +83,16 @@ export function CopilotWorkspace() {
           The assistant requires management access to Tasks and Commissioning.
           Ask your administrator if you need access.
         </p>
-      ) : requestedProject && project?.id !== requestedProject ? (
+      ) : linked.opening ? (
         <p role="status">Opening the linked project…</p>
       ) : project ? (
-        <CopilotSession key={project.id} projectId={project.id} />
+        <CopilotSession
+          key={`${project.id}:${currentUser.id}:${currentUser.role}:${JSON.stringify(currentUser.modules ?? null)}:${projects
+            .map((item) => item.id)
+            .sort()
+            .join("|")}`}
+          projectId={project.id}
+        />
       ) : (
         <p className="text-sm text-slate-600">
           Choose an assigned project to open its assistant.
@@ -102,12 +104,15 @@ export function CopilotWorkspace() {
 
 function CopilotSession({ projectId }: { projectId: string }) {
   const params = useSearchParams();
-  const { isOnline } = useApp();
+  const { isOnline, refreshData } = useApp();
   const [context, setContext] = useState<ContextResponse | null>(null);
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [retry, setRetry] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [reportState, setReportState] = useState<
+    AssistantReportState | undefined
+  >();
   const [draft, setDraft] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const [chatError, setChatError] = useState("");
@@ -166,9 +171,10 @@ function CopilotSession({ projectId }: { projectId: string }) {
       transcriptEnd.current?.scrollIntoView({ block: "nearest" });
   }, [messages.length]);
   const refreshContext = useCallback(async () => {
+    await refreshData();
     const result = await apiRequest<ContextResponse>(endpoint);
     if (mounted.current) setContext(result);
-  }, [endpoint]);
+  }, [endpoint, refreshData]);
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (
@@ -186,19 +192,39 @@ function CopilotSession({ projectId }: { projectId: string }) {
       controller = new AbortController();
     request.current = controller;
     const history = recentHistory(messages);
+    let scheduleView: ScheduleViewSnapshot | undefined;
+    if (params.get("sourceView") === "1")
+      try {
+        const parsed = scheduleViewSnapshotSchema.safeParse(
+          JSON.parse(
+            sessionStorage.getItem(scheduleViewStorageKey(projectId)) ?? "null",
+          ),
+        );
+        if (parsed.success && parsed.data.projectId === projectId)
+          scheduleView = parsed.data;
+      } catch {
+        /* No stored view: the assistant asks for a stable activity reference. */
+      }
     setMessages((previous) => [...previous, { role: "user", text }]);
     setDraft("");
     try {
       const answer = await apiRequest<CopilotAnswer>(endpoint, {
         method: "POST",
         signal: controller.signal,
-        body: JSON.stringify({ message: text, history }),
+        body: JSON.stringify({
+          message: text,
+          history,
+          reportState,
+          scheduleView,
+        }),
       });
-      if (mounted.current && !controller.signal.aborted)
+      if (mounted.current && !controller.signal.aborted) {
+        if (answer.reportState) setReportState(answer.reportState);
         setMessages((previous) => [
           ...previous,
           { role: "assistant", text: answer.text, answer },
         ]);
+      }
     } catch (error) {
       if (mounted.current && !controller.signal.aborted) {
         setChatError(
@@ -373,6 +399,12 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     </p>
                     {message.answer && (
                       <>
+                        <AssistantResultPanels
+                          answer={message.answer}
+                          projectId={projectId}
+                          onSaved={refreshContext}
+                        />
+
                         {message.answer.assetSearches?.map(
                           (result, searchIndex) => (
                             <section

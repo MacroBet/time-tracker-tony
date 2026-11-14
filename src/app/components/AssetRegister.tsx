@@ -428,7 +428,7 @@ export function AssetRegister({
           {hasModule(currentUser, "reports") ? (
             <Button className="min-h-11" variant="outline" asChild>
               <Link
-                href={`/reports?view=equipment&projectId=${encodeURIComponent(project.id)}`}
+                href={`/reports?report=tagging&projectId=${encodeURIComponent(project.id)}`}
               >
                 Tagging status report
               </Link>

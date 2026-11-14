@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, ArrowRight, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -17,6 +18,10 @@ import { SourceProgrammeGantt } from "./SourceProgrammeGantt";
 import { sourcePageAnchor } from "@/lib/source-gantt";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { InfoPopover } from "./InfoPopover";
+import { WorkingScheduleEditor } from "./WorkingScheduleEditor";
+import { useApp } from "../contexts/AppContext";
+import { hasModule } from "@/lib/commissioning";
+import type { ActivityStepProgress } from "@/lib/project-reports";
 
 const number = (value: number) => value.toLocaleString("en-GB");
 
@@ -318,6 +323,13 @@ export function SourceProgrammeWorkspace({
   summary: SourceProgrammeSummary;
 }) {
   const id = useId();
+  const app = useApp();
+  const params = useSearchParams();
+  const project = app.projects.find((row) => row.id === projectId);
+  const projectVersion = project?.commissioning?.version ?? 0;
+  const [projection, setProjection] = useState<"working" | "source">("working");
+  const [editor, setEditor] = useState<{ internalId?: string } | null>(null);
+  const handledActivity = useRef<string | null>(null);
   const [query, setQuery] = useState("");
   const [wbs, setWbs] = useState("");
   const [calendar, setCalendar] = useState("");
@@ -335,13 +347,25 @@ export function SourceProgrammeWorkspace({
   const detailRequest = useRef<AbortController | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   useEffect(() => () => detailRequest.current?.abort(), []);
-  const [data, setData] = useState<SourceProgrammePage | null>(null);
+  const [data, setData] = useState<
+    | (SourceProgrammePage & {
+        workingRevision?: number;
+        projectVersion?: number;
+        activityProgress?: Record<string, ActivityStepProgress>;
+      })
+    | null
+  >(null);
   const [detail, setDetail] = useState<SourceProgrammePage["detail"]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
+    try {
+      sessionStorage.removeItem(`fieldtrack:schedule-view:${projectId}`);
+    } catch {
+      /* Browser storage may be disabled. */
+    }
     const timer = setTimeout(
       async () => {
         setLoading(true);
@@ -352,16 +376,35 @@ export function SourceProgrammeWorkspace({
           calendar,
           status,
           page: String(page),
+          view: projection,
         });
         try {
           const response = await fetch(
-            `/api/projects/${projectId}/programme-source?${params}`,
+            `/api/projects/${projectId}/schedule-working?${params}`,
             { signal: controller.signal },
           );
           const result = await response.json();
           if (!response.ok)
             throw new Error(result.error || "Could not load schedule.");
+          if (controller.signal.aborted) return;
           setData(result);
+          if (projection === "working") {
+            try {
+              sessionStorage.setItem(
+                `fieldtrack:schedule-view:${projectId}`,
+                JSON.stringify({
+                  mode: "working",
+                  projectId,
+                  sourceSha256: summary.sha256,
+                  projectVersion: result.projectVersion ?? projectVersion,
+                  query: { q: query, wbs, calendar, status },
+                  page: result.page,
+                }),
+              );
+            } catch {
+              /* A missing snapshot disables row-number commands; no fallback guesses. */
+            }
+          }
         } catch (failure) {
           if (!controller.signal.aborted)
             setError(
@@ -379,7 +422,18 @@ export function SourceProgrammeWorkspace({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [projectId, summary.sha256, query, wbs, calendar, status, page, refresh]);
+  }, [
+    projectId,
+    summary.sha256,
+    query,
+    wbs,
+    calendar,
+    status,
+    page,
+    refresh,
+    projection,
+    projectVersion,
+  ]);
   const anchor =
     manualAnchor ?? sourcePageAnchor(data?.activities ?? []) ?? projectDate();
   const axis = ganttAxis(anchor, scale);
@@ -392,36 +446,97 @@ export function SourceProgrammeWorkspace({
         .slice(0, 10),
     );
   }
-  async function openDetail(internalId: string, trigger: HTMLElement) {
-    detailRequest.current?.abort();
-    const controller = new AbortController();
-    detailRequest.current = controller;
-    detailTrigger.current = trigger;
-    setDetailLoading(true);
-    try {
-      const response = await fetch(
-        `/api/projects/${projectId}/programme-source?${new URLSearchParams({ internalId })}`,
-        { signal: controller.signal },
-      );
-      const result = await response.json();
-      if (!response.ok)
-        throw new Error(result.error || "Could not load activity.");
-      if (!controller.signal.aborted)
-        setDetail((result as SourceProgrammePage).detail);
-    } catch (failure) {
-      if (!controller.signal.aborted)
-        toast.error(
-          failure instanceof Error
-            ? failure.message
-            : "Could not load activity.",
+  const openDetail = useCallback(
+    async (internalId: string, trigger: HTMLElement) => {
+      detailRequest.current?.abort();
+      const controller = new AbortController();
+      detailRequest.current = controller;
+      detailTrigger.current = trigger;
+      setDetailLoading(true);
+      try {
+        const response = await fetch(
+          `/api/projects/${projectId}/schedule-working?${new URLSearchParams({ internalId, view: projection })}`,
+          { signal: controller.signal },
         );
-    } finally {
-      if (!controller.signal.aborted) setDetailLoading(false);
+        const result = await response.json();
+        if (!response.ok)
+          throw new Error(result.error || "Could not load activity.");
+        if (!controller.signal.aborted)
+          setDetail((result as SourceProgrammePage).detail);
+      } catch (failure) {
+        if (!controller.signal.aborted)
+          toast.error(
+            failure instanceof Error
+              ? failure.message
+              : "Could not load activity.",
+          );
+      } finally {
+        if (!controller.signal.aborted) setDetailLoading(false);
+      }
+    },
+    [projectId, projection],
+  );
+  const linkedActivity = params.get("activity") ?? params.get("internalId");
+  useEffect(() => {
+    if (linkedActivity && handledActivity.current !== linkedActivity) {
+      handledActivity.current = linkedActivity;
+      void openDetail(
+        linkedActivity,
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : document.body,
+      );
     }
-  }
+  }, [linkedActivity, openDetail]);
   return (
     <div className="space-y-4">
       <header className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div
+            className="flex flex-wrap gap-2"
+            aria-label="Schedule projection"
+          >
+            <Button
+              variant={projection === "working" ? "default" : "outline"}
+              aria-pressed={projection === "working"}
+              onClick={() => {
+                if (projection === "working") return;
+                setProjection("working");
+                setLoading(true);
+                setData(null);
+                setAnchor(null);
+              }}
+            >
+              {projection === "working" && (loading || !data)
+                ? "Working schedule · Loading…"
+                : `Working schedule · revision ${data?.workingRevision ?? project?.commissioning?.workingSchedule?.revision ?? 0}`}
+            </Button>
+            <Button
+              variant={projection === "source" ? "default" : "outline"}
+              aria-pressed={projection === "source"}
+              onClick={() => {
+                if (projection === "source") return;
+                setProjection("source");
+                setLoading(true);
+                setData(null);
+                setEditor(null);
+                setAnchor(null);
+              }}
+            >
+              Original source
+            </Button>
+          </div>
+          {projection === "working" && hasModule(app.currentUser, "tasks") && (
+            <Button variant="outline" onClick={() => setEditor({})}>
+              Create an asset activity
+            </Button>
+          )}
+        </div>
+        <p className="text-sm text-slate-600">
+          {projection === "source"
+            ? "Original imported dates and relationships · read only"
+            : "Working dates and links · original source retained · no automatic P6 recalculation"}
+        </p>
         <div className="flex items-start justify-between gap-3">
           <h2 className="min-w-0 text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
             {summary.projectName}
@@ -441,8 +556,22 @@ export function SourceProgrammeWorkspace({
         </div>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4 sm:max-w-3xl">
           {[
-            ["Activities", summary.activities],
-            ["Relationships", summary.relationships],
+            [
+              "Activities",
+              projection === "working"
+                ? loading || !data
+                  ? null
+                  : data.summary.activities
+                : summary.activities,
+            ],
+            [
+              "Relationships",
+              projection === "working"
+                ? loading || !data
+                  ? null
+                  : data.summary.relationships
+                : summary.relationships,
+            ],
             ["Calendars", summary.calendars],
             ["WBS records", summary.wbs],
           ].map(([label, value]) => (
@@ -452,12 +581,27 @@ export function SourceProgrammeWorkspace({
             >
               <dt className="text-xs text-slate-600">{label}</dt>
               <dd className="text-base font-semibold tabular-nums text-slate-950">
-                {number(Number(value))}
+                {value === null ? "…" : number(Number(value))}
               </dd>
             </div>
           ))}
         </dl>
       </header>
+      {editor && (
+        <WorkingScheduleEditor
+          key={`${projectId}-${editor.internalId ?? "new"}`}
+          projectId={projectId}
+          sourceSha256={summary.sha256}
+          internalId={editor.internalId}
+          onClose={() => setEditor(null)}
+          onSaved={async () => {
+            await app.refreshData();
+            setRefresh((value) => value + 1);
+            setProjection("working");
+            setEditor(null);
+          }}
+        />
+      )}
       <section
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         aria-label="Filter schedule"
@@ -552,7 +696,7 @@ export function SourceProgrammeWorkspace({
           </Button>
         </div>
       )}
-      {data && !visible.length ? (
+      {!loading && data && !visible.length ? (
         <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
           <p aria-live="polite">No activities match these filters.</p>
           <Button
@@ -572,11 +716,14 @@ export function SourceProgrammeWorkspace({
         </div>
       ) : (
         <SourceProgrammeGantt
-          data={data}
+          data={loading ? null : data}
           anchor={anchor}
           scale={scale}
           showLinks={showLinks}
           loading={loading}
+          progress={data?.activityProgress}
+          projectId={projectId}
+          firstRowNumber={(data?.page ?? 0) * (data?.pageSize ?? 50) + 1}
           durationMode={durationMode}
           onDurationModeChange={setDurationMode}
           resetViewKey={timelineReset}
@@ -789,6 +936,17 @@ export function SourceProgrammeWorkspace({
                 <p className="text-sm text-slate-600 break-words">
                   {detail.activity.wbsPath}
                 </p>
+                {projection === "working" && (
+                  <Button
+                    onClick={() => {
+                      setEditor({ internalId: detail.activity.internalId });
+                      setDetail(undefined);
+                      setDetailLoading(false);
+                    }}
+                  >
+                    Edit working dates and links
+                  </Button>
+                )}
                 <details>
                   <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">
                     All source activity fields

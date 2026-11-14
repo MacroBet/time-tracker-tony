@@ -1,8 +1,8 @@
 "use client";
 import { hasModule } from "@/lib/commissioning";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { Bug, Camera, X } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
@@ -24,6 +24,21 @@ export function FeedbackButton() {
   const [screenshot, setScreenshot] = useState<string | undefined>();
   const [busy, setBusy] = useState(false);
   const pathname = usePathname();
+  const returnFocus = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const show = () => {
+      if (busy || !projects.length || !hasModule(currentUser, "feedback"))
+        return;
+      returnFocus.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      setProjectId(selectedProjectId);
+      setOpen(true);
+    };
+    window.addEventListener("fieldtrack:open-feedback", show);
+    return () => window.removeEventListener("fieldtrack:open-feedback", show);
+  }, [busy, projects.length, currentUser, selectedProjectId]);
   async function capture() {
     setBusy(true);
     setOpen(false);
@@ -88,21 +103,6 @@ export function FeedbackButton() {
   if (!hasModule(currentUser, "feedback")) return null;
   return (
     <div data-feedback>
-      <Button
-        disabled={busy || !projects.length}
-        onClick={() => {
-          setProjectId(selectedProjectId);
-          setOpen(true);
-        }}
-        aria-label="Report an issue"
-        title="Report an issue"
-        variant="outline"
-        className="fixed right-4 lg:right-6 z-30 rounded-lg h-11 w-11 sm:w-auto px-0 sm:px-4 text-sm bg-white text-slate-700 hover:bg-slate-100"
-        style={{ bottom: "var(--feedback-bottom, 1.5rem)" }}
-      >
-        <Bug className="size-4" />
-        <span className="hidden sm:inline">Report an issue</span>
-      </Button>
       <Dialog
         open={open}
         onOpenChange={(next) => {
@@ -111,6 +111,10 @@ export function FeedbackButton() {
       >
         <DialogContent
           className="max-h-[90dvh] overflow-y-auto"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            returnFocus.current?.focus();
+          }}
           onEscapeKeyDown={(event) => {
             if (busy) event.preventDefault();
           }}

@@ -142,6 +142,13 @@ export const canConfirmWorkingSchedule = (role: string) =>
   role === "admin" || role === "manager";
 export const workingDraftKey = (draft: WorkingScheduleDraft) =>
   JSON.stringify(workingScheduleDraftSchema.parse(draft));
+/** Readable project references; internal UUID identity and revision CAS remain independent. */
+export function nextWorkingActivityCode(codes: Iterable<string>): string {
+  const used = new Set(Array.from(codes, (code) => code.trim().toUpperCase()));
+  let next = 1;
+  while (used.has(`FT-${String(next).padStart(5, "0")}`)) next++;
+  return `FT-${String(next).padStart(5, "0")}`;
+}
 const empty = (sha: string): WorkingSchedule => ({
   sourceSha256: sha,
   revision: 0,
@@ -590,7 +597,11 @@ export function previewWorkingSchedule(
     targetId = identity.internalId;
     if (
       before.byId.has(targetId) ||
-      before.activities.some((a) => a.activityId === identity.activityId)
+      before.activities.some(
+        (a) =>
+          a.activityId.trim().toUpperCase() ===
+          identity.activityId.trim().toUpperCase(),
+      )
     )
       result.errors.push(
         "The generated activity identity is already in use. Preview again.",

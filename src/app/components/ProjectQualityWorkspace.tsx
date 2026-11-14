@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useLinkedProject } from "./useLinkedProject";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
-import { commissioning } from "@/lib/commissioning";
+import { commissioning, hasModule } from "@/lib/commissioning";
 import type { ChecksheetCommand } from "@/lib/checksheets";
 import { ChecksheetWorkspace } from "./ChecksheetWorkspace";
 import { WorksToGoWorkspace } from "./WorksToGoWorkspace";
@@ -10,9 +12,23 @@ import { WorksToGoWorkspace } from "./WorksToGoWorkspace";
 export function ProjectQualityWorkspace() {
   const app = useApp(),
     [busy, setBusy] = useState(false);
-  const project = app.projects.find(
-    (project) => project.id === app.selectedProjectId,
-  );
+  const linked = useLinkedProject(),
+    params = useSearchParams();
+  const project = linked.project;
+  if (
+    linked.unavailable ||
+    linked.opening ||
+    !hasModule(app.currentUser, "commissioning")
+  )
+    return (
+      <AppShell title="Checksheets and remaining work">
+        <p role={linked.opening ? "status" : "alert"}>
+          {linked.opening
+            ? "Opening the linked project…"
+            : "This project or commissioning workspace is not available to your account."}
+        </p>
+      </AppShell>
+    );
   if (!project)
     return (
       <AppShell title="Checksheets and remaining work">
@@ -70,7 +86,11 @@ export function ProjectQualityWorkspace() {
         users={app.users.filter((user) => members.has(user.id))}
       />
       <div className="border-t border-slate-200 pt-6">
-        <WorksToGoWorkspace key={`remaining-work-${project.id}`} {...props} />
+        <WorksToGoWorkspace
+          key={`remaining-work-${project.id}-${params.get("work") ?? ""}`}
+          linkedWorkId={params.get("work") ?? undefined}
+          {...props}
+        />
       </div>
     </AppShell>
   );

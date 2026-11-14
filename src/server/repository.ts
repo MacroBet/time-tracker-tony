@@ -3,6 +3,7 @@ import {
   programmeSourceProjectionQuery,
 } from "./db/programme-source-read";
 import { programmeSourceCache } from "./programme-source-cache";
+import { workingScheduleCommitQuery } from "./db/schedule-working";
 import {
   indexSourceProgramme,
   type SourceProgramme,
@@ -40,6 +41,8 @@ import {
   type Feedback,
 } from "@/lib/domain";
 import { HttpError, requireCondition } from "./errors";
+import { canConfirmWorkingSchedule } from "@/lib/schedule-working";
+import { hasModule } from "@/lib/commissioning";
 
 type Session = { tokenHash: string; userId: string; expiresAt: string };
 type FileRecord = Attachment & { data: string };
@@ -150,6 +153,98 @@ export async function saveCommissioning(
     409,
     "Project changed. Refresh before saving.",
   );
+}
+
+/** Commit a reviewed working revision and its optional unassigned task atomically. */
+export async function saveWorkingSchedule(
+  projectId: string,
+  actorId: string,
+  state: import("@/lib/commissioning").Commissioning,
+  expectedVersion: number,
+  sourceSha256: string,
+  task?: Task,
+  activity?: Activity,
+) {
+  requireCondition(
+    !task ||
+      (task.projectId === projectId &&
+        task.createdBy === actorId &&
+        !task.assignedTo &&
+        !!task.cx?.assetId &&
+        !!activity &&
+        activity.taskId === task.id &&
+        activity.actorId === actorId),
+    400,
+    "The new task must belong to this project and author and remain unassigned.",
+  );
+  if (usingDemo()) {
+    const store = demo(),
+      actor = store.data.users.find((user) => user.id === actorId);
+    const project = store.data.projects.find((row) => row.id === projectId);
+    requireCondition(
+      actor &&
+        canConfirmWorkingSchedule(actor.role) &&
+        hasModule(actor, "commissioning") &&
+        store.data.memberships.some(
+          (m) => m.userId === actorId && m.projectId === projectId,
+        ),
+      403,
+      "Schedule confirmation access changed. Preview again.",
+    );
+    requireCondition(
+      project &&
+        (project.commissioning?.version ?? 0) === expectedVersion &&
+        (project.commissioning?.sourceProgrammeSummary?.sha256 ?? "managed") ===
+          sourceSha256,
+      409,
+      "Project or source schedule changed. Preview again.",
+    );
+    requireCondition(
+      !task ||
+        (task.projectId === projectId &&
+          task.createdBy === actorId &&
+          !task.assignedTo &&
+          project.commissioning?.assets.some(
+            (a) => a.id === task.cx?.assetId,
+          ) &&
+          !store.data.tasks.some((old) => old.id === task.id)),
+      409,
+      "The new task or linked asset changed. Preview again.",
+    );
+    const source = project.commissioning?.sourceProgramme;
+    const recorded = (project.commissioning as AuditState | undefined)?._audit;
+    // No asynchronous boundary after validation: demo mirrors the single SQL transaction.
+    project.commissioning = {
+      ...state,
+      ...(source ? { sourceProgramme: source } : {}),
+      _audit: recorded ?? [],
+    } as AuditState;
+    if (task) store.data.tasks.push(task);
+    if (activity) store.data.activities.push(activity);
+  } else {
+    const result = await db().execute(
+      workingScheduleCommitQuery(
+        projectId,
+        actorId,
+        state,
+        expectedVersion,
+        sourceSha256,
+        task,
+        activity,
+      ),
+    );
+    const row = result.rows[0] as
+      { projects: number; tasks: number; events: number } | undefined;
+    requireCondition(
+      row &&
+        Number(row.projects) === 1 &&
+        Number(row.tasks) === (task ? 1 : 0) &&
+        Number(row.events) === (task ? 1 : 0),
+      409,
+      "Project, source or confirmation access changed. Preview again.",
+    );
+  }
+  programmeSourceCache.invalidate(projectId);
 }
 
 export async function saveUserModules(

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Keyboard, Mic } from "lucide-react";
 import { canUseCopilot } from "@/lib/copilot";
 import { useApp } from "../contexts/AppContext";
@@ -8,8 +9,9 @@ import { useApp } from "../contexts/AppContext";
 /** Opening the assistant never opens the microphone or sends a question. */
 export function AssistantEntry() {
   const { currentUser, selectedProjectId } = useApp();
+  const pathname = usePathname();
   if (!selectedProjectId || !canUseCopilot(currentUser)) return null;
-  const href = `/copilot?projectId=${encodeURIComponent(selectedProjectId)}`;
+  const href = `/copilot?projectId=${encodeURIComponent(selectedProjectId)}${pathname === "/schedule" ? "&sourceView=1" : ""}`;
   const style =
     "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2.5 text-blue-800 hover:bg-blue-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700";
   return (

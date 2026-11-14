@@ -109,9 +109,18 @@ export async function updateRegister(request: Request, projectId: string) {
         .strict(),
     ])
     .parse(await readJson(request, 8 * 1024 * 1024));
+  const scheduleChange =
+    input.action === "schedule" ||
+    (input.action === "import" && input.data.schedule.length > 0);
   const data = await loadData(user);
   const project = data.projects.find((p) => p.id === projectId);
   requireCondition(project, 404, "Project not found.");
+  if (scheduleChange && !("preview" in input && input.preview))
+    requireCondition(
+      user.role === "admin" || user.role === "manager",
+      403,
+      "Only administrators and managers can confirm schedule changes. Supervisors may prepare a preview.",
+    );
   const state = commissioning(project);
   requireCondition(
     state.version === input.version,

@@ -10,6 +10,8 @@ import { sourceBar } from "@/lib/source-gantt";
 import { dayNumber } from "@/lib/scheduling";
 import { GanttRuler } from "./GanttRuler";
 import { InfoPopover } from "./InfoPopover";
+import type { ActivityStepProgress } from "@/lib/project-reports";
+import { GanttProgress } from "./GanttProgress";
 
 // Same 48px body rows and 56px ruler as the editable Schedule Gantt.
 const rowHeight = 48;
@@ -23,6 +25,9 @@ export function SourceProgrammeGantt({
   durationMode,
   onDurationModeChange,
   resetViewKey,
+  projectId,
+  progress,
+  firstRowNumber,
   onSelect,
   onGoTo,
 }: {
@@ -35,11 +40,14 @@ export function SourceProgrammeGantt({
   durationMode: "days" | "hours" | "hidden";
   onDurationModeChange: (mode: "days" | "hours" | "hidden") => void;
   resetViewKey: number;
+  projectId: string;
+  progress?: Record<string, ActivityStepProgress>;
+  firstRowNumber: number;
   onSelect: (id: string, trigger: HTMLElement) => void;
   onGoTo: (row: SourceActivityView) => void;
 }) {
   const showDuration = durationMode !== "hidden";
-  const otherColumnsWidth = 44 + (showDuration ? 80 : 0) + 96 + 96;
+  const otherColumnsWidth = 44 + 88 + (showDuration ? 80 : 0) + 96 + 96;
   const marker = useId().replace(/:/g, "");
   const scroller = useRef<HTMLDivElement>(null);
   const axis = ganttAxis(anchor, scale),
@@ -139,6 +147,7 @@ export function SourceProgrammeGantt({
           <colgroup>
             <col style={{ width: "var(--source-activity-width)" }} />
             <col style={{ width: 44 }} />
+            <col style={{ width: 88 }} />
             {showDuration && <col style={{ width: 80 }} />}
             <col style={{ width: 96 }} />
             <col style={{ width: 96 }} />
@@ -165,6 +174,7 @@ export function SourceProgrammeGantt({
               <th className="border-b">
                 <span className="sr-only">Show activity dates</span>
               </th>
+              <th className="border-b px-2">Steps %</th>
               {showDuration && (
                 <th className="border-b px-1">
                   <button
@@ -204,6 +214,9 @@ export function SourceProgrammeGantt({
                       {row.name}
                     </strong>
                     <span className="block truncate text-xs leading-3 text-slate-600">
+                      <span className="mr-1 font-medium tabular-nums">
+                        {firstRowNumber + index}.
+                      </span>
                       {row.activityId}
                       {row.milestone ? " · Milestone" : ""}
                     </span>
@@ -219,6 +232,20 @@ export function SourceProgrammeGantt({
                   >
                     <CalendarClock className="size-4" aria-hidden="true" />
                   </button>
+                </td>
+                <td className="px-1">
+                  <GanttProgress
+                    percent={progress?.[row.internalId]?.percent ?? null}
+                    status={
+                      progress?.[row.internalId]?.status ?? {
+                        status: "unknown",
+                        colour: null,
+                        label: "No verified activity-to-asset progress mapping",
+                      }
+                    }
+                    href={`/reports?report=tagging&projectId=${encodeURIComponent(projectId)}&activity=${encodeURIComponent(`source:${data?.summary.sha256}:${row.internalId}`)}`}
+                    description={progress?.[row.internalId]?.unknownReason}
+                  />
                 </td>
                 {showDuration && (
                   <td
@@ -346,6 +373,12 @@ export function SourceProgrammeGantt({
                           axis.span,
                           axis.unit,
                         );
+                        const deadlineX =
+                          !row.start &&
+                          row.finish &&
+                          row.taskType === "FT_Deadline"
+                            ? x(row.finish)
+                            : undefined;
                         const visualWidth = bar ? Math.max(6, bar.width) : 0;
                         const hitWidth = Math.max(44, visualWidth);
                         const hitLeft = bar
@@ -394,6 +427,24 @@ export function SourceProgrammeGantt({
                                     {row.activityId}
                                   </span>
                                 )}
+                              </button>
+                            ) : deadlineX !== undefined &&
+                              deadlineX >= 0 &&
+                              deadlineX < axis.width ? (
+                              <button
+                                className="absolute top-0.5 flex h-11 min-w-11 items-center justify-center text-xs text-blue-900 focus-visible:outline-2 focus-visible:outline-blue-700"
+                                style={{
+                                  left: Math.min(deadlineX, axis.width - 44),
+                                }}
+                                aria-label={`Deadline ${row.finish} for ${row.activityId}; start and duration not recorded`}
+                                title={`Deadline ${row.finish}; start and duration not recorded`}
+                                onClick={(event) =>
+                                  onSelect(row.internalId, event.currentTarget)
+                                }
+                              >
+                                <span className="h-6 border-l-2 border-blue-700 px-1">
+                                  Due
+                                </span>
                               </button>
                             ) : (
                               <button

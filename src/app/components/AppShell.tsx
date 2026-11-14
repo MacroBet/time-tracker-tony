@@ -18,6 +18,7 @@ import {
   Building2,
   Boxes,
   BookOpen,
+  Bug,
   ShieldCheck,
   FileBarChart,
   GanttChart,
@@ -307,6 +308,17 @@ export function AppShell({
                 {item.label}
               </Link>
             ))}
+            {hasModule(currentUser, "feedback") && projects.length > 0 && (
+              <button
+                onClick={() =>
+                  window.dispatchEvent(new Event("fieldtrack:open-feedback"))
+                }
+                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-xs text-slate-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-300"
+              >
+                <Bug className="size-4" />
+                Report an issue
+              </button>
+            )}
           </nav>
         </div>
         <div className="border-t border-white/10 px-4 pt-3">
@@ -531,6 +543,24 @@ export function AppShell({
                     {item.label}
                   </Link>
                 ))}
+                {hasModule(currentUser, "feedback") && projects.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setMoreOpen(false);
+                      window.setTimeout(
+                        () =>
+                          window.dispatchEvent(
+                            new Event("fieldtrack:open-feedback"),
+                          ),
+                        220,
+                      );
+                    }}
+                    className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 text-sm text-slate-800 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-600"
+                  >
+                    <Bug className="size-5" />
+                    Report an issue
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setMoreOpen(false);

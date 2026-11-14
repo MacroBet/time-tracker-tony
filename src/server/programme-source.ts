@@ -17,6 +17,10 @@ import {
   sourceProgrammeSummary,
   querySourceProgrammeIndex,
 } from "@/lib/programme-source";
+import {
+  canConfirmWorkingSchedule,
+  resolveWorkingSourceIndex,
+} from "@/lib/schedule-working";
 
 async function authorizedProgrammeUser() {
   const user = await requireUser();
@@ -32,8 +36,13 @@ export async function getSourceProgramme(request: Request, projectId: string) {
   const programme = await loadProgrammeSourceIndex(projectId, user.id);
   requireCondition(programme, 404, "No source programme in this project.");
   const query = new URL(request.url).searchParams;
+  const state = await loadProjectCommissioning(projectId, user.id);
+  const view =
+    query.get("view") === "source"
+      ? programme
+      : resolveWorkingSourceIndex(programme, state?.workingSchedule);
   return json(
-    querySourceProgrammeIndex(programme, {
+    querySourceProgrammeIndex(view, {
       q: query.get("q") ?? undefined,
       wbs: query.get("wbs") ?? undefined,
       calendar: query.get("calendar") ?? undefined,
@@ -49,6 +58,12 @@ export async function importSourceProgramme(
   projectId: string,
 ) {
   const user = await authorizedProgrammeUser();
+  const authorizedData = await loadData(user);
+  requireCondition(
+    authorizedData.projects.some((project) => project.id === projectId),
+    404,
+    "Project not found.",
+  );
   const params = new URL(request.url).searchParams;
   const input = z
     .object({
@@ -74,6 +89,11 @@ export async function importSourceProgramme(
     "Project changed. Refresh and preview again.",
   );
   const bytes = await readBody(request, 4 * 1024 * 1024);
+  requireCondition(
+    input.preview === "true" || canConfirmWorkingSchedule(user.role),
+    403,
+    "Only administrators and managers can confirm a source schedule import. Supervisors can preview only.",
+  );
   let decoded: unknown;
   try {
     decoded = JSON.parse(
@@ -90,6 +110,12 @@ export async function importSourceProgramme(
   }
   const programme = sourceProgrammeSchema.parse(decoded),
     summary = sourceProgrammeSummary(programme);
+  requireCondition(
+    !state.workingSchedule ||
+      state.workingSchedule.sourceSha256 === summary.sha256,
+    409,
+    "This project has a working schedule on another source. Preserve it and use a separate project.",
+  );
   requireCondition(
     !state.sourceProgrammeSummary ||
       state.sourceProgrammeSummary.sha256 === summary.sha256,
@@ -176,6 +202,7 @@ export async function removeSourceProgramme(
   requireCondition(
     !state.assets.length &&
       !state.schedule.length &&
+      !state.workingSchedule?.revision &&
       !data.tasks.some((task) => task.projectId === projectId),
     409,
     "This project contains other work. Source removal needs a separate reviewed plan.",

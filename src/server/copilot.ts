@@ -27,6 +27,9 @@ import {
   type CopilotFunctionTool,
 } from "@/lib/copilot-provider";
 import { getCopilotConfig, getCopilotRuntimeStatus } from "./copilot-config";
+import { copilotExtensions, EXTENSION_TOOLS } from "./copilot-extensions";
+import { scheduleViewSnapshotSchema } from "@/lib/schedule-view-context";
+import { assistantReportStateSchema } from "@/lib/assistant-report-state";
 
 async function authorized(projectId: string) {
   const user = await requireUser();
@@ -153,6 +156,7 @@ const tool = (
   strict: true,
 });
 const TOOLS: CopilotFunctionTool[] = [
+  ...EXTENSION_TOOLS,
   tool(
     "project_summary",
     "Read current-project counts and limitations. Managed app activities and imported P6 source activity counts are separate; full imported source rows are not included.",
@@ -210,10 +214,12 @@ const TOOLS: CopilotFunctionTool[] = [
   ),
 ];
 export async function chatCopilot(request: Request, projectId: string) {
-  const { context } = await authorized(projectId);
+  let { user, data, context } = await authorized(projectId);
   const input = z
     .object({
       message: z.string().trim().min(1).max(4000),
+      reportState: assistantReportStateSchema.optional(),
+      scheduleView: scheduleViewSnapshotSchema.optional(),
       history: z
         .array(
           z
@@ -228,6 +234,18 @@ export async function chatCopilot(request: Request, projectId: string) {
     })
     .strict()
     .parse(await readJson(request, 96000));
+  requireCondition(
+    !input.reportState || input.reportState.projectId === projectId,
+    400,
+    "Report filters belong to another project. Start a new project conversation.",
+  );
+  const extensions = copilotExtensions({
+    user,
+    data,
+    projectId,
+    initialReport: input.reportState,
+    scheduleView: input.scheduleView,
+  });
   const status = await getCopilotRuntimeStatus();
   requireCondition(
     status.state === "ready",
@@ -247,8 +265,12 @@ export async function chatCopilot(request: Request, projectId: string) {
       message: input.message,
       history: input.history,
       projectName: context.project.name,
+      viewContext: extensions.viewContext(),
       tools: TOOLS,
       executeTool: async (name, args) => {
+        const extended = await extensions.execute(name, args);
+        if (extended) return extended.output;
+        ({ user, data, context } = await authorized(projectId));
         if (name === "project_summary") {
           z.object({}).strict().parse(args);
           include([
@@ -410,5 +432,9 @@ export async function chatCopilot(request: Request, projectId: string) {
     sources: [...sources.values()],
     proposals,
     assetSearches,
+    reports: extensions.reports,
+    reportState: extensions.reportState,
+    scheduleProposals: extensions.scheduleProposals,
+    librarySearches: extensions.librarySearches,
   });
 }

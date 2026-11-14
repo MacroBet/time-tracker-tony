@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, RotateCcw, Check } from "lucide-react";
 import type { Asset } from "@/lib/commissioning";
 import type { Task, User } from "@/lib/domain";
@@ -23,7 +23,9 @@ export function WorksToGoWorkspace({
   currentUser,
   busy,
   onCommand,
+  linkedWorkId,
 }: {
+  linkedWorkId?: string;
   state?: ProjectChecksheetState;
   assets: Asset[];
   tasks: Task[];
@@ -33,8 +35,8 @@ export function WorksToGoWorkspace({
 }) {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
-  const [status, setStatus] = useState("open");
-  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState(linkedWorkId ? "all" : "open");
+  const [query, setQuery] = useState(linkedWorkId ?? "");
   const [assetId, setAssetId] = useState("");
   const [taskId, setTaskId] = useState("");
   const manage = currentUser.role !== "worker";
@@ -49,10 +51,18 @@ export function WorksToGoWorkspace({
   const rows = (state?.worksToGo ?? []).filter(
     (row) =>
       (status === "all" || row.status === status) &&
-      `${row.title} ${row.notes} ${assets.find((a) => a.id === row.assetId)?.name ?? ""}`
+      `${row.id} ${row.title} ${row.notes} ${assets.find((a) => a.id === row.assetId)?.name ?? ""}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
+  useEffect(() => {
+    if (!linkedWorkId) return;
+    const target = document.getElementById(`work-${linkedWorkId}`);
+    if (target) {
+      target.focus();
+      target.scrollIntoView({ block: "center" });
+    }
+  }, [linkedWorkId]);
   const counts = worksToGoSummary(state);
   const disabled = busy || pending;
   async function run(command: ChecksheetCommand) {
@@ -228,10 +238,19 @@ export function WorksToGoWorkspace({
           </select>
         </label>
       </div>
+      {linkedWorkId &&
+        !state?.worksToGo.some((row) => row.id === linkedWorkId) && (
+          <p role="alert" className="text-sm text-slate-600">
+            This remaining-work record is no longer available. Clear the search
+            to view permitted records.
+          </p>
+        )}
       <ul className="divide-y divide-slate-200">
         {rows.map((row) => (
           <li
             key={row.id}
+            id={`work-${row.id}`}
+            tabIndex={-1}
             className="flex flex-wrap items-start justify-between gap-4 py-4"
           >
             <div className="min-w-0 flex-1">

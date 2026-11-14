@@ -6,6 +6,7 @@ import {
 } from "../src/lib/programme-source";
 import {
   canConfirmWorkingSchedule,
+  nextWorkingActivityCode,
   managedWorkingSourceIndex,
   previewWorkingSchedule,
   resolveWorkingSourceIndex,
@@ -363,4 +364,48 @@ test("equipment mapping edits are explicit, source-bound, unique and can clear w
   assert.deepEqual(cleared.errors, []);
   assert.deepEqual(cleared.next.activityPatches[0].assetIds, []);
   assert(cleared.changes[0].includes("none"));
+});
+
+test("human activity codes use the first unused project reference with case-insensitive collision checks", () => {
+  assert.equal(nextWorkingActivityCode([]), "FT-00001");
+  assert.equal(
+    nextWorkingActivityCode([
+      "ft-00001",
+      "FT-00003",
+      " ft-00002 ",
+      "unrelated",
+    ]),
+    "FT-00004",
+  );
+  assert.equal(nextWorkingActivityCode(["FT-00002"]), "FT-00001");
+  const used = new Set(
+    Array.from(
+      { length: 100000 },
+      (_, i) => `FT-${String(i + 1).padStart(5, "0")}`,
+    ),
+  );
+  assert.equal(nextWorkingActivityCode(used), "FT-100001");
+  const index = indexSourceProgramme(fixture());
+  index.activities[0].activityId = "ft-00001";
+  const duplicate = previewWorkingSchedule(
+    index,
+    undefined,
+    draft({
+      kind: "create-asset-activity",
+      internalId: undefined,
+      finish: undefined,
+      assetId: "asset-1",
+      title: "New",
+      deadline: "2026-12-10",
+    }),
+    {
+      ...context,
+      identity: {
+        internalId: "new-internal",
+        activityId: "FT-00001",
+        taskId: "new-task",
+      },
+    },
+  );
+  assert(duplicate.errors.some((error) => error.includes("identity")));
 });

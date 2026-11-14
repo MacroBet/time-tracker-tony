@@ -1,4 +1,8 @@
 import { z } from "zod";
+import type { ProjectReportResult } from "./project-reports";
+import type { AssistantReportState } from "./assistant-report-state";
+import type { WorkingScheduleDraft } from "./schedule-working";
+import type { ProjectLibraryPage } from "./project-library";
 import {
   commissioning,
   hasModule,
@@ -47,6 +51,10 @@ export type CopilotAnswer = {
   sources: CopilotSource[];
   proposals: CopilotTaskProposalDraft[];
   assetSearches?: CopilotAssetSearchResult[];
+  reports?: ProjectReportResult[];
+  reportState?: AssistantReportState;
+  scheduleProposals?: WorkingScheduleDraft[];
+  librarySearches?: ProjectLibraryPage[];
 };
 export type CopilotTask = Pick<
   Task,

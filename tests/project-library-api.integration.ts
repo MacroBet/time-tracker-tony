@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { MODULES, commissioning, taskKind } from "../src/lib/commissioning";
-import type { Bootstrap } from "../src/lib/domain";
+import { homeFor, type Bootstrap } from "../src/lib/domain";
 import { scopeData } from "../src/lib/permissions";
 import {
   canReadLessonSource,
@@ -392,11 +392,22 @@ test("library HTTP search, explicit lesson CAS and fresh permissions stay scoped
       `/commissioning?projectId=${projectId}&asset=${encodeURIComponent(source.assetId)}`,
       manager,
     );
-    assert(
-      [303, 307, 308].includes(sourcePage.status),
-      "Asset source UI redirects after commissioning access is revoked.",
-    );
-    assert(sourcePage.headers.get("location"));
+    const redirectTarget = homeFor(revoked.currentUser);
+    if ([303, 307, 308].includes(sourcePage.status)) {
+      const location = sourcePage.headers.get("location");
+      assert(location);
+      assert.equal(new URL(location, base).pathname, redirectTarget);
+    } else {
+      // A route rendered after the response starts can stream Next's redirect
+      // instruction with HTTP 200; that status alone is not evidence of access.
+      assert.equal(sourcePage.status, 200);
+      const streamed = await sourcePage.text();
+      assert.match(streamed, /NEXT_REDIRECT/);
+      assert(
+        streamed.includes(`;${redirectTarget};`),
+        "The streamed source response redirects to the permitted home route.",
+      );
+    }
   } finally {
     assert.equal(
       (

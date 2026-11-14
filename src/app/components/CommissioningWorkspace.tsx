@@ -38,6 +38,9 @@ import { TagLevel } from "./TagLevel";
 import { DocumentRequirementsEditor } from "./DocumentRequirements";
 import { InventoryBatchControls } from "./InventoryBatchControls";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
+import { useLinkedProject } from "./useLinkedProject";
+import { ProjectReportView } from "./ProjectReportView";
+import { reportQuerySchema } from "@/lib/project-reports";
 import { type Project, type User, type Task, statusLabels } from "@/lib/domain";
 
 type Preview = {
@@ -55,23 +58,19 @@ export function CommissioningWorkspace({
   reports?: boolean;
 }) {
   const params = useSearchParams();
-  const requestedProject = params.get("projectId");
   const app = useApp(),
-    project = app.projects.find((p) => p.id === app.selectedProjectId);
+    linkedProject = useLinkedProject();
+  const requestedProject = linkedProject.requested,
+    project = linkedProject.project;
   const assignedRequest = app.projects.some((p) => p.id === requestedProject);
-  const linkedProjectApplied = useRef<string | null>(null);
-  const { selectedProjectId, selectProject } = app;
-  useEffect(() => {
-    if (!requestedProject) {
-      linkedProjectApplied.current = null;
-      return;
-    }
-    if (assignedRequest && linkedProjectApplied.current !== requestedProject) {
-      linkedProjectApplied.current = requestedProject;
-      if (selectedProjectId !== requestedProject)
-        selectProject(requestedProject);
-    }
-  }, [requestedProject, assignedRequest, selectedProjectId, selectProject]);
+  const reportQuery = reportQuerySchema.safeParse(
+    Object.fromEntries(
+      Array.from(params.entries()).filter(
+        ([key]) => key in reportQuerySchema.shape,
+      ),
+    ),
+  );
+  const newReports = reports && (params.has("report") || !params.has("view"));
   return (
     <AppShell
       title={
@@ -95,8 +94,31 @@ export function CommissioningWorkspace({
           This project is not available to your account. Choose an assigned
           project.
         </p>
-      ) : requestedProject && project?.id !== requestedProject ? (
+      ) : linkedProject.opening ? (
         <p role="status">Opening the linked project…</p>
+      ) : project && newReports ? (
+        reportQuery.success ? (
+          <div className="space-y-5">
+            <ProjectReportView
+              key={`${project.id}-${JSON.stringify(reportQuery.data)}`}
+              projectId={project.id}
+              initialQuery={reportQuery.data}
+            />
+            <Link
+              className="inline-flex min-h-11 items-center text-sm text-blue-700 underline"
+              href={`/reports?projectId=${encodeURIComponent(project.id)}&view=tags`}
+            >
+              Other commissioning reports
+            </Link>
+          </div>
+        ) : (
+          <p role="alert">
+            The report filters are invalid.{" "}
+            <Link className="underline text-blue-700" href="/reports">
+              Reset report filters
+            </Link>
+          </p>
+        )
       ) : project ? (
         <ProjectWorkspace
           key={`${project.id}-${admin}-${reports}-${params.get("asset") ?? ""}-${params.get("view") ?? ""}`}
