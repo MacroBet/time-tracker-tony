@@ -1,5 +1,8 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Impeccable su tutto il progetto 14nov:** [raffinamento UI e nuovo report inglese](intake-20261114-impeccable-project.md).
+Management/worker, controlli condivisi e mobile; codice6c31917 verificato online.
+
 **Modifiche UI 14nov implementate:** [report prima/dopo e prove](intake-20261114-ui-feedback.md).
 Mandato diretto sui cinque screenshot; Overview, Schedule/Overdue, assistente e registro asset.
 

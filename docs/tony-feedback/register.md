@@ -1,5 +1,19 @@
 # Registro operativo — Tony
 
+## Passata Impeccable sull'intero progetto - 14 novembre 2026
+
+Mandato diretto Marco eseguito: UI management e worker, shell, controlli comuni,
+form, tabelle, dialoghi e mobile rifiniti mantenendo identita/ruoli/dati.
+[Perimetro, prove e limiti](intake-20261114-impeccable-project.md).
+204 test unitari/PostgreSQL + 12 API, lint/typecheck/build/format verdi; 28 stati
+schermo x desktop/mobile, conferma finale senza errori runtime o overflow pagina.
+Reset filtri, cambio progetto, offline, focus, retry e gate moduli verificati.
+Codice6c31917 su main; Production7787213884success e aliasHTTP200 verificati.
+Nuovo PDF inglese privato: output/pdf/fieldtrack-project-ui-review-20261114-en.pdf.
+Nessuna scrittura DB remota, chiamataAI o invio esterno. Originali/task/asset e
+modifiche preesistenti preservati; quota17%->18%, ordinarytrue. Prossimo lavoro
+attende incarico Marco; nessun avvio del piano R2-R5.
+
 ## Modifiche UI dai cinque screenshot — 14 novembre 2026
 
 Mandato diretto Marco: implementare tutte le modifiche UI allegate e report prima/dopo.
@@ -432,6 +446,12 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Passata completa UI 14nov:** richiesta Impeccable eseguita su management e
+worker; [prima/dopo esteso e prove](intake-20261114-impeccable-project.md).
+Codice6c31917 online, Production7787213884success/alias200. 204+12test e statici
+verdi; 56schermate finali desktop/mobile senza overflow/errori runtime. PDF in
+inglese aggiornato, dati/ruoli/provider conservati; ulteriore lavoro attende Marco.
 
 **Mandato esecutivo 14nov:** modifiche UI dei cinque screenshot implementate e
 verificate; [prima/dopo, prove e limiti](intake-20261114-ui-feedback.md).
