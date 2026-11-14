@@ -1,5 +1,14 @@
 # Registro operativo — Tony
 
+## PDF inglese con nuove funzioni e guida test — 14 novembre 2026
+
+Richiesta Marco eseguita: nuova edizione unificata di12pagine per inoltro manuale
+aTony, output/pdf/fieldtrack-product-update-test-guide-20261114-en.pdf.
+Prima/dopo, prerequisiti, prompt, passi manuali, risultati attesi e checklist
+per tutte le nuove funzioni; [dettagli e hash](intake-20261114-assistant-extension.md#pdf-inglese-aggiornato-per-tony).
+Render12/12pagine ispezionato; testo/link/margini verificati. PDF privato fuoriGit.
+Fonte release3917024; nessun nuovo sviluppo, deploy, AI live o invio esterno.
+
 ## Assistente, report e Schedule di lavoro — 14 novembre 2026
 
 Mandato diretto Marco eseguito per tutte le richieste residue Tony R2–R5.

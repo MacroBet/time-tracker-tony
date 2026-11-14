@@ -112,3 +112,18 @@ preservati: manifest/index/P6-parity/regia-status/register, readiness non tracci
 next-env.d.ts (backup privato /tmp/fieldtrack-assistant-next-env-before.d.ts).
 Quota nativa iniziale 18%, ordinaryUsageAllowed=true; cap90/stop nuovi85 invariati.
 Originali, dati di prova e log rimangono privati in output/tony/assistant-extension-20261114/.
+
+## PDF inglese aggiornato per Tony
+
+Mandato successivo Marco: aggiornare il report PDF con tutte le nuove funzionalità
+e come provarle, per inoltro manuale a Tony. Nuova edizione unificata di12pagine,
+output/pdf/fieldtrack-product-update-test-guide-20261114-en.pdf (175207byte),
+SHA2568eddd50be4a665e97e16647b9c3413b93d9002a4ccaac25b012476a8b518d720.
+Include prima/dopo UI, prerequisiti supplier/mapping e ruoli, domande esempio,
+passi manuali e risultati attesi per report/Gantt/WTG/lookahead/fornitori, creazione
+attività e modifica P6, library/lesson, mobile e checklist. Limiti e prove locali
+vs pubblicazione distinti; esempi sintetici etichettati, nessuna nuova provaAI live.
+Fonte release3917024 verificata nel lavoro precedente. PDF precedente conservato.
+Render12/12pagine ispezionato; estrazione, link live e margini verificati. Nessun
+invio aTony, cambio applicativo, deploy o scrittura dati remota per questo incarico.
+PDF/generatore/ricevute privati fuoriGit; registro aggiornato con patch selettiva.
