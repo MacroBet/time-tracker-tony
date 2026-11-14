@@ -1,5 +1,9 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Dashboard AI usage 14nov implementata:** [permessi, costi, collaudo e rilascio](intake-20261114-ai-usage.md).
+Solo admin, tutti i progetti, token e stime USD giornaliere; lettura del meter esistente,
+nessuna migrazione o chiamata AI di prova.
+
 **Fix chat 14nov online:** [cronologia privata DB, Markdown e attesa inline](intake-20261114-chat-history.md).
 Migrazione0007 approvata/applicata/verificata in Production; gate monouso rimosso.
 

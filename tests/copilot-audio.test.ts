@@ -55,6 +55,8 @@ test("transcription records metadata only and never submits query automatically"
     "fieldtrack-copilot-transcription",
   );
   assert.equal(observations[1].event.usage.totalTokens, 9);
+  assert.equal(observations[0].audioSeconds, 0.1);
+  assert.equal(observations[1].audioSeconds, 0.1);
   assert.ok(!JSON.stringify(observations).includes(text));
   assert.ok(!JSON.stringify(observations).includes("synthetic-key"));
 });

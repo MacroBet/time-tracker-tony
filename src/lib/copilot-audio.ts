@@ -107,7 +107,7 @@ export async function transcribeCopilotWav(
   },
   transport: typeof fetch = fetch,
 ) {
-  validateCopilotWav(audio);
+  const audioSeconds = validateCopilotWav(audio);
   const started = Date.now(),
     attemptId = crypto.randomUUID(),
     stamp = new Date(started).toISOString();
@@ -135,6 +135,7 @@ export async function transcribeCopilotWav(
     latencyMs: null,
     providerRequestId: null,
     attemptNumber: 1,
+    audioSeconds,
   };
   const save = async () => {
     try {

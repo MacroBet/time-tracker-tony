@@ -65,12 +65,14 @@ export function AppShell({
   back,
   children,
   wide = false,
+  projectScoped = true,
 }: {
   title: string;
   subtitle?: string;
   back?: string;
   children: React.ReactNode;
   wide?: boolean;
+  projectScoped?: boolean;
 }) {
   const {
     currentUser,
@@ -200,7 +202,10 @@ export function AppShell({
       : []),
     { label: "Settings", href: "/settings", icon: Settings },
     ...(currentUser.role === "admin"
-      ? [{ label: "Admin control", href: "/admin", icon: ShieldCheck }]
+      ? [
+          { label: "Admin control", href: "/admin", icon: ShieldCheck },
+          { label: "AI usage", href: "/admin/ai-usage", icon: FileBarChart },
+        ]
       : []),
   ];
   const permitted = (items: NavigationItem[]) =>
@@ -374,7 +379,7 @@ export function AppShell({
                 {subtitle && (
                   <span
                     className={
-                      back && projects.length > 0
+                      back && projectScoped && projects.length > 0
                         ? "hidden sm:contents"
                         : "contents"
                     }
@@ -386,7 +391,7 @@ export function AppShell({
                 )}
               </div>
             </div>
-            {projects.length > 0 && (
+            {projectScoped && projects.length > 0 && (
               <label className="order-3 col-span-2 flex min-w-0 items-center gap-2 text-sm text-slate-600 lg:order-none lg:ml-3 lg:flex-1 lg:max-w-md">
                 <span className="shrink-0">Project</span>
                 {back && subtitle && (
@@ -418,7 +423,7 @@ export function AppShell({
               </label>
             )}
             <div className="flex shrink-0 items-center gap-1 max-[359px]:col-span-2 max-[359px]:row-start-2 max-[359px]:justify-self-end sm:gap-2 lg:ml-auto">
-              <AssistantEntry />
+              {projectScoped && <AssistantEntry />}
               <span className="hidden sm:flex gap-1.5 items-center text-[11px] text-slate-500 mr-2">
                 <span
                   className={`size-1.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-red-500"}`}

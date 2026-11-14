@@ -492,6 +492,13 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
 
+**Dashboard AI usage 14nov implementata:** [perimetro, prove e limiti](intake-20261114-ai-usage.md).
+Solo admin su pagina/API/query SQL; consumi globali giornalieri, filtri periodo/modello/fonte,
+grafico e tabelle, stime USD con copertura e dati mancanti espliciti. Nessun billing/account
+OpenAI implicito; nessuna migrazione o scrittura di prova remota.296test unitari+17API,
+11mirati dopo correzione incomplete, statici/build e33controlli browser PASS.
+Commit/push/deploy da verificare; dati e provider cliente preservati.
+
 **Fix chat urgente14nov online:** [implementazione, consenso0007 e prove](intake-20261114-chat-history.md).
 Decisione Marco: chat su DB; piano remoto approvato («Autorizzo migrazione 0007 e
 deploy», call_696654d2a0444e3ca1800d69c121000a).0007 applicata/verificata nel solo

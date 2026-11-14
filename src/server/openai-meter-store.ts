@@ -57,27 +57,35 @@ const eventSchema = z.object({
   estimate: z.null(),
   billed: z.null(),
 });
-const schema = z.object({
-  event: eventSchema,
-  outcome: z.enum([
-    "started",
-    "completed",
-    "incomplete",
-    "http_error",
-    "transport_error",
-    "body_interrupted",
-    "invalid_response",
-    "cancel",
-    "timeout",
-  ]),
-  usageState: z.enum(["missing", "partial", "complete"]),
-  latencyMs: z.number().nonnegative().nullable(),
-  providerRequestId: z
-    .string()
-    .regex(/^sha256:[a-f0-9]{64}$/)
-    .nullable(),
-  attemptNumber: z.number().int().positive(),
-});
+const schema = z
+  .object({
+    event: eventSchema,
+    outcome: z.enum([
+      "started",
+      "completed",
+      "incomplete",
+      "http_error",
+      "transport_error",
+      "body_interrupted",
+      "invalid_response",
+      "cancel",
+      "timeout",
+    ]),
+    usageState: z.enum(["missing", "partial", "complete"]),
+    latencyMs: z.number().nonnegative().nullable(),
+    providerRequestId: z
+      .string()
+      .regex(/^sha256:[a-f0-9]{64}$/)
+      .nullable(),
+    attemptNumber: z.number().int().positive(),
+    audioSeconds: z.number().finite().positive().max(30).optional(),
+  })
+  .refine(
+    (observation) =>
+      observation.audioSeconds === undefined ||
+      observation.event.source === "fieldtrack-copilot-transcription",
+    "Audio duration requires a transcription source",
+  );
 /** Shared closed metadata boundary for private spool and durable database storage. */
 export function sanitizeMeterObservation(input: AttemptObservation) {
   const observation = schema.parse({

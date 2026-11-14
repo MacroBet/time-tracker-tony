@@ -41,6 +41,8 @@ export type AttemptObservation = {
   latencyMs: number | null;
   providerRequestId: string | null;
   attemptNumber: number;
+  /** Validated PCM duration, metadata only; absent in older observations. */
+  audioSeconds?: number;
 };
 export type MeterRecorder =
   | ((observation: AttemptObservation) => void)

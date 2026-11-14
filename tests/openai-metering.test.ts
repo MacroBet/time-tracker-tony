@@ -17,6 +17,7 @@ import {
 import {
   createOpenAIMeterRecorder,
   readOpenAIMeterExport,
+  sanitizeMeterObservation,
 } from "../src/server/openai-meter-store";
 import type { AttemptObservation } from "../src/lib/openai-metering";
 const turn = {
@@ -330,6 +331,53 @@ test("atomic collector projection contains only v1 final events and strips injec
       readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
     ).events.length,
     1,
+  );
+});
+
+test("meter preserves validated audio duration, accepts legacy metadata and rejects invalid durations", async (t) => {
+  const s = setup(t);
+  let final: AttemptObservation | undefined;
+  await runCopilotTurn(
+    turn,
+    {
+      ...config,
+      recordAttempt: (value) => {
+        if (value.outcome !== "started") final = value;
+      },
+    },
+    async () => Response.json(payload),
+  );
+  assert.equal(sanitizeMeterObservation(final!).audioSeconds, undefined);
+  const transcription: AttemptObservation = {
+    ...final!,
+    event: {
+      ...final!.event,
+      source: "fieldtrack-copilot-transcription",
+      model: "gpt-transcribe",
+    },
+    audioSeconds: 0.1,
+  };
+  s.recordAttempt(transcription);
+  assert.equal(s.read().observations[0].audioSeconds, 0.1);
+  assert.equal(
+    JSON.parse(
+      readFileSync(path.join(s.directory, "collector-v1.json"), "utf8"),
+    ).events[0].audioSeconds,
+    undefined,
+  );
+  for (const audioSeconds of [0, -1, 30.01, Infinity, NaN]) {
+    assert.throws(() =>
+      sanitizeMeterObservation({
+        ...transcription,
+        audioSeconds,
+      }),
+    );
+  }
+  assert.throws(() =>
+    sanitizeMeterObservation({
+      ...final!,
+      audioSeconds: 0.1,
+    }),
   );
 });
 
