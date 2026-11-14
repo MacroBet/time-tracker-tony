@@ -85,4 +85,14 @@ sviluppare e collaudare questa dashboard. Nessuna scrittura di prova nel DB remo
 - Prove private ignorate: `output/tony/ai-usage-20261114/` e
   `output/playwright/ai-usage-20261114/`. Nessuno screenshot/dato cliente in Git.
 
-Commit, push e deploy effettivo da registrare dopo verifica del target esatto.
+Codice `422a72e2855c73971a1176b89c548d8502e3f535` committato e pushato su
+`origin/main`. Deployment GitHub `7793039575`, ambiente **Production**, stato
+**success**; Vercel `time-tracker-tony-pfsrgmhm4-macrobets-projects.vercel.app`
+**Ready**. Build normale senza gate/migrazione. Alias
+`https://time-tracker-tony.vercel.app` HTTP200; API senza sessione HTTP401 con
+cache privata/no-store, pagina anonima senza totali protetti. Controlli admin
+autenticati svolti nella demo e in PGlite, non con query di prova sul DB remoto.
+Ricevuta privata `output/tony/ai-usage-20261114/code-release-receipt.json`.
+
+Prossimo passo: uso admin su dati registrati; nessun recupero retroattivo di
+durata audio/consumi assenti e nessuna nuova integrazione billing implicita.

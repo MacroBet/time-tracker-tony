@@ -492,12 +492,14 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
 
-**Dashboard AI usage 14nov implementata:** [perimetro, prove e limiti](intake-20261114-ai-usage.md).
+**Dashboard AI usage 14nov online:** [perimetro, prove e limiti](intake-20261114-ai-usage.md).
 Solo admin su pagina/API/query SQL; consumi globali giornalieri, filtri periodo/modello/fonte,
 grafico e tabelle, stime USD con copertura e dati mancanti espliciti. Nessun billing/account
 OpenAI implicito; nessuna migrazione o scrittura di prova remota.296test unitari+17API,
 11mirati dopo correzione incomplete, statici/build e33controlli browser PASS.
-Commit/push/deploy da verificare; dati e provider cliente preservati.
+Codice422a72e pushato su main e online: Production7793039575success, VercelReady,
+alias200 e API anonima401 verificati. Prossimo passo: uso admin su dati registrati.
+Dati/provider cliente preservati; nessun backfill o billing aggiunto.
 
 **Fix chat urgente14nov online:** [implementazione, consenso0007 e prove](intake-20261114-chat-history.md).
 Decisione Marco: chat su DB; piano remoto approvato («Autorizzo migrazione 0007 e

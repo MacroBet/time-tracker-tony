@@ -1,6 +1,6 @@
 # Indice della conoscenza FieldTrack / Tony
 
-**Dashboard AI usage 14nov implementata:** [permessi, costi, collaudo e rilascio](intake-20261114-ai-usage.md).
+**Dashboard AI usage 14nov online:** [permessi, costi, collaudo e rilascio](intake-20261114-ai-usage.md).
 Solo admin, tutti i progetti, token e stime USD giornaliere; lettura del meter esistente,
 nessuna migrazione o chiamata AI di prova.
 
