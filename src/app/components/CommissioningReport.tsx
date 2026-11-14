@@ -20,6 +20,7 @@ import { isOverdue, statusLabels, type Project } from "@/lib/domain";
 import { filterTagProgress, type TagProgressFilter } from "@/lib/tag-progress";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { InfoPopover } from "./InfoPopover";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +69,7 @@ export function ReportDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="!max-w-[96vw] w-[96vw] max-h-[92vh] overflow-y-auto">
+      <DialogContent className="!max-w-[96vw] w-[96vw] max-h-[92dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{request?.title}</DialogTitle>
           <DialogDescription>
@@ -320,7 +321,7 @@ export function CommissioningReport({
   );
   function select(label: string, field: keyof TaskFilters, options: string[]) {
     return (
-      <label className="text-xs text-slate-600">
+      <label className="min-w-0 text-sm text-slate-600">
         {label}
         <select
           aria-label={label}
@@ -342,7 +343,7 @@ export function CommissioningReport({
   }
   return (
     <div className="min-w-0 w-full space-y-4 report-print">
-      <p className="text-xs text-slate-600">
+      <p className="break-words text-sm text-slate-600">
         Schedule ID:{" "}
         <span className="font-medium break-words">
           {state.programmeId || "Not recorded"}
@@ -350,7 +351,7 @@ export function CommissioningReport({
       </p>
       {!["equipment", "trend"].includes(request.view) && (
         <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3 print:hidden">
-          <label className="text-xs text-slate-600 col-span-2">
+          <label className="min-w-0 text-sm text-slate-600 col-span-2">
             Search ID, asset or activity
             <Input
               aria-label="Search report"
@@ -370,7 +371,7 @@ export function CommissioningReport({
               )}
               {select("Status", "status", Object.keys(statusLabels))}
               {request.view === "tags" && (
-                <label className="text-xs text-slate-600">
+                <label className="min-w-0 text-sm text-slate-600">
                   Tag review
                   <select
                     className="field-select mt-1"
@@ -411,7 +412,7 @@ export function CommissioningReport({
           )}
           {request.view !== "tags" &&
             ["dueFrom", "dueTo"].map((field, i) => (
-              <label key={field} className="text-xs text-slate-600">
+              <label key={field} className="min-w-0 text-sm text-slate-600">
                 {i ? "Due through" : "Due from"}
                 <Input
                   aria-label={i ? "Due through" : "Due from"}
@@ -427,14 +428,17 @@ export function CommissioningReport({
         </div>
       )}
       <div className="flex flex-wrap justify-between items-center gap-2">
-        <p className="text-sm text-slate-500">
+        <p className="break-words text-sm text-slate-600" aria-live="polite">
           {rows.length} records · {project.name}
         </p>
         <div className="flex flex-wrap gap-2 print:hidden">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setFilters(request.filters ?? {})}
+            onClick={() => {
+              setPage(0);
+              setFilters(request.filters ?? {});
+            }}
           >
             Reset filters
           </Button>
@@ -456,26 +460,44 @@ export function CommissioningReport({
         </div>
       </div>
       {request.view === "tags" && (
-        <p className="text-xs text-slate-500">
-          One row per applicable asset and level. Missing tag records remain
-          incomplete; N/A records are excluded from completion percentages. I =
-          Issued; R = Rejected; AC = Approved with comments; A = Approved.
-          Approval counts use A when recorded; legacy tags without a review
-          status retain completed-workflow approval. Workflow and test result
-          remain separate.
-          {filters.supply === "client" &&
-            " Showing only explicitly marked Client Supplied assets."}
-          {filters.assetLocation !== undefined &&
-            ` Location: ${filters.assetLocation || "No location recorded"}.`}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-y border-slate-200 py-1 text-sm text-slate-600">
+          <p>
+            One row per applicable asset and level
+            {filters.supply === "client" ? " · Client supplied only" : ""}
+            {filters.assetLocation !== undefined
+              ? ` · ${filters.assetLocation || "No location recorded"}`
+              : ""}
+          </p>
+          <InfoPopover label="How tagging status is counted">
+            <p>
+              Missing tag records remain incomplete; N/A records are excluded
+              from completion percentages. I = Issued; R = Rejected; AC =
+              Approved with comments; A = Approved.
+            </p>
+            <p>
+              Approval counts use A when recorded; legacy tags without a review
+              status retain completed-workflow approval. Workflow and test
+              result remain separate.
+            </p>
+          </InfoPopover>
+        </div>
       )}
-      <div className="overflow-x-auto rounded-xl border bg-white">
-        <table className="w-full text-xs text-left">
-          <thead className="bg-slate-50">
+      <div
+        className="relative isolate max-h-[65dvh] overflow-auto overscroll-contain rounded-xl border bg-white focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700 print:max-h-none print:overflow-visible"
+        role="region"
+        aria-label={`${request.title} report records`}
+        tabIndex={0}
+      >
+        <table className="w-full text-sm text-left">
+          <caption className="sr-only">
+            {request.title} · Filtered records for {project.name}
+          </caption>
+          <thead className="sticky top-0 z-20 bg-slate-50">
             <tr>
-              {headers.map((h) => (
+              {headers.map((h, index) => (
                 <th
-                  className="p-3 whitespace-nowrap font-medium text-slate-600"
+                  scope="col"
+                  className={`p-3 whitespace-nowrap font-medium text-slate-700 ${index === 0 ? "sticky left-0 z-30 bg-slate-50" : ""}`}
                   key={h}
                 >
                   {h}
@@ -493,11 +515,11 @@ export function CommissioningReport({
                     {row.map((cell, j) => (
                       <td
                         key={j}
-                        className={`p-3 ${j === 0 ? "min-w-52 max-w-96 font-medium" : "min-w-24 max-w-80"}`}
+                        className={`p-3 break-words [overflow-wrap:anywhere] ${j === 0 ? "sticky left-0 z-10 min-w-52 max-w-96 bg-white font-medium" : "min-w-24 max-w-80"}`}
                       >
                         {j === 0 && links[i] ? (
                           <Link
-                            className="text-blue-600 hover:underline"
+                            className="inline-flex min-h-11 items-center text-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
                             href={links[i]!}
                           >
                             {cell}
@@ -513,15 +535,20 @@ export function CommissioningReport({
           </tbody>
         </table>
         {!rows.length && (
-          <p className="p-8 text-center text-sm text-slate-500">
+          <p className="p-6 text-center text-sm text-slate-600">
             No matching records. Import the register or adjust the filters.
           </p>
         )}
       </div>
-      <div className="flex justify-between items-center gap-3 text-xs text-slate-500">
+      <div className="flex flex-wrap justify-between items-center gap-3 text-sm text-slate-600">
         <span>
-          Page {currentPage + 1} of {Math.max(1, Math.ceil(rows.length / 50))} ·
-          50 records per page. CSV includes all filtered records.
+          {rows.length ? currentPage * 50 + 1 : 0}–
+          {Math.min((currentPage + 1) * 50, rows.length)} of {rows.length}{" "}
+          records · Page {currentPage + 1} of{" "}
+          {Math.max(1, Math.ceil(rows.length / 50))}
+          <span className="mt-1 block text-xs">
+            CSV includes all filtered records.
+          </span>
         </span>
         <div className="flex flex-wrap gap-2 print:hidden">
           <Button

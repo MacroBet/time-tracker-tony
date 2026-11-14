@@ -169,6 +169,19 @@ export function ManagementBoard() {
     setPage(0);
     setSelected([]);
   }
+  function clearFilters() {
+    setCompany("all");
+    setPerson("all");
+    setStatus("all");
+    setPriority("all");
+    setLevel("all");
+    setEquipment("all");
+    setDueFrom("");
+    setDueTo("");
+    setOverdue(false);
+    setQuery("");
+    resetSelection();
+  }
   function toggle(id: string) {
     setSelected(
       selected.includes(id)
@@ -183,7 +196,7 @@ export function ManagementBoard() {
     options: { id: string; name: string }[],
   ) {
     return (
-      <label className="text-xs text-slate-500 space-y-1">
+      <label className="text-xs text-slate-600 space-y-1">
         {label}
         <select
           aria-label={label}
@@ -225,7 +238,7 @@ export function ManagementBoard() {
     Number(!!dueTo);
   const due = (t: Task) => (
     <span
-      className={`text-xs ${isOverdue(t) ? "text-red-600 font-medium" : "text-slate-500"}`}
+      className={`text-xs ${isOverdue(t) ? "text-red-600 font-medium" : "text-slate-600"}`}
     >
       {dueDateFor(t)
         ? new Date(dueDateFor(t) + "T12:00:00").toLocaleDateString("en-GB", {
@@ -234,7 +247,7 @@ export function ManagementBoard() {
             year: "2-digit",
           })
         : "No deadline"}
-      {isOverdue(t) && <span className="block text-[10px]">Overdue</span>}
+      {isOverdue(t) && <span className="block text-xs">Overdue</span>}
     </span>
   );
   return (
@@ -244,7 +257,7 @@ export function ManagementBoard() {
           <h2 className="text-xl font-semibold tracking-tight">
             Activity planner
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Assign work and follow responsibility.
           </p>
         </div>
@@ -252,7 +265,7 @@ export function ManagementBoard() {
           <div className="flex-1 sm:w-64">
             {selectFilter("Projects", project, setProject, projects)}
           </div>
-          <Button asChild className="h-10">
+          <Button asChild>
             <Link href="/create-task">New activity</Link>
           </Button>
         </div>
@@ -293,11 +306,12 @@ export function ManagementBoard() {
                   setQuery(e.target.value);
                   resetSelection();
                 }}
-                className="pl-9 h-10"
+                className="pl-9"
               />
             </div>
             <Button
               variant="outline"
+              aria-label="Activity filters"
               aria-expanded={filters}
               onClick={() => setFilters(!filters)}
             >
@@ -331,7 +345,7 @@ export function ManagementBoard() {
                   (id) => ({ id, name: id }),
                 ),
               )}
-              <label className="text-xs text-slate-500">
+              <label className="text-xs text-slate-600">
                 Due from
                 <Input
                   type="date"
@@ -342,7 +356,7 @@ export function ManagementBoard() {
                   }}
                 />
               </label>
-              <label className="text-xs text-slate-500">
+              <label className="text-xs text-slate-600">
                 Due through
                 <Input
                   type="date"
@@ -384,11 +398,11 @@ export function ManagementBoard() {
             </div>
           )}
           <div className="flex flex-wrap gap-3 items-center justify-between">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               {queues.find((q) => q.id === queue)?.description}
             </p>
             <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-xs text-slate-600">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-slate-600">
                 <input
                   type="checkbox"
                   checked={overdue}
@@ -401,7 +415,7 @@ export function ManagementBoard() {
               </label>
               <select
                 aria-label="Sort activities"
-                className="text-xs bg-transparent border rounded-md p-1.5"
+                className="min-h-11 max-w-full rounded-md border bg-white px-3 text-sm"
                 value={sort}
                 onChange={(e) => {
                   setSort(e.target.value);
@@ -416,16 +430,8 @@ export function ManagementBoard() {
           </div>
           {(activeFilters > 0 || query) && (
             <button
-              className="text-xs text-blue-600 underline"
-              onClick={() => {
-                setCompany("all");
-                setPerson("all");
-                setStatus("all");
-                setPriority("all");
-                setOverdue(false);
-                setQuery("");
-                resetSelection();
-              }}
+              className="inline-flex min-h-11 items-center rounded text-sm font-medium text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-blue-700"
+              onClick={clearFilters}
             >
               Clear filters
             </button>
@@ -446,37 +452,50 @@ export function ManagementBoard() {
         )}
         <div className="hidden lg:block">
           <table className="w-full table-fixed text-left">
+            <caption className="sr-only">
+              Activities in the selected assignment queue
+            </caption>
             <colgroup>
-              <col className="w-10" />
+              <col className="w-12" />
               <col />
               <col className="w-40" />
               <col className="w-32" />
               <col className="w-24" />
               <col className="w-28" />
             </colgroup>
-            <thead className="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <thead className="bg-slate-50 text-xs text-slate-600">
               <tr>
-                <th className="p-3">
-                  <input
-                    aria-label="Select current page"
-                    type="checkbox"
-                    checked={
-                      visible.length > 0 &&
-                      visible.every((t) => selected.includes(t.id))
-                    }
-                    disabled={!visible.length}
-                    onChange={(e) =>
-                      setSelected(
-                        e.target.checked ? visible.map((t) => t.id) : [],
-                      )
-                    }
-                  />
+                <th scope="col" className="p-1">
+                  <label className="flex size-11 cursor-pointer items-center justify-center">
+                    <input
+                      aria-label="Select current page"
+                      type="checkbox"
+                      checked={
+                        visible.length > 0 &&
+                        visible.every((t) => selected.includes(t.id))
+                      }
+                      disabled={!visible.length}
+                      onChange={(e) =>
+                        setSelected(
+                          e.target.checked ? visible.map((t) => t.id) : [],
+                        )
+                      }
+                    />
+                  </label>
                 </th>
-                <th className="py-3 font-medium">Activity / company</th>
-                <th className="py-3 font-medium">Responsible</th>
-                <th className="py-3 font-medium">Status</th>
-                <th className="py-3 font-medium">Deadline</th>
-                <th className="py-3">
+                <th scope="col" className="py-3 font-medium">
+                  Activity / company
+                </th>
+                <th scope="col" className="py-3 font-medium">
+                  Responsible
+                </th>
+                <th scope="col" className="py-3 font-medium">
+                  Status
+                </th>
+                <th scope="col" className="py-3 font-medium">
+                  Deadline
+                </th>
+                <th scope="col" className="py-3">
                   <span className="sr-only">Assignment</span>
                 </th>
               </tr>
@@ -487,34 +506,37 @@ export function ManagementBoard() {
                   key={t.id}
                   className={`group hover:bg-slate-50 ${selected.includes(t.id) ? "bg-blue-50/50" : ""}`}
                 >
-                  <td className="p-3">
-                    <input
-                      aria-label={`Select issue ${t.externalId || t.title}`}
-                      type="checkbox"
-                      checked={selected.includes(t.id)}
-                      disabled={
-                        !selected.includes(t.id) && selected.length >= 50
-                      }
-                      onChange={() => toggle(t.id)}
-                    />
+                  <td className="p-1">
+                    <label className="flex size-11 cursor-pointer items-center justify-center">
+                      <input
+                        aria-label={`Select activity ${t.externalId || t.title}`}
+                        type="checkbox"
+                        checked={selected.includes(t.id)}
+                        disabled={
+                          !selected.includes(t.id) && selected.length >= 50
+                        }
+                        onChange={() => toggle(t.id)}
+                      />
+                    </label>
                   </td>
                   <td className="py-3 pr-4">
                     <button
-                      className="text-left block w-full"
+                      aria-label={`Open activity ${t.title}`}
+                      className="block min-h-11 w-full rounded text-left focus-visible:outline-2 focus-visible:outline-blue-700"
                       onClick={() => setDetail(t.id)}
                     >
-                      <span className="text-xs text-slate-400 mr-2">
+                      <span className="text-xs text-slate-600 mr-2">
                         #{t.externalId || "Manual"}
                       </span>
                       <span
-                        className={`text-[10px] font-semibold ${t.priority === "P1" ? "text-red-600" : "text-slate-500"}`}
+                        className={`text-xs font-semibold ${t.priority === "P1" ? "text-red-600" : "text-slate-600"}`}
                       >
                         {t.priority || "—"}
                       </span>
                       <span className="block text-sm font-medium text-slate-900 mt-1 leading-snug line-clamp-2 group-hover:text-blue-700">
                         {t.title}
                       </span>
-                      <span className="block text-xs text-slate-500 truncate mt-1">
+                      <span className="block text-xs text-slate-600 truncate mt-1">
                         {companies.find((c) => c.id === t.companyId)?.name} ·{" "}
                         {t.location || "No area"}
                       </span>
@@ -551,25 +573,28 @@ export function ManagementBoard() {
           {visible.map((t) => (
             <article key={t.id} className="p-4 space-y-3">
               <div className="flex items-start gap-3">
-                <input
-                  className="mt-1 size-4 shrink-0"
-                  aria-label={`Select mobile issue ${t.externalId || t.title}`}
-                  type="checkbox"
-                  checked={selected.includes(t.id)}
-                  disabled={!selected.includes(t.id) && selected.length >= 50}
-                  onChange={() => toggle(t.id)}
-                />
+                <label className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded hover:bg-slate-50">
+                  <input
+                    className="size-4"
+                    aria-label={`Select activity ${t.externalId || t.title}`}
+                    type="checkbox"
+                    checked={selected.includes(t.id)}
+                    disabled={!selected.includes(t.id) && selected.length >= 50}
+                    onChange={() => toggle(t.id)}
+                  />
+                </label>
                 <button
-                  className="text-left min-w-0 flex-1"
+                  aria-label={`Open activity ${t.title}`}
+                  className="min-h-11 min-w-0 flex-1 rounded text-left focus-visible:outline-2 focus-visible:outline-blue-700"
                   onClick={() => setDetail(t.id)}
                 >
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-600">
                     #{t.externalId || "Manual"} · {t.priority || "No priority"}
                   </span>
                   <h3 className="font-medium text-sm leading-snug mt-1">
                     {t.title}
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1 truncate">
+                  <p className="text-xs text-slate-600 mt-1 truncate">
                     {companies.find((c) => c.id === t.companyId)?.name}
                   </p>
                   {equipmentLabel(t) && (
@@ -597,15 +622,15 @@ export function ManagementBoard() {
           ))}
         </div>
         {!filtered.length && (
-          <div className="p-12 text-center">
+          <div className="p-8 text-center sm:p-12">
             <UserRound className="size-8 mx-auto text-slate-300 mb-3" />
             <h3 className="font-medium">No activities in this view</h3>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-slate-600 mt-1">
               Choose another queue or clear your filters.
             </p>
           </div>
         )}
-        <div className="border-t px-4 py-3 flex justify-between items-center text-xs text-slate-500">
+        <div className="border-t px-4 py-3 flex justify-between items-center text-xs text-slate-600">
           <span>
             {filtered.length
               ? `${currentPage * 20 + 1}–${Math.min((currentPage + 1) * 20, filtered.length)} of ${filtered.length}`
@@ -649,11 +674,11 @@ export function ManagementBoard() {
           {task && (
             <>
               <SheetHeader>
-                <SheetTitle className="text-left leading-snug">
+                <SheetTitle className="break-words pr-9 text-left leading-snug">
                   {task.title}
                 </SheetTitle>
                 <SheetDescription>
-                  Issue #{task.externalId || "Manual"} ·{" "}
+                  Activity #{task.externalId || "Manual"} ·{" "}
                   {companies.find((c) => c.id === task.companyId)?.name}
                 </SheetDescription>
               </SheetHeader>
@@ -662,12 +687,14 @@ export function ManagementBoard() {
                   <TaskStatusBadge task={task} />
                   {due(task)}
                 </div>
-                <div className="rounded-lg bg-slate-50 p-4 flex justify-between gap-3 items-center">
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 p-4">
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-600 mb-1">
                       Responsible worker
                     </p>
-                    <p className="font-medium text-sm">{owner(task)}</p>
+                    <p className="break-words text-sm font-medium">
+                      {owner(task)}
+                    </p>
                   </div>
                   <AssignmentDialog tasks={[task]}>
                     {task.assignedTo ? "Reassign" : "Assign"}
@@ -676,7 +703,7 @@ export function ManagementBoard() {
                 <p className="text-sm whitespace-pre-wrap text-slate-600">
                   {task.description || "No description provided."}
                 </p>
-                <p className="text-xs text-slate-500 flex gap-2">
+                <p className="text-xs text-slate-600 flex gap-2">
                   <CalendarDays className="size-4" />
                   {task.location || "No area specified"}
                 </p>
@@ -749,8 +776,8 @@ export function ManagementBoard() {
                   )}
                 </section>
                 {task.notes && (
-                  <div className="border-l-2 border-blue-300 pl-3">
-                    <p className="text-xs text-slate-500 mb-1">Latest update</p>
+                  <div className="border-t border-slate-200 pt-3">
+                    <p className="text-xs text-slate-600 mb-1">Latest update</p>
                     <p className="text-sm whitespace-pre-wrap">{task.notes}</p>
                   </div>
                 )}

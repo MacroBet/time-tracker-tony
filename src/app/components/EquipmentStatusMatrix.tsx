@@ -9,6 +9,7 @@ import {
 import { checksheetProgress } from "@/lib/checksheets";
 import { isClosed, type Project, type Task } from "@/lib/domain";
 import { TagLevel } from "./TagLevel";
+import { InfoPopover } from "./InfoPopover";
 
 export function EquipmentStatusMatrix({
   project,
@@ -26,18 +27,22 @@ export function EquipmentStatusMatrix({
   const levels = LEVELS.filter((level) => state.config.levels.includes(level));
   return (
     <div className="space-y-3">
-      <p className="max-w-prose text-xs leading-5 text-slate-600">
-        Saved equipment records. Test results, tag reviews and checksheet
-        answers are separate; an unanswered or missing record does not mean
-        approved.
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-base font-semibold">Equipment records</h3>
+        <InfoPopover label="About equipment status">
+          <p>
+            Test results, tag reviews and checksheet answers are separate. An
+            unanswered or missing record does not mean approved.
+          </p>
+        </InfoPopover>
+      </div>
       <div
-        className="isolate max-h-[65vh] overflow-auto rounded-lg border border-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+        className="relative isolate max-h-[65dvh] overflow-auto overscroll-contain rounded-xl border border-slate-200 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
         role="region"
         aria-label="Equipment status matrix, scroll to compare tag levels"
         tabIndex={0}
       >
-        <table className="w-full text-left text-xs tabular-nums">
+        <table className="w-full text-left text-sm tabular-nums">
           <caption className="sr-only">
             Equipment, configured tag-level test results and reviews, checksheet
             answers and open issues. Uses the same asset filters and page.
@@ -91,15 +96,15 @@ export function EquipmentStatusMatrix({
                     className="sticky left-0 z-10 max-w-60 bg-white p-3 font-normal"
                   >
                     <button
-                      className="min-h-11 text-left font-semibold text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-blue-700"
+                      className="min-h-11 break-words text-left font-semibold text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-blue-700"
                       onClick={() => onOpenAsset(asset.id)}
                     >
                       {asset.name}
                     </button>
-                    <p className="mt-1 break-words text-slate-600">
+                    <p className="mt-1 break-words text-xs text-slate-600 [overflow-wrap:anywhere]">
                       {asset.clientAssetId || asset.id}
                     </p>
-                    <p className="mt-1 text-slate-600">
+                    <p className="mt-1 break-words text-sm text-slate-600">
                       {asset.equipmentType} ·{" "}
                       {asset.location || "Location not recorded"}
                     </p>
@@ -127,7 +132,7 @@ export function EquipmentStatusMatrix({
                           <span className="text-slate-600">Not required</span>
                         ) : !tag ? (
                           <button
-                            className="min-h-11 text-left text-blue-700 underline underline-offset-4"
+                            className="min-h-11 break-words text-left text-blue-700 underline underline-offset-4"
                             onClick={() => onOpenAsset(asset.id)}
                           >
                             No tag record
@@ -191,6 +196,12 @@ export function EquipmentStatusMatrix({
             })}
           </tbody>
         </table>
+        {!assets.length && (
+          <p className="p-6 text-sm text-slate-600">
+            No equipment records in this selection. Adjust the filters or add
+            equipment in Assets.
+          </p>
+        )}
       </div>
     </div>
   );

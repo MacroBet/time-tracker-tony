@@ -13,6 +13,8 @@ import {
 } from "@/lib/team-workload";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { InfoPopover } from "./InfoPopover";
 import { Card, CardContent } from "./ui/card";
 export function TeamPanel() {
   const {
@@ -33,6 +35,19 @@ export function TeamPanel() {
   const [workState, setWorkState] = useState<"all" | "open" | "closed">("all");
   const [workKind, setWorkKind] = useState<"all" | "tasks" | "issues">("all");
   const [view, setView] = useState<"cards" | "list">("cards");
+  const filtersActive =
+    query ||
+    company !== "all" ||
+    role !== "all" ||
+    workState !== "all" ||
+    workKind !== "all";
+  function clearFilters() {
+    setQuery("");
+    setCompany("all");
+    setRole("all");
+    setWorkState("all");
+    setWorkKind("all");
+  }
   const people = users
     .filter(
       (user) =>
@@ -104,9 +119,22 @@ export function TeamPanel() {
     }
   }
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div className="flex flex-wrap justify-between gap-3">
-        <h2 className="text-lg font-semibold">Project team and workload</h2>
+        <div className="flex min-w-0 items-center gap-1">
+          <h2 className="text-lg font-semibold">Project team and workload</h2>
+          <InfoPopover label="About team workload">
+            <p>
+              Supervisors coordinate the projects listed for their account.
+              Workers see only work assigned to them. Use Tasks → Unassigned to
+              distribute the remaining work.
+            </p>
+            <p>
+              Counts and progress use the selected project and work filters. N/A
+              records are excluded from completion.
+            </p>
+          </InfoPopover>
+        </div>
         <select
           aria-label="Team project"
           className="field-select sm:max-w-xs"
@@ -121,17 +149,12 @@ export function TeamPanel() {
           ))}
         </select>
       </div>
-      <p className="text-sm text-slate-500">
-        Supervisors coordinate the projects listed for their account. Workers
-        see only work assigned to them. Use Activities → To assign to distribute
-        the remaining work.
-      </p>
       <div className="rounded-xl border bg-white p-4 space-y-3">
         <div className="flex flex-wrap items-end gap-3">
           <label className="min-w-52 flex-1 text-xs text-slate-600">
             Search person or company
             <span className="relative mt-1 block">
-              <Search className="absolute left-3 top-2.5 size-4 text-slate-500" />
+              <Search className="absolute left-3 top-2.5 size-4 text-slate-600" />
               <Input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -219,10 +242,16 @@ export function TeamPanel() {
             </select>
           </label>
         </div>
-        <p className="text-xs text-slate-600" role="status">
-          {people.length} people shown. Counts and progress use the selected
-          project and work filters. N/A records are excluded from completion.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-slate-600" role="status">
+            {people.length} people shown
+          </p>
+          {filtersActive && (
+            <Button variant="ghost" onClick={clearFilters}>
+              Clear team filters
+            </Button>
+          )}
+        </div>
       </div>
       <div
         className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600"
@@ -244,10 +273,10 @@ export function TeamPanel() {
             <Card key={u.id}>
               <CardContent className="p-4 space-y-2">
                 <p className="font-semibold">{u.name}</p>
-                <p className="text-xs text-slate-500 break-all">
+                <p className="text-xs text-slate-600 break-all">
                   {u.email} · {u.role}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-600">
                   {companies.find((c) => c.id === u.companyId)?.name}
                 </p>
                 <p className="text-sm">
@@ -255,7 +284,7 @@ export function TeamPanel() {
                   {summary.completed} completed
                 </p>
                 <WorkloadProgress summary={summary} name={u.name} />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-600">
                   {projects
                     .filter((p) =>
                       memberships.some(
@@ -274,7 +303,12 @@ export function TeamPanel() {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border bg-white">
+        <div
+          className="overflow-x-auto rounded-xl border bg-white focus-visible:outline-2 focus-visible:outline-blue-700"
+          role="region"
+          aria-label="Scrollable team workload"
+          tabIndex={0}
+        >
           <table className="w-full text-left text-sm">
             <caption className="sr-only">Filtered team workload</caption>
             <thead className="bg-slate-50 text-xs text-slate-600">
@@ -348,63 +382,86 @@ export function TeamPanel() {
       {currentUser.role === "admin" && (
         <div className="grid md:grid-cols-2 gap-4">
           <details className="rounded-xl border bg-white p-5">
-            <summary className="font-semibold cursor-pointer">
+            <summary className="min-h-11 cursor-pointer content-center rounded font-semibold focus-visible:outline-2 focus-visible:outline-blue-700">
               Create team account
             </summary>
             <form
               onSubmit={(e) => submit(e, "account")}
               className="mt-4 space-y-3"
             >
-              <Input
-                name="name"
-                aria-label="Account name"
-                placeholder="Full name"
-                required
-                minLength={2}
-                maxLength={100}
-              />
-              <Input
-                name="email"
-                aria-label="Account email"
-                type="email"
-                placeholder="Email"
-                required
-              />
-              <Input
-                name="password"
-                aria-label="Initial password"
-                type="password"
-                autoComplete="new-password"
-                placeholder="Initial password (8+ characters)"
-                required
-                minLength={8}
-              />
-              <select
-                name="role"
-                aria-label="Account role"
-                className="field-select"
-              >
-                {["worker", "supervisor", "manager", "admin"].map((r) => (
-                  <option key={r}>{r}</option>
-                ))}
-              </select>
-              <select
-                name="companyId"
-                aria-label="Account company"
-                className="field-select"
-              >
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <Label htmlFor="team-account-name">Full name</Label>
+                <Input
+                  id="team-account-name"
+                  name="name"
+                  aria-label="Account name"
+                  placeholder="Full name"
+                  required
+                  minLength={2}
+                  maxLength={100}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-account-email">Email</Label>
+                <Input
+                  id="team-account-email"
+                  name="email"
+                  aria-label="Account email"
+                  type="email"
+                  placeholder="Email"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-account-password">Initial password</Label>
+                <Input
+                  id="team-account-password"
+                  name="password"
+                  aria-label="Initial password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Initial password (8+ characters)"
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-account-role">Role</Label>
+                <select
+                  id="team-account-role"
+                  name="role"
+                  aria-label="Account role"
+                  className="field-select"
+                >
+                  {["worker", "supervisor", "manager", "admin"].map((r) => (
+                    <option key={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-account-company">Company</Label>
+                <select
+                  id="team-account-company"
+                  name="companyId"
+                  aria-label="Account company"
+                  className="field-select"
+                >
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <fieldset className="space-y-2">
                 <legend className="text-sm mb-2">
                   Project access (choose at least one)
                 </legend>
                 {projects.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 text-sm">
+                  <label
+                    key={p.id}
+                    className="flex min-h-11 cursor-pointer items-center gap-2 text-sm"
+                  >
                     <input
                       name="projectIds"
                       type="checkbox"
@@ -419,39 +476,51 @@ export function TeamPanel() {
             </form>
           </details>
           <details className="rounded-xl border bg-white p-5">
-            <summary className="font-semibold cursor-pointer">
+            <summary className="min-h-11 cursor-pointer content-center rounded font-semibold focus-visible:outline-2 focus-visible:outline-blue-700">
               Create project
             </summary>
             <form
               onSubmit={(e) => submit(e, "project")}
               className="mt-4 space-y-3"
             >
-              <Input
-                name="name"
-                aria-label="Project name"
-                placeholder="Project name"
-                required
-                minLength={3}
-              />
-              <Input
-                name="location"
-                aria-label="Project location"
-                placeholder="Location"
-                required
-                minLength={2}
-              />
-              <select
-                name="companyId"
-                aria-label="Project company"
-                className="field-select"
-              >
-                {companies.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-slate-500">
+              <div className="space-y-2">
+                <Label htmlFor="team-project-name">Project name</Label>
+                <Input
+                  id="team-project-name"
+                  name="name"
+                  aria-label="Project name"
+                  placeholder="Project name"
+                  required
+                  minLength={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-project-location">Location</Label>
+                <Input
+                  id="team-project-location"
+                  name="location"
+                  aria-label="Project location"
+                  placeholder="Location"
+                  required
+                  minLength={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="team-project-company">Company</Label>
+                <select
+                  id="team-project-company"
+                  name="companyId"
+                  aria-label="Project company"
+                  className="field-select"
+                >
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-xs text-slate-600">
                 You will administer the new project. Create team accounts with
                 access to it to start assigning work.
               </p>
@@ -502,7 +571,7 @@ function WorkloadProgress({
 function WorkDetails({ work }: { work: Task[] }) {
   return work.length > 0 ? (
     <details className="pt-2">
-      <summary className="cursor-pointer text-xs text-blue-600">
+      <summary className="min-h-11 cursor-pointer content-center rounded text-sm text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700">
         View {work.length} assigned records
       </summary>
       <ul className="mt-2 max-h-64 space-y-2 overflow-y-auto">
@@ -510,7 +579,7 @@ function WorkDetails({ work }: { work: Task[] }) {
           <li key={task.id}>
             <Link
               href={`/tasks/${task.id}`}
-              className="block rounded py-1 text-xs hover:bg-slate-50 focus-visible:outline-blue-600"
+              className="flex min-h-11 flex-col justify-center rounded px-1 py-2 text-sm hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700"
             >
               <span className="font-medium">{task.title}</span>
               <span className="block text-slate-600">

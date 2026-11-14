@@ -103,8 +103,21 @@ export function FeedbackButton() {
         <Bug className="size-4" />
         <span className="hidden sm:inline">Report an issue</span>
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          if (!busy) setOpen(next);
+        }}
+      >
+        <DialogContent
+          className="max-h-[90dvh] overflow-y-auto"
+          onEscapeKeyDown={(event) => {
+            if (busy) event.preventDefault();
+          }}
+          onInteractOutside={(event) => {
+            if (busy) event.preventDefault();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>Report an issue</DialogTitle>
             <DialogDescription>
@@ -112,72 +125,74 @@ export function FeedbackButton() {
               feedback for review.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={submit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="feedback-project">Project</Label>
-              <select
-                id="feedback-project"
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                className="field-select"
-                required
-              >
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="feedback-description">What happened?</Label>
-              <Textarea
-                id="feedback-description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-                minLength={10}
-                maxLength={5000}
-                rows={4}
-                placeholder="Describe the problem and what you expected to happen…"
-              />
-            </div>
-            {screenshot ? (
-              <div className="relative rounded-lg border overflow-hidden">
-                <img
-                  src={screenshot}
-                  alt="Screenshot to include with your report"
-                  className="max-h-52 w-full object-contain bg-slate-100"
+          <form onSubmit={submit} aria-busy={busy}>
+            <fieldset disabled={busy} className="min-w-0 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="feedback-project">Project</Label>
+                <select
+                  id="feedback-project"
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                  className="field-select"
+                  required
+                >
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="feedback-description">What happened?</Label>
+                <Textarea
+                  id="feedback-description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  minLength={10}
+                  maxLength={5000}
+                  rows={4}
+                  placeholder="Describe the problem and what you expected to happen…"
                 />
+              </div>
+              {screenshot ? (
+                <div className="relative rounded-lg border overflow-hidden">
+                  <img
+                    src={screenshot}
+                    alt="Screenshot to include with your report"
+                    className="max-h-52 w-full object-contain bg-slate-100"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="secondary"
+                    aria-label="Remove screenshot"
+                    className="absolute top-2 right-2"
+                    onClick={() => setScreenshot(undefined)}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
+              ) : (
                 <Button
                   type="button"
-                  size="icon"
-                  variant="secondary"
-                  aria-label="Remove screenshot"
-                  className="absolute top-2 right-2"
-                  onClick={() => setScreenshot(undefined)}
+                  variant="outline"
+                  onClick={capture}
+                  disabled={busy}
+                  className="w-full"
                 >
-                  <X className="size-4" />
+                  <Camera className="size-4" />
+                  Capture current screen
                 </Button>
-              </div>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={capture}
-                disabled={busy}
-                className="w-full"
-              >
-                <Camera className="size-4" />
-                Capture current screen
+              )}
+              <p className="break-words text-xs text-slate-600">
+                Page: {pathname}. Review the screenshot before submitting.
+              </p>
+              <Button disabled={busy || !isOnline} className="w-full h-11">
+                {busy ? "Working…" : "Save report"}
               </Button>
-            )}
-            <p className="text-xs text-slate-500">
-              Page: {pathname}. Review the screenshot before submitting.
-            </p>
-            <Button disabled={busy || !isOnline} className="w-full h-11">
-              {busy ? "Working…" : "Save report"}
-            </Button>
+            </fieldset>
           </form>
         </DialogContent>
       </Dialog>

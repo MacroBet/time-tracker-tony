@@ -17,7 +17,7 @@ export function TagLevel({
           style={{ backgroundColor: display.color }}
         />
       )}
-      <span className="min-w-0 break-words">
+      <span className="min-w-0 break-words [overflow-wrap:anywhere]">
         {level}
         {display?.label && display.label !== level ? ` · ${display.label}` : ""}
       </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { Button } from "./ui/button";
 import { COPILOT_AUDIO, encodeCopilotWav } from "@/lib/copilot-audio";
@@ -31,6 +31,7 @@ export function CopilotVoiceInput({
   >("idle");
   const [seconds, setSeconds] = useState(0),
     [error, setError] = useState("");
+  const errorId = useId();
   const recording = useRef<Recording | null>(null);
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0),
@@ -230,7 +231,10 @@ export function CopilotVoiceInput({
   }
 
   return (
-    <div className="space-y-2">
+    <div
+      className="min-w-0 space-y-2"
+      aria-busy={state === "permission" || state === "transcribing"}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
@@ -247,6 +251,7 @@ export function CopilotVoiceInput({
               ? "Stop recording and transcribe"
               : "Record a voice query"
           }
+          aria-describedby={error ? errorId : undefined}
         >
           {state === "recording" ? (
             <Square className="size-4" />
@@ -279,7 +284,11 @@ export function CopilotVoiceInput({
         )}
       </div>
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p
+          id={errorId}
+          role="alert"
+          className="break-words text-sm text-red-700"
+        >
           {error}
         </p>
       )}

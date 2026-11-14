@@ -8,6 +8,7 @@ import {
   inventoryFileIdentity,
 } from "@/lib/inventory-batch";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 export function InventoryBatchControls({
   projectId,
@@ -69,7 +70,7 @@ export function InventoryBatchControls({
         raw = JSON.parse(new TextDecoder().decode(bytes));
       if (raw.schedule?.length || raw.programmeId !== undefined)
         throw new Error(
-          "Choose an inventory-only file without programme records.",
+          "Choose an inventory-only file without schedule records.",
         );
       const hash = await crypto.subtle.digest("SHA-256", bytes);
       const payloadSha256 = Array.from(new Uint8Array(hash), (b) =>
@@ -136,7 +137,7 @@ export function InventoryBatchControls({
         </p>
         <label className="block text-sm font-medium">
           Inventory JSON
-          <input
+          <Input
             type="file"
             accept=".json,application/json"
             className="mt-2 block min-h-11 w-full text-sm"
@@ -163,7 +164,7 @@ export function InventoryBatchControls({
               {plan.insertedCount} additions · {plan.removedCount} removals
             </h3>
             <p className="text-sm text-slate-600">
-              Programme, existing tasks and assignments are outside this
+              Schedule, existing tasks and assignments are outside this
               operation.
             </p>
             {plan.errors.map((error, i) => (
@@ -236,7 +237,7 @@ export function InventoryBatchControls({
                   {new Date(batch.appliedAt).toLocaleDateString()} ·{" "}
                   {batch.inserted.length} assets · {batch.status}
                   <details>
-                    <summary className="cursor-pointer">
+                    <summary className="min-h-11 content-center cursor-pointer">
                       Technical details
                     </summary>
                     <span className="break-all">

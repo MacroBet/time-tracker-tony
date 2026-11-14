@@ -66,13 +66,10 @@ export function WorkerDashboard({ view = "home" }: { view?: "home" | "time" }) {
     <AppShell title={view === "time" ? "Time tracking" : "Today"}>
       {view === "home" && (
         <div>
-          <p className="text-xs uppercase tracking-wider font-medium text-blue-600 mb-2">
-            FIELD TEAM
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight">
+          <h2 className="break-words text-2xl font-semibold tracking-tight">
             Hello, {currentUser.name.split(" ")[0]}
           </h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Your assigned activities, with urgent work first.
           </p>
         </div>
@@ -91,7 +88,7 @@ export function WorkerDashboard({ view = "home" }: { view?: "home" | "time" }) {
             )}
           </div>
           {active ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               {projects.find((p) => p.id === active.projectId)?.name}
             </p>
           ) : (
@@ -127,7 +124,7 @@ export function WorkerDashboard({ view = "home" }: { view?: "home" | "time" }) {
             {busy ? "Saving…" : active ? "End shift" : "Start shift"}
           </Button>
           {view === "time" && (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               Start your shift when you arrive and end it when your workday is
               finished.
             </p>

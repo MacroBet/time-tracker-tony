@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { matchesCopilotAssetFilters } from "@/lib/copilot";
 import { ArrowRight, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
@@ -28,7 +29,7 @@ import {
 } from "@/lib/commissioning";
 import { type RegisterImport } from "@/lib/commissioning-import";
 import { exportAssetCsv, parseRegisterFile } from "@/lib/asset-transfer";
-import { assetFieldOptions } from "@/lib/asset-register";
+import { assetFieldOptions, filterAssetRegister } from "@/lib/asset-register";
 import { duplicateAssetDraft } from "@/lib/asset-register-mutations";
 import { AssetRegister } from "./AssetRegister";
 import { EquipmentStatusMatrix } from "./EquipmentStatusMatrix";
@@ -37,7 +38,7 @@ import { TagLevel } from "./TagLevel";
 import { DocumentRequirementsEditor } from "./DocumentRequirements";
 import { InventoryBatchControls } from "./InventoryBatchControls";
 import { CommissioningReport, type ReportView } from "./CommissioningReport";
-import { type Project, type User, statusLabels } from "@/lib/domain";
+import { type Project, type User, type Task, statusLabels } from "@/lib/domain";
 
 type Preview = {
   changes: string[];
@@ -109,7 +110,7 @@ export function CommissioningWorkspace({
       {admin && (
         <section className="rounded-xl border bg-white p-5 space-y-4">
           <h2 className="font-semibold">Feature access by person</h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             Role and project membership still control responsibility and data
             access. A task-only profile shows assigned work and settings.
           </p>
@@ -156,7 +157,7 @@ function UserModules({ user }: { user: User }) {
       <div className="flex flex-wrap justify-between gap-2">
         <p className="text-sm font-medium">
           {user.name}{" "}
-          <span className="text-slate-500 font-normal">· {user.role}</span>
+          <span className="text-slate-600 font-normal">· {user.role}</span>
         </p>
         <div className="flex gap-2">
           <Button
@@ -216,6 +217,14 @@ function ProjectWorkspace({
       useApp(),
     state = commissioning(project);
   const requestedView = params.get("view");
+  const equipmentViewRequested = ["status", "equipment"].includes(
+    requestedView ?? "",
+  );
+  const inlineEquipmentStatus =
+    !admin &&
+    !reports &&
+    equipmentViewRequested &&
+    !hasModule(currentUser, "reports");
   const [view, setView] = useState<ReportView>(
       [
         "tasks",
@@ -543,13 +552,14 @@ function ProjectWorkspace({
     if (
       !admin &&
       !reports &&
-      ["status", "equipment"].includes(requestedView ?? "")
+      equipmentViewRequested &&
+      hasModule(currentUser, "reports")
     ) {
       router.replace(
         `/reports?view=equipment&projectId=${encodeURIComponent(project.id)}`,
       );
     }
-  }, [admin, reports, requestedView, project.id, router]);
+  }, [admin, reports, equipmentViewRequested, currentUser, project.id, router]);
   async function generateTags() {
     setBusy(true);
     try {
@@ -777,7 +787,7 @@ function ProjectWorkspace({
             </div>
           </details>
           <details className="border-t pt-4">
-            <summary className="cursor-pointer text-sm font-medium">
+            <summary className="min-h-11 content-center cursor-pointer text-sm font-medium">
               Location, supply & equipment details · optional
             </summary>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -834,7 +844,7 @@ function ProjectWorkspace({
             </div>
           </details>
           <details className="border-t pt-4">
-            <summary className="cursor-pointer text-sm font-medium">
+            <summary className="min-h-11 content-center cursor-pointer text-sm font-medium">
               Delivery & schedule links · optional
             </summary>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -932,7 +942,7 @@ function ProjectWorkspace({
           {e}
         </p>
       ))}
-      <ul className="text-xs max-h-48 overflow-auto space-y-1">
+      <ul className="text-sm max-h-48 overflow-auto space-y-2 break-words">
         {preview.changes.slice(0, 100).map((c, i) => (
           <li key={i}>{c}</li>
         ))}
@@ -987,7 +997,7 @@ function ProjectWorkspace({
       {(admin || reports) && (
         <div>
           <h2 className="text-xl font-semibold">{project.name}</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             {state.assets.length} assets ·{" "}
             {state.sourceProgrammeSummary?.activities ?? state.schedule.length}{" "}
             schedule activities · Revision {state.version}
@@ -1001,7 +1011,7 @@ function ProjectWorkspace({
           className="rounded-xl border bg-white p-5 space-y-4"
         >
           <h3 className="font-semibold">Project setup</h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             Configure project details and the phases used by this schedule.
           </p>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -1042,7 +1052,10 @@ function ProjectWorkspace({
             </legend>
             <div className="flex flex-wrap gap-5">
               {LEVELS.map((l) => (
-                <label key={l} className="text-sm flex items-center gap-2">
+                <label
+                  key={l}
+                  className="flex min-h-11 min-w-11 items-center gap-2 text-sm"
+                >
                   <input
                     name="levels"
                     type="checkbox"
@@ -1055,12 +1068,12 @@ function ProjectWorkspace({
             </div>
           </fieldset>
           <details className="border-t pt-4">
-            <summary className="cursor-pointer text-sm font-medium">
+            <summary className="min-h-11 content-center cursor-pointer text-sm font-medium">
               Phase display names & colours
             </summary>
             <fieldset className="mt-4">
               <legend className="sr-only">Phase names and colours</legend>
-              <p className="text-xs text-slate-500 my-2">
+              <p className="text-xs text-slate-600 my-2">
                 Display labels keep their stable level IDs. L2, L2A and L2B
                 remain independent.
               </p>
@@ -1091,7 +1104,7 @@ function ProjectWorkspace({
                         state.config.phasePresentation?.[level]?.color ??
                         "#2563eb"
                       }
-                      className="h-9 w-12 shrink-0 cursor-pointer rounded border border-slate-200 bg-white p-1"
+                      className="h-11 w-12 shrink-0 cursor-pointer rounded border border-slate-200 bg-white p-1"
                     />
                   </div>
                 ))}
@@ -1110,7 +1123,10 @@ function ProjectWorkspace({
             <legend className="text-sm mb-2">Available issue priorities</legend>
             <div className="flex flex-wrap gap-5">
               {PRIORITIES.map((p) => (
-                <label key={p} className="text-sm flex items-center gap-2">
+                <label
+                  key={p}
+                  className="flex min-h-11 min-w-11 items-center gap-2 text-sm"
+                >
                   <input
                     name="priorities"
                     type="checkbox"
@@ -1122,7 +1138,7 @@ function ProjectWorkspace({
               ))}
             </div>
           </fieldset>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Disabled levels disappear from the dashboard. Existing task records
             and history remain available. L2, L2A and L2B are independent
             requirements.
@@ -1133,16 +1149,26 @@ function ProjectWorkspace({
           </Button>
         </form>
       )}
-      {!admin && !reports && (state.assets.length > 0 || !asset) && (
-        <AssetRegister
+      {inlineEquipmentStatus && (
+        <ScopedEquipmentStatus
           project={project}
-          onAdd={addAsset}
-          onEdit={openAsset}
-          onInspect={setTagsAssetId}
-          onImport={() => setTransferOpen(true)}
-          onDuplicate={duplicateAsset}
+          tasks={projectTasks}
+          onOpenAsset={setTagsAssetId}
         />
       )}
+      {!admin &&
+        !reports &&
+        !inlineEquipmentStatus &&
+        (state.assets.length > 0 || !asset) && (
+          <AssetRegister
+            project={project}
+            onAdd={addAsset}
+            onEdit={openAsset}
+            onInspect={setTagsAssetId}
+            onImport={() => setTransferOpen(true)}
+            onDuplicate={duplicateAsset}
+          />
+        )}
       {!admin && !reports && (
         <Button variant="link" asChild className="min-h-11 px-0">
           <Link href="/checksheets">Checksheets and works to go</Link>
@@ -1277,7 +1303,7 @@ function ProjectWorkspace({
             </div>
           )}
           <details className="border-t pt-3">
-            <summary className="cursor-pointer text-sm font-medium">
+            <summary className="min-h-11 content-center cursor-pointer text-sm font-medium">
               Equipment details & linked tasks
             </summary>
             <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
@@ -1349,7 +1375,7 @@ function ProjectWorkspace({
             className="border-t border-slate-200 pt-4"
             onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
           >
-            <summary className="cursor-pointer font-medium">
+            <summary className="min-h-11 content-center cursor-pointer font-medium">
               Project history
             </summary>
             <div className="mt-4">
@@ -1369,7 +1395,7 @@ function ProjectWorkspace({
           onToggle={(event) => setTransferOpen(event.currentTarget.open)}
           className="rounded-xl border bg-white p-4 sm:p-5"
         >
-          <summary className="cursor-pointer font-medium">
+          <summary className="min-h-11 content-center cursor-pointer font-medium">
             Import / export assets
           </summary>
           <div className="mt-4 space-y-4">
@@ -1428,7 +1454,7 @@ function ProjectWorkspace({
             </label>
             <div className="flex flex-wrap gap-2">
               <Button
-                className="h-11 sm:h-9"
+                className="min-h-11"
                 variant="outline"
                 disabled={busy}
                 onClick={() => void downloadAssetTemplate("xlsx")}
@@ -1436,7 +1462,7 @@ function ProjectWorkspace({
                 Download blank Excel template
               </Button>
               <Button
-                className="h-11 sm:h-9"
+                className="min-h-11"
                 variant="outline"
                 disabled={busy}
                 onClick={() => void downloadAssetTemplate("csv")}
@@ -1444,7 +1470,7 @@ function ProjectWorkspace({
                 Download blank CSV template
               </Button>
               <Button
-                className="h-11 sm:h-9"
+                className="min-h-11"
                 variant="outline"
                 disabled={busy || !isOnline || !state.assets.length}
                 onClick={() => void downloadRegister("csv")}
@@ -1452,7 +1478,7 @@ function ProjectWorkspace({
                 Export assets CSV
               </Button>
               <Button
-                className="h-11 sm:h-9"
+                className="min-h-11"
                 variant="outline"
                 disabled={
                   busy ||
@@ -1466,7 +1492,7 @@ function ProjectWorkspace({
               </Button>
             </div>
             <details className="text-sm">
-              <summary className="cursor-pointer text-slate-700">
+              <summary className="min-h-11 content-center cursor-pointer text-slate-700">
                 Supported columns & import rules
               </summary>
               <p className="mt-2 text-xs leading-5 text-slate-600">
@@ -1513,7 +1539,7 @@ function ProjectWorkspace({
             onToggle={(event) => setGenerateOpen(event.currentTarget.open)}
             className="rounded-xl border bg-white p-4 sm:p-5"
           >
-            <summary className="cursor-pointer font-medium">
+            <summary className="min-h-11 content-center cursor-pointer font-medium">
               Create missing tag tasks
             </summary>
             <div className="mt-4 space-y-4">
@@ -1535,7 +1561,7 @@ function ProjectWorkspace({
         )}
       {canEdit && !reports && !admin && !!state.schedule.length && (
         <details className="rounded-xl border bg-white p-4 sm:p-5">
-          <summary className="cursor-pointer font-medium">
+          <summary className="min-h-11 content-center cursor-pointer font-medium">
             Schedule register · advanced
           </summary>
           <div className="mt-4 space-y-4">
@@ -1674,7 +1700,7 @@ function ProjectWorkspace({
               </label>
             ))}
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-600">
             Baseline finish:{" "}
             {schedule.baselineFinish ?? "Set from the first forecast"}. Actual
             finish is a schedule record; tag approval remains a separate
@@ -1699,7 +1725,7 @@ function ProjectWorkspace({
           onToggle={(event) => setReportsOpen(event.currentTarget.open)}
           className="border-t border-slate-200 pt-4"
         >
-          <summary className="cursor-pointer font-medium">
+          <summary className="min-h-11 content-center cursor-pointer font-medium">
             Commissioning reports
           </summary>
           {(reports || reportsOpen) && (
@@ -1774,7 +1800,7 @@ function ProjectWorkspace({
       )}
       {canEdit && !reports && admin && (
         <details className="rounded-xl border bg-white p-5">
-          <summary className="font-semibold cursor-pointer">
+          <summary className="min-h-11 content-center font-semibold cursor-pointer">
             Revision history ({state.revisions.length})
           </summary>
           <div className="mt-4 space-y-4">
@@ -1784,8 +1810,10 @@ function ProjectWorkspace({
                   {r.actor} · {new Date(r.at).toLocaleString("en-GB")}
                 </p>
                 <p className="mt-1">{r.reason}</p>
-                <details className="text-xs text-slate-500 mt-2">
-                  <summary>{r.changes.length} changes</summary>
+                <details className="text-xs text-slate-600 mt-2">
+                  <summary className="min-h-11 cursor-pointer content-center">
+                    {r.changes.length} changes
+                  </summary>
                   <ul className="mt-2 max-h-48 overflow-auto">
                     {r.changes.map((c, j) => (
                       <li key={j}>{c}</li>
@@ -1798,6 +1826,146 @@ function ProjectWorkspace({
         </details>
       )}
     </fieldset>
+  );
+}
+
+/** Keep the existing commissioning status view available without granting Reports. */
+function ScopedEquipmentStatus({
+  project,
+  tasks,
+  onOpenAsset,
+}: {
+  project: Project;
+  tasks: Task[];
+  onOpenAsset: (id: string) => void;
+}) {
+  const state = commissioning(project);
+  const params = useSearchParams();
+  const [query, setQuery] = useState(""),
+    [area, setArea] = useState("all"),
+    [phase, setPhase] = useState("all"),
+    [supply, setSupply] = useState("all"),
+    [page, setPage] = useState(0);
+  const linkedFilters = {
+    query: params.get("query"),
+    equipmentType: params.get("equipmentType"),
+    location: params.get("location"),
+    phase: params.get("phase"),
+  };
+  const assets = filterAssetRegister(state.assets, {
+    query,
+    area,
+    phase,
+    supply,
+    programmeId: state.programmeId,
+  }).filter((asset) => matchesCopilotAssetFilters(asset, linkedFilters));
+  const currentPage = Math.min(
+    page,
+    Math.max(0, Math.ceil(assets.length / 50) - 1),
+  );
+  return (
+    <section
+      aria-label="Equipment status"
+      className="min-w-0 space-y-4 rounded-xl border bg-white p-4 sm:p-5"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Equipment status</h2>
+        <Button variant="outline" asChild>
+          <Link
+            href={`/commissioning?projectId=${encodeURIComponent(project.id)}`}
+          >
+            Return to register
+          </Link>
+        </Button>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <label className="text-sm">
+          Search equipment
+          <Input
+            className="mt-1"
+            value={query}
+            placeholder="Name or reference"
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setPage(0);
+            }}
+          />
+        </label>
+        {(["area", "phase"] as const).map((field) => (
+          <label className="text-sm" key={field}>
+            {field === "area" ? "Area" : "Phase"}
+            <select
+              className="field-select mt-1"
+              value={field === "area" ? area : phase}
+              onChange={(event) => {
+                (field === "area" ? setArea : setPhase)(event.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="all">
+                All {field === "area" ? "areas" : "phases"}
+              </option>
+              <option value="missing">Not recorded</option>
+              {assetFieldOptions(state.assets, field).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+        <label className="text-sm">
+          Supply
+          <select
+            className="field-select mt-1"
+            value={supply}
+            onChange={(event) => {
+              setSupply(event.target.value);
+              setPage(0);
+            }}
+          >
+            <option value="all">All supply</option>
+            <option value="true">Client supplied</option>
+            <option value="false">Contractor supplied</option>
+            <option value="unknown">Not classified</option>
+          </select>
+        </label>
+      </div>
+      <p className="text-sm tabular-nums text-slate-600" aria-live="polite">
+        {assets.length ? currentPage * 50 + 1 : 0}–
+        {Math.min((currentPage + 1) * 50, assets.length)} of {assets.length}{" "}
+        matching assets
+      </p>
+      <EquipmentStatusMatrix
+        project={project}
+        assets={assets.slice(currentPage * 50, (currentPage + 1) * 50)}
+        tasks={tasks}
+        onOpenAsset={onOpenAsset}
+      />
+      {assets.length > 50 && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-sm text-slate-600">
+            Page {currentPage + 1} of {Math.ceil(assets.length / 50)}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 0}
+              onClick={() => setPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              disabled={(currentPage + 1) * 50 >= assets.length}
+              onClick={() => setPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

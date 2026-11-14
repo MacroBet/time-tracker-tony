@@ -15,6 +15,7 @@ import {
   type TagProgressRow,
 } from "@/lib/tag-progress";
 import type { ReportRequest } from "./CommissioningReport";
+import { InfoPopover } from "./InfoPopover";
 
 export function TagProgressMatrix({
   project,
@@ -69,7 +70,7 @@ export function TagProgressMatrix({
       return (
         <td key={level} className="border-l p-2 text-center tabular-nums">
           <button
-            className="rounded px-1 py-2 text-emerald-700 hover:bg-emerald-50 focus-visible:outline-blue-600"
+            className="min-h-11 min-w-11 rounded px-1 py-2 text-emerald-700 hover:bg-emerald-50 focus-visible:outline-blue-600"
             onClick={() => detail(level, group)}
             aria-label={`${groupLabel(group)}, ${level}: ${summary.percent === null ? "no applicable tags" : `${summary.approved} of ${summary.total} approved`}. View details`}
           >
@@ -81,7 +82,7 @@ export function TagProgressMatrix({
       <>
         <td className="border-l p-2 text-right tabular-nums">
           <button
-            className="rounded px-2 py-2 hover:bg-blue-50 focus-visible:outline-blue-600"
+            className="min-h-11 min-w-11 rounded px-2 py-2 hover:bg-blue-50 focus-visible:outline-blue-600"
             onClick={() => detail(level, group)}
             aria-label={`${groupLabel(group)}, ${level}: ${summary.total} applicable tags. View details`}
           >
@@ -92,7 +93,7 @@ export function TagProgressMatrix({
           TAG_REVIEWS.map((review) => (
             <td key={review} className="p-2 text-right tabular-nums">
               <button
-                className="rounded px-2 py-2 hover:bg-blue-50 focus-visible:outline-blue-600"
+                className="min-h-11 min-w-11 rounded px-2 py-2 hover:bg-blue-50 focus-visible:outline-blue-600"
                 onClick={() => detail(level, group, false, review)}
                 aria-label={`${groupLabel(group)}, ${level}: ${summary.reviews[review]} ${tagReviewLabels[review]}. View details`}
               >
@@ -102,13 +103,13 @@ export function TagProgressMatrix({
           ))}
         <td className="p-2 text-right tabular-nums">
           <button
-            className="rounded px-2 py-2 text-emerald-700 hover:bg-emerald-50 focus-visible:outline-blue-600"
+            className="min-h-11 min-w-11 rounded px-2 py-2 text-emerald-700 hover:bg-emerald-50 focus-visible:outline-blue-600"
             onClick={() => detail(level, group, true)}
             aria-label={`${groupLabel(group)}, ${level}: ${summary.approved} approved tags. View details`}
           >
             {summary.approved}
             {summary.legacyApproved > 0 && (
-              <span className="block whitespace-nowrap text-[11px] font-normal text-slate-600">
+              <span className="block whitespace-nowrap text-xs font-normal text-slate-600">
                 {summary.legacyApproved} legacy
               </span>
             )}
@@ -116,7 +117,7 @@ export function TagProgressMatrix({
         </td>
         <td className="p-2 text-right tabular-nums">
           <button
-            className="rounded px-2 py-2 hover:bg-blue-50 focus-visible:outline-blue-600"
+            className="min-h-11 min-w-11 rounded px-2 py-2 hover:bg-blue-50 focus-visible:outline-blue-600"
             onClick={() => detail(level, group)}
             aria-label={`${groupLabel(group)}, ${level}: ${summary.percent === null ? "no applicable tags" : `${summary.percent}% approved`}. View details`}
           >
@@ -130,16 +131,39 @@ export function TagProgressMatrix({
     <section className="min-w-0 rounded-xl border bg-white p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold">
-            {clientSupplied ? "Client Supplied Assets" : "Tag progress matrix"}
-          </h3>
-          <p className="mt-1 max-w-prose text-xs text-slate-600">
+          <div className="flex items-center gap-1">
+            <h3 className="text-base font-semibold">
+              {clientSupplied
+                ? "Client supplied assets"
+                : "Tag progress matrix"}
+            </h3>
+            <InfoPopover
+              label={
+                clientSupplied
+                  ? "About client supplied tag progress"
+                  : "About tag progress"
+              }
+            >
+              <p>
+                Approval counts use A when explicitly recorded. Tags without a
+                review status retain legacy completed-workflow approval, shown
+                separately. AC is not counted as A. Missing records count as
+                incomplete. N/A records are excluded.
+              </p>
+              <p>
+                Fully approved level columns shrink automatically; select the
+                level heading to reopen them. Select a figure to open its
+                supporting records. Test results remain separate from approval.
+              </p>
+            </InfoPopover>
+          </div>
+          <p className="max-w-prose text-sm text-slate-600">
             {clientSupplied
               ? "Only assets explicitly marked Client Supplied. Also included in the all-assets totals."
               : "Approved tags by asset category or recorded location. Select a figure to see its records."}
           </p>
         </div>
-        <label className="text-xs text-slate-600">
+        <label className="text-sm text-slate-600">
           Group by
           <select
             className="field-select mt-1"
@@ -157,10 +181,10 @@ export function TagProgressMatrix({
         <p>
           I · Issued; R · Rejected; AC · Approved with comments; A · Approved.
         </p>
-        <label className="inline-flex items-center gap-2 text-xs">
+        <label className="inline-flex min-h-11 items-center gap-2 text-sm">
           <input
             type="checkbox"
-            className="size-4"
+            className="size-4 accent-blue-700"
             checked={showReviews}
             onChange={(event) => setShowReviews(event.target.checked)}
           />
@@ -169,16 +193,29 @@ export function TagProgressMatrix({
       </div>
       {rows.length && levels.length ? (
         <>
-          <div className="mt-4 overflow-x-auto rounded-lg border">
-            <table className="w-full text-left text-xs">
+          <div
+            className="relative isolate mt-3 max-h-[65dvh] overflow-auto overscroll-contain rounded-lg border focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
+            role="region"
+            aria-label={
+              clientSupplied
+                ? "Scrollable client supplied tag progress"
+                : "Scrollable all assets tag progress"
+            }
+            tabIndex={0}
+          >
+            <table className="w-full text-left text-sm">
               <caption className="sr-only">
                 {clientSupplied ? "Client Supplied" : "All assets"} tag
                 progress: total applicable, approved and approval percentage per
                 level.
               </caption>
-              <thead className="bg-slate-50 text-slate-600">
+              <thead className="sticky top-0 z-20 bg-slate-50 text-slate-700">
                 <tr>
-                  <th rowSpan={2} className="min-w-40 p-3" scope="col">
+                  <th
+                    rowSpan={2}
+                    className="sticky left-0 z-30 min-w-40 max-w-60 bg-slate-50 p-3"
+                    scope="col"
+                  >
                     {groupBy === "equipmentType"
                       ? "Asset category"
                       : "Recorded location"}
@@ -194,7 +231,7 @@ export function TagProgressMatrix({
                       >
                         {complete ? (
                           <button
-                            className="inline-flex items-center gap-1 rounded px-1 py-2 text-emerald-700 hover:bg-emerald-50 focus-visible:outline-blue-600"
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1 rounded px-1 py-2 text-emerald-700 hover:bg-emerald-50 focus-visible:outline-blue-600"
                             aria-expanded={!collapsed(level)}
                             aria-label={`${collapsed(level) ? "Expand" : "Collapse"} ${level}, all applicable tags approved`}
                             onClick={() =>
@@ -251,7 +288,10 @@ export function TagProgressMatrix({
               <tbody>
                 {groups.map((group) => (
                   <tr key={group.key} className="border-t hover:bg-slate-50">
-                    <th scope="row" className="p-3 font-medium">
+                    <th
+                      scope="row"
+                      className="sticky left-0 z-10 max-w-60 break-words bg-white p-3 font-medium"
+                    >
                       {group.key || "No location recorded"}
                     </th>
                     {levels.map((level) => (
@@ -264,7 +304,10 @@ export function TagProgressMatrix({
               </tbody>
               <tfoot className="border-t bg-slate-50 font-semibold">
                 <tr>
-                  <th scope="row" className="p-3">
+                  <th
+                    scope="row"
+                    className="sticky left-0 z-10 bg-slate-50 p-3"
+                  >
                     All applicable tags
                   </th>
                   {levels.map((level) => (
@@ -274,14 +317,6 @@ export function TagProgressMatrix({
               </tfoot>
             </table>
           </div>
-          <p className="mt-3 text-xs text-slate-600">
-            Approval counts use A when explicitly recorded. Tags without a
-            review status retain legacy completed-workflow approval, shown
-            separately. AC is not counted as A. Missing records count as
-            incomplete. N/A records are excluded. Fully approved level columns
-            shrink automatically; select the level heading to reopen them. Test
-            results remain separate from approval.
-          </p>
         </>
       ) : (
         <p className="py-6 text-sm text-slate-600">

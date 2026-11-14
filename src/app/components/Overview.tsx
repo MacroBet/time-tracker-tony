@@ -87,7 +87,7 @@ function OverviewDetails({
         {title}
         <ChevronDown
           aria-hidden="true"
-          className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+          className="size-4 shrink-0 text-slate-600 transition-transform group-open:rotate-180 motion-reduce:transition-none"
         />
       </summary>
       <div className="mt-3 space-y-4">{children}</div>
@@ -166,7 +166,7 @@ export function Overview() {
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h2 className="text-xl font-semibold">Project progress</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             {project.location} · As of {projectDate()} · Schedule revision{" "}
             {state.version}
           </p>
@@ -199,7 +199,7 @@ export function Overview() {
                 </p>
               </InfoPopover>
             </div>
-            <p className="text-sm text-slate-600">{project.name}</p>
+            <p className="break-words text-sm text-slate-600">{project.name}</p>
           </div>
           <div className="w-full sm:w-auto sm:min-w-80">
             <ProgressCounters
@@ -334,7 +334,7 @@ export function Overview() {
           aria-label="Work needing attention"
           className="rounded-xl border bg-white p-4 sm:p-5"
         >
-          <h3 className="text-sm font-semibold">Needs attention</h3>
+          <h3 className="text-base font-semibold">Needs attention</h3>
           <div className="mt-2 grid grid-cols-2 gap-x-2 sm:gap-x-6 xl:grid-cols-4">
             {[
               {
@@ -436,7 +436,7 @@ export function Overview() {
                 className="rounded-lg px-2 py-3 hover:bg-slate-50 focus-visible:outline-blue-600"
               >
                 <p className="font-medium text-sm">{t.title}</p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   {t.cx?.blockerRisk || t.notes || "Impact not recorded"}
                 </p>
                 <p className="text-xs text-slate-600 mt-2">
@@ -490,11 +490,11 @@ export function Overview() {
               })}
           </div>
           {!state.config.levels.length && (
-            <p className="py-10 text-center text-sm text-slate-500">
+            <p className="py-10 text-center text-sm text-slate-600">
               Configure this project’s commissioning levels in project setup.
             </p>
           )}
-          <p className="text-xs text-slate-500 mt-3">
+          <p className="text-xs text-slate-600 mt-3">
             Approved tags / applicable asset-level records. A counts as explicit
             approval; tags without review status retain legacy
             completed-workflow approval. Testing and review are tracked
@@ -511,7 +511,7 @@ export function Overview() {
               aria-label="Schedule overview"
               className="rounded-xl border bg-white p-5"
             >
-              <h3 className="text-sm font-semibold">Schedule overview</h3>
+              <h3 className="text-base font-semibold">Schedule overview</h3>
               <p className="mt-1 text-xs text-slate-600">
                 Task completion by recorded commissioning stage. Tag approval is
                 shown separately above.
@@ -591,7 +591,7 @@ export function Overview() {
             <section className="rounded-xl border bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-semibold">
+                  <h3 className="text-base font-semibold">
                     Construction / general work
                   </h3>
                   <p className="mt-1 max-w-prose text-xs text-slate-600">
@@ -740,7 +740,7 @@ export function Overview() {
           <OverviewDetails title="Tag schedule trend">
             <section className="rounded-xl border bg-white p-5">
               <div className="flex justify-between gap-3">
-                <h3 className="text-sm font-semibold">
+                <h3 className="text-base font-semibold">
                   Tag schedule · planned, forecast & approved
                 </h3>
                 <button
@@ -750,7 +750,7 @@ export function Overview() {
                   View figures
                 </button>
               </div>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-xs text-slate-600 mt-2">
                 {timeline.scheduled} of {timeline.total} applicable tags have
                 forecast dates. {timeline.baselineRecorded} have baseline dates.
                 Approval uses the recorded workflow completion date for approved
@@ -807,13 +807,13 @@ export function Overview() {
                     </text>
                   </svg>
                   <div className="flex gap-5 text-xs">
-                    <span className="text-slate-500">Baseline</span>
+                    <span className="text-slate-600">Baseline</span>
                     <span className="text-blue-600">Forecast</span>
                     <span className="text-emerald-600">Approved</span>
                   </div>
                 </>
               ) : (
-                <p className="py-6 text-sm text-slate-500">
+                <p className="py-6 text-sm text-slate-600">
                   Link tag activities to dated schedule records to compare the
                   schedule with approvals.
                 </p>

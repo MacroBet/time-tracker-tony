@@ -44,6 +44,19 @@ type NavigationItem = {
   icon: LucideIcon;
   module?: Module;
 };
+const mobileTitles: Record<string, string> = {
+  "Task management": "Tasks",
+  "Team management": "People",
+  "Management reports": "Reports",
+  "Administrator control": "Admin",
+  "Checksheets and remaining work": "Checksheets",
+  "Project assistant": "Assistant",
+  "Time & attendance": "Attendance",
+  "Time tracking": "Time",
+  "Activity details": "Activity",
+  "Workspace feedback": "Feedback",
+  "Task unavailable": "Unavailable",
+};
 export function AppShell({
   title,
   subtitle,
@@ -218,6 +231,12 @@ export function AppShell({
   }
   return (
     <div className="app-workspace min-h-screen">
+      <a
+        href="#main-content"
+        className="fixed left-4 top-3 z-[100] inline-flex min-h-11 -translate-y-24 items-center rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white focus:translate-y-0"
+      >
+        Skip to main content
+      </a>
       <aside className="workspace-sidebar fixed inset-y-0 left-0 z-30 hidden lg:flex w-56 flex-col text-slate-300">
         <Link
           href={primaryNav[0]?.href ?? "/settings"}
@@ -296,10 +315,10 @@ export function AppShell({
             {initials}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-xs text-white truncate">
+            <span className="block text-sm text-white truncate">
               {currentUser.name}
             </span>
-            <span className="block text-[10px] capitalize text-slate-400 mt-1">
+            <span className="block text-xs capitalize text-slate-300 mt-1">
               {currentUser.role}
             </span>
           </span>
@@ -315,7 +334,7 @@ export function AppShell({
       <div className="lg:pl-56 pb-28 lg:pb-12">
         <header className="sticky top-0 z-20 border-b border-[#e2e9f4] bg-white/95 backdrop-blur-sm">
           <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-7 lg:flex lg:gap-4">
-            <div className="flex min-w-0 items-center gap-2 lg:shrink-0">
+            <div className="flex min-w-0 items-center gap-2 max-[359px]:col-span-2 lg:shrink-0">
               {back && (
                 <Button variant="ghost" size="icon" className="size-11" asChild>
                   <Link href={back} aria-label="Go back">
@@ -324,19 +343,40 @@ export function AppShell({
                 </Button>
               )}
               <div className="flex min-w-0 items-center gap-1">
-                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#111c30]">
-                  {title}
+                <h1
+                  aria-label={title}
+                  className="workspace-page-title text-lg leading-tight sm:text-2xl font-semibold tracking-tight text-[#111c30]"
+                >
+                  <span className="sm:hidden">
+                    {mobileTitles[title] ?? title}
+                  </span>
+                  <span className="hidden sm:inline">{title}</span>
                 </h1>
                 {subtitle && (
-                  <InfoPopover label={`About ${title}`}>
-                    <p>{subtitle}</p>
-                  </InfoPopover>
+                  <span
+                    className={
+                      back && projects.length > 0
+                        ? "hidden sm:contents"
+                        : "contents"
+                    }
+                  >
+                    <InfoPopover label={`About ${title}`}>
+                      <p>{subtitle}</p>
+                    </InfoPopover>
+                  </span>
                 )}
               </div>
             </div>
             {projects.length > 0 && (
               <label className="order-3 col-span-2 flex min-w-0 items-center gap-2 text-sm text-slate-600 lg:order-none lg:ml-3 lg:flex-1 lg:max-w-md">
                 <span className="shrink-0">Project</span>
+                {back && subtitle && (
+                  <span className="contents sm:hidden">
+                    <InfoPopover label={`About ${title}`}>
+                      <p>{subtitle}</p>
+                    </InfoPopover>
+                  </span>
+                )}
                 <select
                   aria-label="Active project"
                   className="min-h-11 w-full min-w-0 rounded-md border bg-slate-50 px-3 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-600"
@@ -358,7 +398,7 @@ export function AppShell({
                 </select>
               </label>
             )}
-            <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:ml-auto">
+            <div className="flex shrink-0 items-center gap-1 max-[359px]:col-span-2 max-[359px]:row-start-2 max-[359px]:justify-self-end sm:gap-2 lg:ml-auto">
               <AssistantEntry />
               <span className="hidden sm:flex gap-1.5 items-center text-[11px] text-slate-500 mr-2">
                 <span
@@ -403,6 +443,7 @@ export function AppShell({
         )}
         <main
           id="main-content"
+          tabIndex={-1}
           className={`${wide ? "max-w-[1440px]" : "max-w-3xl"} mx-auto p-4 sm:p-7 space-y-5`}
         >
           {children}
@@ -420,7 +461,7 @@ export function AppShell({
             key={n.href}
             href={n.href}
             aria-current={active(n.href) ? "page" : undefined}
-            className={`flex min-h-14 min-w-0 flex-col justify-center items-center gap-1 px-1 py-2 text-[10px] font-medium focus-visible:outline-2 focus-visible:outline-blue-600 ${active(n.href) ? "text-blue-700 bg-blue-50" : "text-slate-600"}`}
+            className={`flex min-h-14 min-w-0 flex-col justify-center items-center gap-1 px-1 py-2 text-xs font-medium focus-visible:outline-2 focus-visible:outline-blue-600 ${active(n.href) ? "text-blue-700 bg-blue-50" : "text-slate-600"}`}
           >
             <n.icon className="size-5" />
             <span className="max-w-full truncate">{n.label}</span>
@@ -429,7 +470,7 @@ export function AppShell({
         <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
           <SheetTrigger asChild>
             <button
-              className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-medium focus-visible:outline-2 focus-visible:outline-blue-600 ${secondaryActive ? "text-blue-700 bg-blue-50" : "text-slate-600"}`}
+              className={`flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-xs font-medium focus-visible:outline-2 focus-visible:outline-blue-600 ${secondaryActive ? "text-blue-700 bg-blue-50" : "text-slate-600"}`}
               aria-label={
                 secondaryActive
                   ? "More navigation, current section"

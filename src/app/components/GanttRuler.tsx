@@ -11,7 +11,7 @@ export function GanttRuler({
   const { columns, width, unit } = ganttAxis(start, scale);
   return (
     <div
-      className="relative h-14 bg-slate-50 text-xs font-normal text-slate-600"
+      className="relative h-14 bg-slate-50 text-xs font-medium text-slate-700"
       style={{ width }}
     >
       {columns.map((column, i) => (
@@ -28,7 +28,9 @@ export function GanttRuler({
           title={column.date}
         >
           <time dateTime={column.date}>{column.label}</time>
-          {scale === "day" && <span>{column.weekday}</span>}
+          {scale === "day" && (
+            <span className="font-normal text-slate-600">{column.weekday}</span>
+          )}
         </span>
       ))}
     </div>

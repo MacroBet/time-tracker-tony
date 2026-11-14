@@ -80,13 +80,13 @@ export function AssignmentDialog({
         <Button
           size={compact ? "sm" : "default"}
           variant={tasks.every((t) => !t.assignedTo) ? "default" : "outline"}
-          className={compact ? "h-9 text-xs" : ""}
+          className={compact ? "min-h-11 text-sm" : ""}
           disabled={!tasks.length || tasks.length > 50}
         >
           {children || "Assign worker"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+      <DialogContent aria-busy={busy} className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             Assign{" "}
@@ -133,18 +133,27 @@ export function AssignmentDialog({
             placeholder="Explain the assignment or handover (at least 10 characters)"
           />
         </label>
-        <Button
-          onClick={save}
-          disabled={
-            busy ||
-            !isOnline ||
-            worker === "__choose" ||
-            (needsReason && reason.trim().length < 10) ||
-            (!!reason.trim() && reason.trim().length < 10)
-          }
-        >
-          {busy ? "Saving…" : "Save assignment"}
-        </Button>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="outline"
+            disabled={busy}
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={save}
+            disabled={
+              busy ||
+              !isOnline ||
+              worker === "__choose" ||
+              (needsReason && reason.trim().length < 10) ||
+              (!!reason.trim() && reason.trim().length < 10)
+            }
+          >
+            {busy ? "Saving…" : "Save assignment"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

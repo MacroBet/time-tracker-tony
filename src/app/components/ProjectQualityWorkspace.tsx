@@ -47,7 +47,7 @@ export function ProjectQualityWorkspace() {
     currentUser: app.currentUser,
     tasks,
     onCommand: command,
-    busy,
+    busy: busy || !app.isOnline,
   };
   return (
     <AppShell
@@ -55,11 +55,23 @@ export function ProjectQualityWorkspace() {
       subtitle={`${project.name} · Requirements, recorded answers and configured signatories.`}
       wide
     >
+      {!app.isOnline && (
+        <p
+          role="status"
+          className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
+        >
+          You’re offline. Reconnect before saving answers, signatures or
+          remaining work.
+        </p>
+      )}
       <ChecksheetWorkspace
+        key={`checksheets-${project.id}`}
         {...props}
         users={app.users.filter((user) => members.has(user.id))}
       />
-      <WorksToGoWorkspace {...props} />
+      <div className="border-t border-slate-200 pt-6">
+        <WorksToGoWorkspace key={`remaining-work-${project.id}`} {...props} />
+      </div>
     </AppShell>
   );
 }

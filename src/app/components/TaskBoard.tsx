@@ -195,7 +195,7 @@ export function TaskBoard({
             >
               <stat.icon className={`size-5 ${stat.color}`} />
               <div>
-                <p className="text-xs text-slate-500">{stat.label}</p>
+                <p className="text-xs text-slate-600">{stat.label}</p>
                 <p className="font-semibold text-lg">{stat.count}</p>
               </div>
             </Link>
@@ -203,7 +203,10 @@ export function TaskBoard({
         </div>
         <div className="flex justify-between items-center">
           <h2 className="text-base font-semibold">Your next activities</h2>
-          <Link href="/my-tasks" className="text-sm text-blue-600">
+          <Link
+            href="/my-tasks"
+            className="inline-flex min-h-11 items-center rounded px-1 text-sm font-medium text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
+          >
             View all
           </Link>
         </div>
@@ -218,14 +221,14 @@ export function TaskBoard({
                 <h3 className="text-sm font-semibold leading-snug line-clamp-2">
                   {task.title}
                 </h3>
-                <p className="text-xs text-slate-500 truncate mt-1">
+                <p className="text-xs text-slate-600 truncate mt-1">
                   {task.location ||
                     projects.find((p) => p.id === task.projectId)?.name}
                 </p>
                 <div className="flex flex-wrap gap-2 items-center mt-2">
                   <TaskStatusBadge task={task} />
                   {isOverdue(task) && (
-                    <span className="text-[11px] text-red-600">Overdue</span>
+                    <span className="text-xs text-red-700">Overdue</span>
                   )}
                 </div>
               </div>
@@ -233,7 +236,7 @@ export function TaskBoard({
             </Link>
           ))}
           {!open.length && (
-            <p className="text-sm text-slate-500 p-5">
+            <p className="text-sm text-slate-600 p-5">
               No open activities assigned to you.
             </p>
           )}
@@ -268,7 +271,7 @@ export function TaskBoard({
             }}
           >
             {view.name}{" "}
-            <span className="ml-1 opacity-70">
+            <span className="ml-1 tabular-nums">
               {
                 tasks.filter(
                   (t) =>
@@ -308,7 +311,7 @@ export function TaskBoard({
           ].map((s) => (
             <Card key={s.label} className="shadow-none">
               <CardContent className="p-4">
-                <p className="text-xs text-slate-500">{s.label}</p>
+                <p className="text-xs text-slate-600">{s.label}</p>
                 <p
                   className={`text-3xl font-semibold tracking-tight mt-1 ${s.color}`}
                 >
@@ -320,7 +323,7 @@ export function TaskBoard({
         </div>
       )}
       {management && (
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-slate-600">
           {completed} of {applicable} applicable activities completed · counts
           follow your filters
         </div>
@@ -453,7 +456,7 @@ export function TaskBoard({
                         <div key={e.id}>
                           <div className="flex justify-between gap-3 text-xs mb-1.5">
                             <span>{e.label}</span>
-                            <span className="text-slate-500">
+                            <span className="text-slate-600">
                               {done}/{total}
                             </span>
                           </div>
@@ -478,7 +481,7 @@ export function TaskBoard({
                       );
                     })}
                   {!filtered.length && (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-slate-600">
                       No activities match these filters.
                     </p>
                   )}
@@ -492,7 +495,7 @@ export function TaskBoard({
         <h2 className="text-lg font-semibold">
           {management ? "Project activities" : "My activities"}
         </h2>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-600">
           {filtered.length} activities
         </span>
       </div>
@@ -526,7 +529,7 @@ export function TaskBoard({
           <CardContent className="p-8 text-center space-y-3">
             <CheckCircle2 className="size-9 text-slate-400 mx-auto" />
             <p className="font-medium">No activities to show</p>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-600">
               Try changing your search or filters.
             </p>
             <Button variant="outline" onClick={reset}>
@@ -539,11 +542,11 @@ export function TaskBoard({
           {filtered.slice(0, limit).map((task) => (
             <div key={task.id} className="relative">
               {management && (
-                <label className="flex items-center gap-2 text-xs p-2">
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 p-2 text-sm">
                   <input
                     type="checkbox"
                     className="size-5"
-                    aria-label={`Select issue ${task.externalId || task.title}`}
+                    aria-label={`Select activity ${task.externalId || task.title}`}
                     checked={selected.includes(task.id)}
                     disabled={
                       !selected.includes(task.id) && selected.length >= 50
@@ -574,14 +577,14 @@ export function TaskBoard({
                   >
                     {task.priority || "No priority"}
                   </Badge>
-                  <span className="text-xs text-slate-500">
+                  <span className="min-w-0 break-words text-xs text-slate-600">
                     {task.externalId ? `#${task.externalId}` : "Manual"} ·{" "}
                     {task.discipline}
                   </span>
                   <ArrowUpRight className="size-4 ml-auto text-slate-400" />
                 </div>
                 <h3 className="font-semibold leading-snug">{task.title}</h3>
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="text-sm text-slate-600 mt-1">
                   {task.location ||
                     projects.find((p) => p.id === task.projectId)?.name}
                 </p>
@@ -600,7 +603,7 @@ export function TaskBoard({
                 <div className="flex gap-2 flex-wrap mt-3 items-center">
                   <TaskStatusBadge task={task} />
                   {task.importData && (
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-600">
                       Report: {task.importData.status}
                     </span>
                   )}
@@ -616,7 +619,7 @@ export function TaskBoard({
                     </span>
                   )}
                 </div>
-                <div className="border-t border-slate-100 mt-4 pt-3 flex flex-wrap gap-x-4 gap-y-2 justify-between text-xs text-slate-500">
+                <div className="border-t border-slate-100 mt-4 pt-3 flex flex-wrap gap-x-4 gap-y-2 justify-between text-xs text-slate-600">
                   <span>
                     {users.find((u) => u.id === task.assignedTo)?.name ||
                       task.importData?.assignee ||

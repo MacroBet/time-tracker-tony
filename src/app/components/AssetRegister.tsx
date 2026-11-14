@@ -277,7 +277,7 @@ export function AssetRegister({
       set = field === "area" ? setArea : setPhase;
     return (
       <select
-        className="field-select mt-1 min-h-11 min-w-28 w-full text-xs font-normal"
+        className="field-select mt-1 min-h-11 min-w-28 w-full text-sm font-normal"
         aria-label={`Filter by ${field}`}
         value={value}
         onChange={(event) => {
@@ -297,7 +297,7 @@ export function AssetRegister({
   }
   const supplyFilter = (
     <select
-      className="field-select mt-1 min-h-11 min-w-32 w-full text-xs font-normal"
+      className="field-select mt-1 min-h-11 min-w-32 w-full text-sm font-normal"
       aria-label="Filter by supply"
       value={supply}
       onChange={(event) => {
@@ -425,12 +425,20 @@ export function AssetRegister({
               </Button>
             </>
           )}
-          {hasModule(currentUser, "reports") && (
+          {hasModule(currentUser, "reports") ? (
             <Button className="min-h-11" variant="outline" asChild>
               <Link
                 href={`/reports?view=equipment&projectId=${encodeURIComponent(project.id)}`}
               >
                 Tagging status report
+              </Link>
+            </Button>
+          ) : (
+            <Button className="min-h-11" variant="outline" asChild>
+              <Link
+                href={`/commissioning?view=status&projectId=${encodeURIComponent(project.id)}`}
+              >
+                Equipment status
               </Link>
             </Button>
           )}
@@ -565,7 +573,7 @@ export function AssetRegister({
         </details>
       </div>
       <div
-        className="hidden md:block overflow-x-auto focus-visible:outline-2 focus-visible:outline-blue-700"
+        className="relative isolate hidden max-h-[70dvh] overflow-auto overscroll-contain md:block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
         role="region"
         aria-label="Scrollable asset register"
         tabIndex={0}
@@ -575,7 +583,7 @@ export function AssetRegister({
             Equipment inventory and required tag configuration. Test and
             approval status is in Reports.
           </caption>
-          <thead className="bg-slate-50 align-top">
+          <thead className="sticky top-0 z-10 bg-slate-50 align-top">
             <tr>
               {canEdit && (
                 <th scope="col" className="p-2 w-11">
@@ -606,7 +614,10 @@ export function AssetRegister({
                   </label>
                 </th>
               )}
-              <th scope="col" className="p-2 min-w-56">
+              <th
+                scope="col"
+                className="sticky left-0 z-20 min-w-56 bg-slate-50 p-2"
+              >
                 Asset
                 <Input
                   className="mt-1 min-h-11 font-normal"
@@ -705,11 +716,11 @@ export function AssetRegister({
                     </label>
                   </td>
                 )}
-                <td className="p-2">
+                <td className="sticky left-0 z-[1] bg-white p-2">
                   <div className="flex items-start gap-1">
                     {dragHandle(asset)}
                     <button
-                      className="min-h-11 break-words text-left font-semibold text-blue-700 underline underline-offset-4"
+                      className="min-h-11 break-words text-left font-semibold text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
                       onClick={() => onInspect(asset.id)}
                     >
                       {asset.name}
@@ -776,7 +787,7 @@ export function AssetRegister({
               )}
               <div className="min-w-0">
                 <button
-                  className="min-h-11 break-words text-left font-semibold text-blue-700 underline underline-offset-4"
+                  className="min-h-11 break-words text-left font-semibold text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
                   onClick={() => onInspect(asset.id)}
                 >
                   {asset.name}
@@ -837,7 +848,7 @@ export function AssetRegister({
           of {filtered.length.toLocaleString()} assets
         </p>
         {filtered.length > 50 && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               className="min-h-11"
               variant="outline"
@@ -921,7 +932,7 @@ export function AssetRegister({
                     onChange={(event) => setReason(event.target.value)}
                     placeholder="What changed, and why?"
                   />
-                  <span className="mt-1 block text-xs font-normal text-slate-600">
+                  <span className="mt-1 block text-sm font-normal text-slate-600">
                     At least 10 characters, saved in project history.
                   </span>
                 </label>

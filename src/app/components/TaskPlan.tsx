@@ -40,10 +40,15 @@ export function TaskPlan({ task }: { task: Task }) {
   }
   return (
     <details className="rounded-xl border bg-white p-5">
-      <summary className="font-semibold cursor-pointer">
+      <summary className="min-h-11 cursor-pointer content-center rounded font-semibold focus-visible:outline-2 focus-visible:outline-blue-700">
         Edit activity plan
       </summary>
-      <form key={task.version} onSubmit={save} className="mt-4 space-y-4">
+      <form
+        key={task.version}
+        onSubmit={save}
+        aria-busy={busy}
+        className="mt-4 space-y-4"
+      >
         <label className="block text-sm">
           Title
           <Input
@@ -109,10 +114,20 @@ export function TaskPlan({ task }: { task: Task }) {
             }
           }
         />
-        <label className="block text-sm">
-          Reason for change
-          <Textarea name="reason" required minLength={10} maxLength={1000} />
-        </label>
+        <div className="space-y-2 text-sm">
+          <label htmlFor="plan-change-reason">Reason for change</label>
+          <Textarea
+            id="plan-change-reason"
+            name="reason"
+            aria-describedby="plan-change-reason-help"
+            required
+            minLength={10}
+            maxLength={1000}
+          />
+          <p id="plan-change-reason-help" className="text-xs text-slate-600">
+            At least 10 characters. Saved in the activity history.
+          </p>
+        </div>
         <Button disabled={busy || !isOnline}>
           {busy ? "Saving…" : "Save plan"}
         </Button>

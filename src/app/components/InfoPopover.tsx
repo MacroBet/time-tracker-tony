@@ -28,8 +28,10 @@ export function InfoPopover({
       </PopoverTrigger>
       <PopoverContent
         align="start"
+        sideOffset={8}
+        collisionPadding={16}
         aria-label={label}
-        className="w-80 max-w-[calc(100vw-2rem)] space-y-3 rounded-xl bg-white text-sm leading-6 text-slate-700"
+        className="w-80 max-w-[calc(100vw-2rem)] max-h-[var(--radix-popover-content-available-height,80dvh)] overflow-y-auto overscroll-contain space-y-3 rounded-xl bg-white text-sm leading-6 text-slate-700"
       >
         {children}
       </PopoverContent>

@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/api-client";
 import type { ProjectAuditEvent, ProjectAuditPage } from "@/lib/project-audit";
 import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
+import { InfoPopover } from "./InfoPopover";
 
 const icons = { edit: Pencil, upload: Upload, download: Download };
 export function ProjectAudit({
@@ -29,7 +30,7 @@ function AuditHistory({
   projectId: string;
   refreshKey?: string | number;
 }) {
-  const { lastSyncTime } = useApp();
+  const { lastSyncTime, isOnline } = useApp();
   const [expanded, setExpanded] = useState(false);
   const [page, setPage] = useState<ProjectAuditPage | null>(null);
   const [error, setError] = useState("");
@@ -97,16 +98,25 @@ function AuditHistory({
     }
   }
   return (
-    <section
-      aria-label="Project history"
-      className="rounded-xl border bg-white p-5 space-y-4"
-    >
+    <section aria-label="Project history" className="min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold flex items-center gap-2">
-            <History className="size-4" aria-hidden="true" />
-            Project history
-          </h2>
+          <div className="flex items-center gap-1">
+            <h2 className="font-semibold flex items-center gap-2">
+              <History className="size-4" aria-hidden="true" />
+              Project history
+            </h2>
+            <InfoPopover label="How project history is recorded">
+              <p>
+                Downloads record when the server prepares a file. Browser
+                receipt is not confirmed.
+              </p>
+              <p>
+                Historical register revisions appear as edits when their
+                original record has no action type.
+              </p>
+            </InfoPopover>
+          </div>
           <p className="text-sm text-slate-600 mt-1">
             {expanded
               ? "Edits, imports, evidence and exports for this project."
@@ -137,6 +147,7 @@ function AuditHistory({
             type="button"
             variant="outline"
             size="sm"
+            disabled={!isOnline}
             onClick={() => setRetry(retry + 1)}
           >
             Retry
@@ -166,7 +177,7 @@ function AuditHistory({
           type="button"
           variant="outline"
           size="sm"
-          disabled={busy}
+          disabled={busy || !isOnline}
           onClick={() => void loadMore()}
         >
           {busy
@@ -174,11 +185,6 @@ function AuditHistory({
             : `Load more (${page.events.length} of ${page.total})`}
         </Button>
       )}
-      <p className="text-xs text-slate-600">
-        Downloads record when the server prepares a file. Browser receipt is not
-        confirmed. Historical register revisions appear as edits when their
-        original record has no action type.
-      </p>
     </section>
   );
 }
@@ -209,7 +215,7 @@ function HistoryRow({ event }: { event: ProjectAuditEvent }) {
           </p>
           {event.detail && (
             <details className="text-sm">
-              <summary className="cursor-pointer text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700">
+              <summary className="min-h-11 cursor-pointer py-2 text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
                 View details
               </summary>
               <p className="mt-2 whitespace-pre-wrap break-words text-slate-600">

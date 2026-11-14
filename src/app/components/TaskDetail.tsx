@@ -141,12 +141,12 @@ function TaskContent({ task }: { task: Task }) {
           {canOpenAssets && (
             <Link
               href="/commissioning"
-              className="text-blue-700 underline underline-offset-4"
+              className="inline-flex min-h-11 items-center rounded text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-blue-700"
             >
               Assets
             </Link>
           )}
-          <span>
+          <span className="min-w-0 break-words">
             {[
               linkedAsset?.id ?? task.cx?.assetId,
               linkedAsset?.name,
@@ -157,7 +157,7 @@ function TaskContent({ task }: { task: Task }) {
           </span>
           <a
             href="#test-evidence"
-            className="text-blue-700 underline underline-offset-4"
+            className="inline-flex min-h-11 items-center rounded text-blue-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-blue-700"
           >
             Test sheet documents ({files.length})
           </a>
@@ -165,7 +165,7 @@ function TaskContent({ task }: { task: Task }) {
       )}
       <Card>
         <CardContent className="p-5 space-y-5">
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{task.priority || "No priority"}</Badge>
             <TaskStatusBadge task={task} />
             {isOverdue(task) && (
@@ -175,10 +175,10 @@ function TaskContent({ task }: { task: Task }) {
               </Badge>
             )}
           </div>
-          <h2 className="text-2xl font-semibold tracking-tight">
+          <h2 className="break-words text-2xl font-semibold tracking-tight">
             {task.title}
           </h2>
-          <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+          <p className="max-w-prose whitespace-pre-wrap break-words leading-relaxed text-slate-600">
             {task.description}
           </p>
           <dl className="grid grid-cols-2 gap-5 border-t pt-5 text-sm">
@@ -227,15 +227,15 @@ function TaskContent({ task }: { task: Task }) {
                   : `${task.source.toUpperCase()} · #${task.externalId}`,
               ],
             ].map(([label, value]) => (
-              <div key={label}>
-                <dt className="text-xs text-slate-500 mb-1">{label}</dt>
+              <div key={label} className="min-w-0">
+                <dt className="text-xs text-slate-600 mb-1">{label}</dt>
                 <dd className="font-medium break-words">{value}</dd>
               </div>
             ))}
           </dl>
           {task.notes && (
             <div className="bg-slate-50 p-3 rounded-lg">
-              <p className="text-xs font-medium text-slate-500 mb-1">
+              <p className="text-xs font-medium text-slate-600 mb-1">
                 Latest note
               </p>
               <p className="text-sm whitespace-pre-wrap">{task.notes}</p>
@@ -290,7 +290,7 @@ function TaskContent({ task }: { task: Task }) {
           <CardHeader>
             <CardTitle className="text-lg">
               {isTag ? "Test sheet documents & evidence" : "Evidence"}{" "}
-              <span className="text-slate-400 text-sm font-normal">
+              <span className="text-slate-600 text-sm font-normal">
                 ({files.length})
               </span>
             </CardTitle>
@@ -314,12 +314,12 @@ function TaskContent({ task }: { task: Task }) {
               <div key={f.id} className="space-y-2">
                 <a
                   href={`/api/attachments/${f.id}`}
-                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-slate-50"
+                  className="flex min-h-11 items-center gap-3 rounded-lg border p-3 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-700"
                 >
                   <FileText className="size-5 text-blue-600 shrink-0" />
                   <span className="min-w-0 flex-1">
                     <span className="text-sm block truncate">{f.name}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-slate-600">
                       {Math.ceil(f.size / 1024)} KB
                       {f.contentType === "video/mp4" ? " · Download MP4" : ""}
                     </span>
@@ -366,12 +366,12 @@ function TaskContent({ task }: { task: Task }) {
                     ? "Attach test sheet / evidence"
                     : "Add photo, video or document"}
                 </Button>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-600">
                   PNG, JPEG, WebP, PDF or H.264 MP4 · up to 2 MB each. MP4
                   videos must be 30 seconds or shorter. Up to 20 files per
                   activity.
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-600">
                   Videos start muted. For speech or important visual details,
                   add a written description in the activity notes.
                 </p>
@@ -394,7 +394,7 @@ function TaskContent({ task }: { task: Task }) {
               {task.importData.status} · {task.importData.assigneeType}:{" "}
               {task.importData.assignee}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               {task.importData.file} · row {task.importData.row}. Report values
               are a snapshot; progress updates are tracked separately.
             </p>
@@ -412,7 +412,7 @@ function TaskContent({ task }: { task: Task }) {
                   .filter(([, value]) => value)
                   .map(([key, value]) => (
                     <div key={key}>
-                      <dt className="text-xs text-slate-500">{key}</dt>
+                      <dt className="text-xs text-slate-600">{key}</dt>
                       <dd className="whitespace-pre-wrap break-words">
                         {value}
                       </dd>
@@ -449,7 +449,7 @@ function TaskContent({ task }: { task: Task }) {
                 placeholder="What was done? Add an outcome or explain what is blocking progress."
               />
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               Submit completed work with a note or evidence. Your supervisor
               reviews the result. Explain any blocker or returned work.
             </p>
@@ -482,14 +482,14 @@ function TaskContent({ task }: { task: Task }) {
               {task.status === "in-progress" && (
                 <Button
                   disabled={busy || !isOnline}
-                  className="w-full h-12 bg-green-600 hover:bg-green-700"
+                  className="w-full h-12 bg-green-700 hover:bg-green-800"
                   onClick={() => update("review")}
                 >
                   Submit for review
                 </Button>
               )}
               {task.status === "review" && currentUser.role !== "worker" && (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid gap-2 sm:grid-cols-2">
                   <Button
                     disabled={busy || !isOnline}
                     onClick={() => update("completed")}
@@ -543,9 +543,12 @@ function TaskContent({ task }: { task: Task }) {
         <CardContent>
           <ol className="space-y-5">
             {timeline.map((a) => (
-              <li key={a.id} className="border-l-2 border-blue-100 pl-4">
+              <li
+                key={a.id}
+                className="border-t border-slate-200 pt-4 first:border-0 first:pt-0"
+              >
                 <p className="text-sm font-medium">{a.action}</p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   {a.actorName} ·{" "}
                   {new Date(a.createdAt).toLocaleString("en-GB", {
                     timeZone: "Europe/Amsterdam",
@@ -560,11 +563,11 @@ function TaskContent({ task }: { task: Task }) {
             ))}
           </ol>
           {!timeline.length && (
-            <p className="text-sm text-slate-500">No updates recorded.</p>
+            <p className="text-sm text-slate-600">No updates recorded.</p>
           )}
         </CardContent>
       </Card>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-slate-600">
         Current status: {statusLabels[task.status]} · last updated{" "}
         {new Date(task.updatedAt).toLocaleString("en-GB", {
           timeZone: "Europe/Amsterdam",

@@ -6,6 +6,7 @@ import { homeFor } from "@/lib/domain";
 import { AppShell } from "./AppShell";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 export function ShiftHistory() {
   const { currentUser, shifts, projects } = useApp();
   const [filter, setFilter] = useState("all");
@@ -30,10 +31,10 @@ export function ShiftHistory() {
     <AppShell title="Shift history" back={homeFor(currentUser)}>
       <Card>
         <CardContent className="p-5">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-600">
             Recorded hours · current selection
           </p>
-          <p className="text-3xl font-semibold text-blue-600 mt-1">
+          <p className="mt-1 text-3xl font-semibold tabular-nums text-blue-600">
             {hours.toFixed(2)}h
           </p>
         </CardContent>
@@ -60,16 +61,30 @@ export function ShiftHistory() {
         </select>
       </label>
       {mine.length === 0 && (
-        <p className="text-center text-slate-500 py-8">
-          No timesheets in this view.
-        </p>
+        <div className="space-y-3 rounded-xl border bg-white p-6 text-center">
+          <p className="font-medium">No timesheets in this view</p>
+          <p className="text-sm text-slate-600">
+            {filter === "all"
+              ? "Your recorded shifts will appear here."
+              : "Try another status to find your recorded shifts."}
+          </p>
+          {filter !== "all" && (
+            <Button variant="outline" onClick={() => setFilter("all")}>
+              Show all timesheets
+            </Button>
+          )}
+        </div>
       )}
       {mine.map((s) => (
-        <Link key={s.id} href={`/shifts/${s.id}`} className="block">
+        <Link
+          key={s.id}
+          href={`/shifts/${s.id}`}
+          className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+        >
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-5 space-y-3">
               <div className="flex flex-wrap justify-between gap-2">
-                <h2 className="font-semibold">
+                <h2 className="min-w-0 break-words text-base font-semibold">
                   {projects.find((p) => p.id === s.projectId)?.name}
                 </h2>
                 <Badge
@@ -83,13 +98,13 @@ export function ShiftHistory() {
                     : s.status.replaceAll("-", " ")}
                 </Badge>
               </div>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-600">
                 {new Date(s.startTime).toLocaleString("en-GB", {
                   timeZone: "Europe/Amsterdam",
                 })}
               </p>
               {s.endTime && (
-                <p className="text-xl font-semibold text-blue-600">
+                <p className="text-xl font-semibold tabular-nums text-blue-600">
                   {(
                     (new Date(s.endTime).getTime() -
                       new Date(s.startTime).getTime()) /

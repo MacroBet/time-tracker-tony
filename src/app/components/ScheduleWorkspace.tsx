@@ -408,7 +408,7 @@ function Schedule({ project }: { project: Project }) {
                       );
                       return (
                         <details key={type} className="min-w-0 self-start">
-                          <summary className="cursor-pointer text-sm py-1 font-medium">
+                          <summary className="min-h-11 content-center cursor-pointer text-sm py-1 font-medium">
                             {type}{" "}
                             <span className="text-slate-500 font-normal">
                               ({assets.length})
@@ -422,7 +422,7 @@ function Schedule({ project }: { project: Project }) {
                             .sort()
                             .map((group) => (
                               <details key={group} className="ml-3">
-                                <summary className="cursor-pointer py-1 text-xs text-slate-600">
+                                <summary className="min-h-11 content-center cursor-pointer py-1 text-xs text-slate-600">
                                   {group}
                                 </summary>
                                 <div className="ml-3 border-l pl-2">
@@ -435,15 +435,23 @@ function Schedule({ project }: { project: Project }) {
                                     .map((a) => (
                                       <button
                                         key={a.id}
-                                        className={`block w-full text-left py-2 text-xs rounded hover:bg-blue-50 focus-visible:outline-blue-600 ${a.id === assetId ? "text-blue-700 font-semibold" : "text-blue-900"}`}
+                                        className={`block min-h-11 w-full rounded py-2 text-left text-sm hover:bg-blue-50 focus-visible:outline-blue-600 ${a.id === assetId ? "text-blue-700 font-semibold" : "text-blue-900"}`}
                                         title={a.name}
                                         onClick={() => {
                                           setAssetId(a.id);
                                           setPage(0);
                                         }}
                                       >
-                                        {a.id}
-                                        <span className="block text-blue-800 font-normal">
+                                        <span className="block break-words">
+                                          {a.name}
+                                        </span>
+                                        <span
+                                          className="block truncate text-xs font-normal text-blue-800"
+                                          title={a.id}
+                                        >
+                                          {a.id}
+                                        </span>
+                                        <span className="block text-xs text-blue-800 font-normal">
                                           {
                                             assetActivityIds(a, projectTasks)
                                               .size
@@ -1079,7 +1087,7 @@ function Gantt({
             </Button>
           </div>
           <div className="flex flex-wrap gap-3 items-center">
-            <label className="text-xs">
+            <label className="text-sm">
               Go to date
               <Input
                 aria-label="Gantt go to date"
@@ -1090,7 +1098,7 @@ function Gantt({
                 }}
               />
             </label>
-            <label className="text-xs">
+            <label className="text-sm">
               Scale
               <select
                 aria-label="Gantt scale"
@@ -1110,7 +1118,7 @@ function Gantt({
             >
               Today
             </Button>
-            <label className="flex items-center gap-2 text-xs">
+            <label className="flex min-h-11 items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={showLinks}
@@ -1128,7 +1136,7 @@ function Gantt({
             <span className="text-xs tabular-nums text-slate-600">
               {totalMatching} matching activities
             </span>
-            <label className="flex min-h-11 items-center gap-2 text-xs">
+            <label className="flex min-h-11 items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={showDuration}
@@ -1139,14 +1147,14 @@ function Gantt({
           </div>
         </div>
         <div
-          className="overflow-x-auto"
+          className="overflow-x-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
           tabIndex={0}
           role="region"
           aria-label="Scrollable schedule table and timeline"
         >
           <div className="flex" style={{ minWidth: tableWidth + width }}>
             <table
-              className="text-xs border-collapse table-fixed shrink-0 tabular-nums"
+              className="text-sm border-collapse table-fixed shrink-0 tabular-nums"
               style={{ width: tableWidth }}
             >
               <caption className="sr-only">
@@ -1213,7 +1221,7 @@ function Gantt({
                     >
                       <td className="px-3">
                         <button
-                          className="text-xs text-left w-full hover:text-blue-700 focus-visible:outline-blue-600"
+                          className="min-h-11 w-full text-left text-sm hover:text-blue-700 focus-visible:outline-blue-600"
                           onClick={(event) => onEdit(r, event.currentTarget)}
                           onKeyDown={(event) => {
                             if (
@@ -1229,7 +1237,7 @@ function Gantt({
                             {r.name}
                           </strong>
                           <span
-                            className="block truncate text-slate-600"
+                            className="block truncate text-xs text-slate-600"
                             title={r.activityId}
                           >
                             {r.activityId}
@@ -1256,8 +1264,12 @@ function Gantt({
                           wd
                         </td>
                       )}
-                      <td className="px-2">{r.start ?? "Not set"}</td>
-                      <td className="px-2">{r.finish ?? "Not set"}</td>
+                      <td className="whitespace-nowrap px-2 text-[13px]">
+                        {r.start ?? "Not set"}
+                      </td>
+                      <td className="whitespace-nowrap px-2 text-[13px]">
+                        {r.finish ?? "Not set"}
+                      </td>
                       {showLinks && (
                         <td
                           className="px-2 truncate"
@@ -1380,6 +1392,13 @@ function Gantt({
                   const baselineRight = r.baselineFinish
                     ? x(r.baselineFinish) + unit
                     : -1;
+                  const visualLeft = clipped(left);
+                  const visualWidth = Math.max(6, clipped(right) - visualLeft);
+                  const hitWidth = Math.max(44, visualWidth);
+                  const hitLeft = Math.min(
+                    visualLeft,
+                    Math.max(0, width - hitWidth),
+                  );
                   return (
                     <div
                       key={r.activityId}
@@ -1412,23 +1431,31 @@ function Gantt({
                         )}
                       {r.start && r.finish && right > 0 && left < width ? (
                         <button
-                          className="absolute top-3 h-6 rounded-sm bg-blue-100 border border-blue-400 text-blue-950 overflow-hidden text-[10px] hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+                          className="group absolute top-0.5 h-11 text-left text-xs text-blue-950 focus-visible:outline-2 focus-visible:outline-blue-700"
                           style={{
-                            left: clipped(left),
-                            width: Math.max(6, clipped(right) - clipped(left)),
+                            left: hitLeft,
+                            width: hitWidth,
                           }}
                           title={`${r.activityId}: ${r.name}; ${r.start} → ${r.finish}; ${r.progress ?? "unrecorded"}%`}
                           aria-label={`Edit ${r.activityId}: ${r.name}, ${r.start} to ${r.finish}`}
                           onClick={(event) => onEdit(r, event.currentTarget)}
                         >
                           <span
-                            className="absolute left-0 inset-y-0 bg-blue-400/50"
-                            style={{ width: `${r.progress ?? 0}%` }}
-                          />
-                          <span className="relative whitespace-nowrap px-1">
-                            {r.progress !== undefined
-                              ? `${r.progress}%`
-                              : r.activityId}
+                            className="absolute top-2.5 flex h-6 items-center overflow-hidden rounded-sm border border-blue-400 bg-blue-100 group-hover:bg-blue-200"
+                            style={{
+                              left: visualLeft - hitLeft,
+                              width: visualWidth,
+                            }}
+                          >
+                            <span
+                              className="absolute left-0 inset-y-0 bg-blue-400/50"
+                              style={{ width: `${r.progress ?? 0}%` }}
+                            />
+                            <span className="relative whitespace-nowrap px-1">
+                              {r.progress !== undefined
+                                ? `${r.progress}%`
+                                : r.activityId}
+                            </span>
                           </span>
                         </button>
                       ) : (

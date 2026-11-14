@@ -13,9 +13,9 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { InfoPopover } from "./InfoPopover";
 
-const selectClass =
-  "mt-1 min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
+const selectClass = "field-select mt-1 min-h-11 min-w-0 w-full";
 export function WorksToGoWorkspace({
   state,
   assets,
@@ -74,14 +74,17 @@ export function WorksToGoWorkspace({
   }
   return (
     <section className="space-y-6" aria-labelledby="works-to-go-heading">
-      <div>
+      <div className="flex items-center gap-1">
         <h2 id="works-to-go-heading" className="text-xl font-semibold">
           Works to go
         </h2>
-        <p className="mt-2 max-w-prose text-sm text-slate-600">
-          Record remaining work against equipment or an existing task. This list
-          does not change task status, assignments or commissioning results.
-        </p>
+        <InfoPopover label="About works to go">
+          <p>
+            Record remaining work against equipment or an existing task. This
+            list does not change task status, assignments or commissioning
+            results.
+          </p>
+        </InfoPopover>
       </div>
       <p className="text-sm text-slate-700">
         <strong>{counts.open}</strong> open · {counts.done} completed
@@ -94,8 +97,13 @@ export function WorksToGoWorkspace({
           {error}
         </p>
       )}
+      {pending && (
+        <p role="status" className="text-sm text-slate-600">
+          Saving remaining work…
+        </p>
+      )}
       <details className="rounded-lg border border-slate-200 p-4">
-        <summary className="cursor-pointer font-medium">
+        <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-blue-700">
           Add remaining work
         </summary>
         <form
@@ -198,7 +206,7 @@ export function WorksToGoWorkspace({
         </form>
       </details>
       <div className="flex flex-wrap items-end gap-4">
-        <label className="min-w-48 text-sm">
+        <label className="min-w-0 w-full max-w-lg text-sm sm:flex-1">
           Search
           <Input
             value={query}
@@ -207,7 +215,7 @@ export function WorksToGoWorkspace({
             placeholder="Work or equipment"
           />
         </label>
-        <label className="text-sm">
+        <label className="min-w-36 text-sm">
           Status
           <select
             className={selectClass}
@@ -228,7 +236,7 @@ export function WorksToGoWorkspace({
           >
             <div className="min-w-0 flex-1">
               <h3 className="break-words font-medium">{row.title}</h3>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 break-words text-sm text-slate-600">
                 {row.assetId
                   ? (assets.find((a) => a.id === row.assetId)?.name ??
                     row.assetId)

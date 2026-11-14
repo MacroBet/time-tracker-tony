@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileCheck2, Upload, Plus, Trash2 } from "lucide-react";
 import { LEVELS, type Asset } from "@/lib/commissioning";
 import type { Task, User } from "@/lib/domain";
@@ -19,9 +19,9 @@ import {
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { InfoPopover } from "./InfoPopover";
 
-const selectClass =
-  "mt-1 min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600";
+const selectClass = "field-select mt-1 min-h-11 min-w-0 w-full";
 export type ChecksheetWorkspaceProps = {
   state?: ProjectChecksheetState;
   assets: Asset[];
@@ -81,15 +81,17 @@ export function ChecksheetWorkspace({
   }
   return (
     <section className="space-y-6" aria-labelledby="checksheets-heading">
-      <div>
+      <div className="flex items-center gap-1">
         <h2 id="checksheets-heading" className="text-xl font-semibold">
           Equipment checksheets
         </h2>
-        <p className="mt-2 max-w-prose text-sm text-slate-600">
-          Associate a requirement template with specific equipment. Record
-          answers and explicit results, then sign using the project’s configured
-          signatories.
-        </p>
+        <InfoPopover label="About equipment checksheets">
+          <p>
+            Associate a requirement template with specific equipment. Record
+            answers and explicit results, then sign using the project’s
+            configured signatories.
+          </p>
+        </InfoPopover>
       </div>
       {error && (
         <p
@@ -99,19 +101,28 @@ export function ChecksheetWorkspace({
           {error}
         </p>
       )}
+      {pending && (
+        <p role="status" className="text-sm text-slate-600">
+          Saving checksheet changes…
+        </p>
+      )}
       {manage && (
         <details className="rounded-lg border border-slate-200 p-4">
-          <summary className="cursor-pointer font-medium">
+          <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-blue-700">
             Templates and signatories
           </summary>
           <div className="mt-5 space-y-6">
             <div>
-              <h3 className="font-semibold">Requirement templates</h3>
-              <p className="mt-1 text-sm text-slate-600">
-                Imported requirements begin without answers, results or
-                signatures. Importing a template does not create tasks or
-                equipment associations.
-              </p>
+              <div className="flex items-center gap-1">
+                <h3 className="font-semibold">Requirement templates</h3>
+                <InfoPopover label="About requirement templates">
+                  <p>
+                    Imported requirements begin without answers, results or
+                    signatures. Importing a template does not create tasks or
+                    equipment associations.
+                  </p>
+                </InfoPopover>
+              </div>
               <ul className="mt-3 divide-y divide-slate-200">
                 {data.templates.map((t) => (
                   <li key={t.id} className="py-3 text-sm">
@@ -128,7 +139,10 @@ export function ChecksheetWorkspace({
                   No requirement templates in this project.
                 </p>
               )}
-              <label className="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-medium">
+              <label
+                aria-disabled={disabled}
+                className="mt-3 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-slate-300 bg-white px-4 text-sm font-medium hover:bg-slate-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-blue-700 aria-disabled:cursor-default aria-disabled:opacity-50"
+              >
                 <Upload className="size-4" />
                 Import template JSON
                 <input
@@ -332,83 +346,95 @@ export function ChecksheetWorkspace({
         </details>
       )}
       {manage && (
-        <form
-          className="grid gap-4 border-y border-slate-200 py-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8rem_auto] md:items-end"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const id = crypto.randomUUID();
-            if (
-              await run({
-                kind: "associate",
-                id,
-                assetId,
-                templateId,
-                level: (tagLevel as SignatorySlot["level"]) || undefined,
-              })
-            )
-              setSelected(id);
-          }}
-        >
-          <label className="min-w-0 text-sm">
-            Equipment
-            <select
-              aria-label="Equipment"
-              required
-              className={selectClass}
-              value={assetId}
-              disabled={disabled}
-              onChange={(e) => setAssetId(e.target.value)}
-            >
-              <option value="">Choose equipment</option>
-              {availableAssets.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} · {a.equipmentType} · {a.phase || "No phase"} ·{" "}
-                  {a.id}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="min-w-0 text-sm">
-            Requirement template
-            <select
-              aria-label="Requirement template"
-              required
-              className={selectClass}
-              value={templateId}
-              disabled={disabled}
-              onChange={(e) => setTemplateId(e.target.value)}
-            >
-              <option value="">Choose a template</option>
-              {data.templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} · {t.revision}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="text-sm">
-            Tag level
-            <select
-              aria-label="Tag level"
-              className={selectClass}
-              value={tagLevel}
-              disabled={disabled}
-              onChange={(e) => setTagLevel(e.target.value)}
-            >
-              <option value="">No tag</option>
-              {LEVELS.map((l) => (
-                <option key={l}>{l}</option>
-              ))}
-            </select>
-          </label>
-          <Button
-            className="min-h-11"
-            disabled={disabled || !assets.length || !data.templates.length}
+        <details className="border-y border-slate-200 py-2">
+          <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-blue-700">
+            Associate a checksheet
+          </summary>
+          {(!assets.length || !data.templates.length) && (
+            <p className="pb-3 text-sm text-slate-600">
+              {!assets.length
+                ? "Add equipment in Assets before associating a checksheet."
+                : "Import a requirement template in Templates and signatories first."}
+            </p>
+          )}
+          <form
+            className="grid gap-4 pb-4 pt-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_8rem_auto] md:items-end"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const id = crypto.randomUUID();
+              if (
+                await run({
+                  kind: "associate",
+                  id,
+                  assetId,
+                  templateId,
+                  level: (tagLevel as SignatorySlot["level"]) || undefined,
+                })
+              )
+                setSelected(id);
+            }}
           >
-            <FileCheck2 className="size-4" />
-            Associate checksheet
-          </Button>
-        </form>
+            <label className="min-w-0 text-sm">
+              Equipment
+              <select
+                aria-label="Equipment"
+                required
+                className={selectClass}
+                value={assetId}
+                disabled={disabled}
+                onChange={(e) => setAssetId(e.target.value)}
+              >
+                <option value="">Choose equipment</option>
+                {availableAssets.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} · {a.equipmentType} · {a.phase || "No phase"} ·{" "}
+                    {a.id}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="min-w-0 text-sm">
+              Requirement template
+              <select
+                aria-label="Requirement template"
+                required
+                className={selectClass}
+                value={templateId}
+                disabled={disabled}
+                onChange={(e) => setTemplateId(e.target.value)}
+              >
+                <option value="">Choose a template</option>
+                {data.templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name} · {t.revision}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Tag level
+              <select
+                aria-label="Tag level"
+                className={selectClass}
+                value={tagLevel}
+                disabled={disabled}
+                onChange={(e) => setTagLevel(e.target.value)}
+              >
+                <option value="">No tag</option>
+                {LEVELS.map((l) => (
+                  <option key={l}>{l}</option>
+                ))}
+              </select>
+            </label>
+            <Button
+              className="min-h-11"
+              disabled={disabled || !assets.length || !data.templates.length}
+            >
+              <FileCheck2 className="size-4" />
+              Associate checksheet
+            </Button>
+          </form>
+        </details>
       )}
       <div className="space-y-3">
         <label className="block max-w-lg text-sm">
@@ -421,7 +447,8 @@ export function ChecksheetWorkspace({
           />
         </label>
         <p className="text-sm text-slate-600">
-          {sheetRows.length} associated checksheets
+          {sheetRows.length} associated checksheet
+          {sheetRows.length === 1 ? "" : "s"}
         </p>
         <ul className="divide-y divide-slate-200">
           {sheetRows.map((s) => {
@@ -430,10 +457,11 @@ export function ChecksheetWorkspace({
               <li key={s.id}>
                 <button
                   type="button"
+                  aria-pressed={selected === s.id}
                   onClick={() => setSelected(s.id)}
-                  className="flex min-h-14 w-full flex-wrap items-center justify-between gap-2 rounded-md px-2 py-3 text-left hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-600"
+                  className="flex min-h-14 w-full flex-wrap items-center justify-between gap-2 rounded-md px-3 py-3 text-left hover:bg-slate-50 aria-pressed:bg-blue-50 aria-pressed:text-blue-900 focus-visible:outline-2 focus-visible:outline-blue-700"
                 >
-                  <span>
+                  <span className="min-w-0 break-words">
                     <span className="block font-medium">
                       {assets.find((a) => a.id === s.assetId)?.name ??
                         s.assetId}
@@ -453,9 +481,11 @@ export function ChecksheetWorkspace({
         </ul>
         {!sheetRows.length && (
           <p className="py-4 text-sm text-slate-600">
-            {manage
-              ? "Associate a template with an equipment item to begin."
-              : "No checksheets linked to your assigned equipment yet."}
+            {search.trim() && data.sheets.length
+              ? "No checksheets match this search."
+              : manage
+                ? "Associate a template with an equipment item to begin."
+                : "No checksheets linked to your assigned equipment yet."}
           </p>
         )}
       </div>
@@ -489,13 +519,22 @@ function SheetDetail({
   run: (c: ChecksheetCommand) => Promise<boolean>;
 }) {
   const progress = checksheetProgress(sheet);
+  const detailHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    detailHeading.current?.scrollIntoView({ block: "start" });
+    detailHeading.current?.focus({ preventScroll: true });
+  }, []);
   return (
     <section
       className="space-y-5 border-t border-slate-300 pt-6"
       aria-label="Selected checksheet"
     >
       <div>
-        <h3 className="text-lg font-semibold">
+        <h3
+          ref={detailHeading}
+          tabIndex={-1}
+          className="scroll-mt-36 break-words text-lg font-semibold focus:outline-none"
+        >
           {asset?.name ?? sheet.assetId} · {sheet.templateName}
         </h3>
         <p className="mt-1 text-sm text-slate-600">
@@ -525,7 +564,7 @@ function SheetDetail({
                   });
                 }}
               >
-                <h4 className="font-medium">
+                <h4 className="max-w-prose break-words font-medium">
                   {step.item ?? index + 1}. {step.requirement}
                 </h4>
                 <p className="text-xs text-slate-600">
@@ -535,16 +574,16 @@ function SheetDetail({
                 </p>
                 {step.notes && (
                   <details>
-                    <summary className="cursor-pointer text-sm text-slate-700">
+                    <summary className="min-h-11 cursor-pointer py-2 text-sm text-slate-700 focus-visible:outline-2 focus-visible:outline-blue-700">
                       Requirement notes
                     </summary>
-                    <p className="mt-2 max-w-prose whitespace-pre-wrap text-sm text-slate-600">
+                    <p className="mt-2 max-w-prose whitespace-pre-wrap break-words text-sm text-slate-600">
                       {step.notes}
                     </p>
                   </details>
                 )}
                 {step.sourceRef && (
-                  <p className="text-xs text-slate-500">
+                  <p className="break-words text-xs text-slate-600">
                     Source: {step.sourceRef}
                   </p>
                 )}
@@ -605,7 +644,7 @@ function SheetDetail({
                   key={slot.id}
                   className="flex flex-wrap items-center justify-between gap-3 py-3"
                 >
-                  <div>
+                  <div className="min-w-0 break-words">
                     <p className="font-medium">{slot.label}</p>
                     <p className="text-sm text-slate-600">
                       {signed
@@ -614,23 +653,31 @@ function SheetDetail({
                     </p>
                   </div>
                   {!signed && canSignChecksheet(slot, user) && (
-                    <Button
-                      type="button"
-                      className="min-h-11"
-                      disabled={
-                        disabled ||
-                        progress.requiredAnswered < progress.requiredTotal
-                      }
-                      onClick={() =>
-                        void run({
-                          kind: "sign",
-                          sheetId: sheet.id,
-                          slotId: slot.id,
-                        })
-                      }
-                    >
-                      Sign as {user.name}
-                    </Button>
+                    <div className="max-w-full space-y-1">
+                      <Button
+                        type="button"
+                        className="min-h-11 max-w-full whitespace-normal text-left"
+                        disabled={
+                          disabled ||
+                          progress.requiredAnswered < progress.requiredTotal
+                        }
+                        onClick={() =>
+                          void run({
+                            kind: "sign",
+                            sheetId: sheet.id,
+                            slotId: slot.id,
+                          })
+                        }
+                      >
+                        Sign as {user.name}
+                      </Button>
+                      {progress.requiredAnswered < progress.requiredTotal && (
+                        <p className="text-xs text-slate-600">
+                          {progress.requiredTotal - progress.requiredAnswered}{" "}
+                          required answers still missing.
+                        </p>
+                      )}
+                    </div>
                   )}
                 </li>
               );
@@ -643,7 +690,7 @@ function SheetDetail({
         )}
         {sheet.signatures.some((s) => s.invalidatedAt) && (
           <details className="mt-4">
-            <summary className="cursor-pointer text-sm">
+            <summary className="min-h-11 cursor-pointer py-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-700">
               Previous signatures
             </summary>
             <ul className="mt-2 space-y-2">

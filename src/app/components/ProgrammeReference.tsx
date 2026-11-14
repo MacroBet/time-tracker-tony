@@ -30,7 +30,7 @@ export function ProgrammeReference({ project }: { project: Project }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold">Schedule ID</h3>
+          <h3 className="text-base font-semibold">Schedule ID</h3>
           <p className="mt-1 break-words text-sm text-slate-700">
             {state.programmeId || "Not recorded"}
           </p>
@@ -269,11 +269,11 @@ function ProgrammeReferenceEditor({
           <h4 className="text-sm font-semibold">Review Schedule ID change</h4>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
-              <dt className="text-xs text-slate-600">Before</dt>
+              <dt className="text-sm font-medium text-slate-600">Before</dt>
               <dd className="mt-1 break-words">{before || "Not recorded"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-600">After</dt>
+              <dt className="text-sm font-medium text-slate-600">After</dt>
               <dd className="mt-1 break-words">
                 {activePreview.programmeId ||
                   "Not recorded · reference will be cleared"}
@@ -293,7 +293,7 @@ function ProgrammeReferenceEditor({
                 {activePreview.changes.length === 1 ? "" : "s"}. Review before
                 saving.
               </p>
-              <ul className="max-h-40 list-disc overflow-auto pl-5 text-xs text-slate-600">
+              <ul className="max-h-40 list-disc overflow-auto pl-5 text-sm text-slate-600">
                 {activePreview.changes.map((change, index) => (
                   <li key={index}>{change}</li>
                 ))}

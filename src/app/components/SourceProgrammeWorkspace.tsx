@@ -587,7 +587,7 @@ export function SourceProgrammeWorkspace({
           }}
           controls={
             <div className="flex flex-wrap items-end gap-3">
-              <label htmlFor={`${id}-anchor`} className="text-xs">
+              <label htmlFor={`${id}-anchor`} className="text-sm">
                 Go to date
                 <Input
                   id={`${id}-anchor`}
@@ -600,7 +600,7 @@ export function SourceProgrammeWorkspace({
                   }}
                 />
               </label>
-              <label htmlFor={`${id}-scale`} className="text-xs">
+              <label htmlFor={`${id}-scale`} className="text-sm">
                 Scale
                 <select
                   id={`${id}-scale`}
@@ -643,7 +643,7 @@ export function SourceProgrammeWorkspace({
               >
                 Show these activity dates
               </Button>
-              <label className="flex min-h-11 items-center gap-2 text-xs">
+              <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
                   checked={showLinks}
@@ -671,7 +671,7 @@ export function SourceProgrammeWorkspace({
                   ? "Loading schedule…"
                   : `${number(data?.total ?? 0)} matching activities`}
               </span>
-              <label htmlFor={`${id}-duration`} className="text-xs">
+              <label htmlFor={`${id}-duration`} className="text-sm">
                 Duration
                 <select
                   id={`${id}-duration`}

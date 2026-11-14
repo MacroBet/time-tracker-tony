@@ -64,12 +64,12 @@ function SummaryForm({ shift }: { shift: Shift }) {
     >
       <Card>
         <CardContent className="p-5 space-y-4">
-          <h2 className="font-semibold">
+          <h2 className="break-words text-lg font-semibold">
             {projects.find((p) => p.id === shift.projectId)?.name}
           </h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-slate-500">Started</p>
+              <p className="text-slate-600">Started</p>
               <p>
                 {new Date(shift.startTime).toLocaleString("en-GB", {
                   timeZone: "Europe/Amsterdam",
@@ -77,7 +77,7 @@ function SummaryForm({ shift }: { shift: Shift }) {
               </p>
             </div>
             <div>
-              <p className="text-slate-500">Ended</p>
+              <p className="text-slate-600">Ended</p>
               <p>
                 {shift.endTime
                   ? new Date(shift.endTime).toLocaleString("en-GB", {
@@ -87,11 +87,11 @@ function SummaryForm({ shift }: { shift: Shift }) {
               </p>
             </div>
           </div>
-          <p className="text-3xl font-semibold text-blue-600">
+          <p className="text-3xl font-semibold tabular-nums text-blue-600">
             {(base + (Number(hours) || 0)).toFixed(2)}
             <span className="text-base ml-1">hours</span>
           </p>
-          <p className="text-sm text-slate-500 capitalize">
+          <p className="text-sm text-slate-600 capitalize">
             {shift.status.replaceAll("-", " ")}
           </p>
           {shift.rejectionReason && (
@@ -101,7 +101,12 @@ function SummaryForm({ shift }: { shift: Shift }) {
           )}
         </CardContent>
       </Card>
-      <form onSubmit={submit} className="space-y-4">
+      {!editable && (
+        <p role="status" className="text-sm text-slate-600">
+          Hours and notes are read-only for this timesheet.
+        </p>
+      )}
+      <form onSubmit={submit} aria-busy={busy} className="space-y-4">
         <Card>
           <CardContent className="p-5 space-y-4">
             <div className="space-y-2">

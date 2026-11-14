@@ -8,11 +8,12 @@ export function ProjectAccess({ userId }: { userId: string }) {
   const [busy, setBusy] = useState(false);
   return (
     <details className="pt-2">
-      <summary className="text-sm font-medium cursor-pointer">
+      <summary className="min-h-11 cursor-pointer content-center rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-blue-700">
         Manage project access
       </summary>
       <form
         className="space-y-3 mt-3"
+        aria-busy={busy}
         onSubmit={async (event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
@@ -33,7 +34,10 @@ export function ProjectAccess({ userId }: { userId: string }) {
         }}
       >
         {projects.map((p) => (
-          <label key={p.id} className="flex items-center gap-2 text-sm">
+          <label
+            key={p.id}
+            className="flex min-h-11 cursor-pointer items-center gap-2 text-sm"
+          >
             <input
               name="projectIds"
               type="checkbox"
@@ -42,11 +46,12 @@ export function ProjectAccess({ userId }: { userId: string }) {
                 (m) => m.userId === userId && m.projectId === p.id,
               )}
               className="size-5"
+              disabled={busy || !isOnline}
             />
             {p.name}
           </label>
         ))}
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-slate-600">
           Reassign open work before removing a worker from a project. Saving
           signs out this account.
         </p>

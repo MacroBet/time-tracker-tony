@@ -56,7 +56,7 @@ export function CommissioningFields({
     <fieldset className="border-t pt-4 space-y-3">
       <legend className="text-sm font-semibold">Commissioning links</legend>
       <div className="rounded-lg bg-slate-50 p-3 text-sm">
-        <p className="text-xs text-slate-600">Schedule ID</p>
+        <p className="text-sm font-medium text-slate-600">Schedule ID</p>
         <p className="mt-1 break-words">
           {state.programmeId || "Not recorded"}
         </p>
@@ -205,7 +205,7 @@ export function CommissioningFields({
           defaultValue={value?.blockerRisk}
         />
       </label>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-600">
         Linked schedule finish determines whether the task is overdue. A tag
         belongs to one asset and one applicable level. Its test result,
         observations and test sheet documents stay on that tag task.
@@ -246,7 +246,7 @@ export function TestProgress({ task }: { task: Task }) {
       className="rounded-xl border bg-white p-5 space-y-3"
     >
       <h3 className="font-semibold">Record test result</h3>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-slate-600">
         Recording a passed test does not approve or close the task.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -263,7 +263,7 @@ export function TestProgress({ task }: { task: Task }) {
           </select>
         </label>
         <details className="self-start text-sm">
-          <summary className="cursor-pointer font-medium py-2">
+          <summary className="min-h-11 content-center cursor-pointer font-medium py-2">
             Execution progress · optional
           </summary>
           <label className="mt-2 block text-sm">

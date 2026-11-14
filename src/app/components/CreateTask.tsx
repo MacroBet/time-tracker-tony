@@ -13,9 +13,20 @@ import { Textarea } from "./ui/textarea";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 export function CreateTask() {
-  const { currentUser, projects, users, memberships, mutate, isOnline } =
-    useApp();
-  const [projectId, setProjectId] = useState(projects[0]?.id || "");
+  const {
+    currentUser,
+    projects,
+    users,
+    memberships,
+    mutate,
+    isOnline,
+    selectedProjectId,
+  } = useApp();
+  const [projectId, setProjectId] = useState(
+    projects.some((project) => project.id === selectedProjectId)
+      ? selectedProjectId
+      : projects[0]?.id || "",
+  );
   const [assignedTo, setAssignedTo] = useState("");
   const [busy, setBusy] = useState(false);
   const router = useRouter();
@@ -54,7 +65,7 @@ export function CreateTask() {
       subtitle="A clear instruction, one responsible person."
       back={homeFor(currentUser)}
     >
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} aria-busy={busy} className="space-y-4">
         <Card>
           <CardContent className="p-5 space-y-5">
             <div className="space-y-2">
@@ -117,6 +128,13 @@ export function CreateTask() {
                   </option>
                 ))}
               </select>
+              {!workers.length && (
+                <p className="text-sm text-slate-600" role="status">
+                  No workers are available for this project. A project
+                  administrator must add a worker before you can assign an
+                  activity.
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

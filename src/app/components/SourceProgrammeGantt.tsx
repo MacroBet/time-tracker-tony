@@ -125,7 +125,7 @@ export function SourceProgrammeGantt({
         style={{ height: "min(60dvh, 560px)", minHeight: 240 }}
       >
         <table
-          className="table-fixed border-collapse text-xs tabular-nums"
+          className="table-fixed border-collapse text-sm tabular-nums"
           style={{
             width: `calc(var(--source-activity-width) + ${otherColumnsWidth + axis.width}px)`,
           }}
@@ -200,10 +200,10 @@ export function SourceProgrammeGantt({
                     onClick={(e) => onSelect(row.internalId, e.currentTarget)}
                     title={`${row.name}\n${row.activityId}\n${row.wbsPath}`}
                   >
-                    <strong className="line-clamp-2 text-xs leading-[14px] text-slate-950">
+                    <strong className="line-clamp-2 text-sm leading-4 text-slate-950">
                       {row.name}
                     </strong>
-                    <span className="block truncate text-[10px] leading-3 text-slate-600">
+                    <span className="block truncate text-xs leading-3 text-slate-600">
                       {row.activityId}
                       {row.milestone ? " · Milestone" : ""}
                     </span>
@@ -238,8 +238,12 @@ export function SourceProgrammeGantt({
                         : "—"}
                   </td>
                 )}
-                <td className="px-2">{row.start ?? "Not set"}</td>
-                <td className="px-2">{row.finish ?? "Not set"}</td>
+                <td className="whitespace-nowrap px-2 text-[13px]">
+                  {row.start ?? "Not set"}
+                </td>
+                <td className="whitespace-nowrap px-2 text-[13px]">
+                  {row.finish ?? "Not set"}
+                </td>
                 {index === 0 && (
                   <td
                     rowSpan={rows.length}
@@ -342,6 +346,14 @@ export function SourceProgrammeGantt({
                           axis.span,
                           axis.unit,
                         );
+                        const visualWidth = bar ? Math.max(6, bar.width) : 0;
+                        const hitWidth = Math.max(44, visualWidth);
+                        const hitLeft = bar
+                          ? Math.min(
+                              bar.left,
+                              Math.max(0, axis.width - hitWidth),
+                            )
+                          : 0;
                         return (
                           <div
                             key={row.internalId}
@@ -355,20 +367,30 @@ export function SourceProgrammeGantt({
                                 }
                                 aria-label={`View ${row.activityId}: ${row.name}`}
                                 title={`${row.name}; ${row.start ?? row.finish} → ${row.finish ?? row.start}; ${row.durationHours} source hours`}
-                                className={
-                                  row.milestone
-                                    ? "absolute top-3 grid h-6 place-items-center focus-visible:outline-2 focus-visible:outline-blue-700"
-                                    : "absolute top-3 h-6 overflow-hidden rounded-sm text-left border border-blue-400 bg-blue-100 text-[10px] text-blue-950 hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-blue-700"
-                                }
+                                className="group absolute top-0.5 h-11 text-left text-xs text-blue-950 focus-visible:outline-2 focus-visible:outline-blue-700"
                                 style={{
-                                  left: bar.left,
-                                  width: Math.max(6, bar.width),
+                                  left: hitLeft,
+                                  width: hitWidth,
                                 }}
                               >
                                 {row.milestone ? (
-                                  <span className="size-3 rotate-45 bg-slate-800" />
+                                  <span
+                                    className="absolute top-2.5 grid h-6 place-items-center"
+                                    style={{
+                                      left: bar.left - hitLeft,
+                                      width: visualWidth,
+                                    }}
+                                  >
+                                    <span className="size-3 rotate-45 bg-slate-800" />
+                                  </span>
                                 ) : (
-                                  <span className="relative whitespace-nowrap px-1">
+                                  <span
+                                    className="absolute top-2.5 flex h-6 items-center overflow-hidden rounded-sm border border-blue-400 bg-blue-100 px-1 whitespace-nowrap group-hover:bg-blue-200"
+                                    style={{
+                                      left: bar.left - hitLeft,
+                                      width: visualWidth,
+                                    }}
+                                  >
                                     {row.activityId}
                                   </span>
                                 )}

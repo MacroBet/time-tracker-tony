@@ -117,6 +117,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
   } | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualBusy, setManualBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const request = useRef<AbortController | null>(null);
   const suggestionSequence = useRef(0);
   const chatLock = useRef(false);
@@ -262,7 +263,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
   return (
     <div className="min-w-0 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-600">
+        <p className="min-w-0 flex-1 text-sm leading-6 text-slate-600 tabular-nums">
           {context.summary.assets} assets · {context.summary.tasks} tasks ·{" "}
           {context.summary.managedProgrammeActivities} managed app activities
           {context.summary.importedProgrammeActivities !== null && (
@@ -276,17 +277,23 @@ function CopilotSession({ projectId }: { projectId: string }) {
         <Button
           variant="ghost"
           className="h-11"
-          disabled={chatBusy || manualBusy || !isOnline}
-          onClick={() =>
-            void refreshContext().catch((error: unknown) =>
+          disabled={chatBusy || manualBusy || refreshing || !isOnline}
+          aria-busy={refreshing}
+          onClick={async () => {
+            setRefreshing(true);
+            try {
+              await refreshContext();
+            } catch (error) {
               toast.error(
                 error instanceof Error ? error.message : "Refresh failed",
-              ),
-            )
-          }
+              );
+            } finally {
+              setRefreshing(false);
+            }
+          }}
         >
           <RefreshCw className="size-4" />
-          Refresh checks
+          {refreshing ? "Refreshing checks…" : "Refresh checks"}
         </Button>
       </div>
       {!ready && (
@@ -371,7 +378,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
                             <section
                               key={searchIndex}
                               aria-label="Asset search results"
-                              className="space-y-3 rounded-lg border border-blue-200 bg-blue-50/40 p-3"
+                              className="min-w-0 space-y-3 border-t border-slate-200 pt-3"
                             >
                               <p className="text-sm font-semibold tabular-nums">
                                 {result.total} matching assets
@@ -390,7 +397,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
                                       href={asset.href}
                                       className="flex min-h-11 flex-col justify-center gap-1 py-2 text-sm text-blue-800 underline underline-offset-4"
                                     >
-                                      <span className="font-medium">
+                                      <span className="break-words font-medium">
                                         {asset.name}
                                       </span>
                                       <span className="text-xs text-slate-600">
@@ -497,7 +504,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     : "Sending is available after AI setup."}
                 </span>
                 <Button
-                  className="h-11"
+                  className="min-h-11 max-w-full whitespace-normal"
                   disabled={!ready || chatBusy || !isOnline || !draft.trim()}
                 >
                   <Send className="size-4" />
@@ -690,9 +697,9 @@ function SourceList({ sources }: { sources: CopilotSource[] }) {
           <li key={`${source.kind}-${source.id}-${index}`}>
             <Link
               href={href}
-              className="inline-flex min-h-11 items-center text-sm text-blue-700 underline underline-offset-4 break-words"
+              className="inline-flex min-h-11 max-w-full items-center text-sm text-blue-700 underline underline-offset-4"
             >
-              {source.label}
+              <span className="min-w-0 break-words">{source.label}</span>
             </Link>
           </li>
         );
@@ -1069,11 +1076,13 @@ function TaskChangeEditor({
           <h3
             ref={heading}
             tabIndex={-1}
-            className="font-semibold focus:outline-none"
+            className="scroll-mt-36 font-semibold focus:outline-none"
           >
             Review before applying
           </h3>
-          <p className="text-sm text-slate-600">{preview.proposal.taskTitle}</p>
+          <p className="break-words text-sm text-slate-600">
+            {preview.proposal.taskTitle}
+          </p>
           <dl className="space-y-4">
             {(
               Object.keys(
@@ -1099,7 +1108,7 @@ function TaskChangeEditor({
               </div>
             ))}
           </dl>
-          <p className="text-sm text-slate-600">
+          <p className="break-words text-sm text-slate-600">
             Reason: {preview.proposal.reason}
           </p>
           <p className="text-xs text-slate-600">

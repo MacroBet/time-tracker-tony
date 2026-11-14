@@ -11,7 +11,7 @@ export function AssistantEntry() {
   if (!selectedProjectId || !canUseCopilot(currentUser)) return null;
   const href = `/copilot?projectId=${encodeURIComponent(selectedProjectId)}`;
   const style =
-    "inline-flex min-h-11 items-center justify-center gap-1.5 px-2.5 text-blue-800 hover:bg-blue-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
+    "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2.5 text-blue-800 hover:bg-blue-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700";
   return (
     <nav
       aria-label="Project assistant"

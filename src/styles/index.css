@@ -13,6 +13,28 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+html {
+  scroll-padding-top: 10rem;
+}
+::selection {
+  background: #dbeafe;
+  color: #172554;
+}
+input,
+textarea {
+  caret-color: #1d4ed8;
+}
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 3px;
+}
+:where(a, button, input, select, textarea, summary, [tabindex]) {
+  scroll-margin-top: 10rem;
+  scroll-margin-bottom: 7rem;
+}
+a {
+  text-underline-offset: 0.2em;
+}
 button,
 a,
 input,
@@ -28,7 +50,7 @@ select:not(:disabled) {
   display: block;
   width: 100%;
   min-height: 44px;
-  border: 1px solid #dce5f3;
+  border: 1px solid var(--input);
   border-radius: 8px;
   padding: 10px 12px;
   background: #fff;
@@ -55,14 +77,14 @@ select:not(:disabled) {
   background: linear-gradient(165deg, #202b39, #141e2b);
 }
 .sidebar-link-active {
-  background: linear-gradient(90deg, #254783, #233c69);
-  box-shadow: inset 3px 0 0 #72a0ff;
+  background: #254577;
+  color: #ffffff;
 }
 .app-workspace {
   background: #f5f8fd;
 }
 [data-slot="card"] {
-  box-shadow: 0 2px 8px rgb(26 57 112 / 3%);
+  box-shadow: none;
 }
 [data-slot="tabs-list"] {
   border: 1px solid #e0e8f4;
@@ -75,7 +97,7 @@ select:not(:disabled) {
 [data-slot="tabs-trigger"][data-state="active"] {
   background: #1e5bff;
   color: white;
-  box-shadow: 0 2px 5px rgb(30 91 255 / 15%);
+  box-shadow: none;
 }
 input[type="checkbox"] {
   accent-color: #1e5bff;
@@ -88,6 +110,29 @@ input[type="checkbox"] {
 }
 .app-workspace details {
   border-color: #e0e8f4;
+}
+.app-workspace :where(table) {
+  font-variant-numeric: tabular-nums;
+}
+.app-workspace :where(h1, h2, h3) {
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.app-workspace .workspace-page-title {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.app-workspace :where([role="region"][tabindex="0"]) {
+  scrollbar-color: #64748b #f0f4fb;
+  scrollbar-width: thin;
+}
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: 6rem;
+  }
+  :where(a, button, input, select, textarea, summary, [tabindex]) {
+    scroll-margin-top: 6rem;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,

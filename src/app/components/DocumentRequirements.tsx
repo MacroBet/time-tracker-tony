@@ -54,7 +54,7 @@ export function DocumentRequirementsEditor({
   }
   return (
     <details className="border-t pt-4">
-      <summary className="cursor-pointer text-sm font-medium">
+      <summary className="min-h-11 content-center cursor-pointer text-sm font-medium">
         Document checklist by tag
       </summary>
       <fieldset disabled={disabled} className="mt-4 space-y-4">
@@ -136,6 +136,7 @@ export function DocumentRequirementsEditor({
               <label className="flex min-h-11 items-center gap-2 text-sm">
                 <input
                   type="checkbox"
+                  className="size-4 accent-blue-700"
                   aria-label={`Document ${index + 1} required`}
                   checked={row.required}
                   onChange={(event) =>
