@@ -12,7 +12,7 @@ import {
 } from "@/lib/commissioning";
 import Link from "next/link";
 import { TaskPlan } from "./TaskPlan";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import {
   ArrowUpRight,
@@ -41,7 +41,7 @@ import { inspectMp4Evidence } from "@/lib/video-evidence";
 export function TaskDetail({ taskId }: { taskId: string }) {
   const data = useApp();
   const task = data.tasks.find((t) => t.id === taskId);
-  if (!task)
+  if (!task || !hasModule(data.currentUser, "tasks"))
     return (
       <AppShell title="Task unavailable" back={homeFor(data.currentUser)}>
         <p>This task does not exist or is not assigned to your team.</p>
@@ -60,7 +60,15 @@ function TaskContent({ task }: { task: Task }) {
     mutate,
     isOnline,
     refreshData,
+    selectProject,
   } = useApp();
+  const openedTask = useRef<string | null>(null);
+  useEffect(() => {
+    if (openedTask.current !== task.id) {
+      openedTask.current = task.id;
+      selectProject(task.projectId);
+    }
+  }, [task.id, task.projectId, selectProject]);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);

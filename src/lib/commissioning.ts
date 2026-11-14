@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { InventoryBatch } from "./inventory-batch";
+import type { WorkingSchedule } from "./schedule-working";
+import type { ProjectLesson } from "./project-library";
 import type { ProjectChecksheetState } from "./checksheets";
 import type {
   SourceProgramme,
@@ -243,6 +245,8 @@ export interface Commissioning {
   version: number;
   inventoryBatches?: InventoryBatch[];
   checksheets?: ProjectChecksheetState;
+  workingSchedule?: WorkingSchedule;
+  lessons?: ProjectLesson[];
   sourceProgramme?: SourceProgramme;
   sourceProgrammeContentHash?: string;
   sourceProgrammeSummary?: SourceProgrammeSummary;

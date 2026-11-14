@@ -25,6 +25,19 @@ export function inventoryRestoreQuery(
           AND t.cx->>'assetId' IN (
             SELECT jsonb_array_elements_text(${JSON.stringify(removedAssetIds)}::jsonb)
           )
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM jsonb_array_elements(coalesce(commissioning#>'{workingSchedule,activityPatches}','[]'::jsonb)) patch
+        CROSS JOIN LATERAL jsonb_array_elements_text(coalesce(patch->'assetIds','[]'::jsonb)) ref
+        WHERE ref.value IN (SELECT jsonb_array_elements_text(${JSON.stringify(removedAssetIds)}::jsonb))
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM jsonb_array_elements(coalesce(commissioning#>'{workingSchedule,addedActivities}','[]'::jsonb)) row
+        WHERE row->>'assetId' IN (SELECT jsonb_array_elements_text(${JSON.stringify(removedAssetIds)}::jsonb))
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM jsonb_array_elements(coalesce(commissioning->'lessons','[]'::jsonb)) lesson
+        WHERE lesson#>>'{source,assetId}' IN (SELECT jsonb_array_elements_text(${JSON.stringify(removedAssetIds)}::jsonb))
       ) RETURNING id`;
 }
 

@@ -1,3 +1,4 @@
+import { additionalProjectAssetReferences } from "./project-asset-references";
 import { z } from "zod";
 import { LEVELS, type Asset, type Commissioning } from "./commissioning";
 import type { Task } from "./domain";
@@ -119,6 +120,9 @@ export function deleteAssetPreview(
 ) {
   const asset = state.assets.find((row) => row.id === assetId);
   const references = [
+    ...additionalProjectAssetReferences(state)
+      .filter((reference) => reference.assetId === assetId)
+      .map((reference) => reference.label),
     ...tasks
       .filter((task) => task.cx?.assetId === assetId)
       .map((task) => `Task: ${task.title}`),

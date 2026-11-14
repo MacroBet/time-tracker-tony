@@ -1,3 +1,4 @@
+import { additionalProjectAssetReferences } from "./project-asset-references";
 import { z } from "zod";
 import { assetSchema, type Asset, type Commissioning } from "./commissioning";
 import type { Task } from "./domain";
@@ -216,9 +217,10 @@ export async function applyInventoryBatch(
       input.assets.some((asset) => task.cx?.assetId === asset.id),
   );
   const insertedIds = new Set(input.assets.map((asset) => asset.id));
-  const external = (context.assetReferences ?? []).filter((reference) =>
-    insertedIds.has(reference.assetId),
-  );
+  const external = [
+    ...(context.assetReferences ?? []),
+    ...additionalProjectAssetReferences(state),
+  ].filter((reference) => insertedIds.has(reference.assetId));
   if (danglingTasks.length || external.length)
     return unchanged(state, [
       "Proposed IDs already have saved references. Review them before claiming this batch.",
@@ -313,12 +315,13 @@ export async function restoreInventoryBatch(
     (asset) =>
       !ids.has(asset.id) && asset.parentAssetId && ids.has(asset.parentAssetId),
   );
-  const external = (context.assetReferences ?? []).filter((reference) =>
-    ids.has(reference.assetId),
-  );
+  const external = [
+    ...(context.assetReferences ?? []),
+    ...additionalProjectAssetReferences(state),
+  ].filter((reference) => ids.has(reference.assetId));
   if (tasks.length || children.length || external.length)
     return unchanged(state, [
-      "Batch assets now have task, child-asset or checksheet references. Restore stopped without deleting anything.",
+      "Batch assets now have task, child-asset, checksheet, working Schedule or lesson references. Restore stopped without deleting anything.",
     ]);
   return {
     assets: state.assets.filter((asset) => !ids.has(asset.id)),

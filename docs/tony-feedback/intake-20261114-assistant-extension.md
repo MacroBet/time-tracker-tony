@@ -33,7 +33,12 @@ predecessori/successori multipli, percentuale/semaforo e biblioteca tra progetti
    limite colonne XLSX aggiornati insieme. 27 test supplier/transfer/XLSX passati.
 2. Report condivisi UI/AI e stato filtri della conversazione: in implementazione.
 3. Schedule di lavoro versionato e proposte confermabili: in implementazione.
-4. Biblioteca consentita e lessons curate: in implementazione.
+4. Biblioteca consentita e lessons curate implementate: ricerca cross-project con
+   ACL prima di risultati/facet/snippet, identita composta, salvataggio/edit
+   espliciti con autore/provenienza/versione, pagina /library. 8 test dedicati;
+   bootstrap non espone lesson o revisioni di lavoro ai worker. Cancellazione e
+   restore asset proteggono anche link working/lesson (2 test, incluso PostgreSQL).
+   Collaudo API/browser integrato ancora da eseguire.
 5. Collaudo integrato, pubblicazione e prove finali: da eseguire.
 
 Baseline main `49dab18`, fetch riuscito, nessun pull/reset/stash. Preesistenti

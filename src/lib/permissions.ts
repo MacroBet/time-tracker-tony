@@ -16,6 +16,7 @@ export function canReadTask(
   data: Pick<AppData, "memberships">,
 ) {
   return (
+    hasModule(user, "tasks") &&
     isProjectMember(user, task.projectId, data) &&
     (user.role === "worker" ? task.assignedTo === user.id : true)
   );
@@ -59,7 +60,26 @@ export function scopeData(user: User, data: AppData): AppData {
     projects: data.projects
       .filter((p) => projectIds.has(p.id))
       .map((p) => {
-        if (user.role !== "worker") return p;
+        if (user.role !== "worker") {
+          if (!p.commissioning) return p;
+          const state = commissioning(p);
+          return {
+            ...p,
+            commissioning: {
+              ...state,
+              lessons: hasModule(user, "commissioning")
+                ? state.lessons?.filter(
+                    (lesson) =>
+                      !lesson.source.taskId || hasModule(user, "tasks"),
+                  )
+                : undefined,
+              workingSchedule:
+                hasModule(user, "commissioning") || hasModule(user, "reports")
+                  ? state.workingSchedule
+                  : undefined,
+            },
+          };
+        }
         const state = commissioning(p);
         const mine = tasks.filter((t) => t.projectId === p.id);
         const assets = state.assets.filter((a) =>
@@ -70,6 +90,8 @@ export function scopeData(user: User, data: AppData): AppData {
           commissioning: {
             ...state,
             inventoryBatches: undefined,
+            lessons: undefined,
+            workingSchedule: undefined,
             sourceProgramme: undefined,
             sourceProgrammeSummary: undefined,
             checksheets: scopeChecksheetState(state.checksheets, {

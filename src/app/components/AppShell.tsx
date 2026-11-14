@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Building2,
   Boxes,
+  BookOpen,
   ShieldCheck,
   FileBarChart,
   GanttChart,
@@ -161,6 +162,12 @@ export function AppShell({
           href: "/supervisor?view=timesheets",
           icon: Clock3,
           module: "time",
+        },
+        {
+          label: "Project library",
+          href: "/library",
+          icon: BookOpen,
+          module: "commissioning",
         },
         {
           label: "Reports",
