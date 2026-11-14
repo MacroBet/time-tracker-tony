@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CopilotVoiceInput } from "./CopilotVoiceInput";
 import {
   AlertCircle,
@@ -11,8 +11,11 @@ import {
   FileEdit,
   ListChecks,
   MessageSquare,
+  Plus,
   RefreshCw,
   Send,
+  Square,
+  Trash2,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -43,16 +46,29 @@ import {
   type ScheduleViewSnapshot,
 } from "@/lib/schedule-view-context";
 import type { AssistantReportState } from "@/lib/assistant-report-state";
+import {
+  MAX_CONVERSATION_MESSAGES,
+  type ConversationMessage,
+  type ConversationSummary,
+  type SavedConversation,
+} from "@/lib/assistant-conversations";
+import { projectReportHref } from "@/lib/project-reports";
+import { AssistantReply } from "./AssistantReply";
 
 type ContextResponse = CopilotContext & { configuration: CopilotStatus };
-type Message = CopilotChatMessage & { answer?: CopilotAnswer };
+type Message = ConversationMessage & { answer?: CopilotAnswer };
 
 function recentHistory(messages: Message[]): CopilotChatMessage[] {
-  const history = messages.slice(-12).map(({ role, text }) => ({
-    role,
-    text:
-      text.length > 4000 ? `${text.slice(0, 3974)}\n[History shortened]` : text,
-  }));
+  const history = messages
+    .filter((message) => !message.error)
+    .slice(-12)
+    .map(({ role, text }) => ({
+      role,
+      text:
+        text.length > 4000
+          ? `${text.slice(0, 3974)}\n[History shortened]`
+          : text,
+    }));
   while (history.length && history[0].role !== "user") history.shift();
   while (history.reduce((total, item) => total + item.text.length, 0) > 24000) {
     history.shift();
@@ -104,6 +120,7 @@ export function CopilotWorkspace() {
 
 function CopilotSession({ projectId }: { projectId: string }) {
   const params = useSearchParams();
+  const router = useRouter();
   const { isOnline, refreshData } = useApp();
   const [context, setContext] = useState<ContextResponse | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -115,7 +132,20 @@ function CopilotSession({ projectId }: { projectId: string }) {
   >();
   const [draft, setDraft] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
+  const [savingQuestion, setSavingQuestion] = useState(false);
   const [chatError, setChatError] = useState("");
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [historyTotal, setHistoryTotal] = useState(0);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [openingChat, setOpeningChat] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [revealingId, setRevealingId] = useState<string | null>(null);
+  const [unsavedReply, setUnsavedReply] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
+  const [historySaving, setHistorySaving] = useState(false);
   const [suggestion, setSuggestion] = useState<{
     draft: CopilotTaskProposalDraft;
     key: number;
@@ -130,10 +160,291 @@ function CopilotSession({ projectId }: { projectId: string }) {
   const composer = useRef<HTMLTextAreaElement>(null);
   const editorHeading = useRef<HTMLHeadingElement>(null);
   const transcriptEnd = useRef<HTMLDivElement>(null);
+  const transcript = useRef<HTMLOListElement>(null);
+  const followReply = useRef(true);
+  const active = useRef<SavedConversation | null>(null);
+  const pendingConversationId = useRef<string | null>(null);
+  const replyNeedsSave = useRef(false);
+  const currentMessages = useRef<Message[]>([]);
+  const currentReport = useRef<AssistantReportState | undefined>(undefined);
+  const viewGeneration = useRef(0);
+  const turnGeneration = useRef(0);
+  const [historyRetry, setHistoryRetry] = useState(0);
   useEffect(() => {
     if (!loading && params.get("input") === "text") composer.current?.focus();
   }, [loading, params]);
   const endpoint = `/api/projects/${encodeURIComponent(projectId)}/copilot`;
+  const historyEndpoint = `${endpoint}/conversations`;
+  const requestedChat = params.get("chat");
+  const setChatUrl = (id: string | null) => {
+    const next = new URLSearchParams(params.toString());
+    if (id) next.set("chat", id);
+    else next.delete("chat");
+    router.replace(`/copilot?${next}`, { scroll: false });
+  };
+  const replaceMessages = (next: Message[]) => {
+    currentMessages.current = next;
+    setMessages(next);
+  };
+  const applySaved = (conversation: SavedConversation) => {
+    active.current = conversation;
+    pendingConversationId.current = conversation.id;
+    setActiveId(conversation.id);
+    setConversations((previous) => {
+      const summary = {
+        id: conversation.id,
+        projectId,
+        title: conversation.title,
+        version: conversation.version,
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt,
+        messageCount: conversation.messages.length,
+      };
+      return [
+        summary,
+        ...previous.filter((row) => row.id !== conversation.id),
+      ].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    });
+  };
+  async function saveMessages(
+    next: Message[],
+    state: AssistantReportState | undefined,
+    signal?: AbortSignal,
+  ) {
+    const current = active.current;
+    const response = await apiRequest<{
+      conversation: SavedConversation;
+      created: boolean;
+    }>(historyEndpoint, {
+      method: "PUT",
+      signal,
+      body: JSON.stringify({
+        id:
+          current?.id ??
+          (pendingConversationId.current ??= crypto.randomUUID()),
+        version: current?.version ?? 0,
+        messages: next.map(({ id, role, text, error }) => ({
+          id,
+          role,
+          text,
+          ...(error ? { error } : {}),
+        })),
+        ...(state ? { reportState: state } : {}),
+      }),
+    });
+    return response;
+  }
+  function stopWaiting() {
+    turnGeneration.current++;
+    request.current?.abort();
+    chatLock.current = false;
+    setChatBusy(false);
+    setSavingQuestion(false);
+    setRevealingId(null);
+    setChatError("");
+    setAnnouncement("Stopped waiting for the reply.");
+  }
+  function newChat() {
+    stopWaiting();
+    viewGeneration.current++;
+    active.current = null;
+    pendingConversationId.current = null;
+    currentMessages.current = [];
+    currentReport.current = undefined;
+    setActiveId(null);
+    setMessages([]);
+    setReportState(undefined);
+    setDraft("");
+    setSuggestion(null);
+    setManualOpen(false);
+    setOpeningChat(false);
+    setHistoryOpen(false);
+    replyNeedsSave.current = false;
+    setUnsavedReply(false);
+    setChatUrl(null);
+    composer.current?.focus();
+  }
+  function openChat(id: string) {
+    setHistoryOpen(false);
+    if (id === active.current?.id) return;
+    stopWaiting();
+    setOpeningChat(true);
+    setSuggestion(null);
+    setManualOpen(false);
+    setChatUrl(id);
+  }
+  async function retrySaving() {
+    if (historySaving || !isOnline) return;
+    const generation = turnGeneration.current;
+    setHistorySaving(true);
+    try {
+      const result = await saveMessages(
+        currentMessages.current,
+        currentReport.current,
+      );
+      if (mounted.current && generation === turnGeneration.current) {
+        applySaved(result.conversation);
+        replyNeedsSave.current = false;
+        setUnsavedReply(false);
+        setHistoryError("");
+      }
+    } catch (error) {
+      if (mounted.current)
+        setHistoryError(
+          error instanceof Error
+            ? error.message
+            : "The reply could not be saved. Retry or reopen the saved version.",
+        );
+    } finally {
+      if (mounted.current) setHistorySaving(false);
+    }
+  }
+  async function loadOlderChats() {
+    setHistoryLoading(true);
+    try {
+      const result = await apiRequest<{
+        conversations: ConversationSummary[];
+        total: number;
+      }>(`${historyEndpoint}?offset=${conversations.length}&limit=30`);
+      if (mounted.current) {
+        setConversations((previous) => [
+          ...previous,
+          ...result.conversations.filter(
+            (row) => !previous.some((old) => old.id === row.id),
+          ),
+        ]);
+        setHistoryTotal(result.total);
+        setHistoryError("");
+      }
+    } catch (error) {
+      if (mounted.current)
+        setHistoryError(
+          error instanceof Error
+            ? error.message
+            : "Older chats could not load.",
+        );
+    } finally {
+      if (mounted.current) setHistoryLoading(false);
+    }
+  }
+  async function deleteChat(chat: ConversationSummary) {
+    if (!isOnline || historySaving) return;
+    setHistorySaving(true);
+    try {
+      await apiRequest(historyEndpoint, {
+        method: "DELETE",
+        body: JSON.stringify({ id: chat.id, version: chat.version }),
+      });
+      if (mounted.current) {
+        setConversations((previous) =>
+          previous.filter((row) => row.id !== chat.id),
+        );
+        setHistoryTotal((previous) => Math.max(0, previous - 1));
+        setDeleteId(null);
+        if (active.current?.id === chat.id) newChat();
+      }
+    } catch (error) {
+      if (mounted.current)
+        setHistoryError(
+          error instanceof Error
+            ? error.message
+            : "The chat could not be deleted. Refresh the list and retry.",
+        );
+    } finally {
+      if (mounted.current) setHistorySaving(false);
+    }
+  }
+  useEffect(() => {
+    const controller = new AbortController();
+    void apiRequest<{ conversations: ConversationSummary[]; total: number }>(
+      historyEndpoint,
+      { signal: controller.signal },
+    )
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          setConversations(result.conversations);
+          setHistoryTotal(result.total);
+          setHistoryLoading(false);
+          if (!replyNeedsSave.current) setHistoryError("");
+        }
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) {
+          setHistoryLoading(false);
+          setHistoryError(
+            error instanceof Error
+              ? error.message
+              : "Past chats could not load. Retry to reconnect.",
+          );
+        }
+      });
+    return () => controller.abort();
+  }, [historyEndpoint, historyRetry]);
+  useEffect(() => {
+    if (
+      requestedChat === active.current?.id ||
+      (!requestedChat && !active.current)
+    )
+      return;
+    const generation = ++viewGeneration.current;
+    turnGeneration.current++;
+    request.current?.abort();
+    chatLock.current = false;
+    const controller = new AbortController();
+    void Promise.resolve().then(async () => {
+      if (controller.signal.aborted) return;
+      setChatBusy(false);
+      setRevealingId(null);
+      setChatError("");
+      replyNeedsSave.current = false;
+      setUnsavedReply(false);
+      setDraft("");
+      if (!requestedChat) {
+        active.current = null;
+        currentMessages.current = [];
+        currentReport.current = undefined;
+        setActiveId(null);
+        setMessages([]);
+        setReportState(undefined);
+        setOpeningChat(false);
+        return;
+      }
+      setOpeningChat(true);
+      try {
+        const result = await apiRequest<{ conversation: SavedConversation }>(
+          `${historyEndpoint}?${new URLSearchParams({ conversationId: requestedChat })}`,
+          { signal: controller.signal },
+        );
+        if (controller.signal.aborted || generation !== viewGeneration.current)
+          return;
+        active.current = result.conversation;
+        pendingConversationId.current = result.conversation.id;
+        currentMessages.current = result.conversation.messages;
+        currentReport.current = result.conversation.reportState;
+        setActiveId(result.conversation.id);
+        setMessages(result.conversation.messages);
+        setReportState(result.conversation.reportState);
+        setHistoryError("");
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          active.current = null;
+          currentMessages.current = [];
+          currentReport.current = undefined;
+          setActiveId(null);
+          setMessages([]);
+          setReportState(undefined);
+          setHistoryError(
+            error instanceof Error
+              ? error.message
+              : "This chat could not open.",
+          );
+        }
+      } finally {
+        if (!controller.signal.aborted) setOpeningChat(false);
+      }
+    });
+    return () => controller.abort();
+  }, [requestedChat, historyEndpoint, historyRetry]);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -167,9 +478,9 @@ function CopilotSession({ projectId }: { projectId: string }) {
     if (manualOpen) editorHeading.current?.focus();
   }, [manualOpen, suggestion]);
   useEffect(() => {
-    if (messages.length)
+    if (messages.length && followReply.current)
       transcriptEnd.current?.scrollIntoView({ block: "nearest" });
-  }, [messages.length]);
+  }, [messages.length, chatBusy]);
   const refreshContext = useCallback(async () => {
     await refreshData();
     const result = await apiRequest<ContextResponse>(endpoint);
@@ -177,21 +488,40 @@ function CopilotSession({ projectId }: { projectId: string }) {
   }, [endpoint, refreshData]);
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    await sendMessage(draft.trim());
+  }
+  async function sendMessage(text: string, retryId?: string) {
     if (
       !context ||
       context.configuration.state !== "ready" ||
       chatLock.current ||
-      !draft.trim() ||
+      !text ||
+      openingChat ||
+      historySaving ||
+      unsavedReply ||
       !isOnline
     )
       return;
+    if (
+      !retryId &&
+      currentMessages.current.length > MAX_CONVERSATION_MESSAGES - 2
+    ) {
+      setChatError(
+        "This chat is full. Start a new chat to continue; your saved messages are kept.",
+      );
+      return;
+    }
     chatLock.current = true;
     setChatBusy(true);
+    setSavingQuestion(true);
     setChatError("");
-    const text = draft.trim(),
-      controller = new AbortController();
+    const controller = new AbortController();
+    const generation = ++turnGeneration.current;
     request.current = controller;
-    const history = recentHistory(messages);
+    const baseMessages = retryId
+      ? currentMessages.current.filter((row) => row.id !== retryId)
+      : currentMessages.current;
+    const history = recentHistory(baseMessages);
     let scheduleView: ScheduleViewSnapshot | undefined;
     if (params.get("sourceView") === "1")
       try {
@@ -205,9 +535,33 @@ function CopilotSession({ projectId }: { projectId: string }) {
       } catch {
         /* No stored view: the assistant asks for a stable activity reference. */
       }
-    setMessages((previous) => [...previous, { role: "user", text }]);
-    setDraft("");
+    const question: Message = {
+      id: retryId ?? crypto.randomUUID(),
+      role: "user",
+      text,
+    };
+    const withQuestion = [...baseMessages, question];
+    replaceMessages(withQuestion);
+    if (!retryId) setDraft("");
+    followReply.current = true;
+    setAnnouncement("Assistant is working on your question.");
+    let replyReceived = false;
     try {
+      const saved = await saveMessages(
+        withQuestion,
+        currentReport.current,
+        controller.signal,
+      );
+      if (
+        !mounted.current ||
+        controller.signal.aborted ||
+        generation !== turnGeneration.current
+      )
+        return;
+      applySaved(saved.conversation);
+      setSavingQuestion(false);
+      if (saved.created) setHistoryTotal((previous) => previous + 1);
+      setChatUrl(saved.conversation.id);
       const answer = await apiRequest<CopilotAnswer>(endpoint, {
         method: "POST",
         signal: controller.signal,
@@ -218,26 +572,77 @@ function CopilotSession({ projectId }: { projectId: string }) {
           scheduleView,
         }),
       });
-      if (mounted.current && !controller.signal.aborted) {
-        if (answer.reportState) setReportState(answer.reportState);
-        setMessages((previous) => [
-          ...previous,
-          { role: "assistant", text: answer.text, answer },
-        ]);
+      if (
+        mounted.current &&
+        !controller.signal.aborted &&
+        generation === turnGeneration.current
+      ) {
+        replyReceived = true;
+        const state = answer.reportState ?? currentReport.current;
+        currentReport.current = state;
+        setReportState(state);
+        const reply: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: answer.text,
+          answer,
+        };
+        const complete = [...withQuestion, reply];
+        replaceMessages(complete);
+        setRevealingId(reply.id);
+        try {
+          const savedReply = await saveMessages(complete, state);
+          if (
+            mounted.current &&
+            !controller.signal.aborted &&
+            generation === turnGeneration.current
+          ) {
+            applySaved(savedReply.conversation);
+            setHistoryError("");
+            replyNeedsSave.current = false;
+            setUnsavedReply(false);
+          }
+        } catch (error) {
+          if (
+            mounted.current &&
+            !controller.signal.aborted &&
+            generation === turnGeneration.current
+          ) {
+            replyNeedsSave.current = true;
+            setUnsavedReply(true);
+            setHistoryError(
+              `The reply is shown but could not be saved. ${error instanceof Error ? error.message : "Retry saving before continuing."}`,
+            );
+          }
+        }
       }
     } catch (error) {
-      if (mounted.current && !controller.signal.aborted) {
-        setChatError(
+      if (
+        mounted.current &&
+        !controller.signal.aborted &&
+        generation === turnGeneration.current
+      ) {
+        const message =
           error instanceof Error
             ? error.message
-            : "The message could not be sent. Try again.",
+            : "The message could not be sent. Try again.";
+        setChatError(message);
+        replaceMessages(
+          withQuestion.map((row) =>
+            row.id === question.id ? { ...row, error: message } : row,
+          ),
         );
-        setMessages((previous) => previous.slice(0, -1));
-        setDraft(text);
+        setAnnouncement("The reply could not load. Your question is kept.");
       }
     } finally {
-      chatLock.current = false;
-      if (mounted.current) setChatBusy(false);
+      if (generation === turnGeneration.current) {
+        chatLock.current = false;
+        if (mounted.current) {
+          setChatBusy(false);
+          setSavingQuestion(false);
+          if (!replyReceived) setRevealingId(null);
+        }
+      }
     }
   }
   function reviewSuggestion(value: CopilotTaskProposalDraft) {
@@ -303,7 +708,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
         <Button
           variant="ghost"
           className="h-11"
-          disabled={chatBusy || manualBusy || refreshing || !isOnline}
+          disabled={manualBusy || refreshing || !isOnline}
           aria-busy={refreshing}
           onClick={async () => {
             setRefreshing(true);
@@ -335,7 +740,178 @@ function CopilotSession({ projectId }: { projectId: string }) {
           </p>
         </div>
       )}
-      <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+      <p className="sr-only" role="status">
+        {announcement}
+      </p>
+      {historyError && (
+        <div
+          role="alert"
+          className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
+        >
+          <p>{historyError}</p>
+          {unsavedReply ? (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                disabled={historySaving || !isOnline}
+                onClick={() => void retrySaving()}
+              >
+                {historySaving ? "Saving reply…" : "Retry saving reply"}
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={historySaving || !isOnline}
+                onClick={() => {
+                  active.current = null;
+                  setHistoryRetry((value) => value + 1);
+                }}
+              >
+                Open saved version
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              disabled={historyLoading || !isOnline}
+              onClick={() => setHistoryRetry((value) => value + 1)}
+            >
+              Retry loading chats
+            </Button>
+          )}
+        </div>
+      )}
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside aria-label="Chat history" className="min-w-0 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              className="lg:w-full"
+              disabled={unsavedReply || historySaving}
+              onClick={newChat}
+            >
+              <Plus className="size-4" />
+              New chat
+            </Button>
+            <Button
+              variant="ghost"
+              className="lg:hidden"
+              aria-expanded={historyOpen}
+              aria-controls="past-chats"
+              onClick={() => setHistoryOpen((value) => !value)}
+            >
+              Past chats ({historyTotal})
+            </Button>
+          </div>
+          <div
+            id="past-chats"
+            className={`${historyOpen ? "block" : "hidden"} space-y-3 lg:block`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-sm font-semibold">Past chats</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Refresh past chats"
+                disabled={historyLoading || !isOnline}
+                onClick={() => setHistoryRetry((value) => value + 1)}
+              >
+                <RefreshCw className="size-4" />
+              </Button>
+            </div>
+            <p className="text-xs leading-5 text-slate-600">
+              Private to your account in this project. Saved across devices.
+            </p>
+            {historyLoading && !conversations.length ? (
+              <p role="status" className="text-sm text-slate-600">
+                Loading past chats…
+              </p>
+            ) : !conversations.length && !historyError ? (
+              <p className="text-sm leading-6 text-slate-600">
+                Your conversations will appear here after you send a question.
+              </p>
+            ) : null}
+            <ul className="max-h-72 space-y-1 overflow-y-auto lg:max-h-[36rem]">
+              {conversations.map((chat) => (
+                <li
+                  key={chat.id}
+                  className={
+                    chat.id === activeId
+                      ? "rounded-lg bg-blue-50"
+                      : "rounded-lg hover:bg-slate-100"
+                  }
+                >
+                  <div className="flex min-w-0 items-center gap-1">
+                    <button
+                      type="button"
+                      className="min-h-11 min-w-0 flex-1 rounded-lg px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-blue-700 disabled:opacity-50"
+                      aria-current={chat.id === activeId ? "page" : undefined}
+                      disabled={unsavedReply || historySaving}
+                      onClick={() => openChat(chat.id)}
+                    >
+                      <span className="block truncate text-sm font-medium">
+                        {chat.title}
+                      </span>
+                      <time
+                        dateTime={chat.updatedAt}
+                        className="mt-1 block text-xs text-slate-600"
+                      >
+                        {new Date(chat.updatedAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                        })}{" "}
+                        · {chat.messageCount}{" "}
+                        {chat.messageCount === 1 ? "message" : "messages"}
+                      </time>
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Delete chat: ${chat.title}`}
+                      disabled={
+                        chatBusy || unsavedReply || historySaving || !isOnline
+                      }
+                      onClick={() =>
+                        setDeleteId(deleteId === chat.id ? null : chat.id)
+                      }
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                  {deleteId === chat.id && (
+                    <div className="space-y-2 px-3 pb-3 text-sm">
+                      <p>Delete this saved chat?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="destructive"
+                          disabled={historySaving}
+                          onClick={() => void deleteChat(chat)}
+                        >
+                          Delete
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setDeleteId(null)}
+                        >
+                          Keep
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {conversations.length < historyTotal && (
+              <Button
+                variant="ghost"
+                className="w-full"
+                disabled={historyLoading || !isOnline}
+                onClick={() => void loadOlderChats()}
+              >
+                {historyLoading ? "Loading…" : "Show older chats"}
+              </Button>
+            )}
+          </div>
+        </aside>
         <div className="min-w-0 space-y-6">
           <section
             className="rounded-xl border bg-white p-4 sm:p-5 space-y-5"
@@ -358,7 +934,6 @@ function CopilotSession({ projectId }: { projectId: string }) {
                   <button
                     type="button"
                     key={example}
-                    disabled={chatBusy}
                     className="flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left text-sm text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700 disabled:opacity-50"
                     onClick={() => {
                       setDraft(example);
@@ -375,16 +950,33 @@ function CopilotSession({ projectId }: { projectId: string }) {
                 </p>
               </InfoPopover>
             </div>
-            {messages.length > 0 && (
+            {openingChat && (
+              <p role="status" className="py-5 text-sm text-slate-600">
+                Opening saved conversation…
+              </p>
+            )}
+            {!openingChat && !messages.length && (
+              <p className="py-4 text-sm leading-6 text-slate-600">
+                Ask a question about this project, or reopen a past chat.
+                Suggested changes always need your review.
+              </p>
+            )}
+            {!openingChat && messages.length > 0 && (
               <ol
-                className="max-h-[28rem] space-y-5 overflow-y-auto overscroll-contain"
-                aria-live="polite"
-                aria-relevant="additions"
+                ref={transcript}
+                className="max-h-[min(60dvh,36rem)] space-y-5 overflow-y-auto overscroll-contain pr-1"
+                tabIndex={0}
+                onScroll={(event) => {
+                  const list = event.currentTarget;
+                  followReply.current =
+                    list.scrollHeight - list.scrollTop - list.clientHeight <
+                    100;
+                }}
                 aria-label="Conversation"
               >
                 {messages.map((message, index) => (
                   <li
-                    key={index}
+                    key={message.id}
                     className={
                       message.role === "user"
                         ? "ml-4 rounded-lg bg-slate-100 p-4 sm:ml-10"
@@ -394,10 +986,51 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     <p className="text-xs font-medium text-slate-600">
                       {message.role === "user" ? "You" : "Assistant"}
                     </p>
-                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
-                      {message.text}
-                    </p>
-                    {message.answer && (
+                    {message.role === "assistant" ? (
+                      <div className="mt-2">
+                        <AssistantReply
+                          text={message.text}
+                          animate={revealingId === message.id}
+                          onComplete={() => {
+                            setRevealingId((value) =>
+                              value === message.id ? null : value,
+                            );
+                            setAnnouncement("Reply ready.");
+                            if (followReply.current)
+                              transcriptEnd.current?.scrollIntoView({
+                                block: "nearest",
+                              });
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
+                        {message.text}
+                      </p>
+                    )}
+                    {message.role === "user" &&
+                      !chatBusy &&
+                      (message.error || index === messages.length - 1) && (
+                        <div className="mt-2 space-y-2">
+                          <p
+                            className="text-sm text-red-700"
+                            role={message.error ? "alert" : undefined}
+                          >
+                            {message.error ||
+                              "No reply was saved for this question."}
+                          </p>
+                          <Button
+                            variant="outline"
+                            disabled={!ready || !isOnline || unsavedReply}
+                            onClick={() =>
+                              void sendMessage(message.text, message.id)
+                            }
+                          >
+                            Try this question again
+                          </Button>
+                        </div>
+                      )}
+                    {message.answer && revealingId !== message.id && (
                       <>
                         <AssistantResultPanels
                           answer={message.answer}
@@ -492,14 +1125,55 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     )}
                   </li>
                 ))}
+                {chatBusy &&
+                  !revealingId &&
+                  messages[messages.length - 1]?.role !== "assistant" && (
+                    <li
+                      className="space-y-2 py-3"
+                      role="status"
+                      aria-label="Assistant is preparing a reply"
+                    >
+                      <p className="text-xs font-medium text-slate-600">
+                        Assistant
+                      </p>
+                      <div className="flex min-h-8 items-center gap-3 text-sm text-slate-600">
+                        <span className="flex gap-1" aria-hidden="true">
+                          {[0, 1, 2].map((dot) => (
+                            <span
+                              key={dot}
+                              className="size-2 rounded-full bg-blue-600 animate-pulse motion-reduce:animate-none"
+                              style={{ animationDelay: `${dot * 160}ms` }}
+                            />
+                          ))}
+                        </span>
+                        Preparing reply…
+                      </div>
+                    </li>
+                  )}
                 <li aria-hidden="true">
                   <div ref={transcriptEnd} />
                 </li>
               </ol>
             )}
-            {chatError && (
-              <p role="alert" className="text-sm text-red-700">
-                {chatError}
+            {chatError &&
+              messages[messages.length - 1]?.error !== chatError && (
+                <p role="alert" className="text-sm text-red-700">
+                  {chatError}
+                </p>
+              )}
+            {reportState && (
+              <Link
+                href={projectReportHref(projectId, reportState.query)}
+                className="inline-flex min-h-11 items-center text-sm text-blue-800 underline"
+              >
+                Open current report with these saved filters
+              </Link>
+            )}
+            {activeId && !chatBusy && (
+              <p className="text-xs leading-5 text-slate-600">
+                Saved replies are snapshots. Reopen a report or ask again to
+                check current records. Change proposals are not stored with past
+                messages.
               </p>
             )}
             <form onSubmit={send} className="space-y-3">
@@ -512,13 +1186,27 @@ function CopilotSession({ projectId }: { projectId: string }) {
                   maxLength={4000}
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
-                  disabled={chatBusy}
-                  placeholder="List all chillers, find overdue work, or check test records…"
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      !event.shiftKey &&
+                      !event.nativeEvent.isComposing
+                    ) {
+                      event.preventDefault();
+                      event.currentTarget.form?.requestSubmit();
+                    }
+                  }}
+                  disabled={openingChat}
+                  placeholder={
+                    chatBusy
+                      ? "Write your next question while the assistant replies…"
+                      : "List all chillers, find overdue work, or check test records…"
+                  }
                 />
               </label>
               <CopilotVoiceInput
                 projectId={projectId}
-                disabled={!ready || chatBusy || !isOnline}
+                disabled={!ready || openingChat || !isOnline}
                 onTranscript={(text) => {
                   setDraft((previous) =>
                     `${previous}${previous.trim() ? " " : ""}${text}`.slice(
@@ -535,13 +1223,34 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     ? "Changes always need your confirmation."
                     : "Sending is available after AI setup."}
                 </span>
-                <Button
-                  className="min-h-11 max-w-full whitespace-normal"
-                  disabled={!ready || chatBusy || !isOnline || !draft.trim()}
-                >
-                  <Send className="size-4" />
-                  {chatBusy ? "Waiting for answer…" : "Send question"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {chatBusy &&
+                    messages[messages.length - 1]?.role !== "assistant" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={savingQuestion}
+                        onClick={stopWaiting}
+                      >
+                        <Square className="size-4" />
+                        Stop waiting
+                      </Button>
+                    )}
+                  <Button
+                    className="min-h-11 max-w-full whitespace-normal"
+                    disabled={
+                      !ready ||
+                      chatBusy ||
+                      openingChat ||
+                      unsavedReply ||
+                      !isOnline ||
+                      !draft.trim()
+                    }
+                  >
+                    <Send className="size-4" />
+                    Send question
+                  </Button>
+                </div>
               </div>
             </form>
           </section>
@@ -554,7 +1263,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
                 variant="outline"
                 className="h-11"
                 aria-expanded={manualOpen}
-                disabled={chatBusy || manualBusy}
+                disabled={manualBusy}
                 onClick={() => {
                   setManualOpen(!manualOpen);
                   setSuggestion(null);
@@ -589,16 +1298,13 @@ function CopilotSession({ projectId }: { projectId: string }) {
               </div>
             )}
           </section>
-        </div>
-        <aside className="min-w-0">
-          <div className="hidden lg:block">{contextPanel}</div>
-          <details className="border-t border-slate-200 pt-5 lg:hidden">
+          <details className="border-t border-slate-200 pt-5">
             <summary className="min-h-11 cursor-pointer font-medium">
-              Project checks & recorded groups
+              Project checks &amp; recorded groups
             </summary>
             <div className="mt-4">{contextPanel}</div>
           </details>
-        </aside>
+        </div>
       </div>
     </div>
   );

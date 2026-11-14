@@ -40,3 +40,29 @@ test("approved Production build runs only scoped migration before the normal web
   ])
     assert.throws(() => vercelBuildSteps(env));
 });
+test("chat history migration has a separate one-shot gate and refuses mixed approvals", () => {
+  const chat = {
+    ...approved,
+    FIELDTRACK_METER_MIGRATION_APPROVAL: "",
+    FIELDTRACK_CHAT_MIGRATION_APPROVAL: "human-approved-chat-history",
+  };
+  assert.deepEqual(vercelBuildSteps(chat), [
+    [
+      "--import",
+      "tsx",
+      "scripts/migrate-assistant-conversations.ts",
+      "--vercel-production",
+      "--apply",
+      "--approval-id",
+      chat.FIELDTRACK_CHAT_MIGRATION_APPROVAL,
+    ],
+    ["node_modules/next/dist/bin/next", "build", "--webpack"],
+  ]);
+  for (const env of [
+    { ...chat, VERCEL_ENV: "preview" },
+    { ...chat, VERCEL_PROJECT_ID: "another-project" },
+    { ...chat, FIELDTRACK_CHAT_MIGRATION_APPROVAL: "x" },
+    { ...chat, FIELDTRACK_METER_MIGRATION_APPROVAL: "old-meter-approval" },
+  ])
+    assert.throws(() => vercelBuildSteps(env));
+});

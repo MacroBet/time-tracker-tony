@@ -1,5 +1,17 @@
 # Registro operativo — Tony
 
+## Fix chat urgente: cronologia DB, Markdown e attesa inline — 14 novembre 2026
+
+Marco richiede fix e produzione; decisione diretta «salvale su db». Implementati
+cronologia privata cross-device per utente/progetto, riapertura/paging/CAS/retry,
+Markdown sicuro e risposta progressiva, composer utilizzabile durante attesa.
+[Implementazione e piano concreto0007](intake-20261114-chat-history.md).
+282unit/PostgreSQL+16API, lint/typecheck/build/format PASS;33assert browser e
+12schermate finali desktop/mobile senza errori/overflow. Nessuna AI live.
+CLI Production macrobet/progetto verificati, nessun gate residuo. Approvazione
+AGENTS per sola0007 richiesta come ultimo passo; nessun apply remoto o deploy
+di questa patch prima della risposta. Modifiche preesistenti preservate.
+
 ## PDF inglese con nuove funzioni e guida test — 14 novembre 2026
 
 Richiesta Marco eseguita: nuova edizione unificata di12pagine per inoltro manuale
@@ -477,6 +489,12 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Fix chat urgente14nov:** codice e collaudo conclusi, [piano DB0007 pronto](intake-20261114-chat-history.md).
+Decisione Marco: chat su DB. Cronologia privata per utente/progetto, Markdown e
+attesa non bloccante,282+16test e browser PASS. In attesa della sola approvazione
+esplicita del piano remoto richiesta da AGENTS, poi gate monouso/push/deploy e
+verifica esatta. Non rilanciare sviluppo/polish o test AI; nessun apply già fatto.
 
 **Estensione assistente 14nov:** R2–R5 implementati su mandato diretto Marco,
 che supera le precedenti note inreview/attesa incarico sotto. [Prove e limiti](intake-20261114-assistant-extension.md).

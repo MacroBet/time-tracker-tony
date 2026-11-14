@@ -13,6 +13,7 @@ import {
   check,
   boolean,
   jsonb,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const roleEnum = pgEnum("role", [
@@ -254,6 +255,53 @@ export const openaiMeterObservations = pgTable(
     check(
       "openai_meter_payload",
       sql`jsonb_typeof(${t.observation})='object' AND octet_length(${t.observation}::text)<=16000 AND ${t.observation}->'event'->>'attemptId'=${t.attemptId} AND ${t.observation}->'event'->>'provider'='openai' AND ((${t.phase}='pending' AND ${t.observation}->>'outcome'='started') OR (${t.phase}='final' AND ${t.observation}->>'outcome'<>'started'))`,
+    ),
+  ],
+);
+
+/** Private text-only assistant history. Proposals and credentials never belong in this table. */
+export const assistantConversations = pgTable(
+  "assistant_conversations",
+  {
+    id: uuid("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    messages: jsonb("messages")
+      .$type<import("@/lib/assistant-conversations").ConversationMessage[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    reportState:
+      jsonb("report_state").$type<
+        import("@/lib/assistant-report-state").AssistantReportState
+      >(),
+    version: integer("version").notNull().default(1),
+    createdAt: time("created_at").notNull().defaultNow(),
+    updatedAt: time("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("assistant_conversations_owner_project_updated_idx").on(
+      t.userId,
+      t.projectId,
+      t.updatedAt.desc(),
+      t.id.desc(),
+    ),
+    check(
+      "assistant_conversations_title",
+      sql`char_length(${t.title}) BETWEEN 1 AND 80`,
+    ),
+    check("assistant_conversations_version", sql`${t.version} > 0`),
+    check(
+      "assistant_conversations_messages",
+      sql`jsonb_typeof(${t.messages})='array' AND jsonb_array_length(${t.messages})<=200 AND octet_length(${t.messages}::text)<=1048576 AND NOT jsonb_path_exists(${t.messages}, '$[*] ? (@.type() != "object" || !exists(@.id) || !exists(@.role) || !exists(@.text) || @.id.type() != "string" || @.text.type() != "string" || (exists(@.error) && @.error.type() != "string") || (@.role != "user" && @.role != "assistant"))') AND NOT jsonb_path_exists(${t.messages}, '$[*].keyvalue() ? (@.key != "id" && @.key != "role" && @.key != "text" && @.key != "error")')`,
+    ),
+    check(
+      "assistant_conversations_report_scope",
+      sql`${t.reportState} IS NULL OR (jsonb_typeof(${t.reportState})='object' AND ${t.reportState}->>'projectId' IS NOT NULL AND ${t.reportState}->>'projectId'=${t.projectId})`,
     ),
   ],
 );
