@@ -24,20 +24,21 @@ test("restore and all new task-link writers guard both stale-snapshot orderings 
   const base: Commissioning = {
     ...commissioning(),
     version: 4,
+    config: { levels: ["L1", "L2"], priorities: ["P1"] },
     assets: [
       {
         id: "victim",
         name: "Victim",
         equipmentType: "Pump",
         location: "",
-        levels: [],
+        levels: ["L1", "L2"],
       },
       {
         id: "survivor",
         name: "Preserve",
         equipmentType: "Pump",
         location: "",
-        levels: [],
+        levels: ["L1", "L2"],
       },
     ],
   };
@@ -328,6 +329,171 @@ test("restore and all new task-link writers guard both stale-snapshot orderings 
     );
     assert.equal((await execute(guardedTagTasksQuery(tags))).rows.length, 0);
     assert.equal((await pg.query("SELECT * FROM tasks")).rows.length, 0);
+    // Changing a level on the same asset must invalidate an applicability preview.
+    await reset();
+    const levelTask = {
+      ...task("level-change", "survivor"),
+      cx: {
+        kind: "tag" as const,
+        assetId: "survivor",
+        level: "L1" as const,
+        result: "untested" as const,
+      },
+    };
+    await execute(guardedTaskInsertQuery(levelTask));
+    const levelVersion = (
+      await pg.query<{ version: number }>(
+        "SELECT (commissioning->>'version')::integer AS version FROM projects WHERE id='p'",
+      )
+    ).rows[0].version;
+    assert.equal(
+      (
+        await execute(
+          guardedTaskPlanQuery(
+            { ...levelTask, cx: { ...levelTask.cx, level: "L2" } },
+            event("level-event", levelTask.id),
+            1,
+          ),
+        )
+      ).rows.length,
+      1,
+    );
+    assert.equal(
+      (
+        await pg.query<{ version: number }>(
+          "SELECT (commissioning->>'version')::integer AS version FROM projects WHERE id='p'",
+        )
+      ).rows[0].version,
+      levelVersion + 1,
+    );
+    // Removal wins first: stale new associations cannot recreate a removed requirement.
+    await reset();
+    await execute(guardedTaskInsertQuery(levelTask));
+    const removedLevel = {
+      ...base,
+      version: 6,
+      assets: base.assets.map((asset) => ({ ...asset, levels: ["L1"] })),
+    };
+    await pg.query("UPDATE projects SET commissioning=$1::jsonb WHERE id='p'", [
+      JSON.stringify(removedLevel),
+    ]);
+    const staleLevelTask = {
+      ...levelTask,
+      cx: { ...levelTask.cx, level: "L2" as const },
+    };
+    assert.equal(
+      (
+        await execute(
+          guardedTaskPlanQuery(
+            staleLevelTask,
+            event("stale-level-event", levelTask.id),
+            1,
+          ),
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal(
+      (
+        await execute(
+          guardedTaskInsertQuery({ ...staleLevelTask, id: "stale-insert" }),
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal(
+      (
+        await execute(
+          guardedTagTasksQuery([{ ...staleLevelTask, id: "stale-bulk" }]),
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal(
+      (
+        await pg.query(
+          "SELECT * FROM task_activities WHERE id='stale-level-event'",
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal(
+      (
+        await pg.query(
+          "SELECT * FROM tasks WHERE id IN ('stale-insert', 'stale-bulk')",
+        )
+      ).rows.length,
+      0,
+    );
+    // Disabling a project level retains existing records and their normal edits.
+    await reset();
+    await execute(guardedTaskInsertQuery(levelTask));
+    const disabledLevelState = {
+      ...base,
+      version: 6,
+      config: { ...base.config, levels: [] },
+    };
+    await pg.query("UPDATE projects SET commissioning=$1::jsonb WHERE id='p'", [
+      JSON.stringify(disabledLevelState),
+    ]);
+    assert.equal(
+      (
+        await execute(
+          guardedTaskUpdateQuery(
+            { ...levelTask, status: "in-progress" },
+            event("existing-disabled-update", levelTask.id),
+            1,
+          ),
+        )
+      ).rows.length,
+      1,
+    );
+    assert.equal(
+      (
+        await execute(
+          guardedTaskPlanQuery(
+            {
+              ...levelTask,
+              title: "Retained record title",
+              status: "in-progress",
+              version: 2,
+            },
+            event("existing-disabled-plan", levelTask.id),
+            2,
+          ),
+        )
+      ).rows.length,
+      1,
+    );
+    assert.equal(
+      (
+        await pg.query<{ version: number }>(
+          "SELECT (commissioning->>'version')::integer AS version FROM projects WHERE id='p'",
+        )
+      ).rows[0].version,
+      6,
+      "Unchanged association must not bump the project version",
+    );
+    assert.equal(
+      (
+        await execute(
+          guardedTaskInsertQuery({ ...levelTask, id: "disabled-new-link" }),
+        )
+      ).rows.length,
+      0,
+    );
+    assert.equal(
+      (
+        await execute(
+          guardedTaskPlanQuery(
+            { ...levelTask, cx: { ...levelTask.cx, level: "L2" } },
+            event("disabled-new-level", levelTask.id),
+            3,
+          ),
+        )
+      ).rows.length,
+      0,
+    );
   } finally {
     await pg.close();
   }

@@ -16,6 +16,7 @@ import { Input } from "./ui/input";
 import { SourceProgrammeGantt } from "./SourceProgrammeGantt";
 import { sourcePageAnchor } from "@/lib/source-gantt";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import { InfoPopover } from "./InfoPopover";
 
 const number = (value: number) => value.toLocaleString("en-GB");
 
@@ -38,7 +39,7 @@ export function SourceProgrammeRestore({
     try {
       const params = new URLSearchParams({
         version: String(preview ? version : previewVersion),
-        reason: reason.trim() || "Preview source-only programme restoration",
+        reason: reason.trim() || "Preview source-only schedule restoration",
         sha256: sourceSha256,
         preview: String(preview),
       });
@@ -48,18 +49,18 @@ export function SourceProgrammeRestore({
       );
       const result = await response.json();
       if (!response.ok)
-        throw new Error(result.error || "Programme restoration failed.");
+        throw new Error(result.error || "Schedule restoration failed.");
       if (preview) setPreviewVersion(version);
       else {
         setPreviewVersion(null);
         await onRestored();
         toast.success(
-          "Source-only programme load removed; project history retained",
+          "Source-only schedule load removed; project history retained",
         );
       }
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Programme restoration failed",
+        error instanceof Error ? error.message : "Schedule restoration failed",
       );
       setPreviewVersion(null);
     } finally {
@@ -69,11 +70,11 @@ export function SourceProgrammeRestore({
   return (
     <details className="rounded-xl border border-slate-200 bg-white px-5 py-4">
       <summary className="min-h-11 cursor-pointer content-center text-sm font-medium">
-        Restore a source-only programme load
+        Restore a source-only schedule load
       </summary>
       <div className="mt-4 max-w-prose space-y-3">
         <p className="text-sm text-slate-600">
-          Only for a project with no other assets, tasks or managed programme.
+          Only for a project with no other assets, tasks or managed schedule.
           Removes the imported source view while keeping the project and its
           history.
         </p>
@@ -100,7 +101,7 @@ export function SourceProgrammeRestore({
         {previewVersion !== null && (
           <div className="space-y-3 border-t pt-3">
             <p className="text-sm">
-              The source programme will be removed. No project or audit records
+              The source schedule will be removed. No project or audit records
               will be deleted.
             </p>
             {previewVersion !== version && (
@@ -156,7 +157,7 @@ export function SourceProgrammeImport({
   ) {
     const params = new URLSearchParams({
       version: String(requestVersion),
-      reason: reason.trim() || "Preview P6 source programme without saving",
+      reason: reason.trim() || "Preview P6 source schedule without saving",
       preview: String(previewOnly),
     });
     const response = await fetch(
@@ -169,7 +170,7 @@ export function SourceProgrammeImport({
     );
     const result = await response.json();
     if (!response.ok)
-      throw new Error(result.error || "Programme import failed.");
+      throw new Error(result.error || "Schedule import failed.");
     return result as { summary: SourceProgrammeSummary; updated?: boolean };
   }
   async function stage() {
@@ -182,8 +183,8 @@ export function SourceProgrammeImport({
       if (file.name.toLowerCase().endsWith(".gz")) {
         body = fileBytes;
       } else {
-        const programme = await parseP6Xer(fileBytes, file.name);
-        const compressed = new Blob([JSON.stringify(programme)])
+        const schedule = await parseP6Xer(fileBytes, file.name);
+        const compressed = new Blob([JSON.stringify(schedule)])
           .stream()
           .pipeThrough(new CompressionStream("gzip"));
         body = new Uint8Array(await new Response(compressed).arrayBuffer());
@@ -214,10 +215,10 @@ export function SourceProgrammeImport({
       setFile(null);
       setReason("");
       await onImported?.();
-      toast.success("P6 source programme saved");
+      toast.success("P6 source schedule saved");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Programme was not saved.",
+        error instanceof Error ? error.message : "Schedule was not saved.",
       );
     } finally {
       setBusy(false);
@@ -226,12 +227,12 @@ export function SourceProgrammeImport({
   return (
     <details className="rounded-xl border border-slate-200 bg-white px-5 py-4">
       <summary className="min-h-11 cursor-pointer content-center text-sm font-medium text-slate-800">
-        Import Primavera XER programme
+        Import Primavera XER schedule
       </summary>
       <div className="mt-4 space-y-4 max-w-2xl">
         <p className="text-sm leading-relaxed text-slate-600">
-          Keep the complete exported programme and its saved dates, calendars
-          and relationships. This does not convert its logic into the app’s
+          Keep the complete exported schedule and its saved dates, calendars and
+          relationships. This does not convert its logic into the app’s
           working-day calculation or create tasks.
         </p>
         <label htmlFor={`${id}-file`} className="block text-sm font-medium">
@@ -255,7 +256,7 @@ export function SourceProgrammeImport({
           onClick={stage}
         >
           <Upload className="size-4" aria-hidden="true" />
-          {busy ? "Reading programme…" : "Preview programme"}
+          {busy ? "Reading schedule…" : "Preview schedule"}
         </Button>
         {preview && (
           <section
@@ -269,7 +270,7 @@ export function SourceProgrammeImport({
               {number(preview.summary.calendars)} calendars
             </p>
             <p className="text-sm text-slate-600">
-              The source programme will be saved for this project. Existing
+              The source schedule will be saved for this project. Existing
               assets, tasks and assignments are unchanged.
             </p>
             <label
@@ -285,7 +286,7 @@ export function SourceProgrammeImport({
               maxLength={1000}
               disabled={busy}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Describe the programme revision or test purpose"
+              placeholder="Describe the schedule revision or test purpose"
             />
             {preview.version !== version && (
               <p role="alert" className="text-sm text-red-700">
@@ -300,7 +301,7 @@ export function SourceProgrammeImport({
               }
               onClick={save}
             >
-              Save source programme
+              Save source schedule
             </Button>
           </section>
         )}
@@ -325,6 +326,10 @@ export function SourceProgrammeWorkspace({
   const [scale, setScale] = useState<GanttScale>("day");
   const [manualAnchor, setAnchor] = useState<string | null>(null);
   const [showLinks, setShowLinks] = useState(true);
+  const [timelineReset, setTimelineReset] = useState(0);
+  const [durationMode, setDurationMode] = useState<"days" | "hours" | "hidden">(
+    "days",
+  );
   const detailTrigger = useRef<HTMLElement | null>(null);
   const detailContent = useRef<HTMLDivElement | null>(null);
   const detailRequest = useRef<AbortController | null>(null);
@@ -355,14 +360,14 @@ export function SourceProgrammeWorkspace({
           );
           const result = await response.json();
           if (!response.ok)
-            throw new Error(result.error || "Could not load programme.");
+            throw new Error(result.error || "Could not load schedule.");
           setData(result);
         } catch (failure) {
           if (!controller.signal.aborted)
             setError(
               failure instanceof Error
                 ? failure.message
-                : "Could not load programme.",
+                : "Could not load schedule.",
             );
         } finally {
           if (!controller.signal.aborted) setLoading(false);
@@ -415,26 +420,47 @@ export function SourceProgrammeWorkspace({
     }
   }
   return (
-    <div className="space-y-6">
-      <header className="space-y-2">
-        <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-          {summary.projectName}
-        </h2>
-        <p className="text-sm text-slate-700 tabular-nums">
-          {number(summary.activities)} activities ·{" "}
-          {number(summary.relationships)} relationships ·{" "}
-          {number(summary.calendars)} calendars · {number(summary.wbs)} WBS
-          records
-        </p>
-        <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
-          Dates are the saved P6 actual and remaining forecast. Relationship
-          types, lag hours and calendar definitions are retained. This view does
-          not recalculate the source programme.
-        </p>
+    <div className="space-y-4">
+      <header className="space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="min-w-0 text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
+            {summary.projectName}
+          </h2>
+          <InfoPopover label="About this source schedule">
+            <p>
+              Dates are the saved P6 actual and remaining forecast. Relationship
+              types, lag hours and calendar definitions are retained. This view
+              does not recalculate the source schedule.
+            </p>
+            <p>
+              Days use each activity’s saved calendar hours per day. If that
+              value is unavailable, the original duration stays in hours. Dates
+              and source hours are unchanged.
+            </p>
+          </InfoPopover>
+        </div>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4 sm:max-w-3xl">
+          {[
+            ["Activities", summary.activities],
+            ["Relationships", summary.relationships],
+            ["Calendars", summary.calendars],
+            ["WBS records", summary.wbs],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="flex items-baseline justify-between gap-2 border-b border-slate-200 pb-2"
+            >
+              <dt className="text-xs text-slate-600">{label}</dt>
+              <dd className="text-base font-semibold tabular-nums text-slate-950">
+                {number(Number(value))}
+              </dd>
+            </div>
+          ))}
+        </dl>
       </header>
       <section
         className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        aria-label="Filter programme"
+        aria-label="Filter schedule"
       >
         <label
           htmlFor={`${id}-query`}
@@ -526,15 +552,24 @@ export function SourceProgrammeWorkspace({
           </Button>
         </div>
       )}
-      <p className="text-sm text-slate-600 tabular-nums" aria-live="polite">
-        {loading
-          ? "Loading programme…"
-          : `${number(data?.total ?? 0)} matching activities`}
-      </p>
       {data && !visible.length ? (
-        <p className="text-sm text-slate-600">
-          No activities match these filters.
-        </p>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+          <p aria-live="polite">No activities match these filters.</p>
+          <Button
+            variant="outline"
+            className="min-h-11"
+            onClick={() => {
+              setQuery("");
+              setWbs("");
+              setCalendar("");
+              setStatus("");
+              setPage(0);
+              setAnchor(null);
+            }}
+          >
+            Clear filters
+          </Button>
+        </div>
       ) : (
         <SourceProgrammeGantt
           data={data}
@@ -542,6 +577,9 @@ export function SourceProgrammeWorkspace({
           scale={scale}
           showLinks={showLinks}
           loading={loading}
+          durationMode={durationMode}
+          onDurationModeChange={setDurationMode}
+          resetViewKey={timelineReset}
           onSelect={openDetail}
           onGoTo={(row) => {
             const value = sourcePageAnchor([row]);
@@ -597,12 +635,13 @@ export function SourceProgrammeWorkspace({
               <Button
                 variant="outline"
                 className="min-h-11"
-                disabled={!visible.some((row) => row.start)}
+                disabled={!visible.some((row) => row.start || row.finish)}
                 onClick={() => {
                   setAnchor(null);
+                  setTimelineReset((value) => value + 1);
                 }}
               >
-                Go to page dates
+                Show these activity dates
               </Button>
               <label className="flex min-h-11 items-center gap-2 text-xs">
                 <input
@@ -610,14 +649,50 @@ export function SourceProgrammeWorkspace({
                   checked={showLinks}
                   onChange={(e) => setShowLinks(e.target.checked)}
                 />
-                Dependencies
+                Show dependency links
+              </label>
+              <InfoPopover label="About timeline navigation and links">
+                <p>
+                  Show these activity dates centres the timeline on the most
+                  common saved date among the activities loaded on this page.
+                  Use a row’s calendar button to locate an individual activity.
+                </p>
+                <p>
+                  Dependency links are arrows between saved predecessor and
+                  successor dates. Showing or hiding them changes the display
+                  only; it does not change the schedule.
+                </p>
+              </InfoPopover>
+              <span
+                className="flex min-h-11 items-center text-xs tabular-nums text-slate-600"
+                aria-live="polite"
+              >
+                {loading
+                  ? "Loading schedule…"
+                  : `${number(data?.total ?? 0)} matching activities`}
+              </span>
+              <label htmlFor={`${id}-duration`} className="text-xs">
+                Duration
+                <select
+                  id={`${id}-duration`}
+                  aria-label="Duration display"
+                  value={durationMode}
+                  onChange={(event) =>
+                    setDurationMode(event.target.value as typeof durationMode)
+                  }
+                  className="block min-h-11 rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                >
+                  <option value="days">Days</option>
+                  <option value="hours">Hours</option>
+                  <option value="hidden">Hidden</option>
+                </select>
               </label>
             </div>
           }
         />
       )}
       <nav
-        aria-label="Programme pages"
+        aria-label="Schedule pages"
         className="flex flex-wrap items-center justify-between gap-3 text-sm"
       >
         <p className="tabular-nums">
@@ -704,6 +779,9 @@ export function SourceProgrammeWorkspace({
                 </div>
                 <p className="text-sm text-slate-600">
                   {statusLabel(detail.activity.status)} ·{" "}
+                  {detail.activity.durationDays !== undefined
+                    ? `${new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(detail.activity.durationDays)} days (${detail.activity.calendarHoursPerDay} hours/day) · `
+                    : ""}
                   {detail.activity.durationHours || "No recorded duration"}
                   {detail.activity.durationHours ? " source hours" : ""} ·{" "}
                   {detail.activity.calendarName}
@@ -768,7 +846,7 @@ export function SourceProgrammeWorkspace({
       </Dialog>
       <details className="border-t border-slate-200 pt-3 text-sm text-slate-600">
         <summary className="min-h-11 cursor-pointer content-center font-medium">
-          Programme source
+          Schedule source
         </summary>
         <p className="mt-2">{summary.fileName}</p>
         <p className="mt-2 break-all font-mono text-xs">

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
 import { Button } from "./ui/button";
 import { COPILOT_AUDIO, encodeCopilotWav } from "@/lib/copilot-audio";
+import { InfoPopover } from "./InfoPopover";
 
 type Recording = {
   context: AudioContext;
@@ -260,13 +261,22 @@ export function CopilotVoiceInput({
                 ? "Transcribing…"
                 : "Use microphone"}
         </Button>
-        <span className="text-xs text-slate-600" role="status">
-          {state === "recording"
-            ? "Recording · stops after 30 seconds"
-            : state === "transcribing"
-              ? "Microphone off. Preparing text for your review."
-              : "Up to 30 seconds. Review the text before sending."}
-        </span>
+        {state === "idle" ? (
+          <InfoPopover label="About voice questions">
+            <p>
+              Up to 30 seconds. Review the text before sending. Recording starts
+              only when you choose Use microphone.
+            </p>
+          </InfoPopover>
+        ) : (
+          <span className="text-xs text-slate-600" role="status">
+            {state === "recording"
+              ? "Recording · stops after 30 seconds"
+              : state === "transcribing"
+                ? "Microphone off. Preparing text for your review."
+                : "Up to 30 seconds. Review the text before sending."}
+          </span>
+        )}
       </div>
       {error && (
         <p role="alert" className="text-sm text-red-700">

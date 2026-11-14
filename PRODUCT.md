@@ -134,6 +134,15 @@ and open issues. Tasks shows saved equipment context in admin rows/details and
 worker cards. No source screenshot values or new assignments are inferred. Release,
 cloud configuration and durable metering evidence: docs/tony-feedback/intake-20261110-ai-assistant.md.
 
+The 14 November UI increment uses Schedule and Project assistant as interface labels.
+Desktop headers place project selection beside the title; Overview puts reports below
+the compact summary. Overdue is a Schedule view with the old URL retained. The asset
+register uses readable names, column filters and inline tag applicability; copied
+configuration never includes test results or signatures. Duplication creates a new
+identity; referenced deletion and level removal are blocked with a reviewable preview.
+Source durations can display calendar-derived days while preserving original hours.
+Source: docs/tony-feedback/intake-20261114-ui-feedback.md.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.

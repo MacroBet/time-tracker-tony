@@ -1,5 +1,8 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Modifiche UI 14nov implementate:** [report prima/dopo e prove](intake-20261114-ui-feedback.md).
+Mandato diretto sui cinque screenshot; Overview, Schedule/Overdue, assistente e registro asset.
+
 Leggere questo indice, [stato essenziale e backlog](register.md#stato-corrente-per-ripresa)
 e [PRODUCT.md](../../PRODUCT.md) prima di rispondere sul progetto. Poi aprire solo
 le fonti necessarie. Il registro è la fonte unica dello stato operativo; i recap

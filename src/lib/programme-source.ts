@@ -165,6 +165,9 @@ export type SourceActivityView = {
   taskType: string;
   milestone: boolean;
   durationHours: string;
+  /** Display units from this activity's saved calendar, never a fixed day. */
+  calendarHoursPerDay?: number;
+  durationDays?: number;
   predecessorCount: number;
   successorCount: number;
   start?: string;
@@ -248,6 +251,16 @@ export function indexSourceProgramme(
   const calendarNames = new Map(
     calendars.map((record) => [record.clndr_id, record.clndr_name]),
   );
+  const calendarDayHours = new Map(
+    calendars.flatMap((record): [string, number][] => {
+      const raw = record.day_hr_cnt?.trim();
+      if (!raw || !/^\d+(?:\.\d+)?$/.test(raw)) return [];
+      const hours = Number(raw);
+      return Number.isFinite(hours) && hours > 0 && hours <= 24
+        ? [[record.clndr_id, hours]]
+        : [];
+    }),
+  );
   const wbs = new Map(
     sourceRecords(programme.tables.PROJWBS).map((record) => [
       record.wbs_id,
@@ -294,22 +307,37 @@ export function indexSourceProgramme(
     to.push(link);
     incoming.set(link.successorId, to);
   }
-  const activities = tasks.map((record): SourceActivityView => ({
-    internalId: record.task_id,
-    activityId: record.task_code,
-    name: record.task_name,
-    wbsId: record.wbs_id ?? "",
-    wbsPath: wbsPath(record.wbs_id),
-    calendarId: record.clndr_id ?? "",
-    calendarName: calendarNames.get(record.clndr_id) ?? record.clndr_id ?? "",
-    status: record.status_code ?? "",
-    taskType: record.task_type ?? "",
-    milestone: /(?:Mile|Milestone)/i.test(record.task_type ?? ""),
-    durationHours: record.target_drtn_hr_cnt ?? "",
-    predecessorCount: incoming.get(record.task_id)?.length ?? 0,
-    successorCount: outgoing.get(record.task_id)?.length ?? 0,
-    ...sourceActivityDates(record),
-  }));
+  const activities = tasks.map((record): SourceActivityView => {
+    const calendarHoursPerDay = calendarDayHours.get(record.clndr_id);
+    const rawDuration = record.target_drtn_hr_cnt?.trim();
+    const hours =
+      rawDuration && /^\d+(?:\.\d+)?$/.test(rawDuration)
+        ? Number(rawDuration)
+        : undefined;
+    const durationDays =
+      calendarHoursPerDay && hours !== undefined && Number.isFinite(hours)
+        ? hours / calendarHoursPerDay
+        : undefined;
+    return {
+      internalId: record.task_id,
+      activityId: record.task_code,
+      name: record.task_name,
+      wbsId: record.wbs_id ?? "",
+      wbsPath: wbsPath(record.wbs_id),
+      calendarId: record.clndr_id ?? "",
+      calendarName: calendarNames.get(record.clndr_id) ?? record.clndr_id ?? "",
+      status: record.status_code ?? "",
+      taskType: record.task_type ?? "",
+      milestone: /(?:Mile|Milestone)/i.test(record.task_type ?? ""),
+      durationHours: record.target_drtn_hr_cnt ?? "",
+      ...(durationDays !== undefined
+        ? { calendarHoursPerDay, durationDays }
+        : {}),
+      predecessorCount: incoming.get(record.task_id)?.length ?? 0,
+      successorCount: outgoing.get(record.task_id)?.length ?? 0,
+      ...sourceActivityDates(record),
+    };
+  });
   return {
     summary,
     activities,

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  CalendarClock,
   HardHat,
   LogOut,
   Settings,
@@ -29,6 +28,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
+import { InfoPopover } from "./InfoPopover";
 import {
   Sheet,
   SheetTrigger,
@@ -105,10 +105,14 @@ export function AppShell({
           module: "dashboard",
         },
         {
-          label: "Programme",
-          href: "/schedule",
+          label: "Schedule",
+          href: hasModule(currentUser, "commissioning")
+            ? "/schedule"
+            : "/schedule?view=overdue",
           icon: GanttChart,
-          module: "commissioning",
+          module: hasModule(currentUser, "commissioning")
+            ? "commissioning"
+            : "dashboard",
         },
         {
           label: "Assets",
@@ -146,12 +150,6 @@ export function AppShell({
           module: "time",
         },
         {
-          label: "Overdue",
-          href: "/overdue",
-          icon: CalendarClock,
-          module: "dashboard",
-        },
-        {
           label: "Reports",
           href: "/reports",
           icon: FileBarChart,
@@ -159,7 +157,7 @@ export function AppShell({
         },
         ...(hasModule(currentUser, "tasks") &&
         hasModule(currentUser, "commissioning")
-          ? [{ label: "Copilot", href: "/copilot", icon: MessageSquareText }]
+          ? [{ label: "Assistant", href: "/copilot", icon: MessageSquareText }]
           : []),
       ];
   const utilities: NavigationItem[] = [
@@ -193,7 +191,8 @@ export function AppShell({
   const active = (href: string) => {
     const [path, query] = href.split("?");
     return (
-      pathname === path &&
+      (pathname === path ||
+        (path === "/schedule" && pathname === "/overdue")) &&
       (path !== "/supervisor" ||
         view === new URLSearchParams(query).get("view") ||
         (!query && view === "tasks"))
@@ -315,58 +314,32 @@ export function AppShell({
       </aside>
       <div className="lg:pl-56 pb-28 lg:pb-12">
         <header className="sticky top-0 z-20 border-b border-[#e2e9f4] bg-white/95 backdrop-blur-sm">
-          <div className="max-w-[1440px] mx-auto min-h-20 py-3 px-4 sm:px-7 flex items-center gap-3">
-            {back && (
-              <Button variant="ghost" size="icon" className="size-11" asChild>
-                <Link href={back} aria-label="Go back">
-                  <ArrowLeft className="size-5" />
-                </Link>
-              </Button>
-            )}
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#111c30]">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="mt-1 max-w-prose text-xs text-slate-600">
-                  {subtitle}
-                </p>
+          <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-7 lg:flex lg:gap-4">
+            <div className="flex min-w-0 items-center gap-2 lg:shrink-0">
+              {back && (
+                <Button variant="ghost" size="icon" className="size-11" asChild>
+                  <Link href={back} aria-label="Go back">
+                    <ArrowLeft className="size-5" />
+                  </Link>
+                </Button>
               )}
+              <div className="flex min-w-0 items-center gap-1">
+                <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#111c30]">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <InfoPopover label={`About ${title}`}>
+                    <p>{subtitle}</p>
+                  </InfoPopover>
+                )}
+              </div>
             </div>
-            <AssistantEntry />
-            <span className="hidden sm:flex gap-1.5 items-center text-[11px] text-slate-500 mr-2">
-              <span
-                className={`size-1.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-red-500"}`}
-              />
-              {isOnline ? "Online" : "Offline"}
-            </span>
-            <Button
-              aria-label="Refresh workspace"
-              onClick={refresh}
-              disabled={refreshing || !isOnline}
-              variant="ghost"
-              size="icon"
-              className="size-11"
-            >
-              <RefreshCw
-                className={`size-4 text-slate-500 ${refreshing ? "animate-spin" : ""}`}
-              />
-            </Button>
-            <Link
-              href="/settings"
-              aria-label="Profile and settings"
-              className="size-11 shrink-0 grid place-items-center rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-blue-600"
-            >
-              {initials}
-            </Link>
-          </div>
-          {projects.length > 0 && (
-            <div className="max-w-[1440px] mx-auto px-4 sm:px-7 pb-3">
-              <label className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600">
-                <span>Project</span>
+            {projects.length > 0 && (
+              <label className="order-3 col-span-2 flex min-w-0 items-center gap-2 text-sm text-slate-600 lg:order-none lg:ml-3 lg:flex-1 lg:max-w-md">
+                <span className="shrink-0">Project</span>
                 <select
                   aria-label="Active project"
-                  className="min-h-11 min-w-0 w-full sm:w-80 max-w-full rounded-md border bg-slate-50 px-3 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-600"
+                  className="min-h-11 w-full min-w-0 rounded-md border bg-slate-50 px-3 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-600"
                   value={selectedProjectId}
                   onChange={(e) => {
                     if (
@@ -384,8 +357,36 @@ export function AppShell({
                   ))}
                 </select>
               </label>
+            )}
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:ml-auto">
+              <AssistantEntry />
+              <span className="hidden sm:flex gap-1.5 items-center text-[11px] text-slate-500 mr-2">
+                <span
+                  className={`size-1.5 rounded-full ${isOnline ? "bg-emerald-500" : "bg-red-500"}`}
+                />
+                {isOnline ? "Online" : "Offline"}
+              </span>
+              <Button
+                aria-label="Refresh workspace"
+                onClick={refresh}
+                disabled={refreshing || !isOnline}
+                variant="ghost"
+                size="icon"
+                className="size-11"
+              >
+                <RefreshCw
+                  className={`size-4 text-slate-500 ${refreshing ? "animate-spin" : ""}`}
+                />
+              </Button>
+              <Link
+                href="/settings"
+                aria-label="Profile and settings"
+                className="size-11 shrink-0 grid place-items-center rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-blue-600"
+              >
+                {initials}
+              </Link>
             </div>
-          )}
+          </div>
         </header>
         {mode === "demo" && (
           <div className="bg-amber-50 text-amber-900 text-xs text-center p-2 border-b border-amber-100">

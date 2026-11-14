@@ -1,10 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
   CalendarDays,
+  Eye,
+  EyeOff,
   List,
   Pencil,
   Plus,
@@ -15,6 +18,8 @@ import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { ProjectAudit } from "./ProjectAudit";
 import { ProgrammeReference } from "./ProgrammeReference";
+import { OverdueList } from "./OverdueList";
+import { InfoPopover } from "./InfoPopover";
 import {
   SourceProgrammeImport,
   SourceProgrammeRestore,
@@ -25,6 +30,7 @@ import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import {
   commissioning,
+  filterTasks,
   hasModule,
   type ScheduleActivity,
 } from "@/lib/commissioning";
@@ -65,20 +71,59 @@ function shiftDate(date: string, days: number) {
     .slice(0, 10);
 }
 
-export function ScheduleWorkspace() {
+export function ScheduleWorkspace({
+  initialView = "timeline",
+}: { initialView?: "timeline" | "overdue" } = {}) {
   const app = useApp();
+  const params = useSearchParams();
   const project = app.projects.find((p) => p.id === app.selectedProjectId);
   const allowed =
     app.currentUser.role !== "worker" &&
     hasModule(app.currentUser, "commissioning");
+  const canViewOverdue =
+    app.currentUser.role !== "worker" &&
+    hasModule(app.currentUser, "dashboard");
+  const view = params.get("view") || initialView;
+  const overdue = view === "overdue" && canViewOverdue;
+  const overdueCount = project
+    ? filterTasks(app.tasks, project, { attention: "overdue" }).length
+    : 0;
   return (
     <AppShell
-      title="Programme"
+      title="Schedule"
       subtitle="Dates, durations and the order of your project work."
       wide
     >
-      {!allowed ? (
-        <p>Programme planning requires commissioning management access.</p>
+      {project && (allowed || canViewOverdue) && (
+        <nav
+          aria-label="Schedule views"
+          className="mb-5 flex flex-wrap items-center gap-1 border-b border-slate-200"
+        >
+          {allowed && (
+            <Link
+              href="/schedule"
+              aria-current={!overdue ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${!overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
+            >
+              <CalendarDays className="size-4" aria-hidden="true" />
+              Timeline
+            </Link>
+          )}
+          {canViewOverdue && (
+            <Link
+              href="/schedule?view=overdue"
+              aria-current={overdue ? "page" : undefined}
+              className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
+            >
+              Overdue <span className="tabular-nums">{overdueCount}</span>
+            </Link>
+          )}
+        </nav>
+      )}
+      {project && overdue ? (
+        <OverdueList key={project.id} project={project} tasks={app.tasks} />
+      ) : !allowed ? (
+        <p>Schedule planning requires commissioning management access.</p>
       ) : project ? (
         <div className="space-y-6" key={project.id}>
           {commissioning(project).sourceProgrammeSummary ? (
@@ -88,7 +133,7 @@ export function ScheduleWorkspace() {
               summary={commissioning(project).sourceProgrammeSummary!}
             />
           ) : (
-            <Programme project={project} />
+            <Schedule project={project} />
           )}
           <SourceProgrammeImport
             projectId={project.id}
@@ -114,7 +159,7 @@ export function ScheduleWorkspace() {
   );
 }
 
-function Programme({ project }: { project: Project }) {
+function Schedule({ project }: { project: Project }) {
   const { tasks, isOnline, currentUser } = useApp();
   const state = commissioning(project);
   const [query, setQuery] = useState("");
@@ -189,20 +234,20 @@ function Programme({ project }: { project: Project }) {
         {activityDialog}
         <section
           className="bg-white border rounded-xl px-5 py-8 sm:px-10 sm:py-12"
-          aria-labelledby="programme-start"
+          aria-labelledby="schedule-start"
         >
           <CalendarDays
             className="size-8 text-blue-700 mb-6"
             aria-hidden="true"
           />
           <h2
-            id="programme-start"
+            id="schedule-start"
             className="text-2xl font-semibold tracking-tight"
           >
             Plan your first activity
           </h2>
           <p className="mt-3 text-slate-600 max-w-xl leading-relaxed">
-            Add a start date and duration. Your programme will show when work
+            Add a start date and duration. Your schedule will show when work
             happens and which activities depend on each other.
           </p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -214,9 +259,7 @@ function Programme({ project }: { project: Project }) {
               <Plus className="size-4" /> Add first activity
             </Button>
             <Button asChild variant="outline" className="min-h-11">
-              <Link href="/commissioning#import-register">
-                Import programme
-              </Link>
+              <Link href="/commissioning#import-register">Import schedule</Link>
             </Button>
           </div>
           <div className="mt-10 border-t pt-6 grid gap-6 sm:grid-cols-2 max-w-2xl">
@@ -224,7 +267,7 @@ function Programme({ project }: { project: Project }) {
               <h3 className="font-medium">Equipment belongs in Assets</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Add the equipment and choose its required tags. Link it to
-                programme activities when you are ready.
+                schedule activities when you are ready.
               </p>
               <Link
                 className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 underline underline-offset-4"
@@ -237,7 +280,7 @@ function Programme({ project }: { project: Project }) {
               <h3 className="font-medium">Work and tests belong in Tasks</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Assign work, record test results and collect evidence. Linked
-                tasks follow the dates in this programme.
+                tasks follow the dates in this schedule.
               </p>
               {hasModule(currentUser, "tasks") && (
                 <Link
@@ -258,7 +301,7 @@ function Programme({ project }: { project: Project }) {
       <ProgrammeReference key={project.id} project={project} />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="font-semibold text-lg">Programme activities</h2>
+          <h2 className="font-semibold text-lg">Schedule activities</h2>
           <p className="text-sm text-slate-600 mt-1">
             {state.schedule.length} activities · {linked} linked tasks
           </p>
@@ -292,7 +335,7 @@ function Programme({ project }: { project: Project }) {
         </label>
         <div
           className="md:hidden flex items-center gap-1 rounded-lg border bg-white p-1"
-          aria-label="Programme view"
+          aria-label="Schedule view"
         >
           <Button
             variant={mobileTimeline ? "ghost" : "secondary"}
@@ -338,7 +381,7 @@ function Programme({ project }: { project: Project }) {
                     setPage(0);
                   }}
                 >
-                  All programme activities
+                  All schedule activities
                 </Button>
                 <label className="block text-xs">
                   Group assets by
@@ -443,7 +486,7 @@ function Programme({ project }: { project: Project }) {
               {!mobileTimeline && (
                 <ol
                   className="md:hidden divide-y border rounded-xl bg-white"
-                  aria-label="Programme activities"
+                  aria-label="Schedule activities"
                 >
                   {visible.map((row) => (
                     <li key={row.activityId}>
@@ -482,7 +525,12 @@ function Programme({ project }: { project: Project }) {
                 </ol>
               )}
               <div className={mobileTimeline ? "block" : "hidden md:block"}>
-                <Gantt rows={visible} all={state.schedule} onEdit={edit} />
+                <Gantt
+                  rows={visible}
+                  all={state.schedule}
+                  totalMatching={rows.length}
+                  onEdit={edit}
+                />
               </div>
             </>
           ) : (
@@ -545,7 +593,7 @@ function Programme({ project }: { project: Project }) {
         <p className="max-w-2xl leading-relaxed pb-4">
           Monday–Friday, without public holidays. Finish-to-start links release
           successors on the next working day; lag is measured in working days.
-          Baseline dates stay recorded when the programme changes.
+          Baseline dates stay recorded when the schedule changes.
         </p>
       </details>
       {history}
@@ -597,7 +645,7 @@ function ActivityDialog({
         <DialogTitle className="pr-8 break-words">
           {activity.activityId
             ? `Edit ${activity.activityId}`
-            : "New programme activity"}
+            : "New schedule activity"}
         </DialogTitle>
         <ActivityEditor
           project={project}
@@ -710,12 +758,10 @@ function ActivityEditor({
         method: "PATCH",
         body: JSON.stringify({ action: "schedule", version, ...proposal }),
       });
-      toast.success("Programme saved. Linked task deadlines updated.");
+      toast.success("Schedule saved. Linked task deadlines updated.");
       onClose();
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Could not save the programme.",
-      );
+      setError(e instanceof Error ? e.message : "Could not save the schedule.");
     } finally {
       setBusy(false);
     }
@@ -736,7 +782,7 @@ function ActivityEditor({
     <section className="space-y-4" aria-label="Activity editor">
       {stale && (
         <p role="alert" className="text-sm text-red-700">
-          The programme changed while this editor was open. Close and reopen the
+          The schedule changed while this editor was open. Close and reopen the
           activity to review the latest revision. Your change has not been
           saved.
         </p>
@@ -912,19 +958,19 @@ function ActivityEditor({
             <Input
               name="reason"
               defaultValue={
-                activity.activityId ? "" : "Initial programme activity"
+                activity.activityId ? "" : "Initial schedule activity"
               }
               required
               minLength={10}
               maxLength={1000}
-              placeholder="Explain the programme change"
+              placeholder="Explain the schedule change"
             />
           </label>
           <Button
             className="min-h-11 w-full sm:w-auto"
             disabled={busy || !isOnline || stale}
           >
-            {busy ? "Checking…" : "Preview programme change"}
+            {busy ? "Checking…" : "Preview schedule change"}
           </Button>
         </fieldset>
       </form>
@@ -938,7 +984,7 @@ function ActivityEditor({
       )}
       {preview && (
         <div className="border-t pt-4 space-y-3" aria-live="polite">
-          <h4 className="font-semibold text-sm">Review the programme impact</h4>
+          <h4 className="font-semibold text-sm">Review the schedule impact</h4>
           {calculated && (
             <p className="text-sm">
               Calculated dates:{" "}
@@ -968,7 +1014,7 @@ function ActivityEditor({
                 onClick={save}
                 disabled={busy || stale || !isOnline || !preview.changes.length}
               >
-                {busy ? "Saving…" : "Save programme revision"}
+                {busy ? "Saving…" : "Save schedule revision"}
               </Button>
             </>
           )}
@@ -981,10 +1027,12 @@ function ActivityEditor({
 function Gantt({
   rows,
   all,
+  totalMatching,
   onEdit,
 }: {
   rows: ScheduleActivity[];
   all: ScheduleActivity[];
+  totalMatching: number;
   onEdit: (r: ScheduleActivity, anchor: HTMLElement) => void;
 }) {
   const first =
@@ -992,7 +1040,8 @@ function Gantt({
   const [anchor, setAnchor] = useState<string | null>(null);
   const [zoom, setZoom] = useState<GanttScale>("day");
   const [showLinks, setShowLinks] = useState(false);
-  const tableWidth = showLinks ? 670 : 480;
+  const [showDuration, setShowDuration] = useState(true);
+  const tableWidth = (showLinks ? 670 : 480) - (showDuration ? 0 : 64);
   const start = anchor ?? shiftDate(first, -2);
   const { span, unit, width, columns } = ganttAxis(start, zoom);
   const positions = new Map(
@@ -1067,7 +1116,25 @@ function Gantt({
                 checked={showLinks}
                 onChange={(e) => setShowLinks(e.target.checked)}
               />
-              Dependency columns
+              Show dependency links
+            </label>
+            <InfoPopover label="About schedule dependency links">
+              <p>
+                Show or hide finish-to-start arrows between activities on this
+                page and the predecessor/successor columns. This changes the
+                display only; links and dates stay unchanged.
+              </p>
+            </InfoPopover>
+            <span className="text-xs tabular-nums text-slate-600">
+              {totalMatching} matching activities
+            </span>
+            <label className="flex min-h-11 items-center gap-2 text-xs">
+              <input
+                type="checkbox"
+                checked={showDuration}
+                onChange={(event) => setShowDuration(event.target.checked)}
+              />
+              Show duration
             </label>
           </div>
         </div>
@@ -1075,7 +1142,7 @@ function Gantt({
           className="overflow-x-auto"
           tabIndex={0}
           role="region"
-          aria-label="Scrollable programme table and timeline"
+          aria-label="Scrollable schedule table and timeline"
         >
           <div className="flex" style={{ minWidth: tableWidth + width }}>
             <table
@@ -1083,16 +1150,42 @@ function Gantt({
               style={{ width: tableWidth }}
             >
               <caption className="sr-only">
-                Programme activities. Select an activity to edit its dates and
+                Schedule activities. Select an activity to edit its dates and
                 dependencies.
               </caption>
               <thead>
                 <tr className="h-14 bg-slate-50 text-slate-600 text-left">
-                  <th className="px-3 w-44">Activity / asset</th>
+                  <th className="px-3 w-44">
+                    <div className="flex items-center justify-between gap-1">
+                      Activity / asset
+                      {!showDuration && (
+                        <button
+                          type="button"
+                          className="grid min-h-11 min-w-11 place-items-center rounded-md hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+                          aria-label="Show duration column"
+                          onClick={() => setShowDuration(true)}
+                        >
+                          <Eye className="size-4" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
+                  </th>
                   <th className="w-12">
                     <span className="sr-only">Quick edit</span>
                   </th>
-                  <th className="px-2 w-16">Days</th>
+                  {showDuration && (
+                    <th className="px-1 w-16">
+                      <button
+                        type="button"
+                        className="flex min-h-11 items-center gap-1 rounded-md px-1 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+                        aria-label="Hide duration column"
+                        onClick={() => setShowDuration(false)}
+                      >
+                        Days
+                        <EyeOff className="size-3.5" aria-hidden="true" />
+                      </button>
+                    </th>
+                  )}
                   <th className="px-2 w-24">Start</th>
                   <th className="px-2 w-24">Finish</th>
                   {showLinks && <th className="px-2">Predecessors</th>}
@@ -1154,13 +1247,15 @@ function Gantt({
                           <Pencil className="size-4" aria-hidden="true" />
                         </Button>
                       </td>
-                      <td className="px-2">
-                        {r.durationDays ??
-                          (r.start && r.finish
-                            ? workingDuration(r.start, r.finish)
-                            : "—")}{" "}
-                        wd
-                      </td>
+                      {showDuration && (
+                        <td className="px-2">
+                          {r.durationDays ??
+                            (r.start && r.finish
+                              ? workingDuration(r.start, r.finish)
+                              : "—")}{" "}
+                          wd
+                        </td>
+                      )}
                       <td className="px-2">{r.start ?? "Not set"}</td>
                       <td className="px-2">{r.finish ?? "Not set"}</td>
                       {showLinks && (
@@ -1239,31 +1334,32 @@ function Gantt({
                       stroke="#e2e8f0"
                     />
                   ))}
-                  {rows.flatMap((r, i) =>
-                    (r.predecessors ?? []).map((p) => {
-                      const predecessor = positions.get(p.activityId);
-                      if (!predecessor?.row.finish || !r.start) return null;
-                      const from =
-                          x(
-                            predecessor.row.actualFinish ??
-                              predecessor.row.finish,
-                          ) + unit,
-                        to = x(r.start);
-                      if (from < 0 || to > width || to < 0 || from > width)
-                        return null;
-                      const mid = Math.max(from + 6, to - 8);
-                      return (
-                        <path
-                          key={`${r.activityId}-${p.activityId}`}
-                          d={`M ${from} ${predecessor.index * 48 + 24} H ${mid} V ${i * 48 + 24} H ${to}`}
-                          fill="none"
-                          stroke="#64748b"
-                          strokeWidth="1.25"
-                          markerEnd="url(#dependency-arrow)"
-                        />
-                      );
-                    }),
-                  )}
+                  {showLinks &&
+                    rows.flatMap((r, i) =>
+                      (r.predecessors ?? []).map((p) => {
+                        const predecessor = positions.get(p.activityId);
+                        if (!predecessor?.row.finish || !r.start) return null;
+                        const from =
+                            x(
+                              predecessor.row.actualFinish ??
+                                predecessor.row.finish,
+                            ) + unit,
+                          to = x(r.start);
+                        if (from < 0 || to > width || to < 0 || from > width)
+                          return null;
+                        const mid = Math.max(from + 6, to - 8);
+                        return (
+                          <path
+                            key={`${r.activityId}-${p.activityId}`}
+                            d={`M ${from} ${predecessor.index * 48 + 24} H ${mid} V ${i * 48 + 24} H ${to}`}
+                            fill="none"
+                            stroke="#64748b"
+                            strokeWidth="1.25"
+                            markerEnd="url(#dependency-arrow)"
+                          />
+                        );
+                      }),
+                    )}
                   {todayX >= 0 && todayX <= width && (
                     <line
                       x1={todayX}
@@ -1349,12 +1445,22 @@ function Gantt({
             </div>
           </div>
         </div>
-        <p className="px-4 py-3 text-xs text-slate-600">
-          Blue: programme and recorded progress. Grey: original baseline. Dashed
-          red: today. Arrows show finish-to-start links between the activities
-          visible on this page. Select an activity or bar to edit. Right-click a
-          row or use its pencil for quick changes here.
-        </p>
+        <div className="flex items-center justify-between gap-3 px-4 py-1 text-xs text-slate-600">
+          <p>Saved schedule · Days use the app’s Monday–Friday calendar</p>
+          <InfoPopover label="About the schedule timeline">
+            <p>
+              Blue shows schedule and recorded progress; grey shows the original
+              baseline and the dashed red line marks today. Arrows show
+              finish-to-start links between activities visible on this page when
+              dependency links are enabled.
+            </p>
+            <p>
+              Select an activity or bar to edit. Right-click a row or use its
+              pencil for quick changes here. Changing display controls does not
+              save a schedule revision.
+            </p>
+          </InfoPopover>
+        </div>
       </section>
     </>
   );

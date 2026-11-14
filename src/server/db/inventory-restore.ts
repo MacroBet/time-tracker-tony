@@ -76,6 +76,10 @@ export function guardedTaskInsertQuery(task: Task, activity?: Activity) {
         WHERE p.id = ${task.projectId} AND EXISTS (
           SELECT 1 FROM jsonb_array_elements(coalesce(p.commissioning->'assets','[]'::jsonb)) a
           WHERE a->>'id' = ${assetId}
+            AND (${task.cx?.level ?? null}::text IS NULL OR (
+              coalesce(a->'levels', '[]'::jsonb) ? ${task.cx?.level ?? ""}::text
+              AND coalesce(p.commissioning#>'{config,levels}', '[]'::jsonb) ? ${task.cx?.level ?? ""}::text
+            ))
         ) RETURNING p.id`
     : sql`SELECT id FROM projects WHERE id = ${task.projectId}`;
   return sql`WITH input AS (
@@ -88,7 +92,7 @@ export function guardedTaskInsertQuery(task: Task, activity?: Activity) {
 
 /**
  * Update keeps task CAS and audit atomic. Only a newly added/different asset link
- * increments the project version; existing links are already visible to restore.
+ * or tag-level link increments the project version; existing links are already visible.
  */
 export function guardedTaskUpdateQuery(
   task: Task,
@@ -119,7 +123,8 @@ function taskMutationQuery(
     ), guarded AS (
       UPDATE projects p SET commissioning = CASE WHEN ${assetId ?? null}::text IS NOT NULL
         AND EXISTS (SELECT 1 FROM tasks old WHERE old.id = ${task.id}
-          AND old.cx->>'assetId' IS DISTINCT FROM ${assetId ?? null}::text)
+          AND (old.cx->>'assetId' IS DISTINCT FROM ${assetId ?? null}::text
+            OR old.cx->>'level' IS DISTINCT FROM ${task.cx?.level ?? null}::text))
         THEN jsonb_set(p.commissioning, '{version}',
           to_jsonb(coalesce((p.commissioning->>'version')::integer, 0) + 1))
         ELSE p.commissioning END
@@ -129,6 +134,15 @@ function taskMutationQuery(
         AND (${assetId ?? null}::text IS NULL OR EXISTS (
           SELECT 1 FROM jsonb_array_elements(coalesce(p.commissioning->'assets','[]'::jsonb)) a
           WHERE a->>'id' = ${assetId ?? null}::text
+            AND (${task.cx?.level ?? null}::text IS NULL OR EXISTS (
+              SELECT 1 FROM tasks old WHERE old.id = ${task.id}
+                AND old.project_id = p.id AND old.version = ${expectedVersion}
+                AND old.cx->>'assetId' IS NOT DISTINCT FROM ${assetId ?? null}::text
+                AND old.cx->>'level' IS NOT DISTINCT FROM ${task.cx?.level ?? null}::text
+            ) OR (
+              coalesce(a->'levels', '[]'::jsonb) ? ${task.cx?.level ?? ""}::text
+              AND coalesce(p.commissioning#>'{config,levels}', '[]'::jsonb) ? ${task.cx?.level ?? ""}::text
+            ))
         )) RETURNING p.id
     ), changed AS (
       UPDATE tasks t SET ${
@@ -173,6 +187,10 @@ export function guardedTagTasksQuery(tasks: readonly Task[]) {
         SELECT 1 FROM input i WHERE NOT EXISTS (
           SELECT 1 FROM jsonb_array_elements(coalesce(p.commissioning->'assets','[]'::jsonb)) a
           WHERE a->>'id' = i.cx->>'assetId'
+            AND (i.cx->>'level' IS NULL OR (
+              coalesce(a->'levels', '[]'::jsonb) ? (i.cx->>'level')
+              AND coalesce(p.commissioning#>'{config,levels}', '[]'::jsonb) ? (i.cx->>'level')
+            ))
         )
       ) RETURNING p.id
     ), changed AS (

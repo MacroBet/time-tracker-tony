@@ -25,17 +25,17 @@ export function ProgrammeReference({ project }: { project: Project }) {
     currentUser.role !== "worker" && hasModule(currentUser, "commissioning");
   return (
     <section
-      aria-label="Programme reference"
+      aria-label="Schedule reference"
       className="rounded-xl border bg-white p-4 sm:p-5"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold">Programme ID</h3>
+          <h3 className="text-sm font-semibold">Schedule ID</h3>
           <p className="mt-1 break-words text-sm text-slate-700">
             {state.programmeId || "Not recorded"}
           </p>
           <p className="mt-1 text-xs text-slate-600">
-            One programme for this project. Each activity has its own Activity
+            One schedule for this project. Each activity has its own Activity
             ID.
           </p>
         </div>
@@ -51,7 +51,7 @@ export function ProgrammeReference({ project }: { project: Project }) {
               })
             }
           >
-            {state.programmeId ? "Edit Programme ID" : "Set Programme ID"}
+            {state.programmeId ? "Edit Schedule ID" : "Set Schedule ID"}
           </Button>
         )}
       </div>
@@ -113,7 +113,7 @@ function ProgrammeReferenceEditor({
     const programmeId = value.trim(),
       revisionReason = reason.trim();
     if (programmeId === before) {
-      setError("Change the Programme ID before requesting a preview.");
+      setError("Change the Schedule ID before requesting a preview.");
       return;
     }
     if (
@@ -150,7 +150,7 @@ function ProgrammeReferenceEditor({
       setError(
         cause instanceof Error
           ? cause.message
-          : "Could not preview the Programme ID change.",
+          : "Could not preview the Schedule ID change.",
       );
     } finally {
       inFlight.current = false;
@@ -177,13 +177,13 @@ function ProgrammeReferenceEditor({
           payload(activePreview.programmeId, activePreview.reason, false),
         ),
       });
-      toast.success("Programme ID updated");
+      toast.success("Schedule ID updated");
       onClose();
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : "Could not save the Programme ID change.",
+          : "Could not save the Schedule ID change.",
       );
     } finally {
       inFlight.current = false;
@@ -204,7 +204,7 @@ function ProgrammeReferenceEditor({
           className="grid gap-4 sm:grid-cols-2"
         >
           <label className="block text-sm">
-            Programme ID{" "}
+            Schedule ID{" "}
             <span className="font-normal text-slate-600">· optional</span>
             <Input
               name="programmeId"
@@ -216,7 +216,7 @@ function ProgrammeReferenceEditor({
                 setValue(event.target.value);
               }}
               autoComplete="off"
-              placeholder="Client programme reference"
+              placeholder="Client schedule reference"
             />
             <span className="mt-1 block text-xs font-normal text-slate-600">
               Leave empty to clear this reference. Individual Activity IDs stay
@@ -242,7 +242,7 @@ function ProgrammeReferenceEditor({
         </fieldset>
         <div className="flex flex-wrap gap-2">
           <Button className="min-h-11" disabled={busy || stale || !isOnline}>
-            {busy ? "Checking…" : "Preview Programme ID change"}
+            {busy ? "Checking…" : "Preview Schedule ID change"}
           </Button>
           <Button
             type="button"
@@ -262,11 +262,11 @@ function ProgrammeReferenceEditor({
       )}
       {activePreview && (
         <section
-          aria-label="Programme ID change preview"
+          aria-label="Schedule ID change preview"
           aria-live="polite"
           className="space-y-3 border-t pt-4"
         >
-          <h4 className="text-sm font-semibold">Review Programme ID change</h4>
+          <h4 className="text-sm font-semibold">Review Schedule ID change</h4>
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-xs text-slate-600">Before</dt>
@@ -305,7 +305,7 @@ function ProgrammeReferenceEditor({
                   busy || stale || !isOnline || !activePreview.changes.length
                 }
               >
-                {busy ? "Saving…" : "Confirm Programme ID change"}
+                {busy ? "Saving…" : "Confirm Schedule ID change"}
               </Button>
             </>
           )}

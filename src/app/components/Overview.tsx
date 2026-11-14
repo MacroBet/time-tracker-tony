@@ -6,6 +6,7 @@ import { ArrowUpRight, AlertTriangle, ChevronDown } from "lucide-react";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { Button } from "./ui/button";
+import { InfoPopover } from "./InfoPopover";
 import {
   isClosed,
   isOverdue,
@@ -162,14 +163,6 @@ export function Overview() {
   }
   return (
     <AppShell title="Overview" wide>
-      {canPlan && (
-        <WorksToGoOverview
-          state={state.checksheets}
-          onOpen={() => {
-            router.push("/checksheets");
-          }}
-        />
-      )}
       <div className="flex flex-wrap justify-between items-center gap-3">
         <div>
           <h2 className="text-xl font-semibold">Project progress</h2>
@@ -181,19 +174,32 @@ export function Overview() {
         {canPlan && (
           <Button asChild className="min-h-11">
             <Link href="/schedule">
-              Open programme <ArrowUpRight className="size-4" />
+              Open schedule <ArrowUpRight className="size-4" />
             </Link>
           </Button>
         )}
       </div>
       <section
         aria-label="Project summary"
-        className="rounded-xl border bg-white p-4 sm:p-5"
+        className="rounded-xl border bg-white px-4 py-3"
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold">Project summary</h3>
-            <p className="mt-1 text-sm text-slate-600">{project.name}</p>
+            <div className="flex items-center gap-1">
+              <h3 className="text-base font-semibold">Project summary</h3>
+              <InfoPopover label="How progress is counted">
+                <p>
+                  Completion excludes N/A. Late means open and due before today,
+                  using the schedule date where recorded, otherwise the task
+                  deadline.
+                </p>
+                <p>
+                  Project Health criteria and scope still need to be agreed. No
+                  health rating has been calculated.
+                </p>
+              </InfoPopover>
+            </div>
+            <p className="text-sm text-slate-600">{project.name}</p>
           </div>
           <div className="w-full sm:w-auto sm:min-w-80">
             <ProgressCounters
@@ -212,7 +218,7 @@ export function Overview() {
           <div
             role="group"
             aria-label="Tasks by status"
-            className="mt-4 grid grid-cols-2 gap-x-4 border-t pt-2 sm:grid-cols-3 xl:grid-cols-6"
+            className="mt-3 grid grid-cols-2 gap-x-4 border-t pt-1 sm:grid-cols-3 xl:grid-cols-6"
           >
             {statuses.map((s) => (
               <button
@@ -220,7 +226,7 @@ export function Overview() {
                 onClick={() =>
                   open(statusLabels[s.status], { status: s.status })
                 }
-                className="flex min-h-11 min-w-0 items-center gap-2 rounded px-2 text-xs hover:bg-slate-50 focus-visible:outline-blue-600"
+                className="flex min-h-11 min-w-0 items-center gap-2 rounded px-1 text-sm hover:bg-slate-50 focus-visible:outline-blue-600"
               >
                 <span
                   aria-hidden="true"
@@ -238,7 +244,7 @@ export function Overview() {
           </div>
         )}
         {(hasTags || state.assets.length > 0 || unlinked > 0) && (
-          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-600">
+          <div className="mt-1 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-slate-600">
             {hasTags && (
               <button
                 className="min-h-11 text-left hover:text-blue-700 focus-visible:outline-blue-600"
@@ -267,21 +273,62 @@ export function Overview() {
             )}
           </div>
         )}
-        <details className="mt-2 border-t text-xs text-slate-600">
-          <summary className="min-h-11 cursor-pointer py-3 focus-visible:outline-blue-600">
-            How progress is counted
-          </summary>
-          <p className="max-w-prose pb-3">
-            Completion excludes N/A. Late means open and due before today, using
-            the programme date where recorded, otherwise the task deadline.
-          </p>
-          <p className="max-w-prose pb-2">
-            Project Health is awaiting definition. On Track, At Risk and Off
-            Track criteria and project scope still need to be agreed. No health
-            rating has been calculated.
-          </p>
-        </details>
       </section>
+      <section
+        aria-label="Management reports"
+        className="border-y border-slate-200 py-3"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Reports</h2>
+          {hasModule(data.currentUser, "reports") && (
+            <Link
+              href="/reports?view=equipment"
+              className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 hover:underline focus-visible:outline-blue-600"
+            >
+              Open reports <ArrowUpRight className="size-4" />
+            </Link>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {[
+            [
+              "Tagging status",
+              "tags",
+              `${tags.completed} / ${tags.total} approved`,
+            ],
+            ["Equipment", "equipment", `${state.assets.length} assets`],
+            [
+              "Schedule",
+              "schedule",
+              `${state.schedule.length} managed activities`,
+            ],
+            ["O&M, training & sign-off", "handover", ""],
+            ["Checklist conformance", "conformance", ""],
+          ].map(([title, view, detail]) => (
+            <button
+              key={view}
+              onClick={() => open(title, {}, view as ReportRequest["view"])}
+              className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-left text-sm font-medium text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-600"
+            >
+              <span>
+                {title}
+                {detail && (
+                  <span className="ml-2 font-normal text-slate-600 tabular-nums">
+                    {detail}
+                  </span>
+                )}
+              </span>
+              <ArrowUpRight aria-hidden="true" className="size-4 shrink-0" />
+            </button>
+          ))}
+        </div>
+      </section>
+      {canPlan && (
+        <WorksToGoOverview
+          state={state.checksheets}
+          onOpen={() => router.push("/checksheets")}
+        />
+      )}
       {tasks.length > 0 && (
         <section
           aria-label="Work needing attention"
@@ -338,7 +385,11 @@ export function Overview() {
               const className =
                 "min-h-11 rounded-lg px-2 py-3 text-left hover:bg-slate-50 focus-visible:outline-blue-600";
               return metric.label === "Overdue activities" ? (
-                <Link key={metric.label} href="/overdue" className={className}>
+                <Link
+                  key={metric.label}
+                  href="/schedule?view=overdue"
+                  className={className}
+                >
                   {content}
                 </Link>
               ) : (
@@ -454,13 +505,13 @@ export function Overview() {
       {(hasTags ||
         tasks.some((task) => task.cx?.level) ||
         construction.length > 0) && (
-        <OverviewDetails title="Programme and construction progress">
+        <OverviewDetails title="Schedule and construction progress">
           {(hasTags || tasks.some((task) => task.cx?.level)) && (
             <section
-              aria-label="Programme overview"
+              aria-label="Schedule overview"
               className="rounded-xl border bg-white p-5"
             >
-              <h3 className="text-sm font-semibold">Programme overview</h3>
+              <h3 className="text-sm font-semibold">Schedule overview</h3>
               <p className="mt-1 text-xs text-slate-600">
                 Task completion by recorded commissioning stage. Tag approval is
                 shown separately above.
@@ -674,7 +725,7 @@ export function Overview() {
             </div>
             <p className="mt-3 text-xs text-slate-600">
               Completion counts completed issues, excluding N/A. Late uses the
-              recorded programme date or task deadline.{" "}
+              recorded schedule date or task deadline.{" "}
               {issues.filter((task) => !task.priority).length} issues have no
               priority and remain in the issue register. No stage is inferred
               from priority.
@@ -686,15 +737,15 @@ export function Overview() {
         (timeline.scheduled > 0 ||
           timeline.baselineRecorded > 0 ||
           timeline.points.some((point) => point.achieved > 0)) && (
-          <OverviewDetails title="Tag programme trend">
+          <OverviewDetails title="Tag schedule trend">
             <section className="rounded-xl border bg-white p-5">
               <div className="flex justify-between gap-3">
                 <h3 className="text-sm font-semibold">
-                  Tag programme · planned, forecast & approved
+                  Tag schedule · planned, forecast & approved
                 </h3>
                 <button
                   className="text-xs text-blue-600"
-                  onClick={() => open("Tag programme trend", {}, "trend")}
+                  onClick={() => open("Tag schedule trend", {}, "trend")}
                 >
                   View figures
                 </button>
@@ -709,7 +760,7 @@ export function Overview() {
                 <>
                   <svg
                     role="img"
-                    aria-label="Cumulative tag programme: baseline, forecast and approved tags"
+                    aria-label="Cumulative tag schedule: baseline, forecast and approved tags"
                     viewBox="0 0 800 180"
                     className="w-full h-44 mt-4"
                   >
@@ -764,30 +815,12 @@ export function Overview() {
               ) : (
                 <p className="py-6 text-sm text-slate-500">
                   Link tag activities to dated schedule records to compare the
-                  programme with approvals.
+                  schedule with approvals.
                 </p>
               )}
             </section>
           </OverviewDetails>
         )}
-      <section className="flex flex-wrap gap-2" aria-label="Management reports">
-        {[
-          ["Tag status", "tags"],
-          ["Tags by equipment type", "equipment"],
-          ["Programme schedule", "schedule"],
-          ["O&M, training & sign-off", "handover"],
-          ["Checklist conformance", "conformance"],
-        ].map(([title, view]) => (
-          <Button
-            variant="outline"
-            key={view}
-            onClick={() => open(title, {}, view as ReportRequest["view"])}
-          >
-            {title}
-            <ArrowUpRight className="size-4" />
-          </Button>
-        ))}
-      </section>
       <ReportDialog
         key={project.id}
         project={project}
@@ -824,13 +857,13 @@ function ProjectGettingStarted({
       allowed: canPlan,
     },
     {
-      title: "Programme",
+      title: "Schedule",
       description:
         "The dates, durations and dependencies that sequence the work.",
       href: "/schedule",
       action:
         (state.sourceProgrammeSummary?.activities ?? state.schedule.length)
-          ? "Open programme"
+          ? "Open schedule"
           : "Plan activities",
       count: state.sourceProgrammeSummary?.activities ?? state.schedule.length,
       unit: "planned activities",
@@ -862,7 +895,7 @@ function ProjectGettingStarted({
       </Heading>
       {!compact && (
         <p className="mt-2 max-w-prose text-sm text-slate-600">
-          Start with the equipment, plan the programme, then assign work to your
+          Start with the equipment, plan the schedule, then assign work to your
           team. Your progress will appear here as records are added.
         </p>
       )}
@@ -926,7 +959,7 @@ function ProgressCounters({
   onOpen: (metric: ProgressMetric) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
       {(
         [
           ["total", "TOTAL", summary.total],
@@ -939,9 +972,9 @@ function ProgressCounters({
           title={`${label}: ${value} ${metric === "total" ? "records, including N/A" : metric === "completed" ? "completed records" : "open records due before today"}. Open list.`}
           aria-label={`${label}: ${value} ${text}. View activities`}
           onClick={() => onOpen(metric)}
-          className={`inline-flex min-h-11 items-center gap-1.5 rounded px-1 text-xs hover:bg-slate-50 focus-visible:outline-blue-600 ${metric === "late" && value > 0 ? "text-red-700" : "text-slate-600"}`}
+          className={`inline-flex min-h-11 items-center gap-1 rounded px-1 text-xs sm:text-sm hover:bg-slate-50 focus-visible:outline-blue-600 ${metric === "late" && value > 0 ? "text-red-700" : "text-slate-600"}`}
         >
-          {text} <strong className="text-sm tabular-nums">{value}</strong>
+          {text} <strong className="text-base tabular-nums">{value}</strong>
         </button>
       ))}
       <button

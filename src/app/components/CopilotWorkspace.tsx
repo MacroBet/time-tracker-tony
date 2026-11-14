@@ -34,6 +34,7 @@ import { AppShell } from "./AppShell";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { InfoPopover } from "./InfoPopover";
 
 type ContextResponse = CopilotContext & { configuration: CopilotStatus };
 type Message = CopilotChatMessage & { answer?: CopilotAnswer };
@@ -72,7 +73,7 @@ export function CopilotWorkspace() {
   const project = projects.find((item) => item.id === selectedProjectId);
   return (
     <AppShell
-      title="Project copilot"
+      title="Project assistant"
       subtitle="Check saved project records and review changes before they are applied."
       wide
     >
@@ -83,8 +84,8 @@ export function CopilotWorkspace() {
         </p>
       ) : !canUseCopilot(currentUser) ? (
         <p className="text-sm text-slate-600">
-          Copilot requires management access to Tasks and Commissioning. Ask
-          your administrator if you need access.
+          The assistant requires management access to Tasks and Commissioning.
+          Ask your administrator if you need access.
         </p>
       ) : requestedProject && project?.id !== requestedProject ? (
         <p role="status">Opening the linked project…</p>
@@ -92,7 +93,7 @@ export function CopilotWorkspace() {
         <CopilotSession key={project.id} projectId={project.id} />
       ) : (
         <p className="text-sm text-slate-600">
-          Choose an assigned project to open its copilot.
+          Choose an assigned project to open its assistant.
         </p>
       )}
     </AppShell>
@@ -221,7 +222,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
     return (
       <div
         role="status"
-        aria-label="Loading project copilot"
+        aria-label="Loading project assistant"
         className="space-y-4"
       >
         <div className="h-6 w-56 rounded bg-slate-200 animate-pulse motion-reduce:animate-none" />
@@ -307,15 +308,39 @@ function CopilotSession({ projectId }: { projectId: string }) {
             className="rounded-xl border bg-white p-4 sm:p-5 space-y-5"
             aria-label="Project chat"
           >
-            <div>
+            <div className="flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 font-semibold">
                 <MessageSquare className="size-4" />
                 Ask about this project
               </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Answers use project records. Any suggested change must be
-                reviewed separately.
-              </p>
+              <InfoPopover label="Assistant help and example questions">
+                <p>
+                  Answers use project records. Review suggested changes before
+                  confirming them.
+                </p>
+                <p className="font-medium">
+                  Example questions · select to edit
+                </p>
+                {context.examples.slice(0, 4).map((example) => (
+                  <button
+                    type="button"
+                    key={example}
+                    disabled={chatBusy}
+                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left text-sm text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700 disabled:opacity-50"
+                    onClick={() => {
+                      setDraft(example);
+                      composer.current?.focus();
+                    }}
+                  >
+                    {example}
+                    <ArrowRight className="size-4 shrink-0" />
+                  </button>
+                ))}
+                <p>
+                  Examples fill the question box; they are never sent
+                  automatically.
+                </p>
+              </InfoPopover>
             </div>
             {messages.length > 0 && (
               <ol
@@ -334,7 +359,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
                     }
                   >
                     <p className="text-xs font-medium text-slate-600">
-                      {message.role === "user" ? "You" : "Copilot"}
+                      {message.role === "user" ? "You" : "Assistant"}
                     </p>
                     <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
                       {message.text}
@@ -433,34 +458,6 @@ function CopilotSession({ projectId }: { projectId: string }) {
                 </li>
               </ol>
             )}
-            {!messages.length && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-slate-600">
-                  Example questions · select to edit
-                </p>
-                {context.examples.slice(0, 4).map((example) => (
-                  <button
-                    type="button"
-                    key={example}
-                    disabled={chatBusy}
-                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 disabled:opacity-50"
-                    onClick={() => {
-                      setDraft(example);
-                      composer.current?.focus();
-                    }}
-                  >
-                    {example}
-                    <ArrowRight className="size-4 shrink-0" />
-                  </button>
-                ))}
-                {!ready && (
-                  <p className="text-xs leading-5 text-slate-600">
-                    Examples only fill the message box. Project checks are
-                    saved-data queries, not AI responses.
-                  </p>
-                )}
-              </div>
-            )}
             {chatError && (
               <p role="alert" className="text-sm text-red-700">
                 {chatError}
@@ -513,31 +510,35 @@ function CopilotSession({ projectId }: { projectId: string }) {
             className="border-t border-slate-200 pt-5"
             aria-label="Controlled task changes"
           >
-            <Button
-              variant="outline"
-              className="h-11"
-              aria-expanded={manualOpen}
-              disabled={chatBusy || manualBusy}
-              onClick={() => {
-                setManualOpen(!manualOpen);
-                setSuggestion(null);
-              }}
-            >
-              <FileEdit className="size-4" />
-              Prepare a task change
-            </Button>
-            <p className="mt-2 text-sm text-slate-600">
-              Works without AI. Review the exact changes, then confirm one task
-              at a time.
-            </p>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                className="h-11"
+                aria-expanded={manualOpen}
+                disabled={chatBusy || manualBusy}
+                onClick={() => {
+                  setManualOpen(!manualOpen);
+                  setSuggestion(null);
+                }}
+              >
+                <FileEdit className="size-4" />
+                Prepare a task change
+              </Button>
+              <InfoPopover label="About task change previews">
+                <p>
+                  Works without AI. Review the exact changes, then confirm one
+                  task at a time.
+                </p>
+              </InfoPopover>
+            </div>
             {manualOpen && (
               <div className="mt-5">
                 <h2
                   tabIndex={-1}
                   ref={editorHeading}
-                  className="font-semibold focus:outline-none"
+                  className="sr-only focus:outline-none"
                 >
-                  Prepare a task change
+                  Task change form
                 </h2>
                 <TaskChangeEditor
                   key={suggestion?.key ?? "manual"}
@@ -550,12 +551,9 @@ function CopilotSession({ projectId }: { projectId: string }) {
             )}
           </section>
         </div>
-        <aside className="order-first min-w-0 lg:order-last">
+        <aside className="min-w-0">
           <div className="hidden lg:block">{contextPanel}</div>
-          <details
-            open={!ready}
-            className="border-t border-slate-200 pt-5 lg:hidden"
-          >
+          <details className="border-t border-slate-200 pt-5 lg:hidden">
             <summary className="min-h-11 cursor-pointer font-medium">
               Project checks & recorded groups
             </summary>
@@ -576,14 +574,14 @@ function ProjectChecks({ context }: { context: CopilotContext }) {
   );
   return (
     <section aria-label="Saved project checks" className="space-y-5">
-      <div>
+      <div className="flex items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-semibold">
           <ListChecks className="size-4" />
           Project checks
         </h2>
-        <p className="mt-1 text-xs leading-5 text-slate-600">
-          Calculated from saved records. These checks do not use AI.
-        </p>
+        <InfoPopover label="About saved project checks">
+          <p>Calculated from saved records. These checks do not use AI.</p>
+        </InfoPopover>
       </div>
       {noRecords ? (
         <div className="space-y-3 text-sm text-slate-600">
@@ -602,26 +600,28 @@ function ProjectChecks({ context }: { context: CopilotContext }) {
       ) : (
         <div className="divide-y divide-slate-200">
           {context.checks.map((check) => (
-            <details key={check.id} className="py-3">
-              <summary className="min-h-11 cursor-pointer text-sm font-medium">
-                <span>{check.label}</span>
-                <span className="ml-2 text-slate-600 tabular-nums">
-                  {check.count}
-                </span>
-              </summary>
-              <div className="mt-2 space-y-3">
-                <p className="text-xs leading-5 text-slate-600">
-                  {check.description}
-                </p>
-                <SourceList sources={check.sources} />
-                {check.count > check.sources.length && (
-                  <p className="text-xs text-slate-600">
-                    {check.sources.length} of {check.count} supporting records
-                    shown.
-                  </p>
-                )}
-              </div>
-            </details>
+            <div key={check.id} className="flex items-start gap-2 py-2">
+              <details className="min-w-0 flex-1">
+                <summary className="min-h-11 cursor-pointer text-sm font-medium">
+                  <span>{check.label}</span>
+                  <span className="ml-2 text-slate-600 tabular-nums">
+                    {check.count}
+                  </span>
+                </summary>
+                <div className="mt-2 space-y-3">
+                  <SourceList sources={check.sources} />
+                  {check.count > check.sources.length && (
+                    <p className="text-xs text-slate-600">
+                      {check.sources.length} of {check.count} supporting records
+                      shown.
+                    </p>
+                  )}
+                </div>
+              </details>
+              <InfoPopover label={`About ${check.label.toLowerCase()}`}>
+                <p>{check.description}</p>
+              </InfoPopover>
+            </div>
           ))}
         </div>
       )}

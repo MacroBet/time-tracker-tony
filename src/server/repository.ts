@@ -355,12 +355,22 @@ export async function loadData(user: User): Promise<AppData> {
 }
 function guardDemoTaskAsset(task: Task, old?: Task) {
   const assetId = task.cx?.assetId;
-  if (!assetId || assetId === old?.cx?.assetId) return;
+  if (
+    !assetId ||
+    (assetId === old?.cx?.assetId && task.cx?.level === old?.cx?.level)
+  )
+    return;
   const project = demo().data.projects.find((p) => p.id === task.projectId);
+  const asset = project?.commissioning?.assets.find(
+    (row) => row.id === assetId,
+  );
   requireCondition(
-    project?.commissioning?.assets.some((a) => a.id === assetId),
+    asset &&
+      (!task.cx?.level ||
+        (asset.levels.includes(task.cx.level) &&
+          project!.commissioning!.config.levels.includes(task.cx.level))),
     409,
-    "The linked asset changed. Refresh before saving.",
+    "The linked asset or required tag changed. Refresh before saving.",
   );
   project!.commissioning!.version++;
 }

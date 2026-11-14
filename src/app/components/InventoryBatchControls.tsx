@@ -12,9 +12,11 @@ import { Button } from "./ui/button";
 export function InventoryBatchControls({
   projectId,
   state,
+  embedded = false,
 }: {
   projectId: string;
   state: Commissioning;
+  embedded?: boolean;
 }) {
   const { mutate, isOnline } = useApp();
   const [file, setFile] = useState<File | null>(null);
@@ -119,7 +121,11 @@ export function InventoryBatchControls({
     }
   }
   return (
-    <details className="rounded-xl border bg-white p-4 sm:p-5">
+    <details
+      className={
+        embedded ? "border-t pt-3" : "rounded-xl border bg-white p-4 sm:p-5"
+      }
+    >
       <summary className="min-h-11 cursor-pointer font-semibold">
         Import inventory
       </summary>

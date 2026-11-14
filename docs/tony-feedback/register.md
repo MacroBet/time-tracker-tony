@@ -1,5 +1,16 @@
 # Registro operativo — Tony
 
+## Modifiche UI dai cinque screenshot — 14 novembre 2026
+
+Mandato diretto Marco: implementare tutte le modifiche UI allegate e report prima/dopo.
+Overview/header compatti, Schedule con quattro indicatori e durata da calendario,
+Project assistant con Info, Overdue dentro Schedule, registro asset con tag inline,
+copia/drag/clone/delete protetti. [Report e prove](intake-20261114-ui-feedback.md).
+204 test unitari/PostgreSQL + 12 API su demo pulita, lint/typecheck/build verdi;
+confronto desktop/mobile locale concluso. Nessuna scrittura DB remota o chiamataAI.
+Pubblicazione del lotto in verifica separata; lavoro ulteriore attende Marco.
+Modifiche preesistenti e next-env preservati. Quota conto16%→17%, ordinarytrue.
+
 ## Rettifica visiva P6 Gantt6nov
 
 Il PASS tecnico precedente non equivaleva a parità visiva accettata. Corretti
@@ -419,6 +430,13 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Mandato esecutivo 14nov:** modifiche UI dei cinque screenshot implementate e
+verificate; [prima/dopo, prove e limiti](intake-20261114-ui-feedback.md).
+Include registro asset, copia configurazione, clone ed eliminazione protetta;
+nessuna nuova funzione AI/vendor/semaforo o modifica ai dati remoti.
+204 test + 12 API, statici/build e desktop/mobile verdi. Pubblicazione in verifica;
+prossimo lavoro soltanto dopo il nuovo incarico annunciato da Marco.
 
 **Priorità corrente5nov:** nuovo mandato di consegna test-ready con import scoped autorizzato.
 [Stato implementazione/rilascio e piano di collaudo](intake-20261105-test-ready.md).

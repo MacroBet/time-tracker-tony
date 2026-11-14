@@ -129,7 +129,7 @@ export function CommissioningReport({
         ? [
             "Activity",
             "Asset",
-            "Programme Activity ID",
+            "Schedule Activity ID",
             "Level",
             "Conforming",
             "Non-conforming",
@@ -138,7 +138,7 @@ export function CommissioningReport({
         : [
             "Activity / issue ID",
             "Asset",
-            "Programme Activity ID",
+            "Schedule Activity ID",
             "Level",
             "Priority",
             "Status",
@@ -218,7 +218,7 @@ export function CommissioningReport({
       "Tag review",
       "Counted approval",
       "Test result",
-      "Programme Activity ID",
+      "Schedule Activity ID",
       "Due",
     ];
     rows = items.map((r) => [
@@ -289,7 +289,7 @@ export function CommissioningReport({
         (!filters.dueTo || (!!s.finish && s.finish <= filters.dueTo)),
     );
     headers = [
-      "Programme Activity ID",
+      "Schedule Activity ID",
       "Activity",
       "Baseline start",
       "Baseline finish",
@@ -312,7 +312,7 @@ export function CommissioningReport({
     ]);
   }
   // Each exported row retains its programme provenance without changing Activity IDs.
-  headers = [...headers, "Programme ID"];
+  headers = [...headers, "Schedule ID"];
   rows = rows.map((row) => [...row, state.programmeId || "Not recorded"]);
   const currentPage = Math.min(
     page,
@@ -343,7 +343,7 @@ export function CommissioningReport({
   return (
     <div className="min-w-0 w-full space-y-4 report-print">
       <p className="text-xs text-slate-600">
-        Programme ID:{" "}
+        Schedule ID:{" "}
         <span className="font-medium break-words">
           {state.programmeId || "Not recorded"}
         </span>

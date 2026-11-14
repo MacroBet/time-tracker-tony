@@ -30,6 +30,13 @@ import {
   mergeRegister,
   registerImportSchema,
 } from "@/lib/commissioning-import";
+import {
+  assetTagsSchema,
+  assetDeleteSchema,
+  updateAssetTags,
+  assetTagEditErrors,
+  deleteAssetPreview,
+} from "@/lib/asset-register-mutations";
 
 const base = {
   version: z.number().int().min(0),
@@ -44,6 +51,22 @@ export async function updateRegister(request: Request, projectId: string) {
   );
   const input = z
     .discriminatedUnion("action", [
+      z
+        .object({
+          ...base,
+          action: z.literal("asset-tags"),
+          data: assetTagsSchema,
+          preview: z.boolean().default(false),
+        })
+        .strict(),
+      z
+        .object({
+          ...base,
+          action: z.literal("asset-delete"),
+          data: assetDeleteSchema,
+          preview: z.boolean().default(false),
+        })
+        .strict(),
       z
         .object({
           ...base,
@@ -162,6 +185,26 @@ export async function updateRegister(request: Request, projectId: string) {
         next.config.documentRequirements,
       ),
     );
+  } else if (input.action === "asset-tags" || input.action === "asset-delete") {
+    const projectTasks = data.tasks.filter(
+      (task) => task.projectId === projectId,
+    );
+    const result =
+      input.action === "asset-tags"
+        ? updateAssetTags(state, input.data, projectTasks)
+        : deleteAssetPreview(state, input.data.assetId, projectTasks);
+    if (input.preview)
+      return json({
+        changes: result.changes,
+        errors: result.errors,
+        references: "references" in result ? result.references : [],
+        assets: result.assets.length,
+        schedule: state.schedule.length,
+        version: state.version,
+      });
+    requireCondition(!result.errors.length, 409, result.errors.join(" "));
+    changes = result.changes;
+    next.assets = result.assets;
   } else if (
     input.action === "inventory-apply" ||
     input.action === "inventory-restore"
@@ -208,22 +251,13 @@ export async function updateRegister(request: Request, projectId: string) {
       input.action === "schedule"
         ? { assets: [], schedule: [input.activity] }
         : input.data;
+    const applicabilityErrors = assetTagEditErrors(
+      state,
+      registerData.assets,
+      data.tasks.filter((task) => task.projectId === projectId),
+    );
     const result = mergeRegister(state, registerData);
-    // Retain the applicability of existing records. Disabling project display is a separate setup action.
-    for (const asset of registerData.assets) {
-      if (
-        data.tasks.some(
-          (t) =>
-            t.projectId === projectId &&
-            t.cx?.assetId === asset.id &&
-            t.cx.level &&
-            !asset.levels.includes(t.cx.level),
-        )
-      )
-        result.errors.push(
-          `${asset.id}: retain levels referenced by existing activities.`,
-        );
-    }
+    result.errors.push(...applicabilityErrors);
     if (input.preview)
       return json({
         changes: result.changes,
@@ -262,7 +296,7 @@ export async function updateRegister(request: Request, projectId: string) {
     projectId,
     next,
     state.version,
-    input.action === "inventory-restore"
+    input.action === "inventory-restore" || input.action === "asset-delete"
       ? state.assets
           .filter((asset) => !next.assets.some((row) => row.id === asset.id))
           .map((asset) => asset.id)

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Eye, EyeOff } from "lucide-react";
 import type {
   SourceActivityView,
   SourceProgrammePage,
@@ -9,10 +9,10 @@ import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
 import { sourceBar } from "@/lib/source-gantt";
 import { dayNumber } from "@/lib/scheduling";
 import { GanttRuler } from "./GanttRuler";
+import { InfoPopover } from "./InfoPopover";
 
-// Same 48px body rows and 56px ruler as the editable Programme Gantt.
+// Same 48px body rows and 56px ruler as the editable Schedule Gantt.
 const rowHeight = 48;
-const otherColumnsWidth = 44 + 72 + 96 + 96;
 export function SourceProgrammeGantt({
   data,
   anchor,
@@ -20,6 +20,9 @@ export function SourceProgrammeGantt({
   showLinks,
   loading,
   controls,
+  durationMode,
+  onDurationModeChange,
+  resetViewKey,
   onSelect,
   onGoTo,
 }: {
@@ -29,9 +32,14 @@ export function SourceProgrammeGantt({
   showLinks: boolean;
   loading: boolean;
   controls: ReactNode;
+  durationMode: "days" | "hours" | "hidden";
+  onDurationModeChange: (mode: "days" | "hours" | "hidden") => void;
+  resetViewKey: number;
   onSelect: (id: string, trigger: HTMLElement) => void;
   onGoTo: (row: SourceActivityView) => void;
 }) {
+  const showDuration = durationMode !== "hidden";
+  const otherColumnsWidth = 44 + (showDuration ? 80 : 0) + 96 + 96;
   const marker = useId().replace(/:/g, "");
   const scroller = useRef<HTMLDivElement>(null);
   const axis = ganttAxis(anchor, scale),
@@ -71,7 +79,16 @@ export function SourceProgrammeGantt({
     return () => observer.disconnect();
     // Axis width changes only with the explicitly selected calendar scale.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [axis.width]);
+  }, [axis.width, otherColumnsWidth]);
+  useEffect(() => {
+    if (resetViewKey > 0 && scroller.current) {
+      scroller.current.scrollLeft =
+        scroller.current.clientWidth < 500 ? otherColumnsWidth : 0;
+      updateViewport();
+    }
+    // Explicitly re-centre even when the automatic page anchor has not changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetViewKey]);
   const inWindow = rows.filter((row) => {
     const bar = sourceBar(row, anchor, axis.span, axis.unit);
     return (
@@ -85,11 +102,13 @@ export function SourceProgrammeGantt({
     2 * links.length;
   function goTo(row: SourceActivityView) {
     onGoTo(row);
-    if (scroller.current) scroller.current.scrollLeft = otherColumnsWidth;
+    if (scroller.current)
+      scroller.current.scrollLeft =
+        scroller.current.clientWidth < 500 ? otherColumnsWidth : 0;
   }
   return (
     <section
-      aria-label="Source programme Gantt"
+      aria-label="Source schedule Gantt"
       className="relative isolate z-0 [--source-activity-width:220px] sm:[--source-activity-width:360px] overflow-hidden rounded-xl border border-slate-200 bg-white"
     >
       <div className="flex flex-wrap items-end justify-between gap-3 border-b px-4 py-3">
@@ -99,7 +118,7 @@ export function SourceProgrammeGantt({
         ref={scroller}
         onScroll={updateViewport}
         role="region"
-        aria-label="Scrollable programme table and timeline"
+        aria-label="Scrollable schedule table and timeline"
         aria-busy={loading}
         tabIndex={0}
         className="relative overflow-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
@@ -112,14 +131,15 @@ export function SourceProgrammeGantt({
           }}
         >
           <caption className="sr-only">
-            Source programme in source order. Select an activity for its
-            original fields. Hours are source hours, not calculated working
-            days. Scroll inside this table to keep the date ruler visible.
+            Source schedule in source order. Select an activity for its original
+            fields. Days use the hours per day saved in the activity calendar;
+            missing conversions remain in source hours. Scroll inside this table
+            to keep the date ruler visible.
           </caption>
           <colgroup>
             <col style={{ width: "var(--source-activity-width)" }} />
             <col style={{ width: 44 }} />
-            <col style={{ width: 72 }} />
+            {showDuration && <col style={{ width: 80 }} />}
             <col style={{ width: 96 }} />
             <col style={{ width: 96 }} />
             <col style={{ width: axis.width }} />
@@ -127,12 +147,38 @@ export function SourceProgrammeGantt({
           <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
             <tr className="h-14">
               <th className="sticky left-0 z-10 border-b bg-slate-50 px-3">
-                Activity
+                <div className="flex items-center justify-between gap-2">
+                  Activity
+                  {!showDuration && (
+                    <button
+                      type="button"
+                      className="grid min-h-11 min-w-11 place-items-center rounded-md hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+                      aria-label="Show duration column"
+                      title="Show duration column"
+                      onClick={() => onDurationModeChange("days")}
+                    >
+                      <Eye className="size-4" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
               </th>
               <th className="border-b">
                 <span className="sr-only">Show activity dates</span>
               </th>
-              <th className="border-b px-2">Hours</th>
+              {showDuration && (
+                <th className="border-b px-1">
+                  <button
+                    type="button"
+                    className="flex min-h-11 w-full items-center justify-between gap-1 rounded-md px-1 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
+                    aria-label="Hide duration column"
+                    title="Hide duration column"
+                    onClick={() => onDurationModeChange("hidden")}
+                  >
+                    {durationMode === "days" ? "Days" : "Hours"}
+                    <EyeOff className="size-3.5 shrink-0" aria-hidden="true" />
+                  </button>
+                </th>
+              )}
               <th className="border-b px-2">Start</th>
               <th className="border-b px-2">Finish</th>
               <th className="border-b border-l p-0">
@@ -165,7 +211,7 @@ export function SourceProgrammeGantt({
                 </td>
                 <td className="px-0">
                   <button
-                    className="grid min-h-11 min-w-11 place-items-center rounded-md text-slate-600 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
+                    className="grid min-h-11 min-w-11 place-items-center rounded-md text-blue-800 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
                     disabled={!row.start && !row.finish}
                     aria-label={`Show dates for ${row.activityId}`}
                     title="Show this activity on the timeline"
@@ -174,9 +220,24 @@ export function SourceProgrammeGantt({
                     <CalendarClock className="size-4" aria-hidden="true" />
                   </button>
                 </td>
-                <td className="px-2" title="Source duration in hours">
-                  {row.durationHours || "—"} h
-                </td>
+                {showDuration && (
+                  <td
+                    className="px-2"
+                    title={
+                      durationMode === "days" && row.durationDays !== undefined
+                        ? `${row.durationHours} source hours ÷ ${row.calendarHoursPerDay} saved calendar hours per day`
+                        : durationMode === "days"
+                          ? "Original source duration in hours; day conversion unavailable without saved calendar hours per day"
+                          : "Original source duration in hours"
+                    }
+                  >
+                    {durationMode === "days" && row.durationDays !== undefined
+                      ? `${new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(row.durationDays)} d`
+                      : row.durationHours
+                        ? `${row.durationHours} h`
+                        : "—"}
+                  </td>
+                )}
                 <td className="px-2">{row.start ?? "Not set"}</td>
                 <td className="px-2">{row.finish ?? "Not set"}</td>
                 {index === 0 && (
@@ -335,18 +396,31 @@ export function SourceProgrammeGantt({
           </tbody>
         </table>
       </div>
-      <p className="border-t px-4 py-3 text-xs leading-relaxed text-slate-600">
-        {inWindow} of {rows.length} loaded activities in the visible date area.
-        Source order · The date window follows the most common saved start on
-        this page. Hours retain the P6 duration; no hours-to-days conversion.{" "}
-        {links.length} source relationships between loaded activities;{" "}
-        {Math.max(0, outsideLinks)} connections lead outside this page.{" "}
-        {showLinks
-          ? "Arrows show saved endpoints within the date window."
-          : "Dependency arrows hidden."}{" "}
-        Select a name or bar for details; use the calendar button for an
-        activity outside the window. Scroll horizontally for columns and dates.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-1 text-xs text-slate-600">
+        <p className="tabular-nums">
+          {inWindow} of {rows.length} loaded activities in the visible date area
+        </p>
+        <InfoPopover label="About the source timeline">
+          <p>
+            Activities retain source order. The date window follows the most
+            common saved start on this page. Days use each activity’s saved
+            calendar hours per day; missing conversions stay in source hours. No
+            dates or source durations are recalculated.
+          </p>
+          <p>
+            {links.length} source relationships connect loaded activities;{" "}
+            {Math.max(0, outsideLinks)} connections lead outside this page.{" "}
+            {showLinks
+              ? "Arrows show saved endpoints within the date window."
+              : "Dependency arrows are hidden."}
+          </p>
+          <p>
+            Select a name or bar for details. Use the calendar button to locate
+            an activity outside the window. Scroll horizontally for columns and
+            dates.
+          </p>
+        </InfoPopover>
+      </div>
     </section>
   );
 }

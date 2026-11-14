@@ -108,6 +108,51 @@ test("zero duration, non-FS, negative/decimal lags and repeated pairs survive wi
   assert.equal(JSON.stringify(programme), before);
 });
 
+test("duration days use the activity's saved calendar conversion and keep source values intact", () => {
+  const programme = parseP6XerText(fixture(), source);
+  const calendar = programme.tables.CALENDAR;
+  calendar.rows.push(["c2", "Backshift", "(exceptions retained)", "15"]);
+  calendar.lines.push(7);
+  const tasks = programme.tables.TASK;
+  tasks.rows[2][tasks.fields.indexOf("clndr_id")] = "c2";
+  tasks.rows[2][tasks.fields.indexOf("target_drtn_hr_cnt")] = "45";
+  const before = JSON.stringify(programme);
+  const result = querySourceProgramme(programme);
+  assert.equal(result.activities[0].durationDays, 0);
+  assert.equal(result.activities[1].durationDays, 1.25);
+  assert.equal(result.activities[1].calendarHoursPerDay, 10);
+  assert.equal(result.activities[2].durationDays, 3);
+  assert.equal(result.activities[2].calendarHoursPerDay, 15);
+  assert.equal(result.activities[2].durationHours, "45");
+  assert.equal(JSON.stringify(programme), before);
+});
+
+test("missing or invalid calendar conversion never assumes an eight-hour day", () => {
+  for (const raw of ["", "0", "-1", "25", "8 hours", "NaN", "Infinity"]) {
+    const programme = parseP6XerText(fixture(), source);
+    programme.tables.CALENDAR.rows[0][3] = raw;
+    const item = querySourceProgramme(programme).activities[1];
+    assert.equal(item.durationDays, undefined, raw);
+    assert.equal(item.calendarHoursPerDay, undefined, raw);
+    assert.equal(item.durationHours, "12.5");
+  }
+  const programme = parseP6XerText(fixture(), source);
+  programme.tables.TASK.rows[1][4] = "unknown-calendar";
+  assert.equal(
+    querySourceProgramme(programme).activities[1].durationDays,
+    undefined,
+  );
+  programme.tables.TASK.rows[1][4] = "c1";
+  for (const raw of ["", "-2", "12h", "NaN"]) {
+    programme.tables.TASK.rows[1][7] = raw;
+    assert.equal(
+      querySourceProgramme(programme).activities[1].durationDays,
+      undefined,
+      raw,
+    );
+  }
+});
+
 test("dates retain actual and saved forecast fields without timezone/calendar inference", () => {
   assert.deepEqual(
     sourceActivityDates({

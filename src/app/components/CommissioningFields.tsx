@@ -56,12 +56,12 @@ export function CommissioningFields({
     <fieldset className="border-t pt-4 space-y-3">
       <legend className="text-sm font-semibold">Commissioning links</legend>
       <div className="rounded-lg bg-slate-50 p-3 text-sm">
-        <p className="text-xs text-slate-600">Programme ID</p>
+        <p className="text-xs text-slate-600">Schedule ID</p>
         <p className="mt-1 break-words">
           {state.programmeId || "Not recorded"}
         </p>
         <p className="mt-1 text-xs text-slate-600">
-          Activity IDs below belong to this project’s programme.
+          Activity IDs below belong to this project’s schedule.
         </p>
       </div>
       <div className="grid sm:grid-cols-2 gap-3">
@@ -119,7 +119,7 @@ export function CommissioningFields({
           </select>
         </label>
         <label className="text-sm">
-          Programme Activity ID
+          Schedule Activity ID
           <select
             name="cx-activityId"
             className="field-select"
@@ -206,7 +206,7 @@ export function CommissioningFields({
         />
       </label>
       <p className="text-xs text-slate-500">
-        Linked programme finish determines whether the task is overdue. A tag
+        Linked schedule finish determines whether the task is overdue. A tag
         belongs to one asset and one applicable level. Its test result,
         observations and test sheet documents stay on that tag task.
       </p>
