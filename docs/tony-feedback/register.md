@@ -8,7 +8,9 @@ Project assistant con Info, Overdue dentro Schedule, registro asset con tag inli
 copia/drag/clone/delete protetti. [Report e prove](intake-20261114-ui-feedback.md).
 204 test unitari/PostgreSQL + 12 API su demo pulita, lint/typecheck/build verdi;
 confronto desktop/mobile locale concluso. Nessuna scrittura DB remota o chiamataAI.
-Pubblicazione del lotto in verifica separata; lavoro ulteriore attende Marco.
+Codice7678eeb pushato; Vercel Production7785814458success e aliasHTTP200 verificati.
+ReportPDF privato in output/pdf/fieldtrack-ui-prima-dopo-20261114.pdf.
+Il collaudo autenticato resta locale; lavoro ulteriore attende Marco.
 Modifiche preesistenti e next-env preservati. Quota conto16%→17%, ordinarytrue.
 
 ## Rettifica visiva P6 Gantt6nov
@@ -435,7 +437,8 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 verificate; [prima/dopo, prove e limiti](intake-20261114-ui-feedback.md).
 Include registro asset, copia configurazione, clone ed eliminazione protetta;
 nessuna nuova funzione AI/vendor/semaforo o modifica ai dati remoti.
-204 test + 12 API, statici/build e desktop/mobile verdi. Pubblicazione in verifica;
+204 test + 12 API, statici/build e desktop/mobile verdi. Codice7678eeb online,
+Production7785814458success e alias200 verificati;
 prossimo lavoro soltanto dopo il nuovo incarico annunciato da Marco.
 
 **Priorità corrente5nov:** nuovo mandato di consegna test-ready con import scoped autorizzato.

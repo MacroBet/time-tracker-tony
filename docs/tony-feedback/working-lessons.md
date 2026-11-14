@@ -53,6 +53,26 @@ di modificare repository. La lezione applicabile è conservare la differenza tra
 visione, autorizzazione concreta ed evidenza; niente costi inventati o oneri di
 orchestrazione/stima a ogni domanda. La skill generale resta priva di nomi cliente.
 
+## Durata P6 e calendario sorgente — 14 novembre 2026
+
+**T, dimostrato nel lotto UI7678eeb:** la durata visuale in giorni si ricava solo
+se il calendario dell'attivita contiene un `day_hr_cnt` valido. LHR11 contiene
+calendari da8 e15ore/giorno: dividere universalmente per8 altera il significato.
+Prova:16969/16969record convertibili, sorgente immutata e regressioni per dato
+assente/invalido/zero. Ambito: unita visuale; non ricalcola date o logica P6.
+
+## Applicabilita tag coerente e concorrenza — 14 novembre 2026
+
+**T, provato con test PostgreSQL locale e API demo:** inline, edit e import devono
+validare la rimozione dei livelli contro lo stato salvato, inclusi checksheet
+senza task e link Schedule di livello. Anche cambiare il livello di una task sullo
+stesso asset invalida una vecchia anteprima tramite versione progetto. Verificare
+entrambi gli ordini: task prima della rimozione e rimozione prima della nuova task.
+Il controllo atomico sui nuovi legami non deve bloccare aggiornamenti dei legami
+invariati se un livello viene disabilitato successivamente. Esiti/firme restano
+separati dalla configurazione. Ambito: contratti registro/task esistenti, nessun
+nuovo permesso o scrittura remota impliciti.
+
 ## Aggiornamento
 
 Aggiungere o correggere una riga solo quando c'è un insegnamento nuovo e fondato;

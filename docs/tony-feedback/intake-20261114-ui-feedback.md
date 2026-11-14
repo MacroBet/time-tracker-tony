@@ -61,7 +61,8 @@ Originali, SHA256, schermate, log e PDF rimangono fuori Git nella cartella priva
   sulla demo usata per le schermate si e fermata sul controllo protettivo del P6
   gia presente; suite completa ripetuta su un processo demo nuovo, senza rimuovere
   la fonte per aggirare il controllo.
-- Desktop 1440 x 1000 e mobile 390 x 844: Info tastiera/tocco, esempi edit-only,
+- Header desktop 137→71 px; summary desktop 260→199 px e mobile 476→375 px;
+  testo stati 12→14 px. Desktop 1440 x 1000 e mobile 390 x 844: Info tastiera/tocco, esempi edit-only,
   assenza titolo ripetuto, filtri e recupero, bozza tag/annullamento, unita durata,
   visibilita colonna, frecce e ricentramento. Zero eccezioni runtime e nessuna
   chiamata chat/transcription nel collaudo. Tabelle e timeline scorrono internamente.
@@ -72,7 +73,9 @@ Originali, SHA256, schermate, log e PDF rimangono fuori Git nella cartella priva
 
 ## Rilascio e prossimo passo
 
-Stato della pubblicazione e prova del commit sono registrati nella chiusura del
-registro operativo. Il PDF locale contiene il confronto visivo delle cinque aree
+Codice `7678eeb` pushato su main. Check Vercel success e deployment Production
+`7785814458` associati allo stesso SHA; alias pubblico HTTP 200 verificato il
+14 novembre. Il collaudo autenticato descritto sopra resta locale, distinto
+dalla verifica della pubblicazione. Il PDF locale contiene il confronto visivo delle cinque aree
 e la conferma mobile. Il lavoro ulteriore annunciato da Marco resta un incarico
 successivo; nessun avvio implicito delle funzionalita del piano R2-R5.
