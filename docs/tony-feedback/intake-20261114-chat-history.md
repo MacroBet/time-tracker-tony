@@ -86,8 +86,8 @@ Nessuna chiamata provider reale.
 Evidenze private in output/tony/chat-ux-20261114 e output/playwright/chat-ux-20261114.
 CLI Vercel inizialmente senza sessione; login rinnovato come macrobet e progetto
 Production verificato. Nomi env confermati senza leggere i segreti: nessun gate
-migrazione residuo. Nessun gate/env Production impostato, nessun apply remoto o
-deploy di questa patch ancora eseguito. Approvazione specifica del piano acquisita nella risposta diretta sotto.
+migrazione residuo. Prima del consenso non erano stati impostati gate/env Production né avviati
+apply o deploy. Approvazione specifica acquisita nella risposta diretta sotto.
 
 ## Approvazione specifica acquisita
 
@@ -101,5 +101,33 @@ applicativo senza DROP. Gate Config monouso associato a questa risposta:
 
 Account CLI macrobet, progetto/team esatti e assenza di gate residui verificati
 prima dell'esecuzione. Uso esclusivo di DATABASE_URL già iniettata nel build
-Production; nessun segreto letto o nuovo provider. Push/apply/deploy in corso;
-non ancora dichiarati verificati dalla sola approvazione.
+Production; nessun segreto letto o nuovo provider. Esiti effettivi sotto, distinti
+dalla sola approvazione.
+
+## Applicazione e pubblicazione verificate
+
+Codice `9e7eeb9`, approvazione `4a083e4ba1befb7e6f8182d0b19f0d5aad6207fb`,
+push normale su main. Build Production esatto
+`time-tracker-tony-64tlbzyzv-macrobets-projects.vercel.app`.
+Il runner nel build ha emesso `state:applied` il14novembre2026 alle
+18:49:41.964UTC (19:49:41Europe/Rome), targetProduction e SHA0007 esatti.
+Questo esito richiede preflight readonly0000-0006, commit atomico0007+journal,
+verifica schema dentro transazione e postflight readonly riusciti. Nessun SQL
+amministrativo generale, nuovo ruolo, seed o cambio a record cliente.
+
+GitHub Vercel success e deployment Production **7792232649** success sullo stesso
+SHA,18:50:32UTC. Alias pubblico HTTP200 e nuova route cronologia HTTP401 senza
+sessione verificati in sola lettura. Collaudo autenticato/salvataggi rimangono
+le prove locali; nessuna queryAI o nuova chat cliente creata dal smoke pubblico.
+
+Gate Config `FIELDTRACK_CHAT_MIGRATION_APPROVAL` rimosso dopo la riuscita; elenco
+Production ricontrollato: nessun gate chat/meter presente, stesse cinque variabili
+preesistenti preservate e nessun valore segreto letto. Pubblicazione del presente
+registro attiva lo stesso codice applicativo senza gate; ricevuta dello SHA finale
+e log build ordinario custoditi privatamente come production-final-release e
+production-final-build, senza ulteriori scritture migratorie.
+
+Cronologia operativa dalle nuove chat: quelle mai salvate prima del rilascio non
+sono recuperate o inventate. Markdown e attesa/progressione sono presentazione
+client del risultato, non cambio del provider o promessa di streaming API live.
+Modifiche preesistenti e next-env preservati; nessun invio esterno.

@@ -158,6 +158,13 @@ Live provider configuration is preserved; this extension was tested locally with
 paid AI calls or remote data changes. Evidence and release status:
 docs/tony-feedback/intake-20261114-assistant-extension.md.
 
+The 14 November chat fix adds database-backed conversation history private to each
+user and project, available across devices. Saved replies render safe Markdown;
+waiting stays within the conversation while the next question remains editable.
+Completed replies appear progressively with reduced-motion support. History stores
+text and report filters, never confirmation tokens or executable proposals.
+Evidence: docs/tony-feedback/intake-20261114-chat-history.md.
+
 ## Product Principles
 
 - Changes must persist and have traceable authors/reasons.

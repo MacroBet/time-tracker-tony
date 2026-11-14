@@ -10,8 +10,9 @@ Markdown sicuro e risposta progressiva, composer utilizzabile durante attesa.
 12schermate finali desktop/mobile senza errori/overflow. Nessuna AI live.
 CLI Production macrobet/progetto verificati, nessun gate residuo. Approvazione
 AGENTS per sola0007 acquisita: Marco «Autorizzo migrazione 0007 e deploy».
-Esecuzione autorizzata in corso; apply/deploy ancora da attestare. Modifiche
-preesistenti preservate.
+Applicata e verificata nel buildProduction; codice9e7eeb9 online in4a083e4,
+Production7792232649success/alias200. Gate monouso rimosso, nomi env preservati;
+route nuova richiede autenticazione401. Modifiche preesistenti preservate.
 
 ## PDF inglese con nuove funzioni e guida test — 14 novembre 2026
 
@@ -491,12 +492,14 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
 
-**Fix chat urgente14nov:** codice e collaudo conclusi, [piano DB0007 pronto](intake-20261114-chat-history.md).
-Decisione Marco: chat su DB. Cronologia privata per utente/progetto, Markdown e
-attesa non bloccante,282+16test e browser PASS. Piano remoto approvato direttamente
-da Marco («Autorizzo migrazione 0007 e deploy», call_696654d2a0444e3ca1800d69c121000a).
-Gate monouso/push/apply/deploy autorizzati in corso; attestare esiti prima di
-dichiarare online. Non rilanciare sviluppo/polish o test AI.
+**Fix chat urgente14nov online:** [implementazione, consenso0007 e prove](intake-20261114-chat-history.md).
+Decisione Marco: chat su DB; piano remoto approvato («Autorizzo migrazione 0007 e
+deploy», call_696654d2a0444e3ca1800d69c121000a).0007 applicata/verificata nel solo
+Production, codice9e7eeb9/release4a083e4 online, deployment7792232649success e
+alias200. Cronologia privata cross-device, Markdown e attesa non bloccante;
+282+16test/browser PASS. Gate monouso rimosso, provider e dati cliente preservati.
+Prossimo passo: uso delle nuove chat; nessun recupero di vecchie chat mai salvate.
+Ricevuta del normale rilascio senza gate privata; non ripetere migrazione o test AI.
 
 **Estensione assistente 14nov:** R2–R5 implementati su mandato diretto Marco,
 che supera le precedenti note inreview/attesa incarico sotto. [Prove e limiti](intake-20261114-assistant-extension.md).

@@ -1,5 +1,8 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Fix chat 14nov online:** [cronologia privata DB, Markdown e attesa inline](intake-20261114-chat-history.md).
+Migrazione0007 approvata/applicata/verificata in Production; gate monouso rimosso.
+
 **Estensione assistente 14nov implementata:** [decisioni, funzionalità e prove](intake-20261114-assistant-extension.md).
 Report tagging/WTG/lookahead/fornitori equipment, filtri cumulativi, % passi e semaforo,
 Schedule di lavoro confermabile sul P6 reale e biblioteca con lessons curate.
