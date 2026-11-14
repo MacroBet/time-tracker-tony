@@ -419,6 +419,7 @@ function ProjectWorkspace({
           parentAssetId: String(f.get("parentAssetId") || ""),
           serialNumber: String(f.get("serialNumber") || ""),
           owner: String(f.get("owner") || ""),
+          vendor: String(f.get("vendor") || "").trim(),
           levels: f.getAll("levels") as Asset["levels"],
           deliveryActivityId:
             String(f.get("deliveryActivityId") || "") || undefined,
@@ -797,6 +798,7 @@ function ProjectWorkspace({
                 ["discipline", "Discipline"],
                 ["serialNumber", "Serial number"],
                 ["owner", "Owner / responsible person"],
+                ["vendor", "Vendor / equipment supplier"],
               ].map(([key, label]) => (
                 <label className="text-sm" key={key}>
                   {label}
@@ -1321,6 +1323,7 @@ function ProjectWorkspace({
                 ["Parent asset", inspectedAsset.parentAssetId],
                 ["Serial number", inspectedAsset.serialNumber],
                 ["Owner", inspectedAsset.owner],
+                ["Vendor / equipment supplier", inspectedAsset.vendor],
                 ["Delivery Activity ID", inspectedAsset.deliveryActivityId],
                 [
                   "Supply",
@@ -1499,14 +1502,14 @@ function ProjectWorkspace({
                 CSV columns: id, clientAssetId, programmeId,
                 programmeActivityId, name, equipmentType, location, phase,
                 floor, area, discipline, parentAssetId, serialNumber, owner,
-                clientSupplied, levels, deliveryActivityId, expectedDelivery,
-                levelActivities. Separate required levels with semicolons; use
-                true / false / blank for supply. Stable IDs update existing
-                records. Existing baseline dates are protected. Start from the
-                CSV template for the correct headers. Schedule ID applies to
-                this project. Schedule Activity ID is a primary link to an
-                existing activity in this project; delivery and individual tag
-                links are separate.
+                vendor, clientSupplied, levels, deliveryActivityId,
+                expectedDelivery, levelActivities. Separate required levels with
+                semicolons; use true / false / blank for supply. Stable IDs
+                update existing records. Existing baseline dates are protected.
+                Start from the CSV template for the correct headers. Schedule ID
+                applies to this project. Schedule Activity ID is a primary link
+                to an existing activity in this project; delivery and individual
+                tag links are separate.
               </p>
             </details>
             <InventoryBatchControls

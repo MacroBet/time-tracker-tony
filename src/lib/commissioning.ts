@@ -71,6 +71,8 @@ export const assetSchema = z
     parentAssetId: z.string().trim().max(150).optional(),
     serialNumber: z.string().trim().max(150).optional(),
     owner: z.string().trim().max(150).optional(),
+    /** Equipment supplier, explicitly recorded; never inferred from owner. */
+    vendor: z.string().trim().max(150).optional(),
     levels,
     deliveryActivityId: key.optional(),
     expectedDelivery: date,

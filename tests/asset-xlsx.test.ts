@@ -8,6 +8,7 @@ import {
 } from "../src/lib/asset-xlsx";
 import { assetSchema } from "../src/lib/commissioning";
 import { mergeRegister } from "../src/lib/commissioning-import";
+import { ASSET_CSV_COLUMNS } from "../src/lib/asset-transfer";
 
 const ns = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 const escape = (s: string) =>
@@ -272,11 +273,11 @@ test("XLSX bounds compressed/expanded size, row coordinates, columns, XML depth 
         workbook(
           undefined,
           changedPart("xl/worksheets/sheet1.xml", (s) =>
-            s.replace('r="D2"', 'r="T2"'),
+            s.replace('r="D2"', 'r="U2"'),
           ),
         ),
       ),
-    /19 columns/,
+    /20 columns/,
   );
   assert.throws(
     () =>
@@ -302,7 +303,7 @@ test("blank Excel template has exactly canonical text headers and no project dat
   const parts = unzipSync(exportAssetXlsxTemplate());
   const sheet = strFromU8(parts["xl/worksheets/sheet1.xml"]);
   assert.equal((sheet.match(/<row /g) || []).length, 1);
-  assert.equal((sheet.match(/<c /g) || []).length, 19);
+  assert.equal((sheet.match(/<c /g) || []).length, ASSET_CSV_COLUMNS.length);
   assert(strFromU8(parts["xl/styles.xml"]).includes('numFmtId="49"'));
   assert.throws(
     () => parseAssetXlsx(exportAssetXlsxTemplate()),

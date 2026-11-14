@@ -336,7 +336,9 @@ export function parseAssetXlsx(
         ? [...match[1]].reduce((n, c) => n * 26 + c.charCodeAt(0) - 64, 0) - 1
         : nextColumn;
       if (column >= XLSX_LIMITS.columns || seen.has(column))
-        fail("Maximum 19 columns; duplicate cells are not supported.");
+        fail(
+          `Maximum ${XLSX_LIMITS.columns} columns; duplicate cells are not supported.`,
+        );
       seen.add(column);
       nextColumn = column + 1;
       const type = attr(cell, "t");
@@ -422,7 +424,7 @@ export function exportAssetXlsxTemplate(): Uint8Array<ArrayBuffer> {
         `<styleSheet xmlns="${main}"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`,
       ),
       "xl/worksheets/sheet1.xml": xml(
-        `<worksheet xmlns="${main}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="19" width="24" customWidth="1" style="0"/></cols><sheetData><row r="1">${ASSET_CSV_COLUMNS.map((name, i) => `<c r="${String.fromCharCode(65 + i)}1" t="inlineStr"><is><t>${name}</t></is></c>`).join("")}</row></sheetData></worksheet>`,
+        `<worksheet xmlns="${main}"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="${ASSET_CSV_COLUMNS.length}" width="24" customWidth="1" style="0"/></cols><sheetData><row r="1">${ASSET_CSV_COLUMNS.map((name, i) => `<c r="${String.fromCharCode(65 + i)}1" t="inlineStr"><is><t>${name}</t></is></c>`).join("")}</row></sheetData></worksheet>`,
       ),
     },
     { level: 6 },

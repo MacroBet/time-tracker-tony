@@ -149,6 +149,7 @@ export function mergeRegister(state: Commissioning, input: RegisterImport) {
       "parentAssetId",
       "serialNumber",
       "owner",
+      "vendor",
       "phase",
       "floor",
       "area",

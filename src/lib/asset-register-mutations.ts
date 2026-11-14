@@ -172,6 +172,7 @@ export function duplicateAssetDraft(asset: Asset): Asset {
     floor: asset.floor,
     area: asset.area,
     discipline: asset.discipline,
+    vendor: asset.vendor,
     clientSupplied: asset.clientSupplied,
     levels: [...asset.levels],
   };
