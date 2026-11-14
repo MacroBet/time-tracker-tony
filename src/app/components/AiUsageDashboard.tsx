@@ -18,6 +18,13 @@ import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { InfoPopover } from "./InfoPopover";
 
 type Filters = {
@@ -36,8 +43,7 @@ const compact = new Intl.NumberFormat("en-GB", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
-const selectClass =
-  "min-h-11 w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
+const allItems = "__all__";
 const sourceLabel = (source: string) =>
   source === "responses" ? "Chat · Responses API" : "Transcription";
 function period(days: number, timezone: Filters["timezone"]): Filters {
@@ -245,7 +251,7 @@ export function AiUsageDashboard() {
               </Button>
             </div>
             <div className="grid grid-cols-2 items-end gap-3 xl:grid-cols-[minmax(8.5rem,1fr)_minmax(8.5rem,1fr)_minmax(10rem,1fr)_minmax(10rem,1fr)_minmax(11rem,1.2fr)_auto]">
-              <label className="min-w-0 space-y-1 text-sm font-medium">
+              <label className="min-w-0 space-y-1 text-sm font-medium max-[359px]:col-span-2">
                 From
                 <Input
                   type="date"
@@ -257,7 +263,7 @@ export function AiUsageDashboard() {
                   }}
                 />
               </label>
-              <label className="min-w-0 space-y-1 text-sm font-medium">
+              <label className="min-w-0 space-y-1 text-sm font-medium max-[359px]:col-span-2">
                 Through
                 <Input
                   type="date"
@@ -269,13 +275,14 @@ export function AiUsageDashboard() {
                   }}
                 />
               </label>
-              <label className="min-w-0 space-y-1 text-sm font-medium">
-                Timezone
-                <select
-                  className={selectClass}
+              <div className="min-w-0 space-y-1 text-sm font-medium">
+                <label htmlFor="ai-usage-timezone" className="text-sm">
+                  Timezone
+                </label>
+                <Select
                   value={draft.timezone}
-                  onChange={(event) => {
-                    const timezone = event.target.value as Filters["timezone"];
+                  onValueChange={(value: Filters["timezone"]) => {
+                    const timezone = value;
                     setDraft(
                       preset
                         ? {
@@ -287,49 +294,72 @@ export function AiUsageDashboard() {
                     );
                   }}
                 >
-                  <option value="Europe/Rome">Europe/Rome</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </label>
-              <label className="min-w-0 space-y-1 text-sm font-medium">
-                Source
-                <select
-                  className={selectClass}
-                  value={draft.source}
-                  onChange={(event) =>
+                  <SelectTrigger id="ai-usage-timezone">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Europe/Rome">Europe/Rome</SelectItem>
+                    <SelectItem value="UTC">UTC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="min-w-0 space-y-1 text-sm font-medium">
+                <label htmlFor="ai-usage-source" className="text-sm">
+                  Source
+                </label>
+                <Select
+                  value={draft.source || allItems}
+                  onValueChange={(value) =>
                     setDraft({
                       ...draft,
-                      source: event.target.value as Filters["source"],
+                      source:
+                        value === allItems ? "" : (value as Filters["source"]),
                     })
                   }
                 >
-                  <option value="">All sources</option>
-                  <option value="responses">Chat · Responses API</option>
-                  <option value="transcription">Transcription</option>
-                </select>
-              </label>
-              <label className="min-w-0 space-y-1 text-sm font-medium">
-                Model
-                <select
-                  className={selectClass}
-                  value={draft.model}
-                  onChange={(event) =>
-                    setDraft({ ...draft, model: event.target.value })
+                  <SelectTrigger id="ai-usage-source">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={allItems}>All sources</SelectItem>
+                    <SelectItem value="responses">
+                      Chat · Responses API
+                    </SelectItem>
+                    <SelectItem value="transcription">Transcription</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="min-w-0 space-y-1 text-sm font-medium">
+                <label htmlFor="ai-usage-model" className="text-sm">
+                  Model
+                </label>
+                <Select
+                  value={draft.model || allItems}
+                  onValueChange={(value) =>
+                    setDraft({
+                      ...draft,
+                      model: value === allItems ? "" : value,
+                    })
                   }
                 >
-                  <option value="">All models</option>
-                  {Array.from(
-                    new Set([
-                      ...(data?.facets.models ?? []),
-                      ...(draft.model ? [draft.model] : []),
-                    ]),
-                  ).map((model) => (
-                    <option key={model} value={model}>
-                      {model}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <SelectTrigger id="ai-usage-model">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={allItems}>All models</SelectItem>
+                    {Array.from(
+                      new Set([
+                        ...(data?.facets.models ?? []),
+                        ...(draft.model ? [draft.model] : []),
+                      ]),
+                    ).map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button type="submit" disabled={!isOnline}>
                 Apply filters
               </Button>

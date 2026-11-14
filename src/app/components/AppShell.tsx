@@ -32,6 +32,13 @@ import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
 import { InfoPopover } from "./InfoPopover";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
   Sheet,
   SheetTrigger,
   SheetContent,
@@ -392,7 +399,7 @@ export function AppShell({
               </div>
             </div>
             {projectScoped && projects.length > 0 && (
-              <label className="order-3 col-span-2 flex min-w-0 items-center gap-2 text-sm text-slate-600 lg:order-none lg:ml-3 lg:flex-1 lg:max-w-md">
+              <div className="order-3 col-span-2 flex min-w-0 items-center gap-2 text-sm text-slate-600 lg:order-none lg:ml-3 lg:flex-1 lg:max-w-md">
                 <span className="shrink-0">Project</span>
                 {back && subtitle && (
                   <span className="contents sm:hidden">
@@ -401,26 +408,32 @@ export function AppShell({
                     </InfoPopover>
                   </span>
                 )}
-                <select
-                  aria-label="Active project"
-                  className="min-h-11 w-full min-w-0 rounded-md border bg-slate-50 px-3 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-600"
+                <Select
                   value={selectedProjectId}
-                  onChange={(e) => {
+                  onValueChange={(value) => {
                     if (
                       params.has("projectId") &&
-                      params.get("projectId") !== e.target.value
+                      params.get("projectId") !== value
                     )
                       router.replace(pathname);
-                    selectProject(e.target.value);
+                    selectProject(value);
                   }}
                 >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <SelectTrigger
+                    aria-label="Active project"
+                    className="bg-slate-50 font-medium text-slate-800"
+                  >
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             )}
             <div className="flex shrink-0 items-center gap-1 max-[359px]:col-span-2 max-[359px]:row-start-2 max-[359px]:justify-self-end sm:gap-2 lg:ml-auto">
               {projectScoped && <AssistantEntry />}

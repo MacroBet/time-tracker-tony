@@ -96,3 +96,26 @@ Ricevuta privata `output/tony/ai-usage-20261114/code-release-receipt.json`.
 
 Prossimo passo: uso admin su dati registrati; nessun recupero retroattivo di
 durata audio/consumi assenti e nessuna nuova integrazione billing implicita.
+
+## Correzione select — nuovo mandato diretto 14 novembre
+
+Marco segnala select visivamente incoerenti e chiede componenti adeguati e push
+diretto in produzione. I filtri Timezone/Source/Model e il selettore progetto
+nell'intestazione usano ora il componente Radix Select già incluso nello stack.
+Etichette associate, focus/tastiera, Escape, touch target di 44 px; valore lungo
+troncato nel trigger con spazio riservato alla singola freccia e testo completo
+nelle opzioni. Menu limitato al viewport e opzioni a capo su mobile. Etichette
+allineate; date a larghezza intera sotto 360 px per preservare icona e valore.
+
+La selezione modifica i filtri in bozza, Apply filters li applica. Le opzioni
+All models/All sources continuano a significare assenza di filtro: il valore
+interno del componente non viene inviato all'API. Cambio progetto e pulizia
+del parametro projectId conservati. Nessun nuovo package, DB o provider.
+
+Prove locali: TypeScript, lint, formattazione e build PASS; 11 test dominio e
+API admin-only mirata PASS. Browser: 37 controlli su desktop 1440 e mobile
+390/320 px, selezione e reset, tastiera, focus ripristinato, cambio progetto,
+assenza di overflow o sovrapposizione testo/freccia. Nessun errore runtime.
+Un solo batch di correzione visiva e conferma finale; prove private sotto
+`output/tony/select-fix-20261114/` e `output/playwright/select-fix-20261114/`.
+Push/deploy del fix da registrare dopo verifica del target.
