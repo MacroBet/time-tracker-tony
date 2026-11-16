@@ -20,6 +20,13 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   non sviluppo aggiuntivo. «Riprendi Tony» ricostruisce consegne, vincoli e prossimo
   passo ed esegue il lavoro già chiaramente autorizzato; se mancano decisioni,
   indicarle senza inventarle né chiedere di raccontare tutto da capo.
+- **Completamento funzionale16nov2026:** mandato diretto Marco
+  `01a1e66b-a270-7c90-b3b0-6ba7546176cb` verificato in regia: completare i gap,
+  delegare in parallelo, verificare ogni richiesta, fare commit/push/deploy del
+  risultato sul repository/Vercel esistenti e aggiornare il PDF. Supera per questo
+  incarico il limite precedente ai sei commit a7b486a; non amplia dati remoti,
+  servizi, credenziali o spese. Monitor PAUSED, niente WhatsApp o invii cliente.
+  [Mandato, ownership e prove](docs/tony-feedback/intake-20261116-functional-completion.md).
 - **Consegna visiva Tony, regola esplicita16nov2026:** a fine consegna raccogliere
   schermate o dettagli leggibili di tutte le funzioni/interfacce cambiate e
   preparare un PDF inglese pronto da inoltrare, con titoli e didascalie brevi.
