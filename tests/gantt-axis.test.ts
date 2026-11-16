@@ -52,3 +52,21 @@ test("Weeks retain weekly ticks; Months use readable calendar-month spacing", ()
   for (let i = 1; i < month.columns.length; i++)
     assert(month.columns[i].left - month.columns[i - 1].left >= 56);
 });
+
+test("short date windows retain readable month boundaries and exact calendar coordinates", () => {
+  for (const horizon of [14, 28, 42] as const) {
+    const axis = ganttAxis("2026-11-16", "month", horizon);
+    assert.equal(axis.span, horizon);
+    assert.equal(axis.width, 840);
+    for (const column of axis.columns) {
+      assert.equal(
+        column.left,
+        calendarDays("2026-11-16", column.date) * axis.unit,
+      );
+      assert(column.left >= 0 && column.left < axis.width);
+    }
+  }
+  const fourWeeks = ganttAxis("2026-11-16", "month", 28);
+  assert.equal(fourWeeks.columns[1].date, "2026-12-01");
+  assert.equal(fourWeeks.columns[1].label, "Dec 26");
+});

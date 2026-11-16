@@ -73,3 +73,20 @@ preservati. Il retry già consumato restituisce il profilo corrente, anche dopo
 A→B→A, senza annullare rinomine successive o aggiungere audit duplicato.3test
 PostgreSQL/dominio e1API demo PASS, inclusi revoca, conflitti e fixture XER
 sintetica nel nuovo target. La UI passa alla verifica centrale; nessun import reale.
+
+A3/A8: apertura/reset su Today nel calendario del progetto, input/righello/pan
+concordanti; controlli durata stabili, date opzionali, scale DAY/WK/MTH e finestre
+2/4/6WK indipendenti dai filtri dei report. Comandi display tipizzati con scope,
+versione e ACK della vista montata. Percentuali passi F01 separate dalla criticità.
+Criticità: solo criterio P6 salvato CT_TotFloat e relativa soglia in ore; sul file
+già custodito639critical/4.703non-critical/11.627unknown. Fonte immutata; modifiche
+working a date/link dichiarano stale, senza CPM o ricalcolo nascosto.
+
+QA centrale ha scoperto e corretto un parametro `critical` omesso nell'endpoint
+`schedule-working`: regressione prima61anziché1, poi API working/source con filtri,
+paging e invalid400 PASS e UI sullo stesso target locale1–1di1. Criterio/copertura/
+stale sono visibili in Info. Durata Days→Hidden conserva x/y del controllo e data;
+hide date/reset e cambio scala/finestra verificati nella UI locale. Test dominio
+mirati e API A8 PASS. La suite generale dell'albero integrato ha334test PASS,
+lint e typecheck PASS prima degli ultimi fix, seguiti dai relativi test mirati.
+Nessun confronto di latenza o altezza in produzione dichiarato.

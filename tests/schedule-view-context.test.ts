@@ -4,7 +4,13 @@ import {
   indexSourceProgramme,
   type SourceProgramme,
 } from "../src/lib/programme-source";
-import { resolveScheduleViewRow } from "../src/lib/schedule-view-context";
+import {
+  resolveScheduleViewRow,
+  resolveScheduleViewCommand,
+  scheduleViewSnapshotSchema,
+  scheduleViewCommandSchema,
+} from "../src/lib/schedule-view-context";
+import { sourceGanttInitialView } from "../src/lib/source-gantt";
 const source: SourceProgramme = {
   format: "p6-xer-v1",
   source: {
@@ -97,5 +103,81 @@ test("stale, foreign or absent row context cannot identify another schedule acti
         0,
       ),
     /valid/,
+  );
+});
+
+test("display snapshots retain filtered row identity and reject stale view-command scopes", () => {
+  const display = sourceGanttInitialView("2026-11-16");
+  const displayed = { ...snapshot, display };
+  assert.equal(
+    scheduleViewSnapshotSchema.parse(displayed).display?.anchor,
+    "2026-11-16",
+  );
+  assert.equal(
+    resolveScheduleViewRow(
+      index,
+      displayed,
+      { projectId: "p", projectVersion: 3 },
+      51,
+    ).activity.internalId,
+    "i100",
+  );
+  const subject = {
+    projectId: "p",
+    sourceSha256: source.source.sha256,
+    projectVersion: 3,
+  };
+  const message = { ...subject, command: { type: "today" } };
+  assert.deepEqual(resolveScheduleViewCommand(message, subject), {
+    type: "today",
+  });
+  for (const change of [
+    { projectId: "other" },
+    { projectVersion: 4 },
+    { sourceSha256: "b".repeat(64) },
+  ])
+    assert.throws(
+      () => resolveScheduleViewCommand({ ...message, ...change }, subject),
+      /changed/,
+    );
+  assert.throws(() =>
+    resolveScheduleViewCommand(
+      { ...message, command: { type: "delete" } },
+      subject,
+    ),
+  );
+  assert.equal(JSON.stringify(display), JSON.stringify(displayed.display));
+  assert.equal(
+    resolveScheduleViewRow(
+      index,
+      { ...displayed, query: { ...snapshot.query, critical: "unknown" } },
+      { projectId: "p", projectVersion: 3 },
+      51,
+    ).activity.internalId,
+    "i100",
+  );
+  assert.throws(
+    () =>
+      resolveScheduleViewRow(
+        index,
+        { ...displayed, query: { ...snapshot.query, critical: "yes" } },
+        { projectId: "p", projectVersion: 3 },
+        1,
+      ),
+    /not present/,
+  );
+  assert.equal(
+    scheduleViewCommandSchema.parse({
+      ...message,
+      requestId: "8fd81443-cfbb-4cc7-9258-71311c758fd7",
+    }).requestId,
+    "8fd81443-cfbb-4cc7-9258-71311c758fd7",
+  );
+  assert.equal(
+    scheduleViewCommandSchema.safeParse({
+      ...message,
+      requestId: "not-a-request-uuid",
+    }).success,
+    false,
   );
 });

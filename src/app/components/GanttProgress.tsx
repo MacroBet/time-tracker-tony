@@ -5,32 +5,63 @@ export function GanttProgress({
   status,
   href,
   description,
+  notApplicable = false,
 }: {
   percent: number | null;
   status: OperationalStatus;
   href: string;
   description?: string;
+  notApplicable?: boolean;
 }) {
   const colour =
     status.colour === "red"
-      ? "bg-red-700 text-white"
+      ? "text-red-700"
       : status.colour === "orange"
-        ? "bg-amber-200 text-amber-950"
+        ? "text-amber-700"
         : status.colour === "green"
-          ? "bg-emerald-700 text-white"
+          ? "text-emerald-700"
           : "text-slate-700";
-  const label = `${percent === null ? "Step progress unknown" : `${percent}% of required applicable steps passed`}. ${status.label}${description ? `. ${description}` : ""}`;
+  const label = `${notApplicable ? "Step progress not applicable" : percent === null ? "Step progress unknown" : `${percent}% of required applicable steps passed`}. ${status.label}${description ? `. ${description}` : ""}`;
   return (
     <Link
       href={href}
       title={label}
       aria-label={label}
-      className="flex min-h-11 min-w-11 items-center justify-center rounded focus-visible:outline-2 focus-visible:outline-blue-700"
+      className="flex min-h-11 min-w-11 items-center justify-center rounded hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-blue-700"
     >
       <span
-        className={`inline-flex min-h-7 min-w-11 items-center justify-center rounded px-1 text-xs font-semibold tabular-nums ${colour}`}
+        className={`relative inline-grid size-10 place-items-center text-[10px] font-semibold tabular-nums ${colour}`}
       >
-        {percent === null ? "—" : `${percent}%`}
+        <svg
+          viewBox="0 0 40 40"
+          className="absolute inset-0 size-10 -rotate-90"
+          aria-hidden="true"
+        >
+          <circle
+            cx="20"
+            cy="20"
+            r="17"
+            fill="none"
+            stroke="#e2e8f0"
+            strokeWidth="3"
+          />
+          {percent !== null && (
+            <circle
+              cx="20"
+              cy="20"
+              r="17"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              pathLength="100"
+              strokeDasharray={`${Math.max(0, Math.min(100, percent))} 100`}
+              strokeLinecap="round"
+            />
+          )}
+        </svg>
+        <span>
+          {notApplicable ? "N/A" : percent === null ? "—" : `${percent}%`}
+        </span>
       </span>
     </Link>
   );

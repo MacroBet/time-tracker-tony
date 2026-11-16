@@ -1,11 +1,17 @@
 import { dayNumber } from "./scheduling";
 
 export type GanttScale = "day" | "week" | "month";
+export type GanttHorizon = 14 | 28 | 42 | null;
 
 /** Calendar columns only: this does not change the programme's working calendar. */
-export function ganttAxis(start: string, scale: GanttScale) {
-  const span = scale === "day" ? 35 : scale === "week" ? 100 : 365;
-  const unit = scale === "day" ? 48 : scale === "week" ? 12 : 4;
+export function ganttAxis(
+  start: string,
+  scale: GanttScale,
+  horizon: GanttHorizon = null,
+) {
+  const span = horizon ?? (scale === "day" ? 35 : scale === "week" ? 100 : 365);
+  const baseUnit = scale === "day" ? 48 : scale === "week" ? 12 : 4;
+  const unit = horizon ? Math.max(baseUnit, 840 / span) : baseUnit;
   const step = scale === "day" ? 1 : 7;
   const startDay = dayNumber(start);
   const offsets =
@@ -19,7 +25,7 @@ export function ganttAxis(start: string, scale: GanttScale) {
         Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + month, 1),
       );
       const offset = Math.round(date.getTime() / 86400000) - startDay;
-      if (offset < span && offset >= 14 && span - offset >= 14)
+      if (offset < span && offset * unit >= 56 && (span - offset) * unit >= 56)
         offsets.push(offset);
     }
   }

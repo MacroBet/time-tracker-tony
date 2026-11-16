@@ -5,6 +5,7 @@ import {
   searchSavedSchedule,
   savedScheduleSearchReply,
   savedLookaheadReply,
+  matchesSavedScheduleQuery,
 } from "../src/lib/copilot-reads";
 import {
   indexSourceProgramme,
@@ -84,6 +85,14 @@ test("the two documented read requests have a bounded explicit grammar; ambiguou
     "Show me all chillers on the schedule then confirm",
     "Show me all chillers on the schedule for next month",
     "How does the two week lookahead work?",
+    "Show me overdue activities on the schedule",
+    "Show me late work on the schedule",
+    "Show me critical activities on the schedule",
+    "Show me completed tasks on the schedule",
+    "Show me tomorrow on the schedule",
+    "Show me November 2026 on the schedule",
+    "Show me active activities on the schedule",
+    "Show me missing suppliers on the schedule",
     "Show me all chillers in assets",
   ])
     assert.equal(parseCopilotReadCommand(text, now), undefined, text);
@@ -145,6 +154,31 @@ test("empty Schedule search distinguishes zero matching activity names from empt
     savedScheduleSearchReply(result).includes(
       "does not establish that no such equipment exists",
     ),
+  );
+});
+test("Schedule destination and assistant share literal ID/name matching, including internal aliases, without matching across unrelated fields", () => {
+  const index = source(3);
+  index.activities[0].activityId = "ALIAS-12";
+  index.activities[0].name = "Inspect pumps";
+  for (const query of [
+    "0",
+    "ALIAS-12",
+    "pumps",
+    "ALIAS-12 Inspect",
+    "chillers",
+  ]) {
+    const result = searchSavedSchedule(index, "p", 1, { query });
+    const displayed = querySourceProgrammeIndex(index, { q: query });
+    assert.equal(displayed.total, result.total, query);
+    assert.deepEqual(
+      displayed.activities.map((row) => row.internalId),
+      result.records.map((row) => row.internalId),
+      query,
+    );
+  }
+  assert.equal(
+    matchesSavedScheduleQuery(index.activities[0], "ALIAS-12 Inspect"),
+    false,
   );
 });
 test("a saved lookahead reply matches the deterministic report window/total, preserves missing mappings and explicitly labels zero", () => {

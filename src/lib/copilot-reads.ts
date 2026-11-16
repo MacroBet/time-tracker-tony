@@ -1,6 +1,11 @@
 import { projectDate } from "./domain";
 import type { SourceProgrammeIndex } from "./programme-source";
 import type { ProjectReportResult } from "./project-reports";
+import {
+  matchesSavedScheduleQuery,
+  normalizeSavedScheduleQuery,
+} from "./schedule-search";
+export { matchesSavedScheduleQuery } from "./schedule-search";
 
 /** A deliberately small read-command grammar. Anything else goes to the real provider. */
 export type CopilotReadCommand =
@@ -31,20 +36,14 @@ export function parseCopilotReadCommand(
   const query = search[1].trim();
   // Do not turn compound questions, filters, mutations or quoted examples into commands.
   if (
-    /\b(?:and|or|only|except|not|then|with|without|after|before|move|change|edit|delete|create|add|update|remove|assign|confirm|approve)\b/i.test(
+    /\b(?:and|or|only|except|not|then|with|without|after|before|move|change|edit|delete|create|add|update|remove|assign|confirm|approve|overdue|late|critical|noncritical|completed?|done|pending|active|progress|unassigned|missing|untested|today|tomorrow|yesterday|days?|weeks?|months?|next|last|dates?|status|activities|equipment|assets?|tasks?|work|vendors?|suppliers?|phase|area|floor)\b/i.test(
       query,
-    )
+    ) ||
+    /\b(?:19|20)\d{2}\b/.test(query)
   )
     return undefined;
   return { kind: "schedule-search", query };
 }
-
-const literalSearchTerm = (value: string) =>
-  // The singular noun matches both chiller and chillers; never stem arbitrary words.
-  value
-    .trim()
-    .toLowerCase()
-    .replace(/\bchillers\b/g, "chiller");
 
 export function searchSavedSchedule(
   index: SourceProgrammeIndex,
@@ -56,13 +55,9 @@ export function searchSavedSchedule(
     limit = 20,
   }: { query: string; offset?: number; limit?: number },
 ) {
-  const needle = literalSearchTerm(query);
-  const matching = index.activities.filter(
-    (activity) =>
-      !needle ||
-      [activity.internalId, activity.activityId, activity.name].some((value) =>
-        literalSearchTerm(value).includes(needle),
-      ),
+  const needle = normalizeSavedScheduleQuery(query);
+  const matching = index.activities.filter((activity) =>
+    matchesSavedScheduleQuery(activity, query),
   );
   const source = index.summary.sha256 !== "managed";
   const link = new URLSearchParams({

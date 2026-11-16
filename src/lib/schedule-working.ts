@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { criticalityCoverage } from "./source-criticality";
 import type { Commissioning, ScheduleActivity } from "./commissioning";
 import type {
   SourceActivityView,
@@ -189,6 +190,13 @@ export function resolveWorkingSourceIndex(
     if (existing.has(row.internalId)) continue; // Managed rows already include their persisted mirror.
     const patch = patches.get(row.internalId);
     activities.push({
+      criticality: {
+        state: "unknown",
+        totalFloatHours: null,
+        freeFloatHours: null,
+        projectId: null,
+        reason: "not-in-p6-source",
+      },
       internalId: row.internalId,
       activityId: row.activityId,
       name: row.name,
@@ -269,6 +277,25 @@ export function resolveWorkingSourceIndex(
   }
   return {
     ...source,
+    ...(source.criticality
+      ? {
+          criticality: {
+            ...source.criticality,
+            coverage: criticalityCoverage(activities),
+            workingRevision: working.revision,
+            workingStale:
+              source.criticality.workingStale ||
+              Boolean(
+                working.addedActivities.length ||
+                working.addedLinks.length ||
+                working.removedLinkIds.length ||
+                working.activityPatches.some(
+                  (patch) => patch.start || patch.finish,
+                ),
+              ),
+          },
+        }
+      : {}),
     summary: {
       ...source.summary,
       activities: activities.length,
@@ -281,7 +308,9 @@ export function resolveWorkingSourceIndex(
       calendars: [...source.filters.calendars],
       statuses: [...new Set(activities.map((a) => a.status))],
     },
-    search: activities.map((a) => `${a.activityId} ${a.name}`.toLowerCase()),
+    search: activities.map((a) =>
+      `${a.internalId} ${a.activityId} ${a.name}`.toLowerCase(),
+    ),
     wbsSearch: activities.map(
       (a) =>
         sourceWbsSearch.get(a.internalId) ??

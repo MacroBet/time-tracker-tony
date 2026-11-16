@@ -4,7 +4,7 @@ import { sourcePageAnchor, sourceBar } from "../src/lib/source-gantt";
 import type { SourceActivityView } from "../src/lib/programme-source";
 const row = (values: Partial<SourceActivityView>) =>
   ({ milestone: false, ...values }) as SourceActivityView;
-test("source view opens near the recorded page date cluster, including finish-only milestones", () => {
+test("explicit activity-date navigation uses the recorded page cluster, including finish-only milestones", () => {
   assert.equal(
     sourcePageAnchor([
       row({ start: "2026-09-18" }),

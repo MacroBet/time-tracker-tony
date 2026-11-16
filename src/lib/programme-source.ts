@@ -1,4 +1,12 @@
 import { z } from "zod";
+import { matchesSavedScheduleQuery } from "./schedule-search";
+import {
+  sourceCriticalityReader,
+  criticalityCoverage,
+  type SourceCriticality,
+  type SourceCriticalityMetadata,
+  type SourceCriticalityCoverage,
+} from "./source-criticality";
 
 /** Source records remain separate from FieldTrack's editable scheduling model. */
 const sourceTableSchema = z
@@ -154,6 +162,8 @@ export function sourceActivityDates(record: SourceRecord) {
 }
 
 export type SourceActivityView = {
+  /** Classification under the original saved P6 float rule, never current working CPM. */
+  criticality?: SourceCriticality;
   internalId: string;
   activityId: string;
   name: string;
@@ -188,6 +198,9 @@ export type SourceRelationshipView = {
 };
 
 export type SourceProgrammePage = {
+  criticality?: SourceCriticalityMetadata & {
+    filteredCoverage: SourceCriticalityCoverage;
+  };
   summary: SourceProgrammeSummary;
   activities: SourceActivityView[];
   total: number;
@@ -210,6 +223,7 @@ export type SourceProgrammePage = {
 };
 
 export type SourceProgrammeQuery = {
+  critical?: "all" | "yes" | "no" | "unknown";
   q?: string;
   wbs?: string;
   calendar?: string;
@@ -221,6 +235,7 @@ export type SourceProgrammeQuery = {
 
 /** Query index holds only the five tables used by this view, never resource archives. */
 export type SourceProgrammeIndex = {
+  criticality?: SourceCriticalityMetadata;
   summary: SourceProgrammeSummary;
   activities: SourceActivityView[];
   byId: Map<
@@ -244,6 +259,7 @@ export function indexSourceProgramme(
   summary = sourceProgrammeSummary(programme),
 ): SourceProgrammeIndex {
   const tasks = sourceRecords(programme.tables.TASK);
+  const criticality = sourceCriticalityReader(programme);
   const taskCodes = new Map(
     tasks.map((task) => [task.task_id, task.task_code]),
   );
@@ -319,6 +335,7 @@ export function indexSourceProgramme(
         ? hours / calendarHoursPerDay
         : undefined;
     return {
+      criticality: criticality.read(record),
       internalId: record.task_id,
       activityId: record.task_code,
       name: record.task_name,
@@ -339,6 +356,15 @@ export function indexSourceProgramme(
     };
   });
   return {
+    criticality: {
+      basis: "saved-p6-total-float",
+      sourceSha256: summary.sha256,
+      criteria: criticality.criteria,
+      coverage: criticalityCoverage(activities),
+      workingStale: false,
+      workingRevision: null,
+      recalculation: "not-recalculated",
+    },
     summary,
     activities,
     links,
@@ -365,7 +391,9 @@ export function indexSourceProgramme(
       })),
       statuses: [...new Set(activities.map((a) => a.status))].filter(Boolean),
     },
-    search: activities.map((a) => `${a.activityId} ${a.name}`.toLowerCase()),
+    search: activities.map((a) =>
+      `${a.internalId} ${a.activityId} ${a.name}`.toLowerCase(),
+    ),
     wbsSearch: activities.map((a) =>
       `${a.wbsId} ${a.wbsPath} ${wbs.get(a.wbsId)?.wbs_name ?? ""}`.toLowerCase(),
     ),
@@ -381,10 +409,18 @@ export function querySourceProgrammeIndex(
     wbsSearch = query.wbs?.trim().toLowerCase();
   const filtered = index.activities.filter(
     (a, i) =>
-      (!search || index.search[i].includes(search)) &&
+      (!search || matchesSavedScheduleQuery(a, search)) &&
       (!wbsSearch || index.wbsSearch[i].includes(wbsSearch)) &&
       (!query.calendar || a.calendarId === query.calendar) &&
-      (!query.status || a.status === query.status),
+      (!query.status || a.status === query.status) &&
+      (!query.critical ||
+        query.critical === "all" ||
+        (a.criticality?.state ?? "unknown") ===
+          (query.critical === "yes"
+            ? "critical"
+            : query.critical === "no"
+              ? "non-critical"
+              : "unknown")),
   );
   const pageSize = Math.min(100, Math.max(1, Math.floor(query.pageSize || 50)));
   const page = Math.min(
@@ -394,6 +430,14 @@ export function querySourceProgrammeIndex(
   const activities = filtered.slice(page * pageSize, (page + 1) * pageSize),
     ids = new Set(activities.map((a) => a.internalId));
   const result: SourceProgrammePage = {
+    ...(index.criticality
+      ? {
+          criticality: {
+            ...index.criticality,
+            filteredCoverage: criticalityCoverage(filtered),
+          },
+        }
+      : {}),
     summary: index.summary,
     activities,
     total: filtered.length,

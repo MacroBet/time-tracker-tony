@@ -36,7 +36,17 @@ export async function getSourceProgramme(request: Request, projectId: string) {
   const programme = await loadProgrammeSourceIndex(projectId, user.id);
   requireCondition(programme, 404, "No source programme in this project.");
   const query = new URL(request.url).searchParams;
+  const critical = z
+    .enum(["all", "yes", "no", "unknown"])
+    .parse(query.get("critical") ?? "all");
   const state = await loadProjectCommissioning(projectId, user.id);
+  requireCondition(
+    state?.sourceProgrammeSummary?.sha256 === programme.summary.sha256 &&
+      (!state.workingSchedule ||
+        state.workingSchedule.sourceSha256 === programme.summary.sha256),
+    409,
+    "The source Schedule changed while loading. Refresh before filtering.",
+  );
   const view =
     query.get("view") === "source"
       ? programme
@@ -47,6 +57,7 @@ export async function getSourceProgramme(request: Request, projectId: string) {
       wbs: query.get("wbs") ?? undefined,
       calendar: query.get("calendar") ?? undefined,
       status: query.get("status") ?? undefined,
+      critical,
       page: Number(query.get("page") ?? 0),
       pageSize: 50,
       internalId: query.get("internalId") ?? undefined,

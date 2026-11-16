@@ -1,14 +1,22 @@
-import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
+import {
+  ganttAxis,
+  type GanttScale,
+  type GanttHorizon,
+} from "@/lib/gantt-axis";
 
 /** Shared calendar presentation for the editable and source programme Gantts. */
 export function GanttRuler({
   start,
   scale,
+  horizon = null,
+  today,
 }: {
   start: string;
   scale: GanttScale;
+  horizon?: GanttHorizon;
+  today?: string;
 }) {
-  const { columns, width, unit } = ganttAxis(start, scale);
+  const { columns, width, unit } = ganttAxis(start, scale, horizon);
   return (
     <div
       className="relative h-14 bg-slate-50 text-xs font-medium text-slate-700"
@@ -17,7 +25,7 @@ export function GanttRuler({
       {columns.map((column, i) => (
         <span
           key={column.date}
-          className={`absolute inset-y-0 flex flex-col items-center justify-center gap-1 border-l border-slate-200 tabular-nums ${scale === "day" && column.weekend ? "bg-slate-100" : ""}`}
+          className={`absolute inset-y-0 flex flex-col items-center justify-center gap-1 border-l border-slate-200 tabular-nums ${column.date === today ? "bg-blue-100 text-blue-950" : scale === "day" && column.weekend ? "bg-slate-100" : ""}`}
           style={{
             left: column.left,
             width:

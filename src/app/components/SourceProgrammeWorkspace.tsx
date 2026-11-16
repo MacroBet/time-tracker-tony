@@ -2,20 +2,42 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Upload,
+  CalendarDays,
+  Columns3,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   type SourceProgrammePage,
   type SourceProgrammeSummary,
 } from "@/lib/programme-source";
 import { parseP6Xer } from "@/lib/p6-xer";
-import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
-import { dayNumber } from "@/lib/scheduling";
+import {
+  scheduleViewCommandEvent,
+  scheduleViewCommandResultEvent,
+  scheduleViewCommandSchema,
+  resolveScheduleViewCommand,
+} from "@/lib/schedule-view-context";
 import { projectDate } from "@/lib/domain";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { SourceProgrammeGantt } from "./SourceProgrammeGantt";
-import { sourcePageAnchor } from "@/lib/source-gantt";
+import { SourceCriticalityInfo } from "./SourceCriticalityInfo";
+import {
+  sourcePageAnchor,
+  sourceGanttInitialView,
+  reduceSourceGanttView,
+  sourceGanttColumns,
+  type SourceGanttViewState,
+  type SourceGanttViewCommand,
+  type SourceDurationMode,
+  sourceCriticalityLabel,
+} from "@/lib/source-gantt";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { InfoPopover } from "./InfoPopover";
 import { WorkingScheduleEditor } from "./WorkingScheduleEditor";
@@ -139,14 +161,25 @@ const statusLabel = (status: string) =>
 
 export function SourceProgrammeImport({
   projectId,
+  projectName,
   version,
   onImported,
 }: {
   projectId: string;
+  projectName?: string;
   version: number;
   onImported?: () => Promise<void>;
 }) {
   const id = useId();
+  const app = useApp();
+  const params = useSearchParams();
+  const destination =
+    projectName ??
+    app.projects.find((project) => project.id === projectId)?.name ??
+    projectId;
+  const [importOpen, setImportOpen] = useState(
+    params.get("setup") === "import",
+  );
   const [file, setFile] = useState<File | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -230,11 +263,16 @@ export function SourceProgrammeImport({
     }
   }
   return (
-    <details className="rounded-xl border border-slate-200 bg-white px-5 py-4">
+    <details
+      open={importOpen}
+      onToggle={(event) => setImportOpen(event.currentTarget.open)}
+      className="rounded-xl border border-slate-200 bg-white px-5 py-4"
+    >
       <summary className="min-h-11 cursor-pointer content-center text-sm font-medium text-slate-800">
         Import Primavera XER schedule
       </summary>
       <div className="mt-4 space-y-4 max-w-2xl">
+        <p className="text-sm font-medium">Destination: {destination}</p>
         <p className="text-sm leading-relaxed text-slate-600">
           Keep the complete exported schedule and its saved dates, calendars and
           relationships. This does not convert its logic into the app’s
@@ -268,7 +306,13 @@ export function SourceProgrammeImport({
             className="space-y-3 border-t border-slate-200 pt-4"
             aria-label="P6 import preview"
           >
-            <p className="font-medium">{preview.summary.projectName}</p>
+            <p className="text-sm">
+              Destination: <strong>{destination}</strong>
+            </p>
+            <p className="font-medium">
+              Source programme: {preview.summary.projectName}
+            </p>
+            <p className="text-xs text-slate-600">{preview.summary.fileName}</p>
             <p className="text-sm tabular-nums">
               {number(preview.summary.activities)} activities ·{" "}
               {number(preview.summary.relationships)} relationships ·{" "}
@@ -315,13 +359,26 @@ export function SourceProgrammeImport({
   );
 }
 
-export function SourceProgrammeWorkspace({
-  projectId,
-  summary,
-}: {
+type SourceProgrammeWorkspaceProps = {
   projectId: string;
   summary: SourceProgrammeSummary;
-}) {
+  defaultDurationMode?: SourceDurationMode;
+  defaultView?: Partial<SourceGanttViewState>;
+};
+export function SourceProgrammeWorkspace(props: SourceProgrammeWorkspaceProps) {
+  return (
+    <SourceProgrammeView
+      key={`${props.projectId}:${props.summary.sha256}`}
+      {...props}
+    />
+  );
+}
+function SourceProgrammeView({
+  projectId,
+  summary,
+  defaultDurationMode = "days",
+  defaultView,
+}: SourceProgrammeWorkspaceProps) {
   const id = useId();
   const app = useApp();
   const params = useSearchParams();
@@ -335,18 +392,68 @@ export function SourceProgrammeWorkspace({
   const [calendar, setCalendar] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(0);
-  const [scale, setScale] = useState<GanttScale>("day");
-  const [manualAnchor, setAnchor] = useState<string | null>(null);
-  const [showLinks, setShowLinks] = useState(true);
-  const [timelineReset, setTimelineReset] = useState(0);
-  const [durationMode, setDurationMode] = useState<"days" | "hours" | "hidden">(
-    "days",
+  const defaults = {
+    ...defaultView,
+    durationMode: defaultView?.durationMode ?? defaultDurationMode,
+  };
+  const [view, setView] = useState(() =>
+    sourceGanttInitialView(projectDate(), defaults),
   );
+  const { anchor, scale, horizon, showLinks, durationMode, columns, critical } =
+    view;
+  const viewRef = useRef(view);
+  const [viewportDate, setViewportDate] = useState(anchor);
+  const viewportDateRef = useRef(anchor);
+  function updateViewportDate(date: string) {
+    viewportDateRef.current = date;
+    setViewportDate(date);
+  }
+  const [timelineReset, setTimelineReset] = useState(0);
+  function applyViewCommand(command: SourceGanttViewCommand) {
+    const navigates = [
+      "date",
+      "today",
+      "pan",
+      "scale",
+      "horizon",
+      "reset",
+    ].includes(command.type);
+    const next = reduceSourceGanttView(
+      navigates
+        ? { ...viewRef.current, anchor: viewportDateRef.current }
+        : viewRef.current,
+      command,
+      projectDate(),
+      defaults,
+    );
+    viewRef.current = next;
+    setView(next);
+    if (command.type === "critical" || command.type === "reset") setPage(0);
+    if (navigates) {
+      updateViewportDate(next.anchor);
+      setTimelineReset((value) => value + 1);
+    }
+  }
   const detailTrigger = useRef<HTMLElement | null>(null);
   const detailContent = useRef<HTMLDivElement | null>(null);
   const detailRequest = useRef<AbortController | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   useEffect(() => () => detailRequest.current?.abort(), []);
+  const [refresh, setRefresh] = useState(0);
+  const loadedKey = useRef<string | null>(null);
+  const requestKey = JSON.stringify([
+    projectId,
+    summary.sha256,
+    projectVersion,
+    projection,
+    query,
+    wbs,
+    calendar,
+    status,
+    critical,
+    page,
+    refresh,
+  ]);
   const [data, setData] = useState<
     | (SourceProgrammePage & {
         workingRevision?: number;
@@ -358,9 +465,9 @@ export function SourceProgrammeWorkspace({
   const [detail, setDetail] = useState<SourceProgrammePage["detail"]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [refresh, setRefresh] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
+    loadedKey.current = null;
     try {
       sessionStorage.removeItem(`fieldtrack:schedule-view:${projectId}`);
     } catch {
@@ -375,6 +482,7 @@ export function SourceProgrammeWorkspace({
           wbs,
           calendar,
           status,
+          critical,
           page: String(page),
           view: projection,
         });
@@ -387,31 +495,17 @@ export function SourceProgrammeWorkspace({
           if (!response.ok)
             throw new Error(result.error || "Could not load schedule.");
           if (controller.signal.aborted) return;
+          loadedKey.current = requestKey;
           setData(result);
-          if (projection === "working") {
-            try {
-              sessionStorage.setItem(
-                `fieldtrack:schedule-view:${projectId}`,
-                JSON.stringify({
-                  mode: "working",
-                  projectId,
-                  sourceSha256: summary.sha256,
-                  projectVersion: result.projectVersion ?? projectVersion,
-                  query: { q: query, wbs, calendar, status },
-                  page: result.page,
-                }),
-              );
-            } catch {
-              /* A missing snapshot disables row-number commands; no fallback guesses. */
-            }
-          }
         } catch (failure) {
-          if (!controller.signal.aborted)
+          if (!controller.signal.aborted) {
+            setData(null);
             setError(
               failure instanceof Error
                 ? failure.message
                 : "Could not load schedule.",
             );
+          }
         } finally {
           if (!controller.signal.aborted) setLoading(false);
         }
@@ -429,23 +523,127 @@ export function SourceProgrammeWorkspace({
     wbs,
     calendar,
     status,
+    critical,
     page,
     refresh,
     projection,
     projectVersion,
+    requestKey,
   ]);
-  const anchor =
-    manualAnchor ?? sourcePageAnchor(data?.activities ?? []) ?? projectDate();
-  const axis = ganttAxis(anchor, scale);
-  const firstDay = dayNumber(anchor);
+  useEffect(() => {
+    if (
+      !data ||
+      loading ||
+      error ||
+      projection !== "working" ||
+      loadedKey.current !== requestKey
+    )
+      return;
+    try {
+      sessionStorage.setItem(
+        `fieldtrack:schedule-view:${projectId}`,
+        JSON.stringify({
+          mode: "working",
+          projectId,
+          sourceSha256: summary.sha256,
+          projectVersion: data.projectVersion ?? projectVersion,
+          query: { q: query, wbs, calendar, status, critical },
+          page: data.page,
+          display: { ...view, anchor: viewportDate },
+        }),
+      );
+    } catch {
+      /* Missing storage disables view/row commands rather than guessing. */
+    }
+  }, [
+    data,
+    loading,
+    error,
+    projection,
+    requestKey,
+    projectId,
+    summary.sha256,
+    projectVersion,
+    query,
+    wbs,
+    calendar,
+    status,
+    critical,
+    view,
+    viewportDate,
+  ]);
+  useEffect(() => {
+    function onCommand(event: Event) {
+      const parsed = scheduleViewCommandSchema.safeParse(
+        (event as CustomEvent<unknown>).detail,
+      );
+      if (!parsed.success) return;
+      const message = parsed.data;
+      function acknowledge(ok: boolean, error?: string) {
+        if (message.requestId)
+          window.dispatchEvent(
+            new CustomEvent(scheduleViewCommandResultEvent, {
+              detail: {
+                requestId: message.requestId,
+                projectId: message.projectId,
+                ok,
+                ...(error ? { error } : {}),
+              },
+            }),
+          );
+      }
+      try {
+        if (projection !== "working")
+          throw Error("Open the working Schedule before changing its view.");
+        if (error) throw Error("Reload the Schedule before changing its view.");
+        if (loading || loadedKey.current !== requestKey)
+          throw Error(
+            "The Schedule is loading. Try the view command again when it is ready.",
+          );
+        const command = resolveScheduleViewCommand(message, {
+          projectId,
+          sourceSha256: summary.sha256,
+          projectVersion: data?.projectVersion ?? projectVersion,
+        });
+        applyViewCommand(command);
+        acknowledge(true);
+      } catch (failure) {
+        acknowledge(
+          false,
+          failure instanceof Error
+            ? failure.message
+            : "This view command could not be applied.",
+        );
+      }
+    }
+    window.addEventListener(scheduleViewCommandEvent, onCommand);
+    return () =>
+      window.removeEventListener(scheduleViewCommandEvent, onCommand);
+    // View changes share the exact UI reducer and rebind to the latest viewport.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    projection,
+    loading,
+    error,
+    requestKey,
+    projectId,
+    summary.sha256,
+    projectVersion,
+    data?.projectVersion,
+    view,
+    viewportDate,
+  ]);
   const visible = data?.activities ?? [];
-  function shift(direction: number) {
-    setAnchor(
-      new Date((firstDay + direction * axis.span) * 86400000)
-        .toISOString()
-        .slice(0, 10),
-    );
-  }
+  const activeFilters =
+    [wbs, calendar, status].filter(Boolean).length + Number(critical !== "all");
+  const scaleLabel = { day: "DAY", week: "WK", month: "MTH" }[scale];
+  const columnLabel = {
+    progress: "Steps %",
+    start: "Start date",
+    finish: "Finish date",
+    wbs: "WBS",
+    calendar: "Calendar",
+  };
   const openDetail = useCallback(
     async (internalId: string, trigger: HTMLElement) => {
       detailRequest.current?.abort();
@@ -474,7 +672,7 @@ export function SourceProgrammeWorkspace({
         if (!controller.signal.aborted) setDetailLoading(false);
       }
     },
-    [projectId, projection],
+    [projectId, projection, setDetailLoading, setDetail],
   );
   const linkedActivity = params.get("activity") ?? params.get("internalId");
   useEffect(() => {
@@ -490,102 +688,70 @@ export function SourceProgrammeWorkspace({
   }, [linkedActivity, openDetail]);
   return (
     <div className="space-y-4">
-      <header className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div
-            className="flex flex-wrap gap-2"
-            aria-label="Schedule projection"
+      <header className="flex flex-wrap items-center justify-between gap-2">
+        <div
+          className="flex flex-wrap items-center gap-2"
+          aria-label="Schedule projection"
+        >
+          <Button
+            variant={projection === "working" ? "default" : "outline"}
+            aria-pressed={projection === "working"}
+            onClick={() => {
+              if (projection === "working") return;
+              setProjection("working");
+              setLoading(true);
+              setData(null);
+            }}
           >
-            <Button
-              variant={projection === "working" ? "default" : "outline"}
-              aria-pressed={projection === "working"}
-              onClick={() => {
-                if (projection === "working") return;
-                setProjection("working");
-                setLoading(true);
-                setData(null);
-                setAnchor(null);
-              }}
-            >
-              {projection === "working" && (loading || !data)
-                ? "Working schedule · Loading…"
-                : `Working schedule · revision ${data?.workingRevision ?? project?.commissioning?.workingSchedule?.revision ?? 0}`}
-            </Button>
-            <Button
-              variant={projection === "source" ? "default" : "outline"}
-              aria-pressed={projection === "source"}
-              onClick={() => {
-                if (projection === "source") return;
-                setProjection("source");
-                setLoading(true);
-                setData(null);
-                setEditor(null);
-                setAnchor(null);
-              }}
-            >
-              Original source
-            </Button>
-          </div>
-          {projection === "working" && hasModule(app.currentUser, "tasks") && (
-            <Button variant="outline" onClick={() => setEditor({})}>
-              Create an asset activity
-            </Button>
-          )}
-        </div>
-        <p className="text-sm text-slate-600">
-          {projection === "source"
-            ? "Original imported dates and relationships · read only"
-            : "Working dates and links · original source retained · no automatic P6 recalculation"}
-        </p>
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="min-w-0 text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
-            {summary.projectName}
-          </h2>
+            Working schedule
+          </Button>
+          <Button
+            variant={projection === "source" ? "default" : "outline"}
+            aria-pressed={projection === "source"}
+            onClick={() => {
+              if (projection === "source") return;
+              setProjection("source");
+              setLoading(true);
+              setData(null);
+              setEditor(null);
+            }}
+          >
+            Original source
+          </Button>
+          <span
+            className="text-xs tabular-nums text-slate-600"
+            aria-live="polite"
+          >
+            {loading
+              ? "Loading…"
+              : `${number(data?.total ?? 0)} matching activities`}
+          </span>
           <InfoPopover label="About this source schedule">
+            <p className="font-medium text-slate-950">{summary.projectName}</p>
             <p>
-              Dates are the saved P6 actual and remaining forecast. Relationship
-              types, lag hours and calendar definitions are retained. This view
-              does not recalculate the source schedule.
+              {projection === "working"
+                ? `Working revision ${data?.workingRevision ?? project?.commissioning?.workingSchedule?.revision ?? 0}. Working dates and links; original source retained.`
+                : "Original imported dates and relationships; read only."}
             </p>
             <p>
-              Days use each activity’s saved calendar hours per day. If that
-              value is unavailable, the original duration stays in hours. Dates
-              and source hours are unchanged.
+              {number(data?.summary.activities ?? summary.activities)}{" "}
+              activities ·{" "}
+              {number(data?.summary.relationships ?? summary.relationships)}{" "}
+              relationships · {number(summary.calendars)} calendars ·{" "}
+              {number(summary.wbs)} WBS records.
+            </p>
+            <p>
+              Dates are saved actual and remaining forecasts. No automatic P6
+              recalculation. Days use each activity’s saved calendar hours per
+              day; unavailable conversions stay in source hours.
             </p>
           </InfoPopover>
         </div>
-        <dl className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4 sm:max-w-3xl">
-          {[
-            [
-              "Activities",
-              projection === "working"
-                ? loading || !data
-                  ? null
-                  : data.summary.activities
-                : summary.activities,
-            ],
-            [
-              "Relationships",
-              projection === "working"
-                ? loading || !data
-                  ? null
-                  : data.summary.relationships
-                : summary.relationships,
-            ],
-            ["Calendars", summary.calendars],
-            ["WBS records", summary.wbs],
-          ].map(([label, value]) => (
-            <div
-              key={label}
-              className="flex items-baseline justify-between gap-2 border-b border-slate-200 pb-2"
-            >
-              <dt className="text-xs text-slate-600">{label}</dt>
-              <dd className="text-base font-semibold tabular-nums text-slate-950">
-                {value === null ? "…" : number(Number(value))}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        {projection === "working" && hasModule(app.currentUser, "tasks") && (
+          <Button variant="outline" onClick={() => setEditor({})}>
+            Create an asset activity
+          </Button>
+        )}
       </header>
       {editor && (
         <WorkingScheduleEditor
@@ -603,86 +769,150 @@ export function SourceProgrammeWorkspace({
         />
       )}
       <section
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="flex flex-wrap items-center gap-2"
         aria-label="Filter schedule"
       >
-        <label
-          htmlFor={`${id}-query`}
-          className="space-y-2 text-sm font-medium"
-        >
+        <label htmlFor={`${id}-query`} className="sr-only">
           Activity ID or name
-          <Input
-            id={`${id}-query`}
-            className="min-h-11"
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value);
-              setPage(0);
-              setAnchor(null);
-            }}
-            placeholder="Find an activity"
-          />
         </label>
-        <label htmlFor={`${id}-wbs`} className="space-y-2 text-sm font-medium">
-          WBS ID or path
-          <Input
-            id={`${id}-wbs`}
-            className="min-h-11"
-            value={wbs}
-            onChange={(event) => {
-              setWbs(event.target.value);
-              setPage(0);
-              setAnchor(null);
-            }}
-            placeholder="Search a work package"
-          />
-        </label>
-        <label
-          htmlFor={`${id}-calendar`}
-          className="space-y-2 text-sm font-medium"
+        <Input
+          id={`${id}-query`}
+          className="min-h-11 min-w-40 flex-1 sm:max-w-sm"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setPage(0);
+          }}
+          placeholder="Find an activity by ID or name"
+        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              aria-label={`Schedule filters${activeFilters ? `, ${activeFilters} active` : ""}`}
+            >
+              <SlidersHorizontal className="size-4" aria-hidden="true" />
+              Filters{activeFilters > 0 ? ` · ${activeFilters}` : ""}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            collisionPadding={16}
+            className="w-80 max-w-[calc(100vw-2rem)] space-y-3 bg-white"
+          >
+            <label htmlFor={`${id}-wbs`} className="block text-sm font-medium">
+              WBS ID or path
+              <Input
+                id={`${id}-wbs`}
+                className="mt-1 min-h-11"
+                value={wbs}
+                onChange={(event) => {
+                  setWbs(event.target.value);
+                  setPage(0);
+                }}
+                placeholder="Search a work package"
+              />
+            </label>
+            <label
+              htmlFor={`${id}-calendar`}
+              className="block text-sm font-medium"
+            >
+              Calendar
+              <select
+                id={`${id}-calendar`}
+                className="mt-1 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                value={calendar}
+                onChange={(event) => {
+                  setCalendar(event.target.value);
+                  setPage(0);
+                }}
+              >
+                <option value="">All calendars</option>
+                {data?.filters.calendars.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name || item.id}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label
+              htmlFor={`${id}-status`}
+              className="block text-sm font-medium"
+            >
+              Status
+              <select
+                id={`${id}-status`}
+                className="mt-1 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                value={status}
+                onChange={(event) => {
+                  setStatus(event.target.value);
+                  setPage(0);
+                }}
+              >
+                <option value="">All statuses</option>
+                {data?.filters.statuses.map((item) => (
+                  <option key={item} value={item}>
+                    {statusLabel(item)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label
+              htmlFor={`${id}-critical`}
+              className="block text-sm font-medium"
+            >
+              Saved P6 criticality
+              <select
+                id={`${id}-critical`}
+                className="mt-1 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                value={critical}
+                onChange={(event) =>
+                  applyViewCommand({
+                    type: "critical",
+                    filter: event.target
+                      .value as SourceGanttViewState["critical"],
+                  })
+                }
+              >
+                <option value="all">All activities</option>
+                <option value="yes">Critical in saved P6</option>
+                <option value="no">Non-critical in saved P6</option>
+                <option value="unknown">Unknown criticality</option>
+              </select>
+            </label>
+          </PopoverContent>
+        </Popover>
+        <Button
+          variant={critical === "yes" ? "default" : "outline"}
+          aria-pressed={critical === "yes"}
+          onClick={() =>
+            applyViewCommand({
+              type: "critical",
+              filter: critical === "yes" ? "all" : "yes",
+            })
+          }
         >
-          Calendar
-          <select
-            id={`${id}-calendar`}
-            className="block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-            value={calendar}
-            onChange={(event) => {
-              setCalendar(event.target.value);
+          P6 critical
+        </Button>
+        <SourceCriticalityInfo
+          metadata={loading ? undefined : data?.criticality}
+          loading={loading}
+        />
+        {(query || activeFilters > 0) && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setQuery("");
+              setWbs("");
+              setCalendar("");
+              setStatus("");
+              applyViewCommand({ type: "critical", filter: "all" });
               setPage(0);
-              setAnchor(null);
             }}
           >
-            <option value="">All calendars</option>
-            {data?.filters.calendars.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name || item.id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label
-          htmlFor={`${id}-status`}
-          className="space-y-2 text-sm font-medium"
-        >
-          Status
-          <select
-            id={`${id}-status`}
-            className="block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-            value={status}
-            onChange={(event) => {
-              setStatus(event.target.value);
-              setPage(0);
-              setAnchor(null);
-            }}
-          >
-            <option value="">All statuses</option>
-            {data?.filters.statuses.map((item) => (
-              <option key={item} value={item}>
-                {statusLabel(item)}
-              </option>
-            ))}
-          </select>
-        </label>
+            Clear filters
+          </Button>
+        )}
       </section>
       {error && (
         <div role="alert" className="space-y-2 text-sm text-red-700">
@@ -699,6 +929,14 @@ export function SourceProgrammeWorkspace({
       {!loading && data && !visible.length ? (
         <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
           <p aria-live="polite">No activities match these filters.</p>
+          {critical === "yes" &&
+            Boolean(data.criticality?.coverage.unknown) && (
+              <p>
+                Saved P6 criticality is unknown for{" "}
+                {number(data.criticality!.coverage.unknown)} activities in this
+                schedule. Missing float is not treated as non-critical.
+              </p>
+            )}
           <Button
             variant="outline"
             className="min-h-11"
@@ -707,8 +945,8 @@ export function SourceProgrammeWorkspace({
               setWbs("");
               setCalendar("");
               setStatus("");
+              applyViewCommand({ type: "critical", filter: "all" });
               setPage(0);
-              setAnchor(null);
             }}
           >
             Clear filters
@@ -719,121 +957,224 @@ export function SourceProgrammeWorkspace({
           data={loading ? null : data}
           anchor={anchor}
           scale={scale}
+          horizon={horizon}
+          today={projectDate()}
+          columns={columns}
+          onViewportDateChange={updateViewportDate}
           showLinks={showLinks}
           loading={loading}
           progress={data?.activityProgress}
           projectId={projectId}
           firstRowNumber={(data?.page ?? 0) * (data?.pageSize ?? 50) + 1}
           durationMode={durationMode}
-          onDurationModeChange={setDurationMode}
           resetViewKey={timelineReset}
           onSelect={openDetail}
           onGoTo={(row) => {
             const value = sourcePageAnchor([row]);
-            if (value) setAnchor(value);
+            if (value) applyViewCommand({ type: "date", date: value });
           }}
           controls={
-            <div className="flex flex-wrap items-end gap-3">
-              <label htmlFor={`${id}-anchor`} className="text-sm">
-                Go to date
-                <Input
-                  id={`${id}-anchor`}
-                  aria-label="Gantt go to date"
-                  className="min-h-11"
-                  type="date"
-                  value={anchor}
-                  onChange={(event) => {
-                    if (event.target.value) setAnchor(event.target.value);
-                  }}
-                />
-              </label>
-              <label htmlFor={`${id}-scale`} className="text-sm">
-                Scale
-                <select
-                  id={`${id}-scale`}
-                  aria-label="Gantt scale"
-                  className="block min-h-11 rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-                  value={scale}
-                  onChange={(event) =>
-                    setScale(event.target.value as GanttScale)
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  className="min-h-11 min-w-11 px-2"
+                  onClick={() =>
+                    applyViewCommand({ type: "pan", direction: -1 })
                   }
+                  aria-label="Earlier timeline"
                 >
-                  <option value="day">Days</option>
-                  <option value="week">Weeks</option>
-                  <option value="month">Months</option>
-                </select>
+                  <ArrowLeft className="size-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="min-h-11 min-w-11 px-2"
+                  onClick={() =>
+                    applyViewCommand({ type: "pan", direction: 1 })
+                  }
+                  aria-label="Later timeline"
+                >
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => applyViewCommand({ type: "today" })}
+                >
+                  Today
+                </Button>
+              </div>
+              <label htmlFor={`${id}-anchor`} className="sr-only">
+                Gantt go to date
               </label>
-              <Button
-                variant="outline"
-                className="min-h-11"
-                onClick={() => shift(-1)}
-                aria-label="Earlier timeline"
-              >
-                <ArrowLeft className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="min-h-11"
-                onClick={() => shift(1)}
-                aria-label="Later timeline"
-              >
-                <ArrowRight className="size-4" />
-              </Button>
-              <Button
-                variant="outline"
-                className="min-h-11"
-                disabled={!visible.some((row) => row.start || row.finish)}
-                onClick={() => {
-                  setAnchor(null);
-                  setTimelineReset((value) => value + 1);
+              <Input
+                id={`${id}-anchor`}
+                aria-label="Gantt go to date"
+                className="min-h-11 w-[148px]"
+                type="date"
+                value={viewportDate}
+                onChange={(event) => {
+                  if (event.target.value)
+                    applyViewCommand({
+                      type: "date",
+                      date: event.target.value,
+                    });
                 }}
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    aria-label={`Calendar view: ${scaleLabel}${horizon ? ` · ${horizon / 7}WK` : ""}`}
+                  >
+                    <CalendarDays className="size-4" aria-hidden="true" />
+                    {scaleLabel}
+                    {horizon ? ` · ${horizon / 7}WK` : ""}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  collisionPadding={16}
+                  className="w-80 max-w-[calc(100vw-2rem)] space-y-3 bg-white"
+                >
+                  <p className="text-sm font-medium">Calendar view</p>
+                  <div
+                    className="flex gap-1"
+                    role="group"
+                    aria-label="Gantt scale"
+                  >
+                    {(["day", "week", "month"] as const).map((value) => (
+                      <Button
+                        key={value}
+                        variant={scale === value ? "default" : "outline"}
+                        aria-pressed={scale === value}
+                        onClick={() =>
+                          applyViewCommand({ type: "scale", scale: value })
+                        }
+                      >
+                        {{ day: "DAY", week: "WK", month: "MTH" }[value]}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs font-medium text-slate-600">
+                    Date window
+                  </p>
+                  <div
+                    className="flex flex-wrap gap-1"
+                    role="group"
+                    aria-label="Gantt date window"
+                  >
+                    {([null, 14, 28, 42] as const).map((value) => (
+                      <Button
+                        key={value ?? "auto"}
+                        className="px-3"
+                        variant={horizon === value ? "default" : "outline"}
+                        aria-pressed={horizon === value}
+                        onClick={() =>
+                          applyViewCommand({ type: "horizon", horizon: value })
+                        }
+                      >
+                        {value ? `${value / 7}WK` : "Auto"}
+                      </Button>
+                    ))}
+                  </div>
+                  <p className="text-xs leading-5 text-slate-600">
+                    Scale changes the ruler. The date window changes its span.
+                    Activities and report lookahead filters stay unchanged.
+                  </p>
+                </PopoverContent>
+              </Popover>
+              <label
+                htmlFor={`${id}-duration`}
+                className="flex items-center gap-2 text-sm"
               >
-                Show these activity dates
-              </Button>
-              <label className="flex min-h-11 items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={showLinks}
-                  onChange={(e) => setShowLinks(e.target.checked)}
-                />
-                Show dependency links
-              </label>
-              <InfoPopover label="About timeline navigation and links">
-                <p>
-                  Show these activity dates centres the timeline on the most
-                  common saved date among the activities loaded on this page.
-                  Use a row’s calendar button to locate an individual activity.
-                </p>
-                <p>
-                  Dependency links are arrows between saved predecessor and
-                  successor dates. Showing or hiding them changes the display
-                  only; it does not change the schedule.
-                </p>
-              </InfoPopover>
-              <span
-                className="flex min-h-11 items-center text-xs tabular-nums text-slate-600"
-                aria-live="polite"
-              >
-                {loading
-                  ? "Loading schedule…"
-                  : `${number(data?.total ?? 0)} matching activities`}
-              </span>
-              <label htmlFor={`${id}-duration`} className="text-sm">
                 Duration
                 <select
                   id={`${id}-duration`}
                   aria-label="Duration display"
                   value={durationMode}
                   onChange={(event) =>
-                    setDurationMode(event.target.value as typeof durationMode)
+                    applyViewCommand({
+                      type: "duration",
+                      mode: event.target.value as SourceDurationMode,
+                    })
                   }
-                  className="block min-h-11 rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                  className="block min-h-11 w-24 rounded-md border border-slate-300 bg-white px-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
                 >
                   <option value="days">Days</option>
                   <option value="hours">Hours</option>
                   <option value="hidden">Hidden</option>
                 </select>
               </label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">
+                    <Columns3 className="size-4" aria-hidden="true" />
+                    Columns
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  collisionPadding={16}
+                  className="w-72 max-w-[calc(100vw-2rem)] space-y-2 bg-white"
+                >
+                  <p className="text-sm font-medium">Visible columns</p>
+                  <p className="text-xs text-slate-600">
+                    Activity name and ID stay visible.
+                  </p>
+                  {sourceGanttColumns.map((column) => (
+                    <label
+                      key={column}
+                      className="flex min-h-11 items-center gap-3 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={columns.includes(column)}
+                        onChange={(event) =>
+                          applyViewCommand({
+                            type: "column",
+                            column,
+                            visible: event.target.checked,
+                          })
+                        }
+                      />
+                      {columnLabel[column]}
+                    </label>
+                  ))}
+                  <label className="flex min-h-11 items-center gap-3 border-t text-sm">
+                    <input
+                      type="checkbox"
+                      checked={showLinks}
+                      onChange={(event) =>
+                        applyViewCommand({
+                          type: "links",
+                          visible: event.target.checked,
+                        })
+                      }
+                    />
+                    Dependency links
+                  </label>
+                  <p className="text-xs text-slate-600">
+                    Changes apply to this view. Reset restores the project
+                    defaults and Today.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => applyViewCommand({ type: "reset" })}
+                  >
+                    Reset view
+                  </Button>
+                </PopoverContent>
+              </Popover>
+              <Button
+                variant="ghost"
+                disabled={!visible.some((row) => row.start || row.finish)}
+                onClick={() => {
+                  const date = sourcePageAnchor(visible);
+                  if (date) applyViewCommand({ type: "date", date });
+                }}
+              >
+                Activity dates
+              </Button>
             </div>
           }
         />
@@ -854,7 +1195,6 @@ export function SourceProgrammeWorkspace({
             disabled={loading || !data || data.page === 0}
             onClick={() => {
               setPage((value) => Math.max(0, value - 1));
-              setAnchor(null);
             }}
           >
             Previous 50
@@ -867,7 +1207,6 @@ export function SourceProgrammeWorkspace({
             }
             onClick={() => {
               setPage((value) => value + 1);
-              setAnchor(null);
             }}
           >
             Next 50
@@ -935,6 +1274,9 @@ export function SourceProgrammeWorkspace({
                 </p>
                 <p className="text-sm text-slate-600 break-words">
                   {detail.activity.wbsPath}
+                </p>
+                <p className="text-sm text-slate-600">
+                  {sourceCriticalityLabel(detail.activity.criticality)}
                 </p>
                 {projection === "working" && (
                   <Button

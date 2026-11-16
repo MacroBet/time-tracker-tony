@@ -326,6 +326,9 @@ export async function getWorkingSchedule(request: Request, projectId: string) {
   const { user, state, source, data } = await authorized(projectId);
   const params = new URL(request.url).searchParams,
     original = params.get("view") === "source";
+  const critical = z
+    .enum(["all", "yes", "no", "unknown"])
+    .parse(params.get("critical") ?? "all");
   const index = original
     ? source
     : resolveWorkingSourceIndex(source, state.workingSchedule);
@@ -334,6 +337,7 @@ export async function getWorkingSchedule(request: Request, projectId: string) {
     wbs: params.get("wbs") ?? undefined,
     calendar: params.get("calendar") ?? undefined,
     status: params.get("status") ?? undefined,
+    critical,
     page: Number(params.get("page") ?? 0),
     pageSize: 50,
     internalId: params.get("internalId") ?? undefined,

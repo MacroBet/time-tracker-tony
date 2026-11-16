@@ -1,12 +1,29 @@
 "use client";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { CalendarClock, Eye, EyeOff } from "lucide-react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { CalendarClock } from "lucide-react";
 import type {
   SourceActivityView,
   SourceProgrammePage,
 } from "@/lib/programme-source";
-import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
-import { sourceBar } from "@/lib/source-gantt";
+import {
+  ganttAxis,
+  type GanttScale,
+  type GanttHorizon,
+} from "@/lib/gantt-axis";
+import {
+  sourceBar,
+  sourceCriticalityLabel,
+  sourceViewport,
+  shiftSourceDate,
+  type SourceGanttColumn,
+} from "@/lib/source-gantt";
 import { dayNumber } from "@/lib/scheduling";
 import { GanttRuler } from "./GanttRuler";
 import { InfoPopover } from "./InfoPopover";
@@ -19,11 +36,14 @@ export function SourceProgrammeGantt({
   data,
   anchor,
   scale,
+  horizon = null,
+  today,
+  columns,
+  onViewportDateChange,
   showLinks,
   loading,
   controls,
   durationMode,
-  onDurationModeChange,
   resetViewKey,
   projectId,
   progress,
@@ -34,11 +54,14 @@ export function SourceProgrammeGantt({
   data: SourceProgrammePage | null;
   anchor: string;
   scale: GanttScale;
+  horizon?: GanttHorizon;
+  today: string;
+  columns: SourceGanttColumn[];
+  onViewportDateChange: (date: string) => void;
   showLinks: boolean;
   loading: boolean;
   controls: ReactNode;
   durationMode: "days" | "hours" | "hidden";
-  onDurationModeChange: (mode: "days" | "hours" | "hidden") => void;
   resetViewKey: number;
   projectId: string;
   progress?: Record<string, ActivityStepProgress>;
@@ -47,10 +70,17 @@ export function SourceProgrammeGantt({
   onGoTo: (row: SourceActivityView) => void;
 }) {
   const showDuration = durationMode !== "hidden";
-  const otherColumnsWidth = 44 + 88 + (showDuration ? 80 : 0) + 96 + 96;
+  const show = (column: SourceGanttColumn) => columns.includes(column);
+  const otherColumnsWidth =
+    (show("progress") ? 56 : 0) +
+    (showDuration ? 72 : 0) +
+    (show("start") ? 96 : 0) +
+    (show("finish") ? 96 : 0) +
+    (show("wbs") ? 120 : 0) +
+    (show("calendar") ? 120 : 0);
   const marker = useId().replace(/:/g, "");
   const scroller = useRef<HTMLDivElement>(null);
-  const axis = ganttAxis(anchor, scale),
+  const axis = ganttAxis(anchor, scale, horizon),
     rows = data?.activities ?? [];
   const positions = new Map(
     rows.map((row, index) => [row.internalId, { row, index }]),
@@ -58,45 +88,58 @@ export function SourceProgrammeGantt({
   const x = (date: string) => (dayNumber(date) - dayNumber(anchor)) * axis.unit;
   const links = data?.pageLinks ?? [];
   const [visiblePixels, setVisiblePixels] = useState({ from: 0, to: 0 });
+  const lastViewport = useRef({ from: 0, scrollLeft: 0, otherColumnsWidth });
   function updateViewport() {
     const el = scroller.current;
     if (!el) return;
     const nameWidth = parseFloat(
       getComputedStyle(el).getPropertyValue("--source-activity-width"),
     );
-    const tableWidth = nameWidth + otherColumnsWidth;
-    setVisiblePixels({
-      from: Math.max(0, el.scrollLeft + nameWidth - tableWidth),
-      to: Math.max(
-        0,
-        Math.min(axis.width, el.scrollLeft + el.clientWidth - tableWidth),
-      ),
+    const viewport = sourceViewport({
+      scrollLeft: el.scrollLeft,
+      clientWidth: el.clientWidth,
+      nameWidth,
+      otherColumnsWidth,
+      axisWidth: axis.width,
+      unit: axis.unit,
     });
+    lastViewport.current = {
+      from: viewport.from,
+      scrollLeft: el.scrollLeft,
+      otherColumnsWidth,
+    };
+    setVisiblePixels({ from: viewport.from, to: viewport.to });
+    onViewportDateChange(shiftSourceDate(anchor, viewport.dayOffset));
   }
+  // Explicit date, scale and project changes must clear the old horizontal offset.
+  // Otherwise a Today input can still display December columns after a November reset.
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    el.scrollLeft = el.clientWidth < 500 ? otherColumnsWidth : 0;
+    updateViewport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anchor, scale, horizon, resetViewKey, projectId]);
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const previous = lastViewport.current;
+    el.scrollLeft =
+      previous.from +
+      (el.clientWidth < 500 || previous.scrollLeft >= previous.otherColumnsWidth
+        ? otherColumnsWidth
+        : 0);
+    updateViewport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otherColumnsWidth]);
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
-    const resize = () => {
-      if (el.clientWidth < 500 && el.scrollLeft === 0)
-        el.scrollLeft = otherColumnsWidth;
-      updateViewport();
-    };
-    const observer = new ResizeObserver(resize);
+    const observer = new ResizeObserver(updateViewport);
     observer.observe(el);
-    resize();
     return () => observer.disconnect();
-    // Axis width changes only with the explicitly selected calendar scale.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [axis.width, otherColumnsWidth]);
-  useEffect(() => {
-    if (resetViewKey > 0 && scroller.current) {
-      scroller.current.scrollLeft =
-        scroller.current.clientWidth < 500 ? otherColumnsWidth : 0;
-      updateViewport();
-    }
-    // Explicitly re-centre even when the automatic page anchor has not changed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetViewKey]);
+  }, [anchor, axis.width, axis.unit, otherColumnsWidth]);
   const inWindow = rows.filter((row) => {
     const bar = sourceBar(row, anchor, axis.span, axis.unit);
     return (
@@ -117,9 +160,9 @@ export function SourceProgrammeGantt({
   return (
     <section
       aria-label="Source schedule Gantt"
-      className="relative isolate z-0 [--source-activity-width:220px] sm:[--source-activity-width:360px] overflow-hidden rounded-xl border border-slate-200 bg-white"
+      className="relative isolate z-0 [--source-activity-width:180px] sm:[--source-activity-width:280px] overflow-hidden rounded-xl border border-slate-200 bg-white"
     >
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b px-4 py-3">
+      <div className="flex flex-wrap items-end justify-between gap-2 border-b px-3 py-2">
         {controls}
       </div>
       <div
@@ -130,7 +173,7 @@ export function SourceProgrammeGantt({
         aria-busy={loading}
         tabIndex={0}
         className="relative overflow-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
-        style={{ height: "min(60dvh, 560px)", minHeight: 240 }}
+        style={{ height: "min(65dvh, 640px)", minHeight: 240 }}
       >
         <table
           className="table-fixed border-collapse text-sm tabular-nums"
@@ -146,53 +189,36 @@ export function SourceProgrammeGantt({
           </caption>
           <colgroup>
             <col style={{ width: "var(--source-activity-width)" }} />
-            <col style={{ width: 44 }} />
-            <col style={{ width: 88 }} />
-            {showDuration && <col style={{ width: 80 }} />}
-            <col style={{ width: 96 }} />
-            <col style={{ width: 96 }} />
+            {show("progress") && <col style={{ width: 56 }} />}
+            {showDuration && <col style={{ width: 72 }} />}
+            {show("start") && <col style={{ width: 96 }} />}
+            {show("finish") && <col style={{ width: 96 }} />}
+            {show("wbs") && <col style={{ width: 120 }} />}
+            {show("calendar") && <col style={{ width: 120 }} />}
             <col style={{ width: axis.width }} />
           </colgroup>
           <thead className="sticky top-0 z-10 bg-slate-50 text-left text-slate-600">
             <tr className="h-14">
               <th className="sticky left-0 z-10 border-b bg-slate-50 px-3">
-                <div className="flex items-center justify-between gap-2">
-                  Activity
-                  {!showDuration && (
-                    <button
-                      type="button"
-                      className="grid min-h-11 min-w-11 place-items-center rounded-md hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
-                      aria-label="Show duration column"
-                      title="Show duration column"
-                      onClick={() => onDurationModeChange("days")}
-                    >
-                      <Eye className="size-4" aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
+                Activity / ID
               </th>
-              <th className="border-b">
-                <span className="sr-only">Show activity dates</span>
-              </th>
-              <th className="border-b px-2">Steps %</th>
+              {show("progress") && <th className="border-b px-1">Steps %</th>}
               {showDuration && (
-                <th className="border-b px-1">
-                  <button
-                    type="button"
-                    className="flex min-h-11 w-full items-center justify-between gap-1 rounded-md px-1 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
-                    aria-label="Hide duration column"
-                    title="Hide duration column"
-                    onClick={() => onDurationModeChange("hidden")}
-                  >
-                    {durationMode === "days" ? "Days" : "Hours"}
-                    <EyeOff className="size-3.5 shrink-0" aria-hidden="true" />
-                  </button>
+                <th className="border-b px-2">
+                  {durationMode === "days" ? "Days" : "Hours"}
                 </th>
               )}
-              <th className="border-b px-2">Start</th>
-              <th className="border-b px-2">Finish</th>
+              {show("start") && <th className="border-b px-2">Start</th>}
+              {show("finish") && <th className="border-b px-2">Finish</th>}
+              {show("wbs") && <th className="border-b px-2">WBS</th>}
+              {show("calendar") && <th className="border-b px-2">Calendar</th>}
               <th className="border-b border-l p-0">
-                <GanttRuler start={anchor} scale={scale} />
+                <GanttRuler
+                  start={anchor}
+                  scale={scale}
+                  horizon={horizon}
+                  today={today}
+                />
               </th>
             </tr>
           </thead>
@@ -205,48 +231,58 @@ export function SourceProgrammeGantt({
                 style={{ height: rowHeight }}
               >
                 <td className="sticky left-0 z-[1] bg-white px-3">
-                  <button
-                    className="flex h-[47px] w-full flex-col justify-center text-left hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
-                    onClick={(e) => onSelect(row.internalId, e.currentTarget)}
-                    title={`${row.name}\n${row.activityId}\n${row.wbsPath}`}
-                  >
-                    <strong className="line-clamp-2 text-sm leading-4 text-slate-950">
-                      {row.name}
-                    </strong>
-                    <span className="block truncate text-xs leading-3 text-slate-600">
-                      <span className="mr-1 font-medium tabular-nums">
-                        {firstRowNumber + index}.
+                  <div className="flex items-center">
+                    <button
+                      className="min-w-0 flex h-[47px] w-full flex-col justify-center text-left hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
+                      onClick={(e) => onSelect(row.internalId, e.currentTarget)}
+                      title={`${row.name}\n${row.activityId}\n${row.wbsPath}\n${sourceCriticalityLabel(row.criticality)}`}
+                    >
+                      <strong className="line-clamp-2 text-sm leading-4 text-slate-950">
+                        {row.name}
+                      </strong>
+                      <span className="block truncate text-xs leading-3 text-slate-600">
+                        <span className="mr-1 font-medium tabular-nums">
+                          {firstRowNumber + index}.
+                        </span>
+                        {row.activityId}
+                        {row.milestone ? " · Milestone" : ""}
+                        {row.criticality?.state === "critical" && (
+                          <span className="text-red-700"> · P6 critical</span>
+                        )}
                       </span>
-                      {row.activityId}
-                      {row.milestone ? " · Milestone" : ""}
-                    </span>
-                  </button>
+                    </button>
+                    <button
+                      className="grid min-h-11 min-w-11 place-items-center rounded-md text-blue-800 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
+                      disabled={!row.start && !row.finish}
+                      aria-label={`Show dates for ${row.activityId}`}
+                      title="Show this activity on the timeline"
+                      onClick={() => goTo(row)}
+                    >
+                      <CalendarClock className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
                 </td>
-                <td className="px-0">
-                  <button
-                    className="grid min-h-11 min-w-11 place-items-center rounded-md text-blue-800 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-700"
-                    disabled={!row.start && !row.finish}
-                    aria-label={`Show dates for ${row.activityId}`}
-                    title="Show this activity on the timeline"
-                    onClick={() => goTo(row)}
-                  >
-                    <CalendarClock className="size-4" aria-hidden="true" />
-                  </button>
-                </td>
-                <td className="px-1">
-                  <GanttProgress
-                    percent={progress?.[row.internalId]?.percent ?? null}
-                    status={
-                      progress?.[row.internalId]?.status ?? {
-                        status: "unknown",
-                        colour: null,
-                        label: "No verified activity-to-asset progress mapping",
+                {show("progress") && (
+                  <td className="px-1">
+                    <GanttProgress
+                      percent={progress?.[row.internalId]?.percent ?? null}
+                      status={
+                        progress?.[row.internalId]?.status ?? {
+                          status: "unknown",
+                          colour: null,
+                          label:
+                            "No verified activity-to-asset progress mapping",
+                        }
                       }
-                    }
-                    href={`/reports?report=tagging&projectId=${encodeURIComponent(projectId)}&activity=${encodeURIComponent(`source:${data?.summary.sha256}:${row.internalId}`)}`}
-                    description={progress?.[row.internalId]?.unknownReason}
-                  />
-                </td>
+                      href={`/reports?report=tagging&projectId=${encodeURIComponent(projectId)}&activity=${encodeURIComponent(`source:${data?.summary.sha256}:${row.internalId}`)}`}
+                      description={progress?.[row.internalId]?.unknownReason}
+                      notApplicable={
+                        progress?.[row.internalId]?.coverage ===
+                        "not-applicable"
+                      }
+                    />
+                  </td>
+                )}
                 {showDuration && (
                   <td
                     className="px-2"
@@ -265,12 +301,29 @@ export function SourceProgrammeGantt({
                         : "—"}
                   </td>
                 )}
-                <td className="whitespace-nowrap px-2 text-[13px]">
-                  {row.start ?? "Not set"}
-                </td>
-                <td className="whitespace-nowrap px-2 text-[13px]">
-                  {row.finish ?? "Not set"}
-                </td>
+                {show("start") && (
+                  <td className="whitespace-nowrap px-2 text-[13px]">
+                    {row.start ?? "Not set"}
+                  </td>
+                )}
+                {show("finish") && (
+                  <td className="whitespace-nowrap px-2 text-[13px]">
+                    {row.finish ?? "Not set"}
+                  </td>
+                )}
+                {show("wbs") && (
+                  <td className="truncate px-2 text-xs" title={row.wbsPath}>
+                    {row.wbsPath || "Not recorded"}
+                  </td>
+                )}
+                {show("calendar") && (
+                  <td
+                    className="truncate px-2 text-xs"
+                    title={row.calendarName}
+                  >
+                    {row.calendarName || "Not recorded"}
+                  </td>
+                )}
                 {index === 0 && (
                   <td
                     rowSpan={rows.length}
@@ -322,6 +375,17 @@ export function SourceProgrammeGantt({
                             />
                           </g>
                         ))}
+                        {x(today) >= 0 && x(today) < axis.width && (
+                          <line
+                            data-today-line={today}
+                            x1={x(today)}
+                            x2={x(today)}
+                            y1={0}
+                            y2={rows.length * rowHeight}
+                            stroke="#1d4ed8"
+                            strokeWidth="2"
+                          />
+                        )}
                         {showLinks &&
                           links.map((link) => {
                             const from = positions.get(link.predecessorId),
@@ -398,8 +462,8 @@ export function SourceProgrammeGantt({
                                 onClick={(e) =>
                                   onSelect(row.internalId, e.currentTarget)
                                 }
-                                aria-label={`View ${row.activityId}: ${row.name}`}
-                                title={`${row.name}; ${row.start ?? row.finish} → ${row.finish ?? row.start}; ${row.durationHours} source hours`}
+                                aria-label={`View ${row.activityId}: ${row.name}. ${sourceCriticalityLabel(row.criticality)}`}
+                                title={`${row.name}; ${row.start ?? row.finish} → ${row.finish ?? row.start}; ${row.durationHours} source hours; ${sourceCriticalityLabel(row.criticality)}`}
                                 className="group absolute top-0.5 h-11 text-left text-xs text-blue-950 focus-visible:outline-2 focus-visible:outline-blue-700"
                                 style={{
                                   left: hitLeft,
@@ -414,11 +478,13 @@ export function SourceProgrammeGantt({
                                       width: visualWidth,
                                     }}
                                   >
-                                    <span className="size-3 rotate-45 bg-slate-800" />
+                                    <span
+                                      className={`size-3 rotate-45 ${row.criticality?.state === "critical" ? "bg-red-700" : "bg-slate-800"}`}
+                                    />
                                   </span>
                                 ) : (
                                   <span
-                                    className="absolute top-2.5 flex h-6 items-center overflow-hidden rounded-sm border border-blue-400 bg-blue-100 px-1 whitespace-nowrap group-hover:bg-blue-200"
+                                    className={`absolute top-2.5 flex h-6 items-center overflow-hidden rounded-sm border px-1 whitespace-nowrap ${row.criticality?.state === "critical" ? "border-red-400 bg-red-100 text-red-950 group-hover:bg-red-200" : "border-blue-400 bg-blue-100 group-hover:bg-blue-200"}`}
                                     style={{
                                       left: bar.left - hitLeft,
                                       width: visualWidth,
@@ -472,13 +538,21 @@ export function SourceProgrammeGantt({
       <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-1 text-xs text-slate-600">
         <p className="tabular-nums">
           {inWindow} of {rows.length} loaded activities in the visible date area
+          {!loading && rows.length > 0 && inWindow === 0 && (
+            <span>
+              {" "}
+              · These activities have no bars in this date area. Use Activity
+              dates or a row’s calendar button.
+            </span>
+          )}
         </p>
         <InfoPopover label="About the source timeline">
           <p>
-            Activities retain source order. The date window follows the most
-            common saved start on this page. Days use each activity’s saved
-            calendar hours per day; missing conversions stay in source hours. No
-            dates or source durations are recalculated.
+            Activities retain source order. The date window opens on Today in
+            the project timezone. Activity dates is a separate navigation
+            action. Days use each activity’s saved calendar hours per day;
+            missing conversions stay in source hours. No dates or source
+            durations are recalculated.
           </p>
           <p>
             {links.length} source relationships connect loaded activities;{" "}
