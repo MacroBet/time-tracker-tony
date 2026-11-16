@@ -66,3 +66,10 @@ revoca, scoping, nessuna proposta). Typecheck e lint mirati PASS.
 
 Gli altri lotti rimangono in corso. Matrice e verifiche finali da completare;
 nessuna pubblicazione o collaudo del provider live attestati.
+
+A2 backend: creazione atomica con membership e request ID stabile, rinomina del
+solo nome FieldTrack con CAS e audit; fonte P6, task, asset e versione commissioning
+preservati. Il retry già consumato restituisce il profilo corrente, anche dopo
+A→B→A, senza annullare rinomine successive o aggiungere audit duplicato.3test
+PostgreSQL/dominio e1API demo PASS, inclusi revoca, conflitti e fixture XER
+sintetica nel nuovo target. La UI passa alla verifica centrale; nessun import reale.

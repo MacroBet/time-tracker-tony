@@ -42,7 +42,9 @@ import {
 } from "@/lib/domain";
 import { HttpError, requireCondition } from "./errors";
 import { canConfirmWorkingSchedule } from "@/lib/schedule-working";
-import { hasModule } from "@/lib/commissioning";
+import { commissioning, hasModule } from "@/lib/commissioning";
+import { projectCreateQuery, projectRenameQuery } from "./db/project-profile";
+import { sameProfileRequest } from "./project-profile";
 
 type Session = { tokenHash: string; userId: string; expiresAt: string };
 type FileRecord = Attachment & { data: string };
@@ -748,16 +750,106 @@ export async function putAccount(
 export async function putProject(
   project: AppData["projects"][number],
   userId: string,
+  event: ProjectAuditEvent,
 ) {
-  requireCondition(
-    !usingDemo(),
-    400,
-    "Project provisioning requires a connected database.",
+  const state = { ...commissioning(), _audit: [event] } as AuditState;
+  if (usingDemo()) {
+    const store = demo().data;
+    requireCondition(
+      store.users.some((user) => user.id === userId && user.role === "admin") &&
+        store.companies.some((company) => company.id === project.companyId),
+      403,
+      "Project creation access changed. Sign in again before retrying.",
+    );
+    const existing = store.projects.find((row) => row.id === project.id);
+    if (existing) {
+      requireCondition(
+        store.memberships.some(
+          (membership) =>
+            membership.userId === userId &&
+            membership.projectId === existing.id,
+        ) &&
+          sameProfileRequest(
+            (existing.commissioning as AuditState)?._audit ?? [],
+            event,
+          ),
+        409,
+        "This creation request changed or access was removed. Refresh before retrying.",
+      );
+      return structuredClone(existing);
+    }
+    const created = { ...project, commissioning: state };
+    store.projects.push(created);
+    store.memberships.push({ userId, projectId: project.id });
+    return structuredClone(created);
+  }
+  const result = await db().execute(
+    projectCreateQuery(project, userId, state, event),
   );
-  await db().batch([
-    db().insert(tables.projects).values(project),
-    db().insert(tables.memberships).values({ userId, projectId: project.id }),
-  ]);
+  requireCondition(
+    result.rows.length,
+    409,
+    "This creation request changed or access was removed. Refresh before retrying.",
+  );
+  return result.rows[0] as unknown as AppData["projects"][number];
+}
+
+export async function renameProjectProfile(
+  projectId: string,
+  userId: string,
+  expectedName: string,
+  name: string,
+  event: ProjectAuditEvent,
+) {
+  if (usingDemo()) {
+    const store = demo().data;
+    const project = store.projects.find((row) => row.id === projectId);
+    const audit =
+      (project?.commissioning as AuditState | undefined)?._audit ?? [];
+    const replay = sameProfileRequest(audit, event);
+    requireCondition(
+      store.users.some((user) => user.id === userId && user.role === "admin") &&
+        store.memberships.some(
+          (membership) =>
+            membership.userId === userId && membership.projectId === projectId,
+        ),
+      403,
+      "Project administration access changed. Refresh before saving.",
+    );
+    requireCondition(
+      project &&
+        (replay || project.name === expectedName) &&
+        !audit.some(
+          (entry) => entry.id === event.id && entry.detail !== event.detail,
+        ),
+      409,
+      "The project name or request changed. Refresh and review the rename again.",
+    );
+    // A consumed operation never replaces a later rename, even if the name returned to its original value.
+    if (replay) return structuredClone(project);
+    project.name = name;
+    project.commissioning = {
+      ...commissioning(project),
+      _audit: [...audit, event],
+    } as AuditState;
+    return structuredClone(project);
+  }
+  const result = await db().execute(
+    projectRenameQuery(
+      projectId,
+      userId,
+      expectedName,
+      name,
+      event,
+      commissioning(),
+    ),
+  );
+  requireCondition(
+    result.rows.length,
+    409,
+    "The project name or access changed. Refresh and review the rename again.",
+  );
+  return result.rows[0] as unknown as AppData["projects"][number];
 }
 export async function changePassword(userId: string, passwordHash: string) {
   requireCondition(

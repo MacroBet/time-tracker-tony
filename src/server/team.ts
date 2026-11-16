@@ -9,10 +9,18 @@ import {
   putProject,
   changePassword,
   setProjectAccess,
+  renameProjectProfile,
 } from "./repository";
 import { json, readJson } from "./http";
 import { requireCondition } from "./errors";
 import { hashPassword, verifyPassword } from "@/lib/password";
+import {
+  createProjectInput,
+  renameProjectInput,
+  projectIdForRequest,
+  projectCreationEvent,
+  projectRenameEvent,
+} from "./project-profile";
 const password = z.string().min(8).max(256);
 export async function createAccount(request: Request) {
   const admin = await requireUser();
@@ -66,23 +74,79 @@ export async function createProject(request: Request) {
     403,
     "Only admins can create projects.",
   );
-  const input = z
-    .object({
-      name: z.string().trim().min(3).max(150),
-      location: z.string().trim().min(2).max(200),
-      companyId: z.string().min(1),
-    })
-    .strict()
-    .parse(await readJson(request));
+  const input = createProjectInput.parse(await readJson(request));
   const data = await loadData(admin);
   requireCondition(
     data.companies.some((c) => c.id === input.companyId),
     403,
     "Choose a company in your workspace.",
   );
-  const project = { id: randomUUID(), ...input };
-  await putProject(project, admin.id);
-  return json(project, 201);
+  const requestId = input.requestId ?? randomUUID();
+  const project = {
+    id: projectIdForRequest(admin.id, requestId),
+    name: input.name,
+    location: input.location,
+    companyId: input.companyId,
+  };
+  const saved = await putProject(
+    project,
+    admin.id,
+    projectCreationEvent(project, admin, requestId),
+  );
+  return json(
+    {
+      id: saved.id,
+      name: saved.name,
+      location: saved.location,
+      companyId: saved.companyId,
+      requestId,
+    },
+    201,
+  );
+}
+export async function renameProject(request: Request, id: string) {
+  const admin = await requireUser();
+  requireCondition(
+    admin.role === "admin",
+    403,
+    "Only admins can rename projects.",
+  );
+  const input = renameProjectInput.parse(await readJson(request));
+  const data = await loadData(admin);
+  const project = data.projects.find((row) => row.id === id);
+  requireCondition(project, 404, "Project not found in your workspace.");
+  requireCondition(
+    input.name !== input.expectedName,
+    400,
+    "Choose a different FieldTrack project name.",
+  );
+  if (input.preview) {
+    requireCondition(
+      project.name === input.expectedName,
+      409,
+      "The project name changed. Refresh and review the rename again.",
+    );
+    return json({
+      projectId: id,
+      before: project.name,
+      name: input.name,
+      reason: input.reason,
+      requestId: input.requestId,
+    });
+  }
+  const saved = await renameProjectProfile(
+    id,
+    admin.id,
+    input.expectedName,
+    input.name,
+    projectRenameEvent(project, admin, input),
+  );
+  return json({
+    id: saved.id,
+    name: saved.name,
+    location: saved.location,
+    companyId: saved.companyId,
+  });
 }
 export async function updatePassword(request: Request) {
   const user = await requireUser();
