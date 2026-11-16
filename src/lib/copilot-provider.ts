@@ -526,7 +526,11 @@ export async function runCopilotTurn(
             );
           } catch (error) {
             if (error instanceof CopilotProviderError) throw error;
-            if (controller.signal.aborted || input.signal?.aborted)
+            if (
+              controller.signal.aborted ||
+              input.signal?.aborted ||
+              (error instanceof Error && error.name === "AbortError")
+            )
               throw failure(
                 "cancelled",
                 "The assistant request was cancelled.",

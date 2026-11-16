@@ -234,6 +234,7 @@ type FailureCase =
   | "stale"
   | "provider-timeout"
   | "provider-network"
+  | "provider-abort"
   | "provider-503"
   | "provider-401";
 async function failAfterCompletedReport(kind: FailureCase) {
@@ -299,6 +300,11 @@ async function failAfterCompletedReport(kind: FailureCase) {
         if (kind === "provider-timeout") return never();
         if (kind === "provider-network")
           throw Error("Synthetic network disconnect");
+        if (kind === "provider-abort")
+          throw new DOMException(
+            "Synthetic transport cancellation",
+            "AbortError",
+          );
         if (kind === "provider-503")
           return new Response("unavailable", { status: 503 });
         if (kind === "provider-401")
@@ -355,6 +361,7 @@ test("after a completed report, tool timeouts, meter failures, protocol violatio
     "invalid-json",
     "incomplete",
     "cancelled",
+    "provider-abort",
     "acl",
     "stale",
     "provider-401",
@@ -376,6 +383,11 @@ test("after a completed report, tool timeouts, meter failures, protocol violatio
       "Existing intent/final recording is still attempted",
     );
     if (kind.startsWith("meter")) assert.equal(result.error.origin, "meter");
+    if (kind === "provider-abort") {
+      assert.equal(result.error.code, "cancelled");
+      assert.equal(result.error.origin, "cancelled");
+      assert.equal(result.error.phase, "provider");
+    }
     if (kind === "tool-timeout") {
       assert.equal(result.error.phase, "tool");
       assert.equal(result.error.origin, "tool");
