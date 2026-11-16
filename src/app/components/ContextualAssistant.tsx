@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useReducer } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ArrowUpRight, X } from "lucide-react";
@@ -9,6 +9,11 @@ import {
   type AssistantEntryRequest,
 } from "@/lib/assistant-entry";
 import { useApp } from "../contexts/AppContext";
+import {
+  assistantIntentScope,
+  initialAssistantIntent,
+  reduceAssistantIntent,
+} from "@/lib/assistant-intent";
 import { Button } from "./ui/button";
 
 const Session = dynamic(
@@ -24,7 +29,18 @@ const Session = dynamic(
 );
 export function ContextualAssistant() {
   const { currentUser, selectedProjectId, projects } = useApp();
-  const [request, setRequest] = useState<AssistantEntryRequest | null>(null);
+  const scope = assistantIntentScope(
+    currentUser,
+    selectedProjectId,
+    projects.map((project) => project.id),
+  );
+  const [intent, dispatchIntent] = useReducer(
+    reduceAssistantIntent,
+    scope,
+    initialAssistantIntent,
+  );
+  const request = intent.scope === scope ? intent.request : null;
+  const voiceIntent = intent.sequence;
   const focus = useRef<HTMLElement | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const allowed =
@@ -33,7 +49,7 @@ export function ContextualAssistant() {
   const visible =
     !!request && allowed && request.projectId === selectedProjectId;
   function close() {
-    setRequest(null);
+    dispatchIntent({ type: "close" });
     focus.current?.focus({ preventScroll: true });
   }
   useEffect(() => {
@@ -49,14 +65,18 @@ export function ContextualAssistant() {
         document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null;
-      setRequest(detail);
+      dispatchIntent({ type: "open", scope, request: detail });
     };
     window.addEventListener(ASSISTANT_OPEN_EVENT, open);
     return () => window.removeEventListener(ASSISTANT_OPEN_EVENT, open);
-  }, [currentUser, selectedProjectId]);
+  }, [currentUser, selectedProjectId, scope]);
   useEffect(() => {
     if (visible) heading.current?.focus({ preventScroll: true });
   }, [visible]);
+  if (intent.scope !== scope) {
+    dispatchIntent({ type: "scope", scope });
+    return null;
+  }
   if (!visible || !request) return null;
   const project = projects.find((item) => item.id === request.projectId)!;
   return (
@@ -65,7 +85,7 @@ export function ContextualAssistant() {
       aria-modal="false"
       aria-labelledby="context-assistant-title"
       aria-describedby="context-assistant-description"
-      className="fixed right-2 top-3 z-40 flex max-h-[calc(100dvh-5rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl sm:right-4 sm:top-20 sm:w-[min(38rem,calc(100vw-2rem))]"
+      className="fixed right-2 top-3 z-40 flex h-[min(46rem,calc(100dvh-5rem))] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-xl sm:right-4 sm:top-20 sm:h-[min(46rem,calc(100dvh-7rem))] sm:w-[min(42rem,calc(100vw-2rem))]"
       onKeyDown={(event) => {
         if (event.key === "Escape" && !event.defaultPrevented) {
           event.stopPropagation();
@@ -110,12 +130,13 @@ export function ContextualAssistant() {
           </Button>
         </div>
       </header>
-      <div className="min-h-0 overflow-y-auto overscroll-contain p-3">
+      <div className="min-h-0 flex-1 overflow-hidden px-3 pb-3">
         <Session
           key={`${project.id}:${currentUser.id}:${currentUser.role}:${JSON.stringify(currentUser.modules ?? null)}`}
           projectId={project.id}
           embedded
           input={request.input}
+          voiceIntent={voiceIntent}
           sourceView={request.sourceView}
         />
       </div>

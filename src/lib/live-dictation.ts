@@ -102,6 +102,14 @@ export async function checkLocalDictationAvailability(
   });
 }
 
+export type LocalFinalPhrase = {
+  index: number;
+  text: string;
+  before: string;
+  hasInterim: boolean;
+  now: number;
+};
+export type LocalPhraseControl = "finish" | "replace" | "omit" | undefined;
 export type LocalDictationState =
   "idle" | "checking" | "permission" | "recording" | "finalizing";
 
@@ -159,6 +167,7 @@ export function createLocalDictation(
     onState: (state: LocalDictationState) => void;
     onPartial: (text: string) => void;
     onTranscript: (text: string) => void;
+    onFinalPhrase?: (phrase: LocalFinalPhrase) => LocalPhraseControl;
     onCaptureChange: (active: boolean) => void;
     onError: (message: string) => void;
   },
@@ -269,7 +278,11 @@ export function createLocalDictation(
         recognition.lang = LIVE_DICTATION.language;
         recognition.continuous = true;
         recognition.interimResults = true;
-        const assembler = localTranscriptAssembler();
+        let assembler = localTranscriptAssembler();
+        const seen = new Set<number>(),
+          omitted = new Set<number>(),
+          accepted = new Map<number, string>();
+        let excludedThrough = -1;
         let snapshot = { text: "", finalText: "", pending: false };
         recognition.onstart = () => {
           if (
@@ -288,8 +301,47 @@ export function createLocalDictation(
         recognition.onresult = (event) => {
           if (token !== generation) return;
           try {
-            snapshot = assembler.apply(event);
+            let finishRequested = false;
+            for (let i = 0; i < event.results.length; i++) {
+              const result = event.results[i];
+              if (i <= excludedThrough || !result?.isFinal || seen.has(i))
+                continue;
+              seen.add(i);
+              const text = result[0]?.transcript;
+              if (typeof text !== "string") continue;
+              const before = [...accepted]
+                .sort((a, b) => a[0] - b[0])
+                .map(([, value]) => value)
+                .join(" ");
+              const hasInterim = Array.from(
+                { length: event.results.length },
+                (_, j) => event.results[j],
+              ).some((row) => !row.isFinal && row[0]?.transcript.trim());
+              const control = callbacks.onFinalPhrase?.({
+                index: i,
+                text,
+                before,
+                hasInterim,
+                now: Date.now(),
+              });
+              if (control === "replace") {
+                excludedThrough = i;
+                accepted.clear();
+                assembler = localTranscriptAssembler();
+              } else if (control === "finish" || control === "omit") {
+                omitted.add(i);
+                if (control === "finish") finishRequested = true;
+              } else accepted.set(i, text.trim());
+            }
+            const results = Array.from(
+              { length: event.results.length },
+              (_, i) => ({ i, row: event.results[i] }),
+            )
+              .filter(({ i }) => i > excludedThrough && !omitted.has(i))
+              .map(({ row }) => row);
+            snapshot = assembler.apply({ resultIndex: 0, results });
             callbacks.onPartial(snapshot.text);
+            if (finishRequested) stop();
           } catch (error) {
             settle(
               undefined,

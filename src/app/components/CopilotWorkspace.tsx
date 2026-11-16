@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CopilotVoiceInput } from "./CopilotVoiceInput";
@@ -10,7 +16,8 @@ import {
   Check,
   FileEdit,
   ListChecks,
-  MessageSquare,
+  Mic,
+  MoreHorizontal,
   Plus,
   RefreshCw,
   Send,
@@ -34,6 +41,7 @@ import type { CopilotStatus } from "@/lib/copilot-provider";
 import { statusLabels, type Task } from "@/lib/domain";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -54,11 +62,13 @@ import {
 } from "@/lib/assistant-conversations";
 import { projectReportHref } from "@/lib/project-reports";
 import { AssistantReply } from "./AssistantReply";
-import {
-  parseAssistantViewCommand,
-  resolveVoiceReview,
-} from "@/lib/assistant-view-commands";
+import { parseAssistantViewCommand } from "@/lib/assistant-view-commands";
 import { parseCopilotReadCommand } from "@/lib/copilot-reads";
+import { VoiceSetup } from "./VoiceSetup";
+import {
+  createVoiceQuestionSession,
+  voiceSetupKey,
+} from "@/lib/voice-commands";
 import { applyAssistantView } from "./assistant-view-dispatch";
 
 type ContextResponse = CopilotContext & { configuration: CopilotStatus };
@@ -128,11 +138,13 @@ export function CopilotSession({
   projectId,
   embedded = false,
   input,
+  voiceIntent = 0,
   sourceView = false,
 }: {
   projectId: string;
   embedded?: boolean;
   input?: "voice" | "text";
+  voiceIntent?: number;
   sourceView?: boolean;
 }) {
   const params = useSearchParams();
@@ -159,20 +171,54 @@ export function CopilotSession({
       }
     return "";
   });
-  const [voicePurpose, setVoicePurpose] = useState<"dictation" | "review">(
-    "dictation",
+  const [voiceSetupAcknowledged, setVoiceSetupAcknowledged] = useState(false);
+  const persistedVoiceSetup = useSyncExternalStore(
+    useCallback((notify: () => void) => {
+      window.addEventListener("storage", notify);
+      return () => window.removeEventListener("storage", notify);
+    }, []),
+    useCallback(() => {
+      try {
+        return localStorage.getItem(voiceSetupKey(currentUser.id)) === "done";
+      } catch {
+        return false;
+      }
+    }, [currentUser.id]),
+    () => false,
   );
+  const voiceSetupReady = voiceSetupAcknowledged || persistedVoiceSetup;
+  const [voiceSetupOpen, setVoiceSetupOpen] = useState<number | null>(null);
+  const [voiceStartRequested, setVoiceStartRequested] = useState<number | null>(
+    null,
+  );
+  const [voiceStartBlocked, setVoiceStartBlocked] = useState<number | null>(
+    null,
+  );
+  const voiceSession = useRef<ReturnType<
+    typeof createVoiceQuestionSession
+  > | null>(null);
   const [voiceNote, setVoiceNote] = useState("");
   const [voicePartial, setVoicePartial] = useState("");
   const [voiceCapturing, setVoiceCapturing] = useState(false);
   const voiceCaptureActive = useRef(false);
   const [replaceVoice, setReplaceVoice] = useState(false);
-  const reviewedDraft = useRef("");
+
   const lastDraft = useRef(draft);
   function setDraft(value: string | ((previous: string) => string)) {
     const next = typeof value === "function" ? value(lastDraft.current) : value;
     lastDraft.current = next;
     setDraftState(next);
+  }
+  function acceptVoiceSetup() {
+    try {
+      localStorage.setItem(voiceSetupKey(currentUser.id), "done");
+    } catch {
+      /* Session-only setup. */
+    }
+    setVoiceSetupAcknowledged(true);
+    setVoiceSetupOpen(null);
+    setVoiceStartBlocked(null);
+    setVoiceStartRequested(voiceIntent);
   }
   useEffect(() => {
     if (!embedded) return;
@@ -195,6 +241,7 @@ export function CopilotSession({
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError, setHistoryError] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [openingChat, setOpeningChat] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [revealingId, setRevealingId] = useState<string | null>(null);
@@ -214,6 +261,13 @@ export function CopilotSession({
   const chatLock = useRef(false);
   const mounted = useRef(true);
   const composer = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const element = composer.current;
+    if (!element) return;
+    element.style.height = "auto";
+    element.style.height = `${Math.min(144, Math.max(44, element.scrollHeight))}px`;
+  }, [draft, loading]);
+
   const editorHeading = useRef<HTMLHeadingElement>(null);
   const transcriptEnd = useRef<HTMLDivElement>(null);
   const transcript = useRef<HTMLOListElement>(null);
@@ -777,130 +831,28 @@ export function CopilotSession({
     );
   const ready = context.configuration.state === "ready";
   const contextPanel = <ProjectChecks context={context} />;
+  const showVoiceSetup =
+    voiceSetupOpen === voiceIntent ||
+    (!voiceSetupReady &&
+      input === "voice" &&
+      voiceStartBlocked !== voiceIntent);
   return (
-    <div className={embedded ? "min-w-0 space-y-2" : "min-w-0 space-y-6"}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        {embedded && (
-          <InfoPopover label="Project records">
-            <p>
-              {context.summary.assets} assets · {context.summary.tasks} saved
-              tasks · {context.summary.managedProgrammeActivities} managed
-              activities · {context.summary.importedProgrammeActivities ?? "No"}{" "}
-              imported P6 activities. These are separate populations.
-            </p>
-          </InfoPopover>
-        )}
-        <p
-          className={
-            embedded
-              ? "sr-only"
-              : "min-w-0 flex-1 text-sm leading-6 text-slate-600 tabular-nums"
-          }
-        >
-          {context.summary.assets} assets · {context.summary.tasks} tasks ·{" "}
-          {context.summary.managedProgrammeActivities} managed app activities
-          {context.summary.importedProgrammeActivities !== null && (
-            <>
-              {" "}
-              · {context.summary.importedProgrammeActivities} imported P6
-              activities
-            </>
-          )}
-        </p>
-        <Button
-          variant="ghost"
-          className="h-11"
-          disabled={manualBusy || refreshing || !isOnline}
-          aria-busy={refreshing}
-          onClick={async () => {
-            setRefreshing(true);
-            try {
-              await refreshContext();
-            } catch (error) {
-              toast.error(
-                error instanceof Error ? error.message : "Refresh failed",
-              );
-            } finally {
-              setRefreshing(false);
-            }
-          }}
-        >
-          <RefreshCw className="size-4" />
-          {refreshing ? "Refreshing…" : embedded ? "Refresh" : "Refresh checks"}
-        </Button>
-      </div>
-      {!ready && !embedded && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950">
-          <p className="text-sm font-semibold">
-            {context.configuration.state === "disabled"
-              ? "AI chat is disabled"
-              : "AI chat not configured yet"}
-          </p>
-          <p className="mt-1 text-sm leading-6">
-            Saved-data reports, Schedule view commands and manual previews
-            remain available. An administrator must enable AI for other
-            questions.
-          </p>
-        </div>
-      )}
-      {!ready && embedded && (
-        <p className="text-xs text-amber-950">
-          AI unavailable · saved-data reports and Schedule view commands still
-          work.
-        </p>
-      )}
+    <div
+      className={
+        embedded
+          ? "flex h-full min-h-0 flex-col"
+          : "mx-auto flex h-[calc(100dvh-19rem-env(safe-area-inset-bottom))] min-h-0 max-w-4xl flex-col sm:h-[calc(100dvh-20.5rem-env(safe-area-inset-bottom))] lg:h-[calc(100dvh-12rem)] lg:min-h-[22rem]"
+      }
+    >
       <p className="sr-only" role="status">
         {announcement}
       </p>
-      {historyError && (
-        <div
-          role="alert"
-          className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
-        >
-          <p>{historyError}</p>
-          {unsavedReply ? (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                disabled={historySaving || !isOnline}
-                onClick={() => void retrySaving()}
-              >
-                {historySaving ? "Saving reply…" : "Retry saving reply"}
-              </Button>
-              <Button
-                variant="ghost"
-                disabled={historySaving || !isOnline}
-                onClick={() => {
-                  active.current = null;
-                  setHistoryRetry((value) => value + 1);
-                }}
-              >
-                Open saved version
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              disabled={historyLoading || !isOnline}
-              onClick={() => setHistoryRetry((value) => value + 1)}
-            >
-              Retry loading chats
-            </Button>
-          )}
-        </div>
-      )}
-      <div
-        className={
-          embedded
-            ? "min-w-0 space-y-3"
-            : "grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]"
-        }
-      >
-        <aside aria-label="Chat history" className="min-w-0 space-y-3">
+      <div className="relative flex shrink-0 flex-wrap items-start justify-between gap-1 border-b border-slate-100 py-1">
+        <aside aria-label="Chat history" className="min-w-0">
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              className={embedded ? "" : "lg:w-full"}
+              className="min-h-11"
               disabled={unsavedReply || historySaving}
               onClick={newChat}
             >
@@ -909,7 +861,7 @@ export function CopilotSession({
             </Button>
             <Button
               variant="ghost"
-              className={embedded ? "" : "lg:hidden"}
+              className="min-h-11"
               aria-expanded={historyOpen}
               aria-controls="past-chats"
               onClick={() => setHistoryOpen((value) => !value)}
@@ -919,7 +871,7 @@ export function CopilotSession({
           </div>
           <div
             id="past-chats"
-            className={`${historyOpen ? "block" : "hidden"} space-y-3 ${embedded ? "" : "lg:block"}`}
+            className={`${historyOpen ? "block" : "hidden"} absolute left-0 right-0 top-full z-20 max-h-[50dvh] space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-lg`}
           >
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold">Past chats</h2>
@@ -945,7 +897,7 @@ export function CopilotSession({
                 Your conversations will appear here after you send a question.
               </p>
             ) : null}
-            <ul className="max-h-72 space-y-1 overflow-y-auto lg:max-h-[36rem]">
+            <ul className="max-h-64 space-y-1 overflow-y-auto">
               {conversations.map((chat) => (
                 <li
                   key={chat.id}
@@ -1027,530 +979,693 @@ export function CopilotSession({
             )}
           </div>
         </aside>
-        <div className={embedded ? "min-w-0 space-y-3" : "min-w-0 space-y-6"}>
-          <section
-            className={
-              embedded
-                ? "min-w-0 space-y-3"
-                : "rounded-xl border bg-white p-4 sm:p-5 space-y-5"
-            }
-            aria-label="Project chat"
+        <Popover open={optionsOpen} onOpenChange={setOptionsOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-h-11"
+              aria-label="Chat options"
+            >
+              <MoreHorizontal className="size-5" />
+              <span className="sr-only">Chat options</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            className="max-h-[70dvh] w-80 max-w-[calc(100vw-2rem)] space-y-4 overflow-y-auto"
           >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="flex items-center gap-2 font-semibold">
-                <MessageSquare className="size-4" />
-                Ask about this project
-              </h2>
-              <InfoPopover label="Assistant help and example questions">
-                <p>
-                  Answers use project records. Review suggested changes before
-                  confirming them.
-                </p>
-                <p className="font-medium">
-                  Example questions · select to edit
-                </p>
-                {context.examples.slice(0, 4).map((example) => (
-                  <button
-                    type="button"
-                    key={example}
-                    className="flex min-h-11 w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left text-sm text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700 disabled:opacity-50"
-                    onClick={() => {
-                      setDraft(example);
-                      composer.current?.focus();
-                    }}
-                  >
-                    {example}
-                    <ArrowRight className="size-4 shrink-0" />
-                  </button>
-                ))}
-                <p>
-                  Examples fill the question box; they are never sent
-                  automatically.
-                </p>
-              </InfoPopover>
-            </div>
-            {openingChat && (
-              <p role="status" className="py-5 text-sm text-slate-600">
-                Opening saved conversation…
-              </p>
-            )}
-            {!openingChat && !messages.length && (
-              <p
-                className={
-                  embedded
-                    ? "text-sm leading-5 text-slate-600"
-                    : "py-4 text-sm leading-6 text-slate-600"
-                }
-              >
-                {sourceView
-                  ? "Ask about this Schedule or change its view."
-                  : "Ask about this project, or reopen a past chat."}{" "}
-                {!embedded && "Suggested changes always need your review."}
+            <h3 className="text-sm font-semibold">Chat options</h3>
+            <details>
+              <summary className="min-h-11 cursor-pointer text-sm font-medium">
+                Example questions
+              </summary>
+              {context.examples.slice(0, 4).map((example) => (
                 <button
+                  key={example}
                   type="button"
-                  className="mt-1 flex min-h-11 items-center gap-2 text-left font-medium text-blue-800 underline"
+                  className="min-h-11 w-full py-2 text-left text-sm text-blue-800"
                   onClick={() => {
-                    setDraft(
-                      sourceView
-                        ? "Show progress"
-                        : (context.examples[0] ??
-                            "Show me the next two weeks look ahead."),
-                    );
+                    setDraft(example);
                     composer.current?.focus();
                   }}
                 >
-                  {sourceView
-                    ? "Show progress"
-                    : (context.examples[0] ??
-                      "Show me the next two weeks look ahead.")}
-                  <ArrowRight className="size-4 shrink-0" />
+                  {example}
                 </button>
-              </p>
-            )}
-            {!openingChat && messages.length > 0 && (
-              <ol
-                ref={transcript}
-                className={`${embedded ? "max-h-[36dvh]" : "max-h-[min(60dvh,36rem)]"} space-y-4 overflow-y-auto overscroll-contain pr-1`}
-                tabIndex={0}
-                onScroll={(event) => {
-                  const list = event.currentTarget;
-                  followReply.current =
-                    list.scrollHeight - list.scrollTop - list.clientHeight <
-                    100;
-                }}
-                aria-label="Conversation"
-              >
-                {messages.map((message, index) => (
-                  <li
-                    key={message.id}
-                    className={
-                      message.role === "user"
-                        ? "ml-4 rounded-lg bg-slate-100 p-4 sm:ml-10"
-                        : "space-y-3 border-b border-slate-200 pb-5"
-                    }
-                  >
-                    <p className="text-xs font-medium text-slate-600">
-                      {message.role === "user" ? "You" : "Assistant"}
-                    </p>
-                    {message.role === "assistant" ? (
-                      <div className="mt-2">
-                        <AssistantReply
-                          text={message.text}
-                          animate={revealingId === message.id}
-                          onComplete={() => {
-                            setRevealingId((value) =>
-                              value === message.id ? null : value,
-                            );
-                            setAnnouncement("Reply ready.");
-                            if (followReply.current)
-                              transcriptEnd.current?.scrollIntoView({
-                                block: "nearest",
-                              });
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
-                        {message.text}
-                      </p>
-                    )}
-                    {message.role === "user" &&
-                      !chatBusy &&
-                      (message.error || index === messages.length - 1) && (
-                        <div className="mt-2 space-y-2">
-                          <p
-                            className="text-sm text-red-700"
-                            role={message.error ? "alert" : undefined}
-                          >
-                            {message.error ||
-                              "No reply was saved for this question."}
-                          </p>
-                          <Button
-                            variant="outline"
-                            disabled={!ready || !isOnline || unsavedReply}
-                            onClick={() =>
-                              void sendMessage(message.text, message.id)
-                            }
-                          >
-                            Try this question again
-                          </Button>
-                        </div>
-                      )}
-                    {message.answer && revealingId !== message.id && (
-                      <>
-                        <AssistantResultPanels
-                          answer={message.answer}
-                          projectId={projectId}
-                          onSaved={refreshContext}
-                        />
-
-                        {message.answer.assetSearches?.map(
-                          (result, searchIndex) => (
-                            <section
-                              key={searchIndex}
-                              aria-label="Asset search results"
-                              className="min-w-0 space-y-3 border-t border-slate-200 pt-3"
-                            >
-                              <p className="text-sm font-semibold tabular-nums">
-                                {result.total} matching assets
-                              </p>
-                              <p className="text-xs text-slate-600">
-                                {result.records.length
-                                  ? `Showing ${result.offset + 1}–${result.offset + result.records.length} of ${result.total}.`
-                                  : "No matching records."}{" "}
-                                Search covers this project’s saved asset
-                                register.
-                              </p>
-                              <ul className="divide-y divide-blue-100">
-                                {result.records.map((asset) => (
-                                  <li key={asset.id}>
-                                    <Link
-                                      href={asset.href}
-                                      className="flex min-h-11 flex-col justify-center gap-1 py-2 text-sm text-blue-800 underline underline-offset-4"
-                                    >
-                                      <span className="break-words font-medium">
-                                        {asset.name}
-                                      </span>
-                                      <span className="text-xs text-slate-600">
-                                        {[
-                                          asset.equipmentType,
-                                          asset.location,
-                                          asset.phase,
-                                        ]
-                                          .filter(Boolean)
-                                          .join(" · ")}
-                                      </span>
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                              <Link
-                                href={result.href}
-                                className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-800 underline underline-offset-4"
-                              >
-                                Open all {result.total} in Assets
-                                <ArrowRight className="size-4" />
-                              </Link>
-                            </section>
-                          ),
-                        )}
-                        <SourceList
-                          sources={message.answer.sources.filter(
-                            (source) =>
-                              source.kind !== "asset" ||
-                              !message.answer?.assetSearches?.length,
-                          )}
-                        />
-                        {message.answer.proposals.map(
-                          (proposal, proposalIndex) => (
-                            <div
-                              key={proposalIndex}
-                              className="border-t border-slate-200 pt-3"
-                            >
-                              <p className="text-sm text-slate-600">
-                                Suggested task change ·{" "}
-                                {proposal.changes.title ??
-                                  context.tasks.find(
-                                    (task) => task.id === proposal.taskId,
-                                  )?.title ??
-                                  proposal.taskId}
-                              </p>
-                              <Button
-                                variant="outline"
-                                className="mt-2 h-11"
-                                disabled={chatBusy || manualBusy}
-                                onClick={() => reviewSuggestion(proposal)}
-                              >
-                                Review suggested change
-                                <ArrowRight className="size-4" />
-                              </Button>
-                            </div>
-                          ),
-                        )}
-                      </>
-                    )}
-                  </li>
-                ))}
-                {chatBusy &&
-                  !revealingId &&
-                  messages[messages.length - 1]?.role !== "assistant" && (
-                    <li
-                      className="space-y-2 py-3"
-                      role="status"
-                      aria-label="Assistant is preparing a reply"
-                    >
-                      <p className="text-xs font-medium text-slate-600">
-                        Assistant
-                      </p>
-                      <div className="flex min-h-8 items-center gap-3 text-sm text-slate-600">
-                        <span className="flex gap-1" aria-hidden="true">
-                          {[0, 1, 2].map((dot) => (
-                            <span
-                              key={dot}
-                              className="size-2 rounded-full bg-blue-600 animate-pulse motion-reduce:animate-none"
-                              style={{ animationDelay: `${dot * 160}ms` }}
-                            />
-                          ))}
-                        </span>
-                        Preparing reply…
-                      </div>
-                    </li>
-                  )}
-                <li aria-hidden="true">
-                  <div ref={transcriptEnd} />
-                </li>
-              </ol>
-            )}
-            {chatError &&
-              messages[messages.length - 1]?.error !== chatError && (
-                <p role="alert" className="text-sm text-red-700">
-                  {chatError}
-                </p>
+              ))}
+            </details>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              {embedded && (
+                <InfoPopover label="Project records">
+                  <p>
+                    {context.summary.assets} assets · {context.summary.tasks}{" "}
+                    saved tasks · {context.summary.managedProgrammeActivities}{" "}
+                    managed activities ·{" "}
+                    {context.summary.importedProgrammeActivities ?? "No"}{" "}
+                    imported P6 activities. These are separate populations.
+                  </p>
+                </InfoPopover>
               )}
-            {reportState && (
-              <Link
-                href={projectReportHref(projectId, reportState.query)}
-                className="inline-flex min-h-11 items-center text-sm text-blue-800 underline"
+              <p
+                className={
+                  embedded
+                    ? "sr-only"
+                    : "min-w-0 flex-1 text-sm leading-6 text-slate-600 tabular-nums"
+                }
               >
-                Open current report with these saved filters
-              </Link>
+                {context.summary.assets} assets · {context.summary.tasks} tasks
+                · {context.summary.managedProgrammeActivities} managed app
+                activities
+                {context.summary.importedProgrammeActivities !== null && (
+                  <>
+                    {" "}
+                    · {context.summary.importedProgrammeActivities} imported P6
+                    activities
+                  </>
+                )}
+              </p>
+              <Button
+                variant="ghost"
+                className="h-11"
+                disabled={manualBusy || refreshing || !isOnline}
+                aria-busy={refreshing}
+                onClick={async () => {
+                  setRefreshing(true);
+                  try {
+                    await refreshContext();
+                  } catch (error) {
+                    toast.error(
+                      error instanceof Error ? error.message : "Refresh failed",
+                    );
+                  } finally {
+                    setRefreshing(false);
+                  }
+                }}
+              >
+                <RefreshCw className="size-4" />
+                {refreshing
+                  ? "Refreshing…"
+                  : embedded
+                    ? "Refresh"
+                    : "Refresh checks"}
+              </Button>
+            </div>
+            {!ready && !embedded && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950">
+                <p className="text-sm font-semibold">
+                  {context.configuration.state === "disabled"
+                    ? "AI chat is disabled"
+                    : "AI chat not configured yet"}
+                </p>
+                <p className="mt-1 text-sm leading-6">
+                  Saved-data reports, Schedule view commands and manual previews
+                  remain available. An administrator must enable AI for other
+                  questions.
+                </p>
+              </div>
             )}
-            {activeId && !chatBusy && (
-              <p className="text-xs leading-5 text-slate-600">
-                Saved replies are snapshots. Reopen a report or ask again to
-                check current records. Change proposals are not stored with past
-                messages.
+            {!ready && embedded && (
+              <p className="text-xs text-amber-950">
+                AI unavailable · saved-data reports and Schedule view commands
+                still work.
               </p>
             )}
-            <form onSubmit={send} className="space-y-3">
-              <label className="block text-sm font-medium">
-                Your question
-                <Textarea
-                  ref={composer}
-                  className="mt-1 min-h-16"
-                  rows={embedded ? 2 : 3}
-                  maxLength={4000}
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === "Enter" &&
-                      !event.shiftKey &&
-                      !event.nativeEvent.isComposing
-                    ) {
-                      event.preventDefault();
-                      event.currentTarget.form?.requestSubmit();
-                    }
-                  }}
-                  disabled={openingChat}
-                  placeholder={
-                    chatBusy
-                      ? "Write your next question while the assistant replies…"
-                      : "List all chillers, find overdue work, or check test records…"
-                  }
-                />
-              </label>
-              <CopilotVoiceInput
-                resetKey={voicePurpose}
-                projectId={projectId}
-                providerReady={ready}
-                buttonLabel={
-                  voicePurpose === "review"
-                    ? "Record Send / Edit command"
-                    : replaceVoice
-                      ? "Record replacement text"
-                      : "Use microphone"
-                }
-                autoStart={
-                  voicePurpose === "dictation" &&
-                  (input ?? params.get("input")) === "voice"
-                }
-                disabled={openingChat || !isOnline}
-                onPartial={setVoicePartial}
-                onCaptureChange={(active) => {
-                  voiceCaptureActive.current = active;
-                  setVoiceCapturing(active);
-                }}
-                onTranscript={(text) => {
-                  setVoicePartial("");
-                  if (voicePurpose === "review") {
-                    const command = resolveVoiceReview(
-                      text,
-                      reviewedDraft.current,
-                      lastDraft.current,
-                    );
-                    setVoicePurpose("dictation");
-                    if (command === "send") {
-                      setVoiceNote(
-                        "Recognized Send question. Sending the reviewed question only; this does not confirm changes.",
-                      );
-                      void sendMessage(reviewedDraft.current);
-                    } else if (command === "draft-changed")
-                      setVoiceNote(
-                        "The question changed after command mode was opened. Review it again before sending.",
-                      );
-                    else if (command === "edit") {
-                      setReplaceVoice(true);
-                      setVoiceNote(
-                        "Edit your question, or record replacement text. Review it before sending.",
-                      );
-                      composer.current?.focus();
-                    } else
-                      setVoiceNote(
-                        "No command accepted. Say exactly ‘Send question’ or ‘Edit question’ in a separate command recording, or use the buttons.",
-                      );
-                    return;
-                  }
-                  setDraft((previous) =>
-                    (replaceVoice
-                      ? text
-                      : `${previous}${previous.trim() ? " " : ""}${text}`
-                    ).slice(0, 4000),
-                  );
-                  setReplaceVoice(false);
+
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={() => {
+                setOptionsOpen(false);
+                setManualOpen(true);
+                setSuggestion(null);
+              }}
+            >
+              Prepare a task change
+            </Button>
+            {draft.trim() && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="min-h-11"
+                disabled={voiceCapturing || openingChat}
+                onClick={() => {
+                  setReplaceVoice(true);
                   setVoiceNote(
-                    "Transcript ready for review. Nothing has been sent.",
+                    "Edit with the keyboard, or use the microphone to replace the whole question.",
                   );
                   composer.current?.focus();
                 }}
-              />
-              {voicePartial && (
-                <p
-                  role="status"
-                  aria-label="Live dictation preview"
-                  className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-950"
-                >
-                  <span className="block text-xs font-medium">
-                    {voicePurpose === "review"
-                      ? "Live command preview · not accepted yet"
-                      : "Live dictation · not sent"}
-                  </span>
-                  {voicePartial}
-                </p>
-              )}
-              {draft.trim() && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={voiceCapturing || openingChat || !isOnline}
-                    aria-pressed={voicePurpose === "review"}
-                    onClick={() => {
-                      reviewedDraft.current = lastDraft.current.trim();
-                      setVoicePurpose((value) =>
-                        value === "review" ? "dictation" : "review",
-                      );
-                      setVoiceNote("");
-                    }}
-                  >
-                    {voicePurpose === "review"
-                      ? "Return to dictation"
-                      : "Voice Send / Edit"}
-                  </Button>
-                  <span className="text-xs text-slate-600">
-                    {voicePurpose === "review"
-                      ? "Separate command mode: record ‘Send question’ or ‘Edit question’."
-                      : "Review the text before sending."}
-                  </span>
-                </div>
-              )}
-              {voiceNote && (
-                <p role="status" className="text-xs text-slate-600">
-                  {voiceNote}
-                </p>
-              )}
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <span className="text-xs text-slate-600">
-                  {ready
-                    ? "Changes always need your confirmation."
-                    : "Saved-data and view commands work without AI."}
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {chatBusy &&
-                    messages[messages.length - 1]?.role !== "assistant" && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={savingQuestion}
-                        onClick={stopWaiting}
-                      >
-                        <Square className="size-4" />
-                        Stop waiting
-                      </Button>
-                    )}
-                  <Button
-                    className="min-h-11 max-w-full whitespace-normal"
-                    disabled={
-                      (!ready &&
-                        !parseAssistantViewCommand(draft) &&
-                        !parseCopilotReadCommand(draft)) ||
-                      chatBusy ||
-                      voiceCapturing ||
-                      openingChat ||
-                      unsavedReply ||
-                      !isOnline ||
-                      !draft.trim()
-                    }
-                  >
-                    <Send className="size-4" />
-                    Send question
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </section>
-          <section
-            className="border-t border-slate-200 pt-5"
-            aria-label="Controlled task changes"
-          >
-            <div className="flex items-center gap-1">
+              >
+                Edit question
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-h-11"
+              onClick={() => {
+                setOptionsOpen(false);
+                setVoiceSetupOpen(voiceIntent);
+              }}
+            >
+              Voice help &amp; setup
+            </Button>
+            <details className="border-t border-slate-200 pt-5">
+              <summary className="min-h-11 cursor-pointer font-medium">
+                Project checks &amp; recorded groups
+              </summary>
+              <div className="mt-4">{contextPanel}</div>
+            </details>
+          </PopoverContent>
+        </Popover>
+      </div>
+      {historyError && (
+        <div
+          role="alert"
+          className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
+        >
+          <p>{historyError}</p>
+          {unsavedReply ? (
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
-                className="h-11"
-                aria-expanded={manualOpen}
-                disabled={manualBusy}
+                disabled={historySaving || !isOnline}
+                onClick={() => void retrySaving()}
+              >
+                {historySaving ? "Saving reply…" : "Retry saving reply"}
+              </Button>
+              <Button
+                variant="ghost"
+                disabled={historySaving || !isOnline}
                 onClick={() => {
-                  setManualOpen(!manualOpen);
-                  setSuggestion(null);
+                  active.current = null;
+                  setHistoryRetry((value) => value + 1);
                 }}
               >
-                <FileEdit className="size-4" />
-                Prepare a task change
+                Open saved version
               </Button>
-              <InfoPopover label="About task change previews">
-                <p>
-                  Works without AI. Review the exact changes, then confirm one
-                  task at a time.
-                </p>
-              </InfoPopover>
             </div>
-            {manualOpen && (
-              <div className="mt-5">
-                <h2
-                  tabIndex={-1}
-                  ref={editorHeading}
-                  className="sr-only focus:outline-none"
-                >
-                  Task change form
-                </h2>
-                <TaskChangeEditor
-                  key={suggestion?.key ?? "manual"}
-                  context={context}
-                  initialDraft={suggestion?.draft}
-                  onRefresh={refreshContext}
-                  onBusyChange={setManualBusy}
-                />
-              </div>
-            )}
-          </section>
-          <details className="border-t border-slate-200 pt-5">
-            <summary className="min-h-11 cursor-pointer font-medium">
-              Project checks &amp; recorded groups
-            </summary>
-            <div className="mt-4">{contextPanel}</div>
-          </details>
+          ) : (
+            <Button
+              variant="outline"
+              disabled={historyLoading || !isOnline}
+              onClick={() => setHistoryRetry((value) => value + 1)}
+            >
+              Retry loading chats
+            </Button>
+          )}
         </div>
-      </div>
+      )}
+
+      <section
+        aria-label="Project chat"
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <h2 className="sr-only">Conversation</h2>
+        {openingChat && (
+          <p role="status" className="py-5 text-sm text-slate-600">
+            Opening saved conversation…
+          </p>
+        )}
+        {!openingChat && !messages.length && (
+          <p className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 py-8 text-center text-sm leading-6 text-slate-600">
+            {sourceView
+              ? "Ask about this Schedule or change its view."
+              : "Ask about this project, or reopen a past chat."}{" "}
+            {!embedded && "Suggested changes always need your review."}
+            <button
+              type="button"
+              className="mt-1 flex min-h-11 items-center gap-2 text-left font-medium text-blue-800 underline"
+              onClick={() => {
+                setDraft(
+                  sourceView
+                    ? "Show progress"
+                    : (context.examples[0] ??
+                        "Show me the next two weeks look ahead."),
+                );
+                composer.current?.focus();
+              }}
+            >
+              {sourceView
+                ? "Show progress"
+                : (context.examples[0] ??
+                  "Show me the next two weeks look ahead.")}
+              <ArrowRight className="size-4 shrink-0" />
+            </button>
+          </p>
+        )}
+        {!openingChat && messages.length > 0 && (
+          <ol
+            ref={transcript}
+            className={
+              "min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-1 py-4"
+            }
+            tabIndex={0}
+            onScroll={(event) => {
+              const list = event.currentTarget;
+              followReply.current =
+                list.scrollHeight - list.scrollTop - list.clientHeight < 100;
+            }}
+            aria-label="Conversation"
+          >
+            {messages.map((message, index) => (
+              <li
+                key={message.id}
+                className={
+                  message.role === "user"
+                    ? "ml-8 rounded-2xl bg-slate-100 px-4 py-3 sm:ml-16"
+                    : "space-y-3 pb-4"
+                }
+              >
+                <p className="text-xs font-medium text-slate-600">
+                  {message.role === "user" ? "You" : "Assistant"}
+                </p>
+                {message.role === "assistant" ? (
+                  <div className="mt-2">
+                    <AssistantReply
+                      text={message.text}
+                      animate={revealingId === message.id}
+                      onComplete={() => {
+                        setRevealingId((value) =>
+                          value === message.id ? null : value,
+                        );
+                        setAnnouncement("Reply ready.");
+                        if (followReply.current)
+                          transcriptEnd.current?.scrollIntoView({
+                            block: "nearest",
+                          });
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-800">
+                    {message.text}
+                  </p>
+                )}
+                {message.role === "user" &&
+                  !chatBusy &&
+                  (message.error || index === messages.length - 1) && (
+                    <div className="mt-2 space-y-2">
+                      <p
+                        className="text-sm text-red-700"
+                        role={message.error ? "alert" : undefined}
+                      >
+                        {message.error ||
+                          "No reply was saved for this question."}
+                      </p>
+                      <Button
+                        variant="outline"
+                        disabled={!ready || !isOnline || unsavedReply}
+                        onClick={() =>
+                          void sendMessage(message.text, message.id)
+                        }
+                      >
+                        Try this question again
+                      </Button>
+                    </div>
+                  )}
+                {message.answer && revealingId !== message.id && (
+                  <>
+                    <AssistantResultPanels
+                      answer={message.answer}
+                      projectId={projectId}
+                      onSaved={refreshContext}
+                    />
+
+                    {message.answer.assetSearches?.map(
+                      (result, searchIndex) => (
+                        <section
+                          key={searchIndex}
+                          aria-label="Asset search results"
+                          className="min-w-0 space-y-3 border-t border-slate-200 pt-3"
+                        >
+                          <p className="text-sm font-semibold tabular-nums">
+                            {result.total} matching assets
+                          </p>
+                          <p className="text-xs text-slate-600">
+                            {result.records.length
+                              ? `Showing ${result.offset + 1}–${result.offset + result.records.length} of ${result.total}.`
+                              : "No matching records."}{" "}
+                            Search covers this project’s saved asset register.
+                          </p>
+                          <ul className="divide-y divide-blue-100">
+                            {result.records.map((asset) => (
+                              <li key={asset.id}>
+                                <Link
+                                  href={asset.href}
+                                  className="flex min-h-11 flex-col justify-center gap-1 py-2 text-sm text-blue-800 underline underline-offset-4"
+                                >
+                                  <span className="break-words font-medium">
+                                    {asset.name}
+                                  </span>
+                                  <span className="text-xs text-slate-600">
+                                    {[
+                                      asset.equipmentType,
+                                      asset.location,
+                                      asset.phase,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(" · ")}
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                          <Link
+                            href={result.href}
+                            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-800 underline underline-offset-4"
+                          >
+                            Open all {result.total} in Assets
+                            <ArrowRight className="size-4" />
+                          </Link>
+                        </section>
+                      ),
+                    )}
+                    <SourceList
+                      sources={message.answer.sources.filter(
+                        (source) =>
+                          source.kind !== "asset" ||
+                          !message.answer?.assetSearches?.length,
+                      )}
+                    />
+                    {message.answer.proposals.map((proposal, proposalIndex) => (
+                      <div
+                        key={proposalIndex}
+                        className="border-t border-slate-200 pt-3"
+                      >
+                        <p className="text-sm text-slate-600">
+                          Suggested task change ·{" "}
+                          {proposal.changes.title ??
+                            context.tasks.find(
+                              (task) => task.id === proposal.taskId,
+                            )?.title ??
+                            proposal.taskId}
+                        </p>
+                        <Button
+                          variant="outline"
+                          className="mt-2 h-11"
+                          disabled={chatBusy || manualBusy}
+                          onClick={() => reviewSuggestion(proposal)}
+                        >
+                          Review suggested change
+                          <ArrowRight className="size-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </li>
+            ))}
+            {chatBusy &&
+              !revealingId &&
+              messages[messages.length - 1]?.role !== "assistant" && (
+                <li
+                  className="space-y-2 py-3"
+                  role="status"
+                  aria-label="Assistant is preparing a reply"
+                >
+                  <p className="text-xs font-medium text-slate-600">
+                    Assistant
+                  </p>
+                  <div className="flex min-h-8 items-center gap-3 text-sm text-slate-600">
+                    <span className="flex gap-1" aria-hidden="true">
+                      {[0, 1, 2].map((dot) => (
+                        <span
+                          key={dot}
+                          className="size-2 rounded-full bg-blue-600 animate-pulse motion-reduce:animate-none"
+                          style={{ animationDelay: `${dot * 160}ms` }}
+                        />
+                      ))}
+                    </span>
+                    Preparing reply…
+                  </div>
+                </li>
+              )}
+            <li aria-hidden="true">
+              <div ref={transcriptEnd} />
+            </li>
+          </ol>
+        )}
+        {chatError && messages[messages.length - 1]?.error !== chatError && (
+          <p role="alert" className="text-sm text-red-700">
+            {chatError}
+          </p>
+        )}
+        {reportState && (
+          <Link
+            href={projectReportHref(projectId, reportState.query)}
+            className="inline-flex min-h-11 items-center text-sm text-blue-800 underline"
+          >
+            Open current report with these saved filters
+          </Link>
+        )}
+        {activeId && !chatBusy && (
+          <p className="text-xs leading-5 text-slate-600">
+            Saved replies are snapshots. Reopen a report or ask again to check
+            current records. Change proposals are not stored with past messages.
+          </p>
+        )}
+
+        {manualOpen && (
+          <div className="max-h-[40dvh] shrink-0 overflow-y-auto">
+            {" "}
+            <section
+              className="border-t border-slate-200 pt-5"
+              aria-label="Controlled task changes"
+            >
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  className="h-11"
+                  aria-expanded={manualOpen}
+                  disabled={manualBusy}
+                  onClick={() => {
+                    setManualOpen(!manualOpen);
+                    setSuggestion(null);
+                  }}
+                >
+                  <FileEdit className="size-4" />
+                  Prepare a task change
+                </Button>
+                <InfoPopover label="About task change previews">
+                  <p>
+                    Works without AI. Review the exact changes, then confirm one
+                    task at a time.
+                  </p>
+                </InfoPopover>
+              </div>
+              {manualOpen && (
+                <div className="mt-5">
+                  <h2
+                    tabIndex={-1}
+                    ref={editorHeading}
+                    className="sr-only focus:outline-none"
+                  >
+                    Task change form
+                  </h2>
+                  <TaskChangeEditor
+                    key={suggestion?.key ?? "manual"}
+                    context={context}
+                    initialDraft={suggestion?.draft}
+                    onRefresh={refreshContext}
+                    onBusyChange={setManualBusy}
+                  />
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+        <form
+          onSubmit={send}
+          className="mt-auto shrink-0 space-y-2 border-t border-slate-100 bg-white pt-3"
+        >
+          {showVoiceSetup && (
+            <div className="max-h-[42dvh] overflow-y-auto">
+              <VoiceSetup
+                onContinue={acceptVoiceSetup}
+                onKeyboard={() => {
+                  setVoiceSetupOpen(null);
+                  setVoiceStartBlocked(voiceIntent);
+                  composer.current?.focus();
+                }}
+              />
+            </div>
+          )}
+          {voicePartial && (
+            <p
+              role="status"
+              aria-label="Live dictation preview"
+              className="max-h-32 overflow-y-auto rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-950"
+            >
+              <span className="block text-xs font-medium">
+                Voice preview · not sent
+              </span>
+              {voicePartial}
+            </p>
+          )}
+          {voiceNote && (
+            <p role="status" className="text-xs text-slate-600">
+              {voiceNote}
+            </p>
+          )}
+
+          <div className="flex items-end gap-1 rounded-[1.75rem] border border-slate-300 bg-slate-50 px-2 py-1.5 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-100">
+            <label className="min-w-0 flex-1">
+              <span className="sr-only">Your question</span>
+              <Textarea
+                ref={composer}
+                className="max-h-36 min-h-11 resize-none border-0 bg-transparent px-2 py-3 text-base shadow-none focus-visible:outline-none focus-visible:ring-0"
+                style={{ outline: "none", outlineOffset: 0 }}
+                rows={1}
+                maxLength={4000}
+                value={draft}
+                onChange={(event) => {
+                  lastDraft.current = event.target.value;
+                  setDraft(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === "Enter" &&
+                    !event.shiftKey &&
+                    !event.nativeEvent.isComposing
+                  ) {
+                    event.preventDefault();
+                    event.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                disabled={openingChat}
+                placeholder={
+                  chatBusy
+                    ? "Write your next question while the assistant replies…"
+                    : "Ask about this project…"
+                }
+              />
+            </label>
+            {voiceSetupReady && !showVoiceSetup ? (
+              <CopilotVoiceInput
+                compact
+                key={`${projectId}:${voiceIntent}`}
+                resetKey="question"
+                projectId={projectId}
+                providerReady={ready}
+                buttonLabel={replaceVoice ? "Dictate replacement" : "Use voice"}
+                autoStart={
+                  voiceStartBlocked !== voiceIntent &&
+                  (voiceStartRequested === voiceIntent || input === "voice")
+                }
+                disabled={openingChat || !isOnline}
+                onPartial={setVoicePartial}
+                onNotice={(message) => {
+                  if (message) setVoiceNote(message);
+                }}
+                onCaptureChange={(active) => {
+                  if (active && !voiceCaptureActive.current)
+                    voiceSession.current = createVoiceQuestionSession(
+                      lastDraft.current,
+                      replaceVoice,
+                    );
+                  if (active)
+                    setVoiceNote(
+                      "Preparing voice. You can cancel at any time.",
+                    );
+                  voiceCaptureActive.current = active;
+                  setVoiceCapturing(active);
+                }}
+                onFinalPhrase={(phrase) => {
+                  const flow = voiceSession.current;
+                  const control = flow?.phrase(phrase, lastDraft.current);
+                  if (control === "replace") setReplaceVoice(true);
+                  setVoiceNote(
+                    control === "replace"
+                      ? "Speak the replacement question. Pause to review, then say Send."
+                      : control === "finish"
+                        ? "Sending this question once the microphone stops. Changes still need separate confirmation."
+                        : control === "omit"
+                          ? "Review the visible question first. Then pause and say Send or Edit; typing changes cancel voice sending."
+                          : "Review the words above. After a pause, say Send or Edit as a separate phrase.",
+                  );
+                  return control;
+                }}
+                onTranscript={(text) => {
+                  setVoicePartial("");
+                  const result = (
+                    voiceSession.current ??
+                    createVoiceQuestionSession(lastDraft.current, replaceVoice)
+                  ).complete(text, lastDraft.current);
+                  voiceSession.current = null;
+                  if (result.changedDuringCapture) {
+                    setVoicePartial(text);
+                    setVoiceNote(
+                      "Your typed question changed while listening. It has been kept. Review the voice text before using it.",
+                    );
+                    return;
+                  }
+                  lastDraft.current = result.draft;
+                  setDraft(result.draft);
+                  setReplaceVoice(false);
+                  if (result.send) {
+                    setVoiceNote(
+                      "Sending your question. This does not confirm changes.",
+                    );
+                    void sendMessage(result.draft);
+                  } else {
+                    setVoiceNote(
+                      "Question ready. Review it, then Send or Edit.",
+                    );
+                    composer.current?.focus();
+                  }
+                }}
+              />
+            ) : (
+              <Button
+                type="button"
+                variant="ghost"
+                className="size-11 shrink-0 rounded-full"
+                aria-label="Set up voice input"
+                onClick={() => setVoiceSetupOpen(voiceIntent)}
+              >
+                <Mic className="size-5" />
+              </Button>
+            )}
+            {chatBusy && messages[messages.length - 1]?.role !== "assistant" ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="size-11 shrink-0 rounded-full"
+                aria-label="Stop waiting"
+                disabled={savingQuestion}
+                onClick={stopWaiting}
+              >
+                <Square className="size-4" />
+                <span className="sr-only">Stop waiting</span>
+              </Button>
+            ) : (
+              <Button
+                className="size-11 shrink-0 rounded-full"
+                aria-label="Send question"
+                disabled={
+                  (!ready &&
+                    !parseAssistantViewCommand(draft) &&
+                    !parseCopilotReadCommand(draft)) ||
+                  chatBusy ||
+                  voiceCapturing ||
+                  openingChat ||
+                  unsavedReply ||
+                  !isOnline ||
+                  !draft.trim()
+                }
+              >
+                <Send className="size-4" />
+                <span className="sr-only">Send question</span>
+              </Button>
+            )}
+          </div>
+          <p className="text-center text-xs text-slate-500">
+            Questions use this project. Changes need a separate confirmation.
+          </p>
+        </form>
+      </section>
     </div>
   );
 }

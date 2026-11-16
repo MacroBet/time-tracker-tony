@@ -306,3 +306,63 @@ test("live interim Send question is only preview; the command parser accepts exa
   assert.equal(parseVoiceReviewCommand("Send question."), "send");
   assert.equal(parseVoiceReviewCommand("Edit question"), "edit");
 });
+
+test("real native controller routes stable standalone Send once after Stop while excluding command words from the question", async (t) => {
+  const { createVoiceQuestionSession } =
+    await import("../src/lib/voice-commands");
+  const h = harness(),
+    flow = createVoiceQuestionSession("", false, 0);
+  let clock = 100,
+    sends = 0;
+  const c = createLocalDictation(h.Mock, {
+    ...h.callbacks,
+    onFinalPhrase: (phrase) => flow.phrase({ ...phrase, now: clock }, ""),
+    onTranscript: (text) => {
+      h.callbacks.onTranscript(text);
+      if (flow.complete(text, "").send) sends++;
+    },
+  });
+  t.after(() => c.cancel());
+  await c.start();
+  const r = h.instances[0];
+  r.onstart!();
+  r.onresult!(event(["Find records containing send", true]));
+  assert.equal(sends, 0);
+  clock = 1600;
+  r.onresult!(event(["Find records containing send", true], ["Send", true]));
+  assert.equal(r.stops, 1);
+  assert.equal(sends, 0);
+  const end = r.onend!;
+  end();
+  end();
+  assert.equal(sends, 1);
+  assert.deepEqual(h.output.final, ["Find records containing send"]);
+});
+test("real native controller clears earlier words for Edit and records the replacement within the same recognition instance", async (t) => {
+  const { createVoiceQuestionSession } =
+    await import("../src/lib/voice-commands");
+  const h = harness(),
+    flow = createVoiceQuestionSession("", false, 0);
+  let clock = 100;
+  const c = createLocalDictation(h.Mock, {
+    ...h.callbacks,
+    onFinalPhrase: (phrase) => flow.phrase({ ...phrase, now: clock }, ""),
+  });
+  t.after(() => c.cancel());
+  await c.start();
+  const r = h.instances[0];
+  r.onstart!();
+  r.onresult!(event(["Old question", true]));
+  clock = 1600;
+  r.onresult!(event(["Old question", true], ["Edit", true]));
+  assert.equal(r.stops, 0);
+  assert.equal(h.instances.length, 1);
+  clock = 2000;
+  r.onresult!(
+    event(["Old question", true], ["Edit", true], ["New question", true]),
+  );
+  c.stop();
+  r.onend!();
+  assert.deepEqual(h.output.final, ["New question"]);
+  assert.equal(flow.complete("New question", "").replaced, true);
+});

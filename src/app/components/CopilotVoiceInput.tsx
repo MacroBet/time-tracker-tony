@@ -9,6 +9,8 @@ import {
   createLocalDictation,
   checkLocalDictationAvailability,
   type LocalRecognitionConstructor,
+  type LocalFinalPhrase,
+  type LocalPhraseControl,
 } from "@/lib/live-dictation";
 
 type Recording = {
@@ -27,8 +29,11 @@ export function CopilotVoiceInput({
   disabled = false,
   onTranscript,
   onPartial,
+  onFinalPhrase,
   onCaptureChange,
+  onNotice,
   providerReady = true,
+  compact = false,
   autoStart = false,
   buttonLabel = "Use microphone",
   resetKey = "dictation",
@@ -37,8 +42,11 @@ export function CopilotVoiceInput({
   disabled?: boolean;
   onTranscript: (text: string) => void;
   onPartial?: (text: string) => void;
+  onFinalPhrase?: (phrase: LocalFinalPhrase) => LocalPhraseControl;
   onCaptureChange?: (active: boolean) => void;
+  onNotice?: (message: string) => void;
   providerReady?: boolean;
+  compact?: boolean;
   /** Set only after the user chooses the voice entry; never at login. */
   autoStart?: boolean;
   buttonLabel?: string;
@@ -54,16 +62,47 @@ export function CopilotVoiceInput({
   >("idle");
   const [seconds, setSeconds] = useState(0),
     [error, setError] = useState("");
-  const errorId = useId();
   const [mode, setMode] = useState<"live" | "file">("live");
+  const notice = useRef(onNotice);
+  useEffect(() => {
+    notice.current = onNotice;
+  }, [onNotice]);
+  useEffect(() => {
+    if (error) notice.current?.(error);
+    else if (state === "recording")
+      notice.current?.(
+        mode === "live"
+          ? "Listening on this device. Pause, then say Send or Edit. Stops after 30 seconds."
+          : "Recording audio. Stop to transcribe and review it before sending.",
+      );
+    else if (state === "checking")
+      notice.current?.("Checking on-device English (UK). No download starts.");
+    else if (state === "permission")
+      notice.current?.("Waiting for microphone permission. You can cancel.");
+    else if (state === "finalizing")
+      notice.current?.("Microphone stopping. Preparing your final words.");
+    else if (state === "transcribing")
+      notice.current?.("Microphone off. Transcribing audio for review.");
+  }, [error, state, mode]);
+  const errorId = useId();
   const [availability, setAvailability] = useState("");
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const probeRequest = useRef<AbortController | null>(null);
   const local = useRef<ReturnType<typeof createLocalDictation> | null>(null);
-  const callbacks = useRef({ onPartial, onCaptureChange, onTranscript });
+  const callbacks = useRef({
+    onPartial,
+    onFinalPhrase,
+    onCaptureChange,
+    onTranscript,
+  });
   useEffect(() => {
-    callbacks.current = { onPartial, onCaptureChange, onTranscript };
-  }, [onPartial, onCaptureChange, onTranscript]);
+    callbacks.current = {
+      onPartial,
+      onFinalPhrase,
+      onCaptureChange,
+      onTranscript,
+    };
+  }, [onPartial, onFinalPhrase, onCaptureChange, onTranscript]);
   const recording = useRef<Recording | null>(null);
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0),
@@ -248,6 +287,10 @@ export function CopilotVoiceInput({
           if (token === generation.current)
             callbacks.current.onCaptureChange?.(active);
         },
+        onFinalPhrase: (phrase) =>
+          token === generation.current
+            ? callbacks.current.onFinalPhrase?.(phrase)
+            : "omit",
         onTranscript: (text) => {
           if (token === generation.current)
             callbacks.current.onTranscript(text);
@@ -384,6 +427,123 @@ export function CopilotVoiceInput({
     }
   }
 
+  const recordButton = (
+    <Button
+      type="button"
+      variant={state === "recording" ? "destructive" : "outline"}
+      className={compact ? "size-11 shrink-0 rounded-full" : "min-h-11 gap-2"}
+      disabled={
+        disabled ||
+        checkingAvailability ||
+        state === "checking" ||
+        state === "permission" ||
+        state === "finalizing" ||
+        state === "transcribing"
+      }
+      onClick={state === "recording" ? () => void finish() : () => void start()}
+      aria-label={
+        state === "recording"
+          ? mode === "live"
+            ? "Stop on-device dictation and review"
+            : "Stop recording and transcribe"
+          : "Start on-device live dictation"
+      }
+      aria-describedby={error ? errorId : undefined}
+    >
+      {state === "recording" ? (
+        <Square className="size-4" />
+      ) : (
+        <Mic className="size-4" />
+      )}
+      <span className={compact ? "sr-only" : undefined}>
+        {state === "recording"
+          ? `Stop · ${seconds}s`
+          : state === "checking"
+            ? "Checking on-device dictation…"
+            : state === "finalizing"
+              ? "Finishing transcript…"
+              : state === "permission"
+                ? "Allow microphone…"
+                : state === "transcribing"
+                  ? "Transcribing…"
+                  : buttonLabel}
+      </span>
+    </Button>
+  );
+  if (compact)
+    return (
+      <div className="flex shrink-0 items-center gap-0.5">
+        {recordButton}
+        <InfoPopover label="Voice options">
+          <p>
+            On-device English (UK). Pause to review, then say Send or Edit as a
+            separate phrase. Changes always need separate confirmation.
+          </p>
+          {state !== "idle" && (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              onClick={() => {
+                generation.current++;
+                local.current?.cancel();
+                local.current = null;
+                request.current?.abort();
+                release();
+                callbacks.current.onPartial?.("");
+                callbacks.current.onCaptureChange?.(false);
+                lock.current = false;
+                setState("idle");
+              }}
+            >
+              Cancel voice
+            </Button>
+          )}
+          {state === "idle" && providerReady && (
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11"
+              disabled={disabled}
+              onClick={() => void startFile()}
+            >
+              Record audio after stop
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-11"
+            disabled={disabled || checkingAvailability || state !== "idle"}
+            onClick={() => void checkAvailability()}
+          >
+            Check live availability
+          </Button>
+          {availability && <p role="status">{availability}</p>}
+          {error && (
+            <p role="alert" className="text-red-700">
+              {error}
+            </p>
+          )}
+        </InfoPopover>
+        <span
+          id={error ? errorId : undefined}
+          className="sr-only"
+          role="status"
+        >
+          {error ||
+            (state === "recording"
+              ? `${mode === "live" ? "On-device live dictation" : "Recording audio"}, ${seconds} seconds`
+              : state === "checking"
+                ? "Checking on-device dictation"
+                : state === "finalizing"
+                  ? "Finishing transcript"
+                  : state === "transcribing"
+                    ? "Transcribing audio"
+                    : "")}
+        </span>
+      </div>
+    );
   return (
     <div
       className="min-w-0 space-y-2"
@@ -395,47 +555,7 @@ export function CopilotVoiceInput({
       }
     >
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant={state === "recording" ? "destructive" : "outline"}
-          className="min-h-11 gap-2"
-          disabled={
-            disabled ||
-            checkingAvailability ||
-            state === "checking" ||
-            state === "permission" ||
-            state === "finalizing" ||
-            state === "transcribing"
-          }
-          onClick={
-            state === "recording" ? () => void finish() : () => void start()
-          }
-          aria-label={
-            state === "recording"
-              ? mode === "live"
-                ? "Stop on-device dictation and review"
-                : "Stop recording and transcribe"
-              : "Start on-device live dictation"
-          }
-          aria-describedby={error ? errorId : undefined}
-        >
-          {state === "recording" ? (
-            <Square className="size-4" />
-          ) : (
-            <Mic className="size-4" />
-          )}
-          {state === "recording"
-            ? `Stop · ${seconds}s`
-            : state === "checking"
-              ? "Checking on-device dictation…"
-              : state === "finalizing"
-                ? "Finishing transcript…"
-                : state === "permission"
-                  ? "Allow microphone…"
-                  : state === "transcribing"
-                    ? "Transcribing…"
-                    : buttonLabel}
-        </Button>
+        {recordButton}
         {state !== "idle" && (
           <Button
             type="button"

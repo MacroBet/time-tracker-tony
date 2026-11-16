@@ -9,7 +9,7 @@ import {
 } from "@/lib/assistant-entry";
 import { useApp } from "../contexts/AppContext";
 
-/** Opening the assistant never opens the microphone or sends a question. */
+/** Voice opens the contextual setup/capture flow from this explicit user action; keyboard stays silent. */
 export function AssistantEntry() {
   const { currentUser, selectedProjectId } = useApp();
   const pathname = usePathname();
@@ -34,7 +34,7 @@ export function AssistantEntry() {
       <button
         type="button"
         onClick={() => open("voice")}
-        aria-label="Open AI assistant with voice input"
+        aria-label="Ask by voice in this page"
         className={style}
       >
         <Mic className="size-4" aria-hidden="true" />
@@ -43,7 +43,7 @@ export function AssistantEntry() {
       <button
         type="button"
         onClick={() => open("text")}
-        aria-label="Open AI assistant with keyboard input"
+        aria-label="Ask with keyboard in this page"
         className={`${style} border-l border-blue-200`}
       >
         <Keyboard className="size-4" aria-hidden="true" />
