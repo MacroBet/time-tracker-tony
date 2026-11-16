@@ -5,6 +5,7 @@ import {
   type ScheduleViewSnapshot,
 } from "@/lib/schedule-view-context";
 import type { AssistantViewIntent } from "@/lib/assistant-view-commands";
+import { assertScheduleViewCommands } from "@/lib/source-gantt";
 
 /** An acknowledgement comes from the currently mounted Schedule, never a model claim. */
 export async function applyAssistantView(
@@ -22,6 +23,10 @@ export async function applyAssistantView(
     throw Error(
       "Open the current working Schedule before changing its view. The saved view is missing or out of date.",
     );
+  assertScheduleViewCommands(
+    intent.commands,
+    snapshot.sourceSha256 === "managed" ? "managed" : "source",
+  );
   for (const command of intent.commands) {
     await new Promise<void>((resolve, reject) => {
       const requestId = crypto.randomUUID();

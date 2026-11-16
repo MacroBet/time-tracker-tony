@@ -366,6 +366,7 @@ type SourceProgrammeWorkspaceProps = {
   projectId: string;
   summary: SourceProgrammeSummary;
   defaultDurationMode?: SourceDurationMode;
+  defaultScope?: "project" | "personal";
   defaultView?: Partial<SourceGanttViewState>;
 };
 export function SourceProgrammeWorkspace(props: SourceProgrammeWorkspaceProps) {
@@ -380,6 +381,7 @@ function SourceProgrammeView({
   projectId,
   summary,
   defaultDurationMode = "days",
+  defaultScope = "project",
   defaultView,
 }: SourceProgrammeWorkspaceProps) {
   const id = useId();
@@ -737,6 +739,15 @@ function SourceProgrammeView({
           </span>
           <InfoPopover label="About this source schedule">
             <p className="font-medium text-slate-950">{summary.projectName}</p>
+            <p>
+              Starting view:{" "}
+              {defaultScope === "personal"
+                ? "personal preference in this browser"
+                : "shared project default"}
+              ; {defaults.scale ?? "day"} calendar scale, duration{" "}
+              {defaults.durationMode}. Changes here are temporary; Reset
+              restores this starting view and Today.
+            </p>
             <p>
               {loading
                 ? "Loading…"
@@ -1138,7 +1149,7 @@ function SourceProgrammeView({
                         mode: event.target.value as SourceDurationMode,
                       })
                     }
-                    className="block min-h-11 w-20 rounded-md sm:w-24 border border-slate-300 bg-white px-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                    className="block min-h-11 w-20 rounded-md sm:w-24 border border-slate-300 bg-white px-1 text-xs! sm:px-2 sm:text-sm! focus-visible:outline-2 focus-visible:outline-blue-700"
                   >
                     <option value="days">Days</option>
                     <option value="hours">Hours</option>
@@ -1198,8 +1209,8 @@ function SourceProgrammeView({
                       Dependency links
                     </label>
                     <p className="text-xs text-slate-600">
-                      Changes apply to this view. Reset restores the project
-                      defaults and Today.
+                      Changes apply to this view. Reset restores the selected
+                      starting view and Today.
                     </p>
                     <Button
                       variant="outline"

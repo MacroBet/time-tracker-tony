@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ganttAxis } from "../src/lib/gantt-axis";
+import { ganttAxis, ganttLabelBounds } from "../src/lib/gantt-axis";
 import { calendarDays } from "../src/lib/scheduling";
 
 test("Days gives every calendar date a readable column aligned to activity coordinates", () => {
@@ -69,4 +69,47 @@ test("short date windows retain readable month boundaries and exact calendar coo
   const fourWeeks = ganttAxis("2026-11-16", "month", 28);
   assert.equal(fourWeeks.columns[1].date, "2026-12-01");
   assert.equal(fourWeeks.columns[1].label, "Dec 26");
+});
+
+test("a partial-month label stays within the visible period on narrow source charts and after pan", () => {
+  const axis = ganttAxis("2026-11-16", "month", 14);
+  assert.equal(axis.columns[0].label, "Nov 26");
+  assert.equal(axis.width, 840);
+  const original = JSON.stringify(axis);
+  for (const viewport of [
+    { from: 0, to: 278 },
+    { from: 0, to: 176 },
+    { from: 360, to: 536 },
+    { from: 664, to: 840 },
+  ]) {
+    const bounds: { left: number; width: number } = ganttLabelBounds(
+      0,
+      axis.width,
+      viewport,
+    )!;
+    const centre = bounds.left + bounds.width / 2;
+    assert(centre >= viewport.from && centre < viewport.to);
+    assert.equal(bounds.width, viewport.to - viewport.from);
+    assert.equal(bounds.left, viewport.from);
+  }
+  assert.equal(JSON.stringify(axis), original);
+});
+
+test("month label clipping respects both sides of a month boundary and hides periods outside the viewport", () => {
+  const axis = ganttAxis("2026-11-16", "month", 28);
+  const boundary = axis.columns[1].left;
+  assert.equal(boundary, 450);
+  assert.deepEqual(ganttLabelBounds(0, boundary, { from: 420, to: 600 }), {
+    left: 420,
+    width: 30,
+  });
+  assert.deepEqual(
+    ganttLabelBounds(boundary, axis.width, { from: 420, to: 600 }),
+    { left: 0, width: 150 },
+  );
+  assert.equal(
+    ganttLabelBounds(0, boundary, { from: 450, to: 600 }),
+    undefined,
+  );
+  assert.deepEqual(ganttLabelBounds(450, 840), { left: 0, width: 390 });
 });

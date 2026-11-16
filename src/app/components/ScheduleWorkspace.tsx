@@ -1,13 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
   CalendarDays,
-  Eye,
-  EyeOff,
   List,
   Pencil,
   Plus,
@@ -44,6 +42,23 @@ import {
 import { calendarDays, dayNumber, workingDuration } from "@/lib/scheduling";
 import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
 import { GanttRuler } from "./GanttRuler";
+import {
+  sourceGanttInitialView,
+  reduceSourceGanttView,
+  assertScheduleViewCommands,
+  sourceViewport,
+  shiftSourceDate,
+  type SourceGanttViewCommand,
+  type SourceDurationMode,
+} from "@/lib/source-gantt";
+import {
+  scheduleViewCommandEvent,
+  scheduleViewCommandResultEvent,
+  scheduleViewCommandSchema,
+  resolveScheduleViewCommand,
+  scheduleViewStorageKey,
+} from "@/lib/schedule-view-context";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { projectDate, type Project, type Task } from "@/lib/domain";
 import type { Asset } from "@/lib/commissioning";
 
@@ -147,10 +162,12 @@ export function ScheduleWorkspace({
         >
           {commissioning(project).sourceProgrammeSummary ? (
             <SourceProgrammeWorkspace
-              key={`${commissioning(project).sourceProgrammeSummary!.sha256}:${viewPreference.value.durationMode}`}
+              key={`${commissioning(project).sourceProgrammeSummary!.sha256}:${viewPreference.value.durationMode}:${viewPreference.value.calendarScale}`}
               projectId={project.id}
               summary={commissioning(project).sourceProgrammeSummary!}
               defaultDurationMode={viewPreference.value.durationMode}
+              defaultView={{ scale: viewPreference.value.calendarScale }}
+              defaultScope={viewPreference.personal ? "personal" : "project"}
             />
           ) : (
             <Schedule project={project} />
@@ -180,6 +197,7 @@ export function ScheduleWorkspace({
 }
 
 function Schedule({ project }: { project: Project }) {
+  const preference = useProjectView(project);
   const { tasks, isOnline, currentUser, refreshData } = useApp();
   const [workingOpen, setWorkingOpen] = useState(false);
   const state = commissioning(project);
@@ -591,6 +609,12 @@ function Schedule({ project }: { project: Project }) {
               )}
               <div className={mobileTimeline ? "block" : "hidden md:block"}>
                 <Gantt
+                  key={`${preference.value.calendarScale}:${preference.value.durationMode}`}
+                  project={project}
+                  query={query}
+                  page={currentPage}
+                  mobileVisible={mobileTimeline}
+                  onShow={() => setMobileTimeline(true)}
                   rows={visible}
                   all={state.schedule}
                   totalMatching={rows.length}
@@ -1104,31 +1128,191 @@ function ActivityEditor({
 }
 
 function Gantt({
+  project,
+  query,
+  page,
+  mobileVisible,
+  onShow,
   rows,
   all,
   totalMatching,
   onEdit,
 }: {
+  project: Project;
+  query: string;
+  page: number;
+  mobileVisible: boolean;
+  onShow: () => void;
   rows: ScheduleActivity[];
   all: ScheduleActivity[];
   totalMatching: number;
   onEdit: (r: ScheduleActivity, anchor: HTMLElement) => void;
 }) {
-  const { projects, selectedProjectId, tasks } = useApp();
-  const project = projects.find((p) => p.id === selectedProjectId);
+  const { tasks } = useApp();
+  const preference = useProjectView(project);
   const progressState = commissioning(project);
   const progressTasks = tasks.filter((t) => t.projectId === project?.id);
   const first =
     rows
       .flatMap((r) => (r.start ? [r.start] : r.finish ? [r.finish] : []))
       .sort()[0] ?? projectDate();
-  const [anchor, setAnchor] = useState<string | null>(null);
-  const [zoom, setZoom] = useState<GanttScale>("day");
-  const [showLinks, setShowLinks] = useState(false);
-  const [showDuration, setShowDuration] = useState(true);
-  const tableWidth = (showLinks ? 734 : 544) - (showDuration ? 0 : 64);
-  const start = anchor ?? shiftDate(first, -2);
-  const { span, unit, width, columns } = ganttAxis(start, zoom);
+  const defaults = {
+    scale: preference.value.calendarScale,
+    durationMode: preference.value.durationMode,
+    columns: ["progress", "start", "finish"] as (
+      "progress" | "start" | "finish"
+    )[],
+    showLinks: false,
+  };
+  const [view, setView] = useState(() =>
+    sourceGanttInitialView(projectDate(), defaults),
+  );
+  const viewRef = useRef(view);
+  const [viewportDate, setViewportDate] = useState(view.anchor);
+  const viewportDateRef = useRef(view.anchor);
+  const scroller = useRef<HTMLDivElement>(null);
+  const [resetKey, setResetKey] = useState(0);
+  function applyCommand(command: SourceGanttViewCommand) {
+    assertScheduleViewCommands([command], "managed");
+    const navigates = [
+      "date",
+      "today",
+      "pan",
+      "scale",
+      "horizon",
+      "reset",
+    ].includes(command.type);
+    const next = reduceSourceGanttView(
+      navigates
+        ? { ...viewRef.current, anchor: viewportDateRef.current }
+        : viewRef.current,
+      command,
+      projectDate(),
+      defaults,
+    );
+    viewRef.current = next;
+    setView(next);
+    if (navigates) {
+      viewportDateRef.current = next.anchor;
+      setViewportDate(next.anchor);
+      setResetKey((value) => value + 1);
+    }
+  }
+  const zoom = view.scale,
+    start = view.anchor,
+    showLinks = view.showLinks,
+    showDuration = view.durationMode !== "hidden";
+  const showProgress = view.columns.includes("progress"),
+    showStart = view.columns.includes("start"),
+    showFinish = view.columns.includes("finish");
+  const setAnchor = (date: string) => applyCommand({ type: "date", date });
+  const setZoom = (scale: GanttScale) => applyCommand({ type: "scale", scale });
+  const setShowLinks = (visible: boolean) =>
+    applyCommand({ type: "links", visible });
+  const tableWidth =
+    224 +
+    (showDuration ? 64 : 0) +
+    (showProgress ? 64 : 0) +
+    (showStart ? 96 : 0) +
+    (showFinish ? 96 : 0) +
+    (showLinks ? 190 : 0);
+  const { span, unit, width, columns } = ganttAxis(start, zoom, view.horizon);
+  function updateViewport() {
+    const el = scroller.current;
+    if (!el) return;
+    const viewport = sourceViewport({
+      scrollLeft: el.scrollLeft,
+      clientWidth: el.clientWidth,
+      nameWidth: 0,
+      otherColumnsWidth: tableWidth,
+      axisWidth: width,
+      unit,
+    });
+    const date = shiftSourceDate(start, viewport.dayOffset);
+    viewportDateRef.current = date;
+    setViewportDate(date);
+  }
+  useLayoutEffect(() => {
+    if (scroller.current)
+      scroller.current.scrollLeft =
+        scroller.current.clientWidth < 500 ? tableWidth : 0;
+    updateViewport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [start, zoom, view.horizon, resetKey, tableWidth, mobileVisible]);
+  useEffect(() => {
+    const key = scheduleViewStorageKey(project.id);
+    try {
+      sessionStorage.setItem(
+        key,
+        JSON.stringify({
+          projectId: project.id,
+          sourceSha256: "managed",
+          projectVersion: progressState.version,
+          mode: "working",
+          page,
+          query: { q: query, wbs: "", calendar: "", status: "" },
+          display: { ...view, anchor: viewportDate },
+        }),
+      );
+    } catch {
+      /* Missing storage disables commands without guessing. */
+    }
+    return () => {
+      try {
+        sessionStorage.removeItem(key);
+      } catch {
+        /* Storage can be disabled. */
+      }
+    };
+  }, [project.id, progressState.version, query, page, view, viewportDate]);
+  useEffect(() => {
+    function onCommand(event: Event) {
+      const parsed = scheduleViewCommandSchema.safeParse(
+        (event as CustomEvent<unknown>).detail,
+      );
+      if (!parsed.success) return;
+      const message = parsed.data;
+      try {
+        const command = resolveScheduleViewCommand(message, {
+          projectId: project.id,
+          sourceSha256: "managed",
+          projectVersion: progressState.version,
+        });
+        assertScheduleViewCommands([command], "managed");
+        applyCommand(command);
+        onShow();
+        if (message.requestId)
+          window.dispatchEvent(
+            new CustomEvent(scheduleViewCommandResultEvent, {
+              detail: {
+                requestId: message.requestId,
+                projectId: message.projectId,
+                ok: true,
+              },
+            }),
+          );
+      } catch (failure) {
+        if (message.requestId)
+          window.dispatchEvent(
+            new CustomEvent(scheduleViewCommandResultEvent, {
+              detail: {
+                requestId: message.requestId,
+                projectId: message.projectId,
+                ok: false,
+                error:
+                  failure instanceof Error
+                    ? failure.message
+                    : "The managed Schedule view could not change.",
+              },
+            }),
+          );
+      }
+    }
+    window.addEventListener(scheduleViewCommandEvent, onCommand);
+    return () =>
+      window.removeEventListener(scheduleViewCommandEvent, onCommand);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project.id, progressState.version, view, viewportDate, onShow]);
   const positions = new Map(
     rows.map((r, i) => [r.activityId, { row: r, index: i }]),
   );
@@ -1169,7 +1353,7 @@ function Gantt({
               <Input
                 aria-label="Gantt go to date"
                 type="date"
-                value={start}
+                value={viewportDate}
                 onChange={(e) => {
                   if (e.target.value) setAnchor(e.target.value);
                 }}
@@ -1191,7 +1375,7 @@ function Gantt({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setAnchor(shiftDate(projectDate(), -7))}
+              onClick={() => setAnchor(projectDate())}
             >
               Today
             </Button>
@@ -1207,23 +1391,106 @@ function Gantt({
               <p>
                 Show or hide finish-to-start arrows between activities on this
                 page and the predecessor/successor columns. This changes the
-                display only; links and dates stay unchanged.
+                display only; links and dates stay unchanged. Starting view:{" "}
+                {preference.personal
+                  ? "personal preference in this browser"
+                  : "shared project default"}
+                , {defaults.scale} scale and duration {defaults.durationMode}.
+                Reset restores this starting view and Today.
               </p>
             </InfoPopover>
             <span className="text-xs tabular-nums text-slate-600">
               {totalMatching} matching activities
             </span>
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={showDuration}
-                onChange={(event) => setShowDuration(event.target.checked)}
-              />
-              Show duration
+            <label className="text-sm">
+              Duration
+              <select
+                aria-label="Duration display"
+                className="field-select mt-1 w-24"
+                value={view.durationMode}
+                onChange={(event) =>
+                  applyCommand({
+                    type: "duration",
+                    mode: event.target.value as SourceDurationMode,
+                  })
+                }
+              >
+                <option value="days">Days</option>
+                <option value="hours" disabled>
+                  Hours unavailable
+                </option>
+                <option value="hidden">Hidden</option>
+              </select>
             </label>
+            <label className="text-sm">
+              Date window
+              <select
+                aria-label="Gantt date window"
+                className="field-select mt-1"
+                value={view.horizon ?? "auto"}
+                onChange={(event) =>
+                  applyCommand({
+                    type: "horizon",
+                    horizon:
+                      event.target.value === "auto"
+                        ? null
+                        : (Number(event.target.value) as 14 | 28 | 42),
+                  })
+                }
+              >
+                <option value="auto">Auto</option>
+                <option value="14">2WK</option>
+                <option value="28">4WK</option>
+                <option value="42">6WK</option>
+              </select>
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">Columns</Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-white" align="start">
+                {(["progress", "start", "finish"] as const).map((column) => (
+                  <label
+                    key={column}
+                    className="flex min-h-11 items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={view.columns.includes(column)}
+                      onChange={(event) =>
+                        applyCommand({
+                          type: "column",
+                          column,
+                          visible: event.target.checked,
+                        })
+                      }
+                    />
+                    {
+                      { progress: "Steps %", start: "Start", finish: "Finish" }[
+                        column
+                      ]
+                    }
+                  </label>
+                ))}
+              </PopoverContent>
+            </Popover>
+            <Button
+              variant="outline"
+              onClick={() => applyCommand({ type: "reset" })}
+            >
+              Reset view
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setAnchor(shiftDate(first, -2))}
+            >
+              Activity dates
+            </Button>
           </div>
         </div>
         <div
+          ref={scroller}
+          onScroll={updateViewport}
           className="overflow-x-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
           tabIndex={0}
           role="region"
@@ -1240,45 +1507,25 @@ function Gantt({
               </caption>
               <thead>
                 <tr className="h-14 bg-slate-50 text-slate-600 text-left">
-                  <th className="px-3 w-44">
-                    <div className="flex items-center justify-between gap-1">
-                      Activity / asset
-                      {!showDuration && (
-                        <button
-                          type="button"
-                          className="grid min-h-11 min-w-11 place-items-center rounded-md hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
-                          aria-label="Show duration column"
-                          onClick={() => setShowDuration(true)}
-                        >
-                          <Eye className="size-4" aria-hidden="true" />
-                        </button>
-                      )}
-                    </div>
-                  </th>
+                  <th className="px-3 w-44">Activity / asset</th>
                   <th className="w-12">
                     <span className="sr-only">Quick edit</span>
                   </th>
                   {showDuration && (
                     <th className="px-1 w-16">
-                      <button
-                        type="button"
-                        className="flex min-h-11 items-center gap-1 rounded-md px-1 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-blue-700"
-                        aria-label="Hide duration column"
-                        onClick={() => setShowDuration(false)}
-                      >
-                        Days
-                        <EyeOff className="size-3.5" aria-hidden="true" />
-                      </button>
+                      {view.durationMode === "hours" ? "Hours" : "Days"}
                     </th>
                   )}
-                  <th
-                    className="px-1 w-16"
-                    title="Passed required applicable steps; approval is separate"
-                  >
-                    Steps %
-                  </th>
-                  <th className="px-2 w-24">Start</th>
-                  <th className="px-2 w-24">Finish</th>
+                  {showProgress && (
+                    <th
+                      className="px-1 w-16"
+                      title="Passed required applicable steps; approval is separate"
+                    >
+                      Steps %
+                    </th>
+                  )}
+                  {showStart && <th className="px-2 w-24">Start</th>}
+                  {showFinish && <th className="px-2 w-24">Finish</th>}
                   {showLinks && <th className="px-2">Predecessors</th>}
                   {showLinks && <th className="px-2">Successors</th>}
                 </tr>
@@ -1344,28 +1591,42 @@ function Gantt({
                         </Button>
                       </td>
                       {showDuration && (
-                        <td className="px-2">
-                          {r.durationDays ??
-                            (r.start && r.finish
-                              ? workingDuration(r.start, r.finish)
-                              : "—")}{" "}
-                          wd
+                        <td
+                          className="px-2"
+                          title={
+                            view.durationMode === "hours"
+                              ? "No source duration hours recorded"
+                              : "App Monday–Friday working days"
+                          }
+                        >
+                          {view.durationMode === "hours"
+                            ? "Not recorded"
+                            : `${r.durationDays ?? (r.start && r.finish ? workingDuration(r.start, r.finish) : "—")} wd`}
                         </td>
                       )}
-                      <td className="px-1">
-                        <GanttProgress
-                          percent={stepProgress.percent}
-                          status={stepProgress.status}
-                          href={`/reports?projectId=${encodeURIComponent(project?.id ?? "")}&report=tagging&activity=${encodeURIComponent(`managed:${r.activityId}`)}`}
-                          description={stepProgress.unknownReason}
-                        />
-                      </td>
-                      <td className="whitespace-nowrap px-2 text-[13px]">
-                        {r.start ?? "Not set"}
-                      </td>
-                      <td className="whitespace-nowrap px-2 text-[13px]">
-                        {r.finish ?? "Not set"}
-                      </td>
+                      {showProgress && (
+                        <td className="px-1">
+                          <GanttProgress
+                            percent={stepProgress.percent}
+                            status={stepProgress.status}
+                            href={`/reports?projectId=${encodeURIComponent(project?.id ?? "")}&report=tagging&activity=${encodeURIComponent(`managed:${r.activityId}`)}`}
+                            description={stepProgress.unknownReason}
+                            notApplicable={
+                              stepProgress.coverage === "not-applicable"
+                            }
+                          />
+                        </td>
+                      )}
+                      {showStart && (
+                        <td className="whitespace-nowrap px-2 text-[13px]">
+                          {r.start ?? "Not set"}
+                        </td>
+                      )}
+                      {showFinish && (
+                        <td className="whitespace-nowrap px-2 text-[13px]">
+                          {r.finish ?? "Not set"}
+                        </td>
+                      )}
                       {showLinks && (
                         <td
                           className="px-2 truncate"
@@ -1397,7 +1658,12 @@ function Gantt({
             </table>
             <div className="relative shrink-0 border-l" style={{ width }}>
               <div className="border-b">
-                <GanttRuler start={start} scale={zoom} />
+                <GanttRuler
+                  start={start}
+                  scale={zoom}
+                  horizon={view.horizon}
+                  today={projectDate()}
+                />
               </div>
               <div className="relative" style={{ height: rows.length * 48 }}>
                 <svg

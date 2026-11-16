@@ -218,6 +218,7 @@ export function SourceProgrammeGantt({
                   scale={scale}
                   horizon={horizon}
                   today={today}
+                  viewport={visiblePixels}
                 />
               </th>
             </tr>

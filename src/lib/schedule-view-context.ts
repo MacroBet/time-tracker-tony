@@ -10,7 +10,10 @@ import {
 export const scheduleViewSnapshotSchema = z
   .object({
     projectId: z.string().min(1).max(150),
-    sourceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    sourceSha256: z.union([
+      z.string().regex(/^[a-f0-9]{64}$/),
+      z.literal("managed"),
+    ]),
     projectVersion: z.number().int().min(0),
     mode: z.literal("working"),
     page: z.number().int().min(0).max(100000),
@@ -66,6 +69,10 @@ export function resolveScheduleViewRow(
   rowNumber: number,
 ) {
   const snapshot = scheduleViewSnapshotSchema.parse(input);
+  if (snapshot.sourceSha256 === "managed")
+    throw Error(
+      "Row-number commands are not available for the managed Schedule. Use the stable Activity ID instead.",
+    );
   if (
     snapshot.projectId !== subject.projectId ||
     snapshot.sourceSha256 !== index.summary.sha256 ||

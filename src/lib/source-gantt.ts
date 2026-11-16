@@ -73,6 +73,31 @@ export const sourceGanttViewCommandSchema = z.discriminatedUnion("type", [
 export type SourceGanttViewCommand = z.infer<
   typeof sourceGanttViewCommandSchema
 >;
+/** Validate the whole intent before applying any supported subset. */
+export function assertScheduleViewCommands(
+  commands: readonly SourceGanttViewCommand[],
+  kind: "source" | "managed",
+) {
+  if (!commands.length) throw Error("No Schedule view command was provided.");
+  if (kind !== "managed") return;
+  for (const command of commands) {
+    if (command.type === "critical")
+      throw Error(
+        "P6 criticality is unavailable in this managed Schedule. Open a project with a saved P6 source.",
+      );
+    if (
+      command.type === "column" &&
+      ["wbs", "calendar"].includes(command.column)
+    )
+      throw Error(
+        `The ${command.column === "wbs" ? "WBS" : "calendar"} column is unavailable in this managed Schedule. No source values have been recorded.`,
+      );
+    if (command.type === "duration" && command.mode === "hours")
+      throw Error(
+        "This managed Schedule records duration in working days, without saved source hours. Choose Days or Hidden.",
+      );
+  }
+}
 
 /** Project defaults affect display only. Opening/resetting always starts on the project date. */
 export function sourceGanttInitialView(

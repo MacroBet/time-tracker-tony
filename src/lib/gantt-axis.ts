@@ -3,6 +3,17 @@ import { dayNumber } from "./scheduling";
 export type GanttScale = "day" | "week" | "month";
 export type GanttHorizon = 14 | 28 | 42 | null;
 
+/** Centre a period label in the visible part of that period, preserving its date boundaries. */
+export function ganttLabelBounds(
+  left: number,
+  right: number,
+  viewport?: { from: number; to: number },
+) {
+  const from = Math.max(left, viewport?.from ?? left);
+  const to = Math.min(right, viewport?.to ?? right);
+  return to > from ? { left: from - left, width: to - from } : undefined;
+}
+
 /** Calendar columns only: this does not change the programme's working calendar. */
 export function ganttAxis(
   start: string,

@@ -26,7 +26,7 @@ export function parseAssistantViewCommand(
       description: "Schedule centered on today.",
     };
   const scale = text.match(
-    /^(?:please )?(?:show(?: me)?|switch to|use) (?:the )?(days?|weeks?|months?|daily|weekly|monthly)(?: view| scale)?$/,
+    /^(?:please )?(?:show(?: me)?|switch to|use) (?:the )?(?:(?:schedule|gantt) (?:in|by) )?(days?|weeks?|months?|daily|weekly|monthly)(?: view| scale)?$/,
   );
   if (scale) {
     const value =
@@ -41,12 +41,13 @@ export function parseAssistantViewCommand(
     };
   }
   const horizon = text.match(
-    /^show(?: me)? (?:the )?(?:schedule|gantt) (?:for )?(?:the )?next (two|2|four|4|six|6) weeks$/,
+    /^(?:please )?show(?: me)? (?:the )?(?:(?:schedule|gantt) (?:for )?(?:the )?next (two|2|four|4|six|6) weeks|(two|2|four|4|six|6)[ -]weeks? look[ -]?ahead(?: (?:in|on) (?:the )?(?:schedule|gantt))?)$/,
   );
   if (horizon) {
-    const weeks = ["two", "2"].includes(horizon[1])
+    const count = horizon[1] ?? horizon[2];
+    const weeks = ["two", "2"].includes(count)
       ? 2
-      : ["four", "4"].includes(horizon[1])
+      : ["four", "4"].includes(count)
         ? 4
         : 6;
     return {
@@ -58,14 +59,15 @@ export function parseAssistantViewCommand(
     };
   }
   const column = text.match(
-    /^(show|hide|add|remove)(?: me)? (?:the )?(progress|start|finish|dates|wbs|calendar)(?: columns?| percentage)?$/,
+    /^(show|hide|add|remove)(?: me)? (?:the )?(?:(?:task|activity) )?(progress|start(?: date)?|finish(?: date)?|dates|wbs|calendar)(?: columns?| percentage)?$/,
   );
   if (column) {
+    const name = column[2].replace(/ date$/, "");
     const visible = column[1] === "show" || column[1] === "add";
     const columns =
-      column[2] === "dates"
+      name === "dates"
         ? (["start", "finish"] as const)
-        : [column[2] as "progress" | "start" | "finish" | "wbs" | "calendar"];
+        : [name as "progress" | "start" | "finish" | "wbs" | "calendar"];
     return {
       commands: columns.map((name) => ({
         type: "column",
@@ -74,6 +76,30 @@ export function parseAssistantViewCommand(
       })),
       description: `${column[2]} ${visible ? "shown" : "hidden"} in the Schedule. Saved work is unchanged.`,
     };
+  }
+  const multipleColumns = text.match(
+    /^(show|hide|add|remove)(?: me)? (?:the )?(?:columns? )?(.+?)(?: columns?)?$/,
+  );
+  if (multipleColumns && /,| and /.test(multipleColumns[2])) {
+    const names = multipleColumns[2]
+      .split(/\s*(?:,| and )\s*/)
+      .map((name) =>
+        name.replace(/^(?:task|activity) /, "").replace(/ date$/, ""),
+      );
+    const allowed = ["progress", "start", "finish", "wbs", "calendar"] as const;
+    if (
+      names.every((name) => allowed.includes(name as (typeof allowed)[number]))
+    ) {
+      const visible = ["show", "add"].includes(multipleColumns[1]);
+      return {
+        commands: [...new Set(names)].map((name) => ({
+          type: "column",
+          column: name as (typeof allowed)[number],
+          visible,
+        })),
+        description: `Schedule columns ${names.join(", ")} ${visible ? "shown" : "hidden"}. Saved work is unchanged.`,
+      };
+    }
   }
   if (/^(show|hide) (?:the )?(?:days|duration)(?: column)?$/.test(text)) {
     const hidden = text.startsWith("hide");

@@ -56,6 +56,7 @@ test("shared Dashboard defaults are admin/version protected, persistent, and pre
       viewDefaults: {
         dashboardPanels: ["attention", "summary", "reports"],
         durationMode: "hours",
+        calendarScale: "month",
       },
     },
   };
@@ -68,6 +69,18 @@ test("shared Dashboard defaults are admin/version protected, persistent, and pre
     [403, 404].includes(
       (await request(endpoint, await login("u4"), "PATCH", input)).status,
     ),
+  );
+  assert.equal(
+    (
+      await request(endpoint, admin, "PATCH", {
+        ...input,
+        config: {
+          ...input.config,
+          viewDefaults: { ...input.config.viewDefaults, calendarScale: "year" },
+        },
+      })
+    ).status,
+    400,
   );
   await decoded(await request(endpoint, admin, "PATCH", input));
   const after = await decoded<Bootstrap>(

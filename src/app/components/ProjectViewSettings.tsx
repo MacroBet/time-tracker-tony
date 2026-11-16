@@ -13,9 +13,10 @@ import { commissioning, type ProjectConfig } from "@/lib/commissioning";
 import type { Project } from "@/lib/domain";
 import {
   DASHBOARD_PANELS,
-  DEFAULT_PROJECT_VIEW,
   dashboardPanelLabels,
   parseViewPreference,
+  resolveProjectViewDefaults,
+  serializeViewPreference,
   viewPreferenceKey,
   type DashboardPanelId,
   type ProjectViewDefaults,
@@ -51,12 +52,20 @@ export function useProjectView(project?: Project) {
     }
   }, [key]);
   const raw = useSyncExternalStore(subscribe, read, () => null);
-  const personal = parseViewPreference(raw);
-  const defaults =
-    commissioning(project).config.viewDefaults ?? DEFAULT_PROJECT_VIEW;
-  function save(value: ProjectViewDefaults | null) {
+  const defaults = resolveProjectViewDefaults(
+    commissioning(project).config.viewDefaults,
+  );
+  const personal = parseViewPreference(raw, defaults);
+  function save(
+    value: ProjectViewDefaults | null,
+    changedField?: "calendarScale",
+  ) {
     try {
-      if (value) localStorage.setItem(key, JSON.stringify(value));
+      if (value)
+        localStorage.setItem(
+          key,
+          serializeViewPreference(value, raw, changedField),
+        );
       else localStorage.removeItem(key);
       window.dispatchEvent(new Event(changed));
     } catch {
@@ -73,7 +82,10 @@ function ViewEditor({
   onChange,
 }: {
   value: ProjectViewDefaults;
-  onChange: (value: ProjectViewDefaults) => void;
+  onChange: (
+    value: ProjectViewDefaults,
+    changedField?: "calendarScale",
+  ) => void;
 }) {
   const selected = value.dashboardPanels;
   const rows = [
@@ -135,6 +147,27 @@ function ViewEditor({
           </li>
         ))}
       </ul>
+      <label className="block text-sm font-medium">
+        Schedule calendar scale
+        <Select
+          value={value.calendarScale}
+          onValueChange={(
+            calendarScale: ProjectViewDefaults["calendarScale"],
+          ) => onChange({ ...value, calendarScale }, "calendarScale")}
+        >
+          <SelectTrigger
+            className="mt-1"
+            aria-label="Default schedule calendar scale"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">DAY · Days</SelectItem>
+            <SelectItem value="week">WK · Weeks</SelectItem>
+            <SelectItem value="month">MTH · Months</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
       <label className="block text-sm font-medium">
         Schedule duration
         <Select
@@ -252,7 +285,7 @@ function ProjectDefaultEditor({
 }) {
   const { mutate, isOnline } = useApp();
   const [value, setValue] = useState(
-    config.viewDefaults ?? DEFAULT_PROJECT_VIEW,
+    resolveProjectViewDefaults(config.viewDefaults),
   );
   const [reason, setReason] = useState("");
   const [preview, setPreview] = useState(false);
@@ -320,7 +353,8 @@ function ProjectDefaultEditor({
             {value.dashboardPanels
               .map((id) => dashboardPanelLabels[id])
               .join(" → ")}{" "}
-            and duration {value.durationMode} as the project starting view?
+            with calendar scale {value.calendarScale} and duration{" "}
+            {value.durationMode} as the project starting view?
           </p>
         )}
         <Button
