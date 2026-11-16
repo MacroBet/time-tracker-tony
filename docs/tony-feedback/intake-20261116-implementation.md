@@ -153,8 +153,15 @@ Le due schermate finali sono persistenti, ispezionate e solo demo sintetica:
 Hash e metriche sono in `verification/ui-evidence.private.json`, fuoriGit.
 
 Commit progressivi locali: `3e890e6` A1, `8b3d484` A2 e `34a29ff` A3/A8.
-L’integrazione finale Dashboard/Tasks/popup/voce locale e i ritocchi responsive
-sono consegnati con il successivo commit locale. Nessun push, deploy, scrittura
+Il commit locale `353c0e1` consegna l’integrazione finale Dashboard/Tasks/popup,
+voce locale e ritocchi responsive. Nessun push, deploy, scrittura
 DB remota, import reale, chiamata a pagamento o nuova lettura WhatsApp.
 A7 richiede il collaudo fisico circoscritto descritto sopra; il CPM completo
 rimane condizionale. Non dichiarare questi due punti già collaudati.
+
+Fetch finale riuscito: main cinque commit avanti/zero indietro rispetto a
+origin/main, incluso il piano `edfe356`. Nessun pull sul checkout modificato.
+Registro/index/status aggiornati nel workspace senza inglobare i rispettivi
+cambi preesistenti nel commit applicativo. Quota conto46→49%/ordinarytrue;
+nessun reset, acquisto o credito extra. Prossimo passo: revisione del risultato
+locale, collaudo voce specifico se autorizzato e consenso di rilascio distinto.
