@@ -8,7 +8,7 @@ import {
   hasModule,
   type Commissioning,
 } from "@/lib/commissioning";
-import { querySourceProgrammeIndex } from "@/lib/programme-source";
+import { searchSavedSchedule } from "@/lib/copilot-reads";
 import {
   resolveWorkingSourceIndex,
   managedWorkingSourceIndex,
@@ -37,6 +37,7 @@ export { EXTENSION_TOOLS } from "@/lib/copilot-extension-tools";
 import { EXTENSION_TOOLS } from "@/lib/copilot-extension-tools";
 export function copilotExtensions({
   user,
+  data,
   projectId,
   initialReport,
   scheduleView,
@@ -47,12 +48,21 @@ export function copilotExtensions({
   initialReport?: AssistantReportState;
   scheduleView?: ScheduleViewSnapshot;
 }) {
+  const projectVersion = commissioning(
+    data.projects.find((p) => p.id === projectId),
+  ).version;
   let reportState = initialReport;
   const reports: ProjectReportResult[] = [],
     scheduleProposals: WorkingScheduleDraft[] = [],
     librarySearches: ProjectLibraryPage[] = [];
   const index = async (actor: User, currentState: Commissioning) => {
     const source = await loadProgrammeSourceIndex(projectId, actor.id);
+    requireCondition(
+      (currentState.sourceProgrammeSummary?.sha256 ?? null) ===
+        (source?.summary.sha256 ?? null),
+      409,
+      "The source Schedule changed or is unavailable. Refresh before asking again.",
+    );
     return source
       ? resolveWorkingSourceIndex(source, currentState.workingSchedule)
       : managedWorkingSourceIndex(
@@ -77,6 +87,59 @@ export function copilotExtensions({
       args: Record<string, unknown>,
     ): Promise<{ output: unknown } | undefined> => {
       if (!EXTENSION_TOOLS.some((tool) => tool.name === name)) return undefined;
+      // The report loader checks the same actor, modules, project membership and revision.
+      // Avoid a second full bootstrap load immediately before that identical check.
+      if (name === "project_report") {
+        requireCondition(
+          reports.length < 3,
+          400,
+          "Maximum three reports per response.",
+        );
+        const query = refineAssistantReport(reportState?.query, args);
+        const result = await loadProjectReport(projectId, query, {
+          userId: user.id,
+          projectVersion,
+        });
+        reportState = { projectId, query: result.query };
+        reports.push(result);
+        const output = {
+          dataOnly: true,
+          ...result,
+          facets: {
+            ...result.facets,
+            vendors: result.facets.vendors.slice(0, 15),
+            disciplines: result.facets.disciplines.slice(0, 15),
+          },
+          rows: result.rows
+            .slice(0, 10)
+            .map((row) =>
+              row.kind === "vendors"
+                ? { ...row, sources: row.sources.slice(0, 5) }
+                : row.kind === "tagging"
+                  ? {
+                      ...row,
+                      levels: row.levels.map((level) => ({
+                        ...level,
+                        reviews: level.reviews.slice(0, 3),
+                      })),
+                    }
+                  : row.kind === "lookahead"
+                    ? { ...row, assets: row.assets.slice(0, 5) }
+                    : { ...row, notes: row.notes.slice(0, 400) },
+            ),
+          shownToModel: Math.min(result.rows.length, 10),
+          uiShows: result.rows.length,
+          modelPreviewTruncated: false,
+        };
+        while (
+          new TextEncoder().encode(JSON.stringify(output)).byteLength > 28000 &&
+          output.rows.length
+        )
+          output.rows.pop();
+        output.shownToModel = output.rows.length;
+        output.modelPreviewTruncated = output.rows.length < result.rows.length;
+        return { output };
+      }
       const actor = await requireUser();
       requireCondition(
         actor.id === user.id,
@@ -94,59 +157,11 @@ export function copilotExtensions({
         "Assistant management access is no longer available.",
       );
       const currentState = commissioning(currentProject);
-      if (name === "project_report") {
-        requireCondition(
-          hasModule(actor, "reports"),
-          403,
-          "Reports access is required.",
-        );
-        requireCondition(
-          reports.length < 3,
-          400,
-          "Maximum three reports per response.",
-        );
-        const query = refineAssistantReport(reportState?.query, args);
-        const result = await loadProjectReport(projectId, query);
-        reportState = { projectId, query: result.query };
-        reports.push(result);
-        const output = {
-          dataOnly: true,
-          ...result,
-          facets: {
-            ...result.facets,
-            vendors: result.facets.vendors.slice(0, 15),
-            disciplines: result.facets.disciplines.slice(0, 15),
-          },
-          rows: result.rows.slice(0, 10).map((row) =>
-            row.kind === "vendors"
-              ? { ...row, sources: row.sources.slice(0, 5) }
-              : row.kind === "tagging"
-                ? {
-                    ...row,
-                    levels: row.levels.map((level) => ({
-                      ...level,
-                      reviews: level.reviews.slice(0, 3),
-                    })),
-                  }
-                : row.kind === "lookahead"
-                  ? { ...row, assets: row.assets.slice(0, 5) }
-                  : { ...row, notes: row.notes.slice(0, 400) },
-          ),
-          shownToModel: Math.min(result.rows.length, 10),
-          uiShows: result.rows.length,
-          modelPreviewTruncated: false,
-        };
-        // A single supplier can reference thousands of activities. The full UI
-        // report remains available; only the model's preview is bounded here.
-        while (
-          new TextEncoder().encode(JSON.stringify(output)).byteLength > 28000 &&
-          output.rows.length
-        )
-          output.rows.pop();
-        output.shownToModel = output.rows.length;
-        output.modelPreviewTruncated = output.rows.length < result.rows.length;
-        return { output };
-      }
+      requireCondition(
+        currentState.version === projectVersion,
+        409,
+        "The project records changed. Refresh before asking again.",
+      );
       if (name === "search_schedule_activities") {
         requireCondition(
           hasModule(actor, "commissioning"),
@@ -163,11 +178,6 @@ export function copilotExtensions({
           .strict()
           .parse(args);
         const source = await index(actor, currentState);
-        const result = querySourceProgrammeIndex(source, {
-          q: input.query,
-          page: 0,
-          pageSize: 50,
-        });
         // Index querying supports page sizing; filter before custom bounded offset without truncating totals.
         if (input.rowNumber !== null) {
           requireCondition(
@@ -175,12 +185,23 @@ export function copilotExtensions({
             400,
             "Open the Schedule view first or provide an activity ID/name; row numbers need a saved view context.",
           );
-          const resolved = resolveScheduleViewRow(
-            source,
-            scheduleView,
-            { projectId, projectVersion: currentState.version },
-            input.rowNumber,
-          );
+          let resolved;
+          try {
+            resolved = resolveScheduleViewRow(
+              source,
+              scheduleView,
+              { projectId, projectVersion: currentState.version },
+              input.rowNumber,
+            );
+          } catch (error) {
+            requireCondition(
+              false,
+              409,
+              error instanceof Error
+                ? error.message
+                : "The displayed Schedule changed. Reopen it.",
+            );
+          }
           const activity = resolved.activity;
           return {
             output: {
@@ -205,53 +226,13 @@ export function copilotExtensions({
             },
           };
         }
-        const needle = input.query.trim().toLocaleLowerCase();
-        const matching = source.activities.filter(
-          (a) =>
-            !needle ||
-            [a.internalId, a.activityId, a.name].some((s) =>
-              s.toLocaleLowerCase().includes(needle),
-            ),
-        );
-        const records = matching
-          .slice(input.offset, input.offset + input.limit)
-          .map((a) => ({
-            internalId: a.internalId,
-            activityId: a.activityId,
-            name: a.name.slice(0, 200),
-            start: a.start,
-            finish: a.finish,
-            status: a.status,
-            calendarId: a.calendarId,
-            calendarName: a.calendarName.slice(0, 100),
-            relationshipCount:
-              source.byId.get(a.internalId)?.relationships.length ?? 0,
-            relationships:
-              source.byId
-                .get(a.internalId)
-                ?.relationships.slice(0, input.limit === 1 ? 30 : 3)
-                .map((link) => ({
-                  sourceLine: link.sourceLine,
-                  predecessorId: link.predecessorId,
-                  predecessorActivityId: link.predecessorActivityId,
-                  successorId: link.successorId,
-                  successorActivityId: link.successorActivityId,
-                  type: link.type,
-                  lagHours: link.lagHours,
-                })) ?? [],
-            href: `/schedule?projectId=${encodeURIComponent(projectId)}&${source.summary.sha256 === "managed" ? "activityId" : "activity"}=${encodeURIComponent(source.summary.sha256 === "managed" ? a.activityId : a.internalId)}`,
-          }));
         return {
-          output: {
-            dataOnly: true,
-            sourceSha256: source.summary.sha256,
-            projectVersion: currentState.version,
-            total: matching.length,
-            offset: input.offset,
-            records,
-            calendars: result.filters.calendars.slice(0, 30),
-            recalculation: "explicit-dates-only",
-          },
+          output: searchSavedSchedule(
+            source,
+            projectId,
+            currentState.version,
+            input,
+          ),
         };
       }
       if (

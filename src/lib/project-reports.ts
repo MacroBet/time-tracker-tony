@@ -546,7 +546,8 @@ function buildReportPopulation(
     const completed =
       row.status === "TK_Complete" || Boolean(dayOf(fields?.act_end_date));
     const finish = row.finish ?? null,
-      start = row.start ?? null;
+      start = row.start ?? null,
+      deadline = sourceActivityDeadline(index!, row.internalId) ?? null;
     const item: LookaheadReportRow = {
       kind: "lookahead",
       id: key,
@@ -556,9 +557,9 @@ function buildReportPopulation(
       source: "source",
       start,
       finish,
-      deadline: sourceActivityDeadline(index!, row.internalId) ?? null,
+      deadline,
       deadlineSource: completed
-        ? sourceActivityDeadline(index!, row.internalId)
+        ? deadline
           ? "target_end_date"
           : null
         : (row.finishField ?? "saved forecast finish"),
@@ -568,13 +569,12 @@ function buildReportPopulation(
       vendors: [],
       disciplines: [],
       assets: [],
-      status: operationalStatus({
-        due: sourceActivityDeadline(index!, row.internalId),
-        completed,
-        completedAt: fields?.act_end_date,
-        openWorks: 0,
-        today,
-      }),
+      // Filled once after all explicit equipment mappings have been attached.
+      status: {
+        status: "unknown",
+        colour: null,
+        label: "Deadline not recorded",
+      },
       href: `/schedule?projectId=${encodeURIComponent(projectId)}&activity=${encodeURIComponent(row.internalId)}`,
     };
     activities.push(item);
@@ -609,13 +609,11 @@ function buildReportPopulation(
       vendors: [],
       disciplines: [],
       assets: [],
-      status: operationalStatus({
-        due: row.finish,
-        completed,
-        completedAt: row.actualFinish,
-        openWorks: 0,
-        today,
-      }),
+      status: {
+        status: "unknown",
+        colour: null,
+        label: "Deadline not recorded",
+      },
       href: `/schedule?projectId=${encodeURIComponent(projectId)}&activityId=${encodeURIComponent(row.activityId)}`,
     };
     activities.push(item);

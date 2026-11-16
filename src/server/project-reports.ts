@@ -21,8 +21,20 @@ import { requireCondition } from "./errors";
 import { json } from "./http";
 import { loadData, loadProgrammeSourceIndex } from "./repository";
 
-async function authorizedReport(projectId: string) {
+type AssistantReportAccess = { userId: string; projectVersion: number };
+async function authorizedReport(
+  projectId: string,
+  assistant?: AssistantReportAccess,
+) {
   const user = await requireUser();
+  requireCondition(
+    !assistant ||
+      (assistant.userId === user.id &&
+        hasModule(user, "tasks") &&
+        hasModule(user, "commissioning")),
+    403,
+    "Assistant access changed. Start a new conversation.",
+  );
   requireCondition(
     canManage(user) && hasModule(user, "reports"),
     403,
@@ -38,6 +50,11 @@ async function authorizedReport(projectId: string) {
   const state = commissioning(project),
     source = await loadProgrammeSourceIndex(projectId, user.id);
   requireCondition(
+    !assistant || state.version === assistant.projectVersion,
+    409,
+    "The project records changed. Refresh before asking again.",
+  );
+  requireCondition(
     (state.sourceProgrammeSummary?.sha256 ?? null) ===
       (source?.summary.sha256 ?? null),
     409,
@@ -52,9 +69,13 @@ async function authorizedReport(projectId: string) {
   return { data, sourceIndex, version: state.version };
 }
 /** Used by both deterministic assistant tools and the report API; fresh authorization every time. */
-export async function loadProjectReport(projectId: string, raw: unknown) {
+export async function loadProjectReport(
+  projectId: string,
+  raw: unknown,
+  assistant?: AssistantReportAccess,
+) {
   const query = reportQuerySchema.parse(raw),
-    { data, sourceIndex } = await authorizedReport(projectId);
+    { data, sourceIndex } = await authorizedReport(projectId, assistant);
   return buildProjectReport(data, projectId, query, { sourceIndex });
 }
 export async function getProjectReport(request: Request, projectId: string) {

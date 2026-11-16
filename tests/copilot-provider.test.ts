@@ -560,7 +560,7 @@ test("production readiness remains unavailable when durable metering cannot be v
         OPENAI_MODEL: config.model!,
         COPILOT_ENABLED: "true",
         DATABASE_URL: "",
-      OPENAI_METER_DIRECTORY: "",
+        OPENAI_METER_DIRECTORY: "",
       },
     },
   );
@@ -568,4 +568,133 @@ test("production readiness remains unavailable when durable metering cannot be v
   assert.equal(status.state, "not_configured");
   assert(status.missing.includes("API_USAGE_STORAGE"));
   assert(!output.includes(config.apiKey!));
+});
+
+test("cancellation before a turn performs neither metering nor transport; an in-flight cancel closes the one real attempt", async () => {
+  const before = new AbortController();
+  before.abort();
+  let requests = 0,
+    writes = 0;
+  await assert.rejects(
+    runCopilotTurn(
+      input({ signal: before.signal }),
+      {
+        ...config,
+        recordAttempt: async () => {
+          writes++;
+        },
+      },
+      async () => {
+        requests++;
+        return response([answer()]);
+      },
+    ),
+    code("cancelled"),
+  );
+  assert.equal(requests, 0);
+  assert.equal(writes, 0);
+  const controller = new AbortController();
+  const observations: { outcome: string; status: string }[] = [];
+  let signal: AbortSignal | undefined | null;
+  await assert.rejects(
+    runCopilotTurn(
+      input({ signal: controller.signal }),
+      {
+        ...config,
+        recordAttempt: async (value) => {
+          observations.push({
+            outcome: value.outcome,
+            status: value.event.status,
+          });
+        },
+      },
+      async (_url, init) => {
+        requests++;
+        signal = init.signal;
+        controller.abort();
+        return new Promise(() => {});
+      },
+    ),
+    code("cancelled"),
+  );
+  assert.equal(signal?.aborted, true);
+  assert.equal(requests, 1);
+  assert.deepEqual(observations, [
+    { outcome: "started", status: "failure" },
+    { outcome: "cancel", status: "cancel" },
+  ]);
+});
+test("content-free phase measurements distinguish tool versus provider timeouts and do not change intent/final recording", async () => {
+  const phases: { phase: string; round: number; durationMs: number }[] = [];
+  let writes = 0;
+  await assert.rejects(
+    runCopilotTurn(
+      input({ executeTool: async () => new Promise(() => {}) }),
+      {
+        ...config,
+        timeoutMs: 20,
+        onPhase: (value) => {
+          phases.push(value);
+        },
+        recordAttempt: async () => {
+          writes++;
+        },
+      },
+      sequence([[call("one")]]).transport,
+    ),
+    (error: unknown) =>
+      error instanceof CopilotProviderError &&
+      error.code === "timeout" &&
+      error.phase === "tool" &&
+      error.message.includes("saved-data"),
+  );
+  assert.equal(writes, 2);
+  assert.deepEqual(
+    phases.map((p) => p.phase),
+    ["meter-intent", "provider", "meter-final", "tool"],
+  );
+  assert(
+    phases.every(
+      (p) =>
+        p.durationMs >= 0 &&
+        Object.keys(p).sort().join() === "durationMs,phase,round",
+    ),
+  );
+  await assert.rejects(
+    runCopilotTurn(
+      input(),
+      { ...config, timeoutMs: 10 },
+      async () => new Promise(() => {}),
+    ),
+    (error: unknown) =>
+      error instanceof CopilotProviderError &&
+      error.code === "timeout" &&
+      error.phase === "provider" &&
+      error.message.includes("AI provider"),
+  );
+});
+test("authorized tool ACL/stale errors keep their safe status and stop all later rounds", async () => {
+  const { CopilotToolError } = await import("../src/lib/copilot-provider");
+  for (const status of [401, 403, 404, 409] as const) {
+    const mock = sequence([[call("one")]]);
+    await assert.rejects(
+      runCopilotTurn(
+        input({
+          executeTool: async () => {
+            throw new CopilotToolError(
+              status,
+              "Refresh the saved project records.",
+            );
+          },
+        }),
+        config,
+        mock.transport,
+      ),
+      (error: unknown) =>
+        error instanceof CopilotToolError &&
+        error.status === status &&
+        error.message === "Refresh the saved project records.",
+    );
+    assert.equal(mock.requests.length, 1);
+  }
 });
