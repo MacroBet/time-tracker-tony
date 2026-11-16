@@ -45,6 +45,12 @@ import { canConfirmWorkingSchedule } from "@/lib/schedule-working";
 import { commissioning, hasModule } from "@/lib/commissioning";
 import { projectCreateQuery, projectRenameQuery } from "./db/project-profile";
 import { sameProfileRequest } from "./project-profile";
+import { scopeCopilotData } from "@/lib/copilot-snapshot";
+import {
+  copilotSnapshotQuery,
+  copilotProjectAccessQuery,
+} from "./db/copilot-snapshot";
+import { z } from "zod";
 
 type Session = { tokenHash: string; userId: string; expiresAt: string };
 type FileRecord = Attachment & { data: string };
@@ -449,6 +455,93 @@ export async function loadData(user: User): Promise<AppData> {
       memberships: memberRows,
     }),
   );
+}
+/** Fresh, project-scoped assistant/report read; never reuse the full workspace bootstrap for each tool. */
+export async function loadCopilotData(
+  user: User,
+  projectId: string,
+): Promise<AppData> {
+  let scoped: AppData | undefined;
+  if (usingDemo()) {
+    scoped = scopeCopilotData(demo().data, user, projectId);
+  } else {
+    const result = await db().execute(
+      copilotSnapshotQuery(
+        projectId,
+        user.id,
+        hasModule(user, "tasks"),
+        user.role === "worker",
+      ),
+    );
+    const row = result.rows[0] as
+      { project: AppData["projects"][number]; tasks: Task[] } | undefined;
+    if (row)
+      scoped = scopeCopilotData(
+        {
+          ...emptyData,
+          users: [user],
+          projects: [clean(row.project)],
+          tasks: clean(row.tasks),
+          memberships: [{ userId: user.id, projectId }],
+        },
+        user,
+        projectId,
+      );
+  }
+  requireCondition(scoped, 404, "Project not found.");
+  return structuredClone(scoped);
+}
+/** A fresh membership/revision guard for delivery/history that returns no task, asset or conversation contents. */
+export async function loadCopilotProjectAccess(
+  user: User,
+  projectId: string,
+  taskVersions = false,
+) {
+  let row: unknown;
+  if (usingDemo()) {
+    if (
+      demo().data.memberships.some(
+        (entry) => entry.userId === user.id && entry.projectId === projectId,
+      )
+    ) {
+      const project = demo().data.projects.find(
+        (entry) => entry.id === projectId,
+      );
+      if (project)
+        row = {
+          id: project.id,
+          name: project.name,
+          version: commissioning(project).version,
+          ...(taskVersions
+            ? {
+                taskVersions: demo()
+                  .data.tasks.filter((task) => task.projectId === projectId)
+                  .map((task) => [task.id, task.version])
+                  .sort(([a], [b]) => String(a).localeCompare(String(b), "en")),
+              }
+            : {}),
+        };
+    }
+  } else
+    row = clean(
+      (
+        await db().execute(
+          copilotProjectAccessQuery(projectId, user.id, taskVersions),
+        )
+      ).rows[0],
+    );
+  requireCondition(row, 404, "Project not found.");
+  return z
+    .object({
+      id: z.string().min(1),
+      name: z.string(),
+      version: z.number().int().min(0),
+      taskVersions: z
+        .array(z.tuple([z.string().min(1), z.number().int().min(0)]))
+        .optional(),
+    })
+    .strict()
+    .parse(row);
 }
 function guardDemoTaskAsset(task: Task, old?: Task) {
   const assetId = task.cx?.assetId;

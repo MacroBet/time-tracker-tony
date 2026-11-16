@@ -167,23 +167,34 @@ export function buildCopilotContext(
   const missing = tags.filter((row) => !row.task),
     untested = tags.filter((row) => row.task?.cx?.result === "untested");
   const unapproved = tags.filter((row) => !isTagApproved(row.task));
+  const childrenByParent = new Map<string, string[]>(),
+    tasksByAsset = new Map<string, string[]>();
+  for (const asset of state.assets)
+    if (asset.parentAssetId) {
+      const children = childrenByParent.get(asset.parentAssetId) ?? [];
+      children.push(asset.id);
+      childrenByParent.set(asset.parentAssetId, children);
+    }
+  for (const task of tasks)
+    if (task.cx?.assetId) {
+      const ids = tasksByAsset.get(task.cx.assetId) ?? [];
+      ids.push(task.id);
+      tasksByAsset.set(task.cx.assetId, ids);
+    }
   const groups = state.assets
-    .filter((asset) =>
-      state.assets.some((child) => child.parentAssetId === asset.id),
-    )
+    .filter((asset) => childrenByParent.has(asset.id))
     .map((asset): CopilotGroup => {
-      const children = state.assets
-        .filter((child) => child.parentAssetId === asset.id)
-        .map((child) => child.id);
+      const children = childrenByParent.get(asset.id)!;
+      const childTaskIds = new Set(
+        children.flatMap((id) => tasksByAsset.get(id) ?? []),
+      );
       return {
         id: asset.id,
         name: asset.name,
         childAssetIds: children,
-        linkedTaskIds: tasks
-          .filter((task) => task.cx?.assetId === asset.id)
-          .map((task) => task.id),
+        linkedTaskIds: tasksByAsset.get(asset.id) ?? [],
         childTaskIds: tasks
-          .filter((task) => children.includes(task.cx?.assetId ?? ""))
+          .filter((task) => childTaskIds.has(task.id))
           .map((task) => task.id),
         limitation:
           "Groups use recorded parentAssetId links. A task currently links to one asset; a shared group test-sheet workflow is not implemented.",

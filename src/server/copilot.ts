@@ -2,8 +2,14 @@ import "server-only";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { requireUser } from "./auth";
-import { loadData } from "./repository";
-import { json, readJson } from "./http";
+import { loadCopilotData, loadCopilotProjectAccess } from "./repository";
+import {
+  CopilotContextMemo,
+  copilotTaskVersions,
+  sameCopilotTaskVersions,
+  copilotSnapshotIssue,
+} from "@/lib/copilot-snapshot";
+import { api, json, readJson } from "./http";
 import { HttpError, requireCondition } from "./errors";
 import { plan } from "./operations";
 import {
@@ -36,6 +42,7 @@ import {
   parseCopilotReadCommand,
   savedLookaheadReply,
   savedScheduleSearchReply,
+  recoverCompletedReport,
   type SavedScheduleSearch,
 } from "@/lib/copilot-reads";
 
@@ -56,7 +63,11 @@ const safeToolError = (error: unknown): never => {
   throw error;
 };
 
-async function authorized(projectId: string, timings?: Record<string, number>) {
+async function authorized(
+  projectId: string,
+  timings?: Record<string, number>,
+  memo?: CopilotContextMemo,
+) {
   let started = performance.now();
   const user = await requireUser();
   requireCondition(
@@ -66,7 +77,7 @@ async function authorized(projectId: string, timings?: Record<string, number>) {
   );
   if (timings) timings.auth = (timings.auth ?? 0) + performance.now() - started;
   started = performance.now();
-  const data = await loadData(user);
+  const data = await loadCopilotData(user, projectId);
   if (timings) timings.data = (timings.data ?? 0) + performance.now() - started;
   requireCondition(
     data.projects.some((project) => project.id === projectId),
@@ -74,7 +85,9 @@ async function authorized(projectId: string, timings?: Record<string, number>) {
     "Project not found.",
   );
   started = performance.now();
-  const context = buildCopilotContext(data, projectId);
+  const context = memo
+    ? memo.get(data, projectId)
+    : buildCopilotContext(data, projectId);
   if (timings)
     timings.context = (timings.context ?? 0) + performance.now() - started;
   return { user, data, context };
@@ -246,12 +259,64 @@ const TOOLS: CopilotFunctionTool[] = [
     }),
   ),
 ];
+function measured(
+  response: Response,
+  timings: Record<string, number>,
+  started: number,
+) {
+  response.headers.set(
+    "Server-Timing",
+    Object.entries({ ...timings, total: performance.now() - started })
+      .map(([name, duration]) => `${name};dur=${duration.toFixed(1)}`)
+      .join(", "),
+  );
+  return response;
+}
 export async function chatCopilot(request: Request, projectId: string) {
   const timings: Record<string, number> = {};
-  let { user, data, context } = await authorized(projectId, timings);
-  const subject = { userId: user.id, projectVersion: context.project.version };
+  const started = performance.now();
+  try {
+    return measured(
+      await performCopilotChat(request, projectId, timings),
+      timings,
+      started,
+    );
+  } catch (error) {
+    // Preserve the API's existing sanitized terminal error contract and include content-free phase timing.
+    return measured(
+      await api(async () => {
+        throw error;
+      })(request),
+      timings,
+      started,
+    );
+  }
+}
+async function performCopilotChat(
+  request: Request,
+  projectId: string,
+  timings: Record<string, number>,
+) {
+  const contextMemo = new CopilotContextMemo();
+  let { user, data, context } = await authorized(
+    projectId,
+    timings,
+    contextMemo,
+  );
+  const subject = {
+    userId: user.id,
+    projectId,
+    projectVersion: context.project.version,
+    name: context.project.name,
+    taskVersions: copilotTaskVersions(data, projectId),
+  };
   const checkCurrent = async () => {
-    const current = await authorized(projectId, timings);
+    requireCondition(
+      !request.signal.aborted,
+      499,
+      "The assistant request was cancelled.",
+    );
+    const current = await authorized(projectId, timings, contextMemo);
     requireCondition(
       current.user.id === subject.userId,
       403,
@@ -261,6 +326,15 @@ export async function chatCopilot(request: Request, projectId: string) {
       current.context.project.version === subject.projectVersion,
       409,
       "The project records changed. Refresh before asking again.",
+    );
+    requireCondition(
+      current.context.project.name === subject.name &&
+        sameCopilotTaskVersions(
+          subject.taskVersions,
+          copilotTaskVersions(current.data, projectId),
+        ),
+      409,
+      "Project task records changed. Refresh before asking again.",
     );
     requireCondition(
       !request.signal.aborted,
@@ -279,7 +353,7 @@ export async function chatCopilot(request: Request, projectId: string) {
           z
             .object({
               role: z.enum(["user", "assistant"]),
-              text: z.string().max(6000),
+              text: z.string().max(8000),
             })
             .strict(),
         )
@@ -318,9 +392,30 @@ export async function chatCopilot(request: Request, projectId: string) {
       sources.set(`${source.kind}:${source.id}`, source);
   };
   const finish = async (text: string, mode: "saved-data" | "ai") => {
-    const current = await checkCurrent();
     requireCondition(
-      !extensions.reports.length || hasModule(current.user, "reports"),
+      !request.signal.aborted,
+      499,
+      "The assistant request was cancelled.",
+    );
+    const accessStarted = performance.now();
+    const actor = await requireUser();
+    requireCondition(
+      actor.id === subject.userId && canUseCopilot(actor),
+      403,
+      "Assistant management access changed. Start a new conversation.",
+    );
+    const access = await loadCopilotProjectAccess(actor, projectId, true);
+    const issue = copilotSnapshotIssue(subject, actor, access);
+    if (issue) throw new HttpError(issue.status, issue.message);
+    requireCondition(
+      !request.signal.aborted,
+      499,
+      "The assistant request was cancelled.",
+    );
+    timings.delivery_access =
+      (timings.delivery_access ?? 0) + performance.now() - accessStarted;
+    requireCondition(
+      !extensions.reports.length || hasModule(actor, "reports"),
       403,
       "Reports access changed. Start a new conversation.",
     );
@@ -335,12 +430,6 @@ export async function chatCopilot(request: Request, projectId: string) {
       librarySearches: extensions.librarySearches,
       mode,
     });
-    result.headers.set(
-      "Server-Timing",
-      Object.entries(timings)
-        .map(([name, duration]) => `${name};dur=${duration.toFixed(1)}`)
-        .join(", "),
-    );
     return result;
   };
   const read = parseCopilotReadCommand(input.message);
@@ -392,179 +481,206 @@ export async function chatCopilot(request: Request, projectId: string) {
     "AI chat is not configured or enabled. Saved project checks and manual task proposals are available without an AI key.",
   );
   const limited = z.object({ limit: z.number().int().min(1).max(50) }).strict();
-  const response = await runCopilotTurn(
-    {
-      message: input.message,
-      history: input.history,
-      projectName: context.project.name,
-      signal: request.signal,
-      viewContext: extensions.viewContext(),
-      tools: TOOLS,
-      executeTool: async (name, args) => {
-        try {
-          const extended = await extensions.execute(name, args);
-          if (extended) return extended.output;
-          ({ user, data, context } = await checkCurrent());
-          if (name === "project_summary") {
-            z.object({}).strict().parse(args);
-            include([
-              {
-                kind: "project",
-                id: projectId,
-                label: context.project.name,
-                href: "/supervisor",
-              },
-            ]);
-            return {
-              dataOnly: true,
-              project: context.project,
-              summary: context.summary,
-              limitations: context.limitations,
-            };
-          }
-          if (name === "overdue_work") {
-            const { limit } = limited.parse(args),
-              check = context.checks.find((check) => check.id === "overdue")!;
-            const records = check.sources.slice(0, limit);
-            include(records);
-            return {
-              dataOnly: true,
-              scope: "saved-app-tasks",
-              population: context.summary.tasks,
-              importedScheduleActivities:
-                context.summary.importedProgrammeActivities,
-              limitation:
-                "This tool checks saved app tasks only. Imported P6 Schedule activities are a separate population; zero overdue app tasks does not establish zero overdue Schedule activities.",
-              total: check.count,
-              records: records.map((record) =>
-                context.tasks.find((task) => task.id === record.id),
-              ),
-              sources: records,
-              truncated: check.count > records.length,
-            };
-          }
-          if (name === "missing_test_records") {
-            const { limit } = limited.parse(args),
-              checks = context.checks
-                .filter((check) =>
-                  ["missing-tests", "untested", "approval"].includes(check.id),
-                )
-                .map((check) => ({
-                  ...check,
-                  sources: check.sources.slice(0, limit),
-                  truncated: check.count > limit,
-                }));
-            include(checks.flatMap((check) => check.sources));
-            return { dataOnly: true, checks };
-          }
-          if (name === "asset_groups") {
-            const { limit } = limited.parse(args),
-              groups = context.groups.slice(0, limit);
-            include(
-              groups.map((group) => ({
-                kind: "asset",
-                id: group.id,
-                label: group.name,
-                href: "/commissioning",
-              })),
-            );
-            return {
-              dataOnly: true,
-              groups,
-              total: context.groups.length,
-              truncated: context.groups.length > limit,
-              limitation: context.limitations.find((text) =>
-                text.startsWith("Group membership"),
-              ),
-            };
-          }
-          if (name === "search_assets") {
-            const result = searchCopilotAssets(context, args);
-            assetSearches.push(result);
-            const found = result.records.map((asset): CopilotSource => ({
-              kind: "asset",
-              id: asset.id,
-              label: asset.name,
-              href: asset.href,
-            }));
-            include(found);
-            return { dataOnly: true, ...result };
-          }
-          if (name === "search_tasks") {
-            const result = searchCopilotTasks(context, args);
-            const found = result.records.map((task): CopilotSource => ({
-              kind: "task",
-              id: task.id,
-              label: task.title,
-              href: `/tasks/${encodeURIComponent(task.id)}`,
-            }));
-            include(found);
-            return { dataOnly: true, ...result, sources: found };
-          }
-          if (name === "propose_task_edit") {
-            const proposed = z
-              .object({
-                taskId: z.string().min(1).max(150),
-                version: z.number().int().positive(),
-                title: z.string().nullable(),
-                description: z.string().nullable(),
-                priority: z.enum(["P1", "P2", "P3", "P4", "P5"]).nullable(),
-                reason: z.string(),
-              })
-              .strict()
-              .parse(args);
-            requireCondition(
-              proposals.length < 3,
-              400,
-              "Maximum three task proposals per response.",
-            );
-            const changes = Object.fromEntries(
-              ["title", "description", "priority"]
-                .filter(
-                  (key) => proposed[key as keyof typeof proposed] !== null,
-                )
-                .map((key) => [key, proposed[key as keyof typeof proposed]]),
-            );
-            const draft = copilotDraftSchema.parse({
-              taskId: proposed.taskId,
-              version: proposed.version,
-              changes,
-              reason: proposed.reason,
-            });
-            const proposal = preview(context, draft);
-            proposals.push({ ...draft, changes: proposal.changes });
-            include([
-              {
-                kind: "task",
-                id: proposal.taskId,
-                label: proposal.taskTitle,
-                href: `/tasks/${encodeURIComponent(proposal.taskId)}`,
-              },
-            ]);
-            return {
-              dataOnly: true,
-              proposal,
-              requiresHumanPreview: true,
-              requiresHumanConfirmation: true,
-              executed: false,
-            };
-          }
-          throw new Error("This tool is not available to the project copilot.");
-        } catch (error) {
-          return safeToolError(error);
-        }
-      },
-    },
-    {
-      ...getCopilotConfig(),
+  const viewContext = {
+    ...extensions.viewContext(),
+    readSnapshot: {
       projectId,
-      onPhase: ({ phase, durationMs }) => {
-        const key = phase.replaceAll("-", "_");
-        timings[key] = (timings[key] ?? 0) + durationMs;
-      },
+      projectVersion: context.project.version,
+      summary: context.summary,
+      checks: context.checks.map(({ id, count }) => ({ id, count })),
+      scope:
+        "Saved equipment and app-task counts. Imported P6 activities are metadata counts only; no filtered report or equipment-status inference.",
     },
-  ).catch((error: unknown) => {
+  };
+  // Keep the established view-context ceiling; dense view state takes precedence over this optional acceleration.
+  if (JSON.stringify(viewContext).length > 4000)
+    delete (viewContext as { readSnapshot?: unknown }).readSnapshot;
+  let response: { text: string };
+  try {
+    response = await runCopilotTurn(
+      {
+        message: input.message,
+        history: input.history,
+        projectName: context.project.name,
+        signal: request.signal,
+        viewContext,
+        tools: TOOLS,
+        executeTool: async (name, args) => {
+          try {
+            const extended = await extensions.execute(name, args);
+            if (extended) return extended.output;
+            ({ user, data, context } = await checkCurrent());
+            if (name === "project_summary") {
+              z.object({}).strict().parse(args);
+              include([
+                {
+                  kind: "project",
+                  id: projectId,
+                  label: context.project.name,
+                  href: "/supervisor",
+                },
+              ]);
+              return {
+                dataOnly: true,
+                project: context.project,
+                summary: context.summary,
+                limitations: context.limitations,
+              };
+            }
+            if (name === "overdue_work") {
+              const { limit } = limited.parse(args),
+                check = context.checks.find((check) => check.id === "overdue")!;
+              const records = check.sources.slice(0, limit);
+              include(records);
+              return {
+                dataOnly: true,
+                scope: "saved-app-tasks",
+                population: context.summary.tasks,
+                importedScheduleActivities:
+                  context.summary.importedProgrammeActivities,
+                limitation:
+                  "This tool checks saved app tasks only. Imported P6 Schedule activities are a separate population; zero overdue app tasks does not establish zero overdue Schedule activities.",
+                total: check.count,
+                records: records.map((record) =>
+                  context.tasks.find((task) => task.id === record.id),
+                ),
+                sources: records,
+                truncated: check.count > records.length,
+              };
+            }
+            if (name === "missing_test_records") {
+              const { limit } = limited.parse(args),
+                checks = context.checks
+                  .filter((check) =>
+                    ["missing-tests", "untested", "approval"].includes(
+                      check.id,
+                    ),
+                  )
+                  .map((check) => ({
+                    ...check,
+                    sources: check.sources.slice(0, limit),
+                    truncated: check.count > limit,
+                  }));
+              include(checks.flatMap((check) => check.sources));
+              return { dataOnly: true, checks };
+            }
+            if (name === "asset_groups") {
+              const { limit } = limited.parse(args),
+                groups = context.groups.slice(0, limit);
+              include(
+                groups.map((group) => ({
+                  kind: "asset",
+                  id: group.id,
+                  label: group.name,
+                  href: "/commissioning",
+                })),
+              );
+              return {
+                dataOnly: true,
+                groups,
+                total: context.groups.length,
+                truncated: context.groups.length > limit,
+                limitation: context.limitations.find((text) =>
+                  text.startsWith("Group membership"),
+                ),
+              };
+            }
+            if (name === "search_assets") {
+              const result = searchCopilotAssets(context, args);
+              assetSearches.push(result);
+              const found = result.records.map((asset): CopilotSource => ({
+                kind: "asset",
+                id: asset.id,
+                label: asset.name,
+                href: asset.href,
+              }));
+              include(found);
+              return { dataOnly: true, ...result };
+            }
+            if (name === "search_tasks") {
+              const result = searchCopilotTasks(context, args);
+              const found = result.records.map((task): CopilotSource => ({
+                kind: "task",
+                id: task.id,
+                label: task.title,
+                href: `/tasks/${encodeURIComponent(task.id)}`,
+              }));
+              include(found);
+              return { dataOnly: true, ...result, sources: found };
+            }
+            if (name === "propose_task_edit") {
+              const proposed = z
+                .object({
+                  taskId: z.string().min(1).max(150),
+                  version: z.number().int().positive(),
+                  title: z.string().nullable(),
+                  description: z.string().nullable(),
+                  priority: z.enum(["P1", "P2", "P3", "P4", "P5"]).nullable(),
+                  reason: z.string(),
+                })
+                .strict()
+                .parse(args);
+              requireCondition(
+                proposals.length < 3,
+                400,
+                "Maximum three task proposals per response.",
+              );
+              const changes = Object.fromEntries(
+                ["title", "description", "priority"]
+                  .filter(
+                    (key) => proposed[key as keyof typeof proposed] !== null,
+                  )
+                  .map((key) => [key, proposed[key as keyof typeof proposed]]),
+              );
+              const draft = copilotDraftSchema.parse({
+                taskId: proposed.taskId,
+                version: proposed.version,
+                changes,
+                reason: proposed.reason,
+              });
+              const proposal = preview(context, draft);
+              proposals.push({ ...draft, changes: proposal.changes });
+              include([
+                {
+                  kind: "task",
+                  id: proposal.taskId,
+                  label: proposal.taskTitle,
+                  href: `/tasks/${encodeURIComponent(proposal.taskId)}`,
+                },
+              ]);
+              return {
+                dataOnly: true,
+                proposal,
+                requiresHumanPreview: true,
+                requiresHumanConfirmation: true,
+                executed: false,
+              };
+            }
+            throw new Error(
+              "This tool is not available to the project copilot.",
+            );
+          } catch (error) {
+            return safeToolError(error);
+          }
+        },
+      },
+      {
+        ...getCopilotConfig(),
+        projectId,
+        onPhase: ({ phase, durationMs }) => {
+          const key = phase.replaceAll("-", "_");
+          timings[key] = (timings[key] ?? 0) + durationMs;
+        },
+      },
+    );
+  } catch (error: unknown) {
     if (error instanceof CopilotProviderError) {
+      const saved = recoverCompletedReport(
+        error.code,
+        extensions.reports,
+        error instanceof CopilotToolError,
+      );
+      if (saved) return finish(saved, "saved-data");
       const status =
         error instanceof CopilotToolError
           ? error.status
@@ -582,6 +698,6 @@ export async function chatCopilot(request: Request, projectId: string) {
       throw new HttpError(status, error.message);
     }
     throw error;
-  });
+  }
   return finish(response.text, "ai");
 }

@@ -13,7 +13,7 @@ import {
 } from "@/lib/assistant-conversations";
 import { canUseCopilot } from "@/lib/copilot";
 import { requireUser } from "./auth";
-import { loadData } from "./repository";
+import { loadCopilotProjectAccess } from "./repository";
 import { requireCondition } from "./errors";
 import { json, readJson } from "./http";
 import { dataMode } from "./config";
@@ -47,12 +47,7 @@ async function authorized(projectId: string) {
     403,
     "Assistant history requires task and commissioning management access.",
   );
-  const data = await loadData(user);
-  requireCondition(
-    data.projects.some((project) => project.id === projectId),
-    404,
-    "Project not found.",
-  );
+  await loadCopilotProjectAccess(user, projectId);
   return user;
 }
 const stamp = (value: unknown) => new Date(value as string).toISOString();

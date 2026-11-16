@@ -10,8 +10,6 @@ import {
 } from "@/lib/commissioning";
 import { searchSavedSchedule } from "@/lib/copilot-reads";
 import {
-  resolveWorkingSourceIndex,
-  managedWorkingSourceIndex,
   workingScheduleDraftSchema,
   type WorkingScheduleDraft,
 } from "@/lib/schedule-working";
@@ -24,7 +22,12 @@ import {
   type AssistantReportState,
 } from "@/lib/assistant-report-state";
 import { type ProjectReportResult } from "@/lib/project-reports";
-import { loadProgrammeSourceIndex, loadData } from "./repository";
+import {
+  loadProgrammeSourceIndex,
+  loadData,
+  loadCopilotData,
+} from "./repository";
+import { CopilotWorkingIndexMemo } from "@/lib/copilot-snapshot";
 import { requireUser } from "./auth";
 import { loadProjectReport } from "./project-reports";
 import { prepareWorkingScheduleProposal } from "./schedule-working";
@@ -52,6 +55,7 @@ export function copilotExtensions({
     data.projects.find((p) => p.id === projectId),
   ).version;
   let reportState = initialReport;
+  const workingMemo = new CopilotWorkingIndexMemo();
   const reports: ProjectReportResult[] = [],
     scheduleProposals: WorkingScheduleDraft[] = [],
     librarySearches: ProjectLibraryPage[] = [];
@@ -63,12 +67,7 @@ export function copilotExtensions({
       409,
       "The source Schedule changed or is unavailable. Refresh before asking again.",
     );
-    return source
-      ? resolveWorkingSourceIndex(source, currentState.workingSchedule)
-      : managedWorkingSourceIndex(
-          currentState.schedule,
-          currentState.workingSchedule,
-        );
+    return workingMemo.get(source, currentState);
   };
   return {
     reports,
@@ -99,6 +98,7 @@ export function copilotExtensions({
         const result = await loadProjectReport(projectId, query, {
           userId: user.id,
           projectVersion,
+          workingMemo,
         });
         reportState = { projectId, query: result.query };
         reports.push(result);
@@ -144,7 +144,9 @@ export function copilotExtensions({
         403,
         "The signed-in user changed. Start a new conversation.",
       );
-      const latest = await loadData(actor),
+      const latest = await (name === "search_project_library"
+          ? loadData(actor)
+          : loadCopilotData(actor, projectId)),
         currentProject = latest.projects.find((p) => p.id === projectId);
       requireCondition(currentProject, 404, "Project is no longer available.");
       requireCondition(
@@ -324,6 +326,7 @@ export function copilotExtensions({
           })
           .strict()
           .parse(args);
+        // The library's explicit cross-project scope still needs the authorized workspace snapshot.
         const result = queryProjectLibrary(latest, actor, {
           q: input.query,
           projectId: input.projectId ?? undefined,

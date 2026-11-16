@@ -19,9 +19,14 @@ import {
 import { requireUser } from "./auth";
 import { requireCondition } from "./errors";
 import { json } from "./http";
-import { loadData, loadProgrammeSourceIndex } from "./repository";
+import { loadCopilotData, loadProgrammeSourceIndex } from "./repository";
+import { type CopilotWorkingIndexMemo } from "@/lib/copilot-snapshot";
 
-type AssistantReportAccess = { userId: string; projectVersion: number };
+type AssistantReportAccess = {
+  userId: string;
+  projectVersion: number;
+  workingMemo?: CopilotWorkingIndexMemo;
+};
 async function authorizedReport(
   projectId: string,
   assistant?: AssistantReportAccess,
@@ -40,7 +45,7 @@ async function authorizedReport(
     403,
     "Project management and Reports access required.",
   );
-  const data = await loadData(user);
+  const data = await loadCopilotData(user, projectId);
   const project = data.projects.find((row) => row.id === projectId);
   requireCondition(
     project && isProjectMember(user, projectId, data),
@@ -64,7 +69,8 @@ async function authorizedReport(
     state as Commissioning & { workingSchedule?: WorkingSchedule }
   ).workingSchedule;
   const sourceIndex = source
-    ? resolveWorkingSourceIndex(source, working)
+    ? (assistant?.workingMemo?.get(source, state) ??
+      resolveWorkingSourceIndex(source, working))
     : undefined;
   return { data, sourceIndex, version: state.version };
 }

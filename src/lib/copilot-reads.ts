@@ -133,3 +133,38 @@ export function savedScheduleSearchReply(result: SavedScheduleSearch) {
       : "Equipment inventory and saved tasks are separate populations; this search does not infer equipment mappings from activity names.",
   ].join("\n\n");
 }
+
+/** A provider narration failure cannot erase an already completed, authorized saved report. */
+export function savedReportFallback(reports: ProjectReportResult[]) {
+  if (!reports.length) return undefined;
+  return [
+    "The AI explanation did not finish. The saved reports below completed; any additional interpretation remains unanswered. No AI-generated explanation or applied change is claimed.",
+    ...reports.map((report) =>
+      report.report === "lookahead"
+        ? savedLookaheadReply(report)
+        : [
+            `Saved ${report.report === "tagging" ? "tagging" : report.report === "works-to-go" ? "Works to go" : "equipment-supplier"} report · no AI generation.`,
+            `${report.total} matching saved records under the report's visible filters. Showing ${report.rows.length}; [open the complete report](${report.href}).`,
+            report.total === 0
+              ? "No records match these filters. This does not establish that the project has no work."
+              : "",
+            report.coverage.sourceUnavailable
+              ? "The source Schedule is unavailable; source-activity coverage is unknown, not zero."
+              : "",
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
+    ),
+  ].join("\n\n");
+}
+
+export function recoverCompletedReport(
+  code: string,
+  reports: ProjectReportResult[],
+  toolFailure = false,
+) {
+  return !toolFailure &&
+    ["timeout", "provider_unavailable", "invalid_response"].includes(code)
+    ? savedReportFallback(reports)
+    : undefined;
+}
