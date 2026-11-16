@@ -675,11 +675,7 @@ async function performCopilotChat(
     );
   } catch (error: unknown) {
     if (error instanceof CopilotProviderError) {
-      const saved = recoverCompletedReport(
-        error.code,
-        extensions.reports,
-        error instanceof CopilotToolError,
-      );
+      const saved = recoverCompletedReport(error, extensions.reports);
       if (saved) return finish(saved, "saved-data");
       const status =
         error instanceof CopilotToolError

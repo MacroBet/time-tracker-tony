@@ -1,6 +1,7 @@
 import { projectDate } from "./domain";
 import type { SourceProgrammeIndex } from "./programme-source";
 import type { ProjectReportResult } from "./project-reports";
+import { recoverableCopilotNarration } from "./copilot-provider";
 import {
   matchesSavedScheduleQuery,
   normalizeSavedScheduleQuery,
@@ -159,12 +160,10 @@ export function savedReportFallback(reports: ProjectReportResult[]) {
 }
 
 export function recoverCompletedReport(
-  code: string,
+  error: unknown,
   reports: ProjectReportResult[],
-  toolFailure = false,
 ) {
-  return !toolFailure &&
-    ["timeout", "provider_unavailable", "invalid_response"].includes(code)
+  return recoverableCopilotNarration(error)
     ? savedReportFallback(reports)
     : undefined;
 }

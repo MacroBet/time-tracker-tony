@@ -86,11 +86,21 @@ type ErrorCode =
   | "tool_failed"
   | "cancelled"
   | "timeout";
+export type CopilotFailureOrigin =
+  | "narration"
+  | "provider-transport"
+  | "provider-protocol"
+  | "tool-protocol"
+  | "tool"
+  | "meter"
+  | "configuration"
+  | "cancelled";
 export class CopilotProviderError extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
     public readonly phase?: CopilotPhase,
+    public readonly origin?: CopilotFailureOrigin,
   ) {
     super(message);
     this.name = "CopilotProviderError";
@@ -102,11 +112,27 @@ export class CopilotToolError extends CopilotProviderError {
     public readonly status: 400 | 401 | 403 | 404 | 409,
     message: string,
   ) {
-    super("tool_failed", message, "tool");
+    super("tool_failed", message, "tool", "tool");
   }
 }
-const failure = (code: ErrorCode, message: string) =>
-  new CopilotProviderError(code, message);
+const failure = (
+  code: ErrorCode,
+  message: string,
+  phase?: CopilotPhase,
+  origin?: CopilotFailureOrigin,
+) => new CopilotProviderError(code, message, phase, origin);
+
+/** Fail closed: only a narration/transport failure may expose already completed saved reports. */
+export function recoverableCopilotNarration(error: unknown) {
+  return (
+    error instanceof CopilotProviderError &&
+    !(error instanceof CopilotToolError) &&
+    error.phase === "provider" &&
+    ((error.origin === "narration" && error.code === "invalid_response") ||
+      (error.origin === "provider-transport" &&
+        ["timeout", "provider_unavailable"].includes(error.code)))
+  );
+}
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === "object" && !Array.isArray(value);
 const bytes = (value: string) => new TextEncoder().encode(value).byteLength;
@@ -257,6 +283,8 @@ async function readResponse(
     throw failure(
       "invalid_response",
       "The copilot returned an empty response.",
+      "provider",
+      "provider-protocol",
     );
   const reader = response.body.getReader();
   // The deadline must also release a body that stalls after headers arrive.
@@ -294,6 +322,8 @@ async function readResponse(
     throw failure(
       "invalid_response",
       "The copilot returned an unreadable response.",
+      "provider",
+      "provider-protocol",
     );
   }
   observe(value);
@@ -306,6 +336,8 @@ async function readResponse(
     throw failure(
       "invalid_response",
       "The copilot did not complete a valid response. Try a smaller request.",
+      "provider",
+      "provider-protocol",
     );
   return value.output as Record<string, unknown>[];
 }
@@ -368,6 +400,11 @@ export async function runCopilotTurn(
               ? "API usage recording took too long. Please try again later."
               : "The AI provider took too long to respond. Please try again later.",
           phase,
+          phase === "provider"
+            ? "provider-transport"
+            : phase === "tool"
+              ? "tool"
+              : "meter",
         ),
       );
       controller.abort();
@@ -381,6 +418,7 @@ export async function runCopilotTurn(
           "cancelled",
           "The assistant request was cancelled.",
           phase,
+          "cancelled",
         ),
       );
       controller.abort();
@@ -460,6 +498,8 @@ export async function runCopilotTurn(
           throw failure(
             "provider_unavailable",
             "API usage recording is unavailable.",
+            phase,
+            "meter",
           );
         }
       };
@@ -470,18 +510,36 @@ export async function runCopilotTurn(
       let parsedResponse = false;
       try {
         output = await timed("provider", round + 1, async () => {
-          const response = await withinDeadline(
-            transport(ENDPOINT, {
-              method: "POST",
-              redirect: "error",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${config.apiKey!.trim()}`,
-              },
-              body,
-              signal: controller.signal,
-            }),
-          );
+          let response: Response;
+          try {
+            response = await withinDeadline(
+              transport(ENDPOINT, {
+                method: "POST",
+                redirect: "error",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${config.apiKey!.trim()}`,
+                },
+                body,
+                signal: controller.signal,
+              }),
+            );
+          } catch (error) {
+            if (error instanceof CopilotProviderError) throw error;
+            if (controller.signal.aborted || input.signal?.aborted)
+              throw failure(
+                "cancelled",
+                "The assistant request was cancelled.",
+                "provider",
+                "cancelled",
+              );
+            throw failure(
+              "provider_unavailable",
+              "The copilot could not connect to its provider. Try again later.",
+              "provider",
+              "provider-transport",
+            );
+          }
           receivedHeaders = true;
           // The recorder hashes this opaque reference; no headers are retained.
           observation.providerRequestId = response.headers.get("x-request-id");
@@ -491,6 +549,10 @@ export async function runCopilotTurn(
             throw failure(
               "provider_unavailable",
               "The copilot provider is unavailable. Check configuration and account access.",
+              "provider",
+              response.status === 429 || response.status >= 500
+                ? "provider-transport"
+                : "configuration",
             );
           }
           const items = await withinDeadline(
@@ -554,11 +616,27 @@ export async function runCopilotTurn(
           .map((item) => item.text as string)
           .join("\n")
           .trim();
-        if (!text)
+        if (!text) {
+          const narrationOnly = output.every(
+            (item) =>
+              item.type === "reasoning" ||
+              (item.type === "message" &&
+                item.role === "assistant" &&
+                Array.isArray(item.content) &&
+                item.content.every(
+                  (part) =>
+                    record(part) &&
+                    part.type === "output_text" &&
+                    typeof part.text === "string",
+                )),
+          );
           throw failure(
             "invalid_response",
             "The copilot did not return an answer.",
+            "provider",
+            narrationOnly ? "narration" : "provider-protocol",
           );
+        }
         if (text.length > COPILOT_LIMITS.textCharacters)
           throw failure(
             "limit_exceeded",
@@ -588,6 +666,8 @@ export async function runCopilotTurn(
           throw failure(
             "invalid_response",
             "The copilot requested an invalid or unavailable project tool.",
+            "tool",
+            "tool-protocol",
           );
         let args: unknown;
         try {
@@ -596,12 +676,16 @@ export async function runCopilotTurn(
           throw failure(
             "invalid_response",
             "The copilot supplied invalid project-tool arguments.",
+            "tool",
+            "tool-protocol",
           );
         }
         if (!record(args))
           throw failure(
             "invalid_response",
             "The copilot supplied invalid project-tool arguments.",
+            "tool",
+            "tool-protocol",
           );
         seen.add(call.call_id);
         return { name: call.name, callId: call.call_id, args };
@@ -624,6 +708,8 @@ export async function runCopilotTurn(
           throw failure(
             "tool_failed",
             "A project tool could not complete. Please refine the request.",
+            "tool",
+            "tool",
           );
         }
         let serialized: string | undefined;
