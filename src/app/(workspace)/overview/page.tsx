@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 export default async function Page() {
   const user = await currentUser();
   if (!user) redirect("/");
-  if (!hasModule(user, "dashboard")) redirect(homeFor(user));
+  if (!hasModule(user, "dashboard") && !hasModule(user, "reports"))
+    redirect(homeFor(user));
   if (user.role === "worker") redirect("/dashboard");
   return <Overview />;
 }

@@ -198,12 +198,21 @@ test("the two observed questions return authorized saved-data results without an
   assert.equal(page.total, search.sources.length);
   const noMatch = await json<Reply>(
     await request(endpoint, admin, "POST", {
-      message: "Show me all absent-equipment on the schedule.",
+      message: "Show me all pumps on the schedule.",
     }),
   );
   assert.equal(noMatch.sources.length, 0);
   assert(
     noMatch.text.includes("does not establish that no such equipment exists"),
+  );
+  // Semantic status questions are deliberately not literal name searches.
+  assert.equal(
+    (
+      await request(endpoint, admin, "POST", {
+        message: "Show me overdue activities on the schedule.",
+      })
+    ).status,
+    503,
   );
   assert.equal(
     (

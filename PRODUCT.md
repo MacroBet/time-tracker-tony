@@ -167,6 +167,14 @@ Evidence: docs/tony-feedback/intake-20261114-chat-history.md.
 
 ## Product Principles
 
+The 16 November implementation keeps Dashboard and Reports on one surface, with
+existing project metrics, shared admin defaults and separate browser preferences.
+Schedule view controls and assistant commands share one scoped reducer; stored P6
+criticality includes the original criterion, missing data and stale working state,
+without recalculating CPM. The contextual assistant preserves the current page and
+private chat history. Local implementation and verification are distinct from a
+remote release. Source: docs/tony-feedback/intake-20261116-implementation.md.
+
 - Changes must persist and have traceable authors/reasons.
 - Summaries must lead to the records behind their counts.
 - Missing information remains distinguishable from zero and not applicable.

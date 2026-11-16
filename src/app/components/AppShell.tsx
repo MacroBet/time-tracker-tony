@@ -1,5 +1,6 @@
 "use client";
 import { AssistantEntry } from "./AssistantEntry";
+import { ContextualAssistant } from "./ContextualAssistant";
 import { hasModule, type Module } from "@/lib/commissioning";
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
@@ -123,7 +124,7 @@ export function AppShell({
       ]
     : [
         {
-          label: "Overview",
+          label: "Dashboard",
           href: "/overview",
           icon: LayoutDashboard,
           module: "dashboard",
@@ -179,12 +180,16 @@ export function AppShell({
           icon: BookOpen,
           module: "commissioning",
         },
-        {
-          label: "Reports",
-          href: "/reports",
-          icon: FileBarChart,
-          module: "reports",
-        },
+        ...(!hasModule(currentUser, "dashboard")
+          ? [
+              {
+                label: "Dashboard reports",
+                href: "/overview?tab=reports",
+                icon: FileBarChart,
+                module: "reports" as Module,
+              },
+            ]
+          : []),
         ...(hasModule(currentUser, "tasks") &&
         hasModule(currentUser, "commissioning")
           ? [{ label: "Assistant", href: "/copilot", icon: MessageSquareText }]
@@ -485,6 +490,12 @@ export function AppShell({
         >
           {children}
         </main>
+        <ContextualAssistant
+          key={`${selectedProjectId}:${pathname}:${currentUser.id}:${currentUser.role}:${JSON.stringify(currentUser.modules ?? null)}:${projects
+            .map((project) => project.id)
+            .sort()
+            .join("|")}`}
+        />
       </div>
       <nav
         aria-label="Mobile navigation"

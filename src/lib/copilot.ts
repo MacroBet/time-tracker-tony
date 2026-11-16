@@ -47,6 +47,7 @@ export type CopilotSource = {
   href: string;
 };
 export type CopilotAnswer = {
+  mode?: "saved-data" | "ai" | "view";
   text: string;
   sources: CopilotSource[];
   proposals: CopilotTaskProposalDraft[];

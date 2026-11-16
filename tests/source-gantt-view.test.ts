@@ -136,6 +136,16 @@ test("window length and calendar granularity are independent display choices, wi
 });
 
 test("display commands cannot target identities, modify dates on activities, or accept invalid calendar dates", () => {
+  assert.deepEqual(sourceGanttViewCommandSchema.parse({ type: "show" }), {
+    type: "show",
+  });
+  assert.equal(
+    sourceGanttViewCommandSchema.safeParse({
+      type: "show",
+      activityId: "ACT-1",
+    }).success,
+    false,
+  );
   assert.equal(
     sourceGanttViewCommandSchema.safeParse({ type: "date", date: "2026-02-30" })
       .success,
@@ -158,6 +168,10 @@ test("display commands cannot target identities, modify dates on activities, or 
     false,
   );
   const initial = sourceGanttInitialView("2026-11-16");
+  assert.equal(
+    reduceSourceGanttView(initial, { type: "show" }, initial.anchor),
+    initial,
+  );
   const serialised = JSON.stringify(initial);
   const hidden = reduceSourceGanttView(
     initial,

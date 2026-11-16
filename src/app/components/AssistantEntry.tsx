@@ -1,9 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Keyboard, Mic } from "lucide-react";
 import { canUseCopilot } from "@/lib/copilot";
+import {
+  ASSISTANT_OPEN_EVENT,
+  type AssistantEntryRequest,
+} from "@/lib/assistant-entry";
 import { useApp } from "../contexts/AppContext";
 
 /** Opening the assistant never opens the microphone or sends a question. */
@@ -11,7 +14,16 @@ export function AssistantEntry() {
   const { currentUser, selectedProjectId } = useApp();
   const pathname = usePathname();
   if (!selectedProjectId || !canUseCopilot(currentUser)) return null;
-  const href = `/copilot?projectId=${encodeURIComponent(selectedProjectId)}${pathname === "/schedule" ? "&sourceView=1" : ""}`;
+  const open = (input: AssistantEntryRequest["input"]) =>
+    window.dispatchEvent(
+      new CustomEvent<AssistantEntryRequest>(ASSISTANT_OPEN_EVENT, {
+        detail: {
+          input,
+          projectId: selectedProjectId,
+          sourceView: pathname === "/schedule",
+        },
+      }),
+    );
   const style =
     "inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 px-2.5 text-blue-800 hover:bg-blue-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700";
   return (
@@ -19,21 +31,23 @@ export function AssistantEntry() {
       aria-label="Project assistant"
       className="flex shrink-0 overflow-hidden rounded-lg border border-blue-200 bg-blue-50"
     >
-      <Link
-        href={`${href}&input=voice`}
+      <button
+        type="button"
+        onClick={() => open("voice")}
         aria-label="Open AI assistant with voice input"
         className={style}
       >
         <Mic className="size-4" aria-hidden="true" />
         <span className="text-xs font-semibold">AI</span>
-      </Link>
-      <Link
-        href={`${href}&input=text`}
+      </button>
+      <button
+        type="button"
+        onClick={() => open("text")}
         aria-label="Open AI assistant with keyboard input"
         className={`${style} border-l border-blue-200`}
       >
         <Keyboard className="size-4" aria-hidden="true" />
-      </Link>
+      </button>
     </nav>
   );
 }

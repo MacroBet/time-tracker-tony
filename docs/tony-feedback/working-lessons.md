@@ -81,3 +81,17 @@ Se una regola viene sostituita, qualificare quella vecchia e aggiornare l'istruz
 corrente, senza cancellare lo storico utile. Stato/backlog rimangono soltanto nel
 registro. Non registrare segreti, dati bancari, chat estranee o audio ambientale.
 La skill generale non deve includere questi dettagli di Tony.
+
+## 16 novembre 2026 — prove sui percorsi reali e retry
+
+- Un test del modulo non prova il punto d’ingresso dell’utente: Tasks monta
+  `ManagementBoard`, non il branch management di `TaskBoard`; il Gantt legge
+  `schedule-working`, non soltanto `programme-source`. La verifica centrale deve
+  seguire pagina→componente→endpoint effettivi. In questo lotto ha recuperato
+  un’integrazione non raggiungibile e un parametro critical non propagato.
+- Per un comando idempotente, un receipt consumato non può riapplicare la mutazione
+  dopo modifiche successive. Il caso A→B→A→retry della prima rinomina deve lasciare
+  invariati l’intero progetto e l’audit, mantenendo il controllo corrente di accesso.
+
+Prove: [attuazione16nov](intake-20261116-implementation.md), regressioni
+`project-profile.test.ts`/API e `source-criticality-api.integration.ts`.

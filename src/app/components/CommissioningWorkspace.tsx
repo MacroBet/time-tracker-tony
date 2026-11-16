@@ -34,6 +34,9 @@ import { duplicateAssetDraft } from "@/lib/asset-register-mutations";
 import { AssetRegister } from "./AssetRegister";
 import { EquipmentStatusMatrix } from "./EquipmentStatusMatrix";
 import { ProjectAudit } from "./ProjectAudit";
+import { ProjectSetup } from "./ProjectSetup";
+import { ProjectDefaultSettings } from "./ProjectViewSettings";
+import { ProjectGettingStarted } from "./Overview";
 import { TagLevel } from "./TagLevel";
 import { DocumentRequirementsEditor } from "./DocumentRequirements";
 import { InventoryBatchControls } from "./InventoryBatchControls";
@@ -89,6 +92,21 @@ export function CommissioningWorkspace({
       }
       wide
     >
+      {admin && <ProjectSetup />}
+      {admin && project && (
+        <>
+          <ProjectGettingStarted
+            project={project}
+            taskCount={
+              app.tasks.filter((task) => task.projectId === project.id).length
+            }
+            canPlan={hasModule(app.currentUser, "commissioning")}
+            canWork={hasModule(app.currentUser, "tasks")}
+            compact
+          />
+          <ProjectDefaultSettings project={project} />
+        </>
+      )}
       {requestedProject && !assignedRequest ? (
         <p role="alert" className="text-sm text-red-700">
           This project is not available to your account. Choose an assigned
@@ -1034,7 +1052,7 @@ function ProjectWorkspace({
           onSubmit={configure}
           className="rounded-xl border bg-white p-5 space-y-4"
         >
-          <h3 className="font-semibold">Project setup</h3>
+          <h3 className="font-semibold">Commissioning setup</h3>
           <p className="text-sm text-slate-600">
             Configure project details and the phases used by this schedule.
           </p>

@@ -54,6 +54,12 @@ import {
 } from "@/lib/assistant-conversations";
 import { projectReportHref } from "@/lib/project-reports";
 import { AssistantReply } from "./AssistantReply";
+import {
+  parseAssistantViewCommand,
+  resolveVoiceReview,
+} from "@/lib/assistant-view-commands";
+import { parseCopilotReadCommand } from "@/lib/copilot-reads";
+import { applyAssistantView } from "./assistant-view-dispatch";
 
 type ContextResponse = CopilotContext & { configuration: CopilotStatus };
 type Message = ConversationMessage & { answer?: CopilotAnswer };
@@ -118,10 +124,20 @@ export function CopilotWorkspace() {
   );
 }
 
-function CopilotSession({ projectId }: { projectId: string }) {
+export function CopilotSession({
+  projectId,
+  embedded = false,
+  input,
+  sourceView = false,
+}: {
+  projectId: string;
+  embedded?: boolean;
+  input?: "voice" | "text";
+  sourceView?: boolean;
+}) {
   const params = useSearchParams();
   const router = useRouter();
-  const { isOnline, refreshData } = useApp();
+  const { isOnline, refreshData, currentUser } = useApp();
   const [context, setContext] = useState<ContextResponse | null>(null);
   const [loadError, setLoadError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -130,7 +146,47 @@ function CopilotSession({ projectId }: { projectId: string }) {
   const [reportState, setReportState] = useState<
     AssistantReportState | undefined
   >();
-  const [draft, setDraft] = useState("");
+  const [draft, setDraftState] = useState(() => {
+    if (embedded && typeof window !== "undefined")
+      try {
+        return (
+          sessionStorage.getItem(
+            `fieldtrack:assistant-draft:${encodeURIComponent(currentUser.id)}:${encodeURIComponent(projectId)}`,
+          ) ?? ""
+        ).slice(0, 4000);
+      } catch {
+        /* Draft remains usable without storage. */
+      }
+    return "";
+  });
+  const [voicePurpose, setVoicePurpose] = useState<"dictation" | "review">(
+    "dictation",
+  );
+  const [voiceNote, setVoiceNote] = useState("");
+  const [voicePartial, setVoicePartial] = useState("");
+  const [voiceCapturing, setVoiceCapturing] = useState(false);
+  const voiceCaptureActive = useRef(false);
+  const [replaceVoice, setReplaceVoice] = useState(false);
+  const reviewedDraft = useRef("");
+  const lastDraft = useRef(draft);
+  function setDraft(value: string | ((previous: string) => string)) {
+    const next = typeof value === "function" ? value(lastDraft.current) : value;
+    lastDraft.current = next;
+    setDraftState(next);
+  }
+  useEffect(() => {
+    if (!embedded) return;
+    const key = `fieldtrack:assistant-draft:${encodeURIComponent(currentUser.id)}:${encodeURIComponent(projectId)}`;
+    return () => {
+      try {
+        if (lastDraft.current.trim())
+          sessionStorage.setItem(key, lastDraft.current);
+        else sessionStorage.removeItem(key);
+      } catch {
+        /* Never block closing the microphone. */
+      }
+    };
+  }, [embedded, currentUser.id, projectId]);
   const [chatBusy, setChatBusy] = useState(false);
   const [savingQuestion, setSavingQuestion] = useState(false);
   const [chatError, setChatError] = useState("");
@@ -171,12 +227,18 @@ function CopilotSession({ projectId }: { projectId: string }) {
   const turnGeneration = useRef(0);
   const [historyRetry, setHistoryRetry] = useState(0);
   useEffect(() => {
-    if (!loading && params.get("input") === "text") composer.current?.focus();
-  }, [loading, params]);
+    if (!loading && (input ?? params.get("input")) === "text")
+      composer.current?.focus();
+  }, [loading, params, input]);
   const endpoint = `/api/projects/${encodeURIComponent(projectId)}/copilot`;
   const historyEndpoint = `${endpoint}/conversations`;
-  const requestedChat = params.get("chat");
+  const [embeddedChat, setEmbeddedChat] = useState<string | null>(null);
+  const requestedChat = embedded ? embeddedChat : params.get("chat");
   const setChatUrl = (id: string | null) => {
+    if (embedded) {
+      setEmbeddedChat(id);
+      return;
+    }
     const next = new URLSearchParams(params.toString());
     if (id) next.set("chat", id);
     else next.delete("chat");
@@ -398,7 +460,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
       setChatError("");
       replyNeedsSave.current = false;
       setUnsavedReply(false);
-      setDraft("");
+      if (!embedded) setDraft("");
       if (!requestedChat) {
         active.current = null;
         currentMessages.current = [];
@@ -444,7 +506,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
       }
     });
     return () => controller.abort();
-  }, [requestedChat, historyEndpoint, historyRetry]);
+  }, [requestedChat, historyEndpoint, historyRetry, embedded]);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -491,14 +553,17 @@ function CopilotSession({ projectId }: { projectId: string }) {
     await sendMessage(draft.trim());
   }
   async function sendMessage(text: string, retryId?: string) {
+    const viewIntent = parseAssistantViewCommand(text);
+    const savedRead = parseCopilotReadCommand(text);
     if (
       !context ||
-      context.configuration.state !== "ready" ||
+      (context.configuration.state !== "ready" && !viewIntent && !savedRead) ||
       chatLock.current ||
       !text ||
       openingChat ||
       historySaving ||
       unsavedReply ||
+      voiceCaptureActive.current ||
       !isOnline
     )
       return;
@@ -523,7 +588,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
       : currentMessages.current;
     const history = recentHistory(baseMessages);
     let scheduleView: ScheduleViewSnapshot | undefined;
-    if (params.get("sourceView") === "1")
+    if (sourceView || params.get("sourceView") === "1")
       try {
         const parsed = scheduleViewSnapshotSchema.safeParse(
           JSON.parse(
@@ -562,16 +627,31 @@ function CopilotSession({ projectId }: { projectId: string }) {
       setSavingQuestion(false);
       if (saved.created) setHistoryTotal((previous) => previous + 1);
       setChatUrl(saved.conversation.id);
-      const answer = await apiRequest<CopilotAnswer>(endpoint, {
-        method: "POST",
-        signal: controller.signal,
-        body: JSON.stringify({
-          message: text,
-          history,
-          reportState,
-          scheduleView,
-        }),
-      });
+      const answer: CopilotAnswer = viewIntent
+        ? !embedded || !sourceView
+          ? {
+              mode: "view",
+              text: `Schedule view command · no AI generation.\n\n[Open the working Schedule](/schedule?projectId=${encodeURIComponent(projectId)}) and use its assistant to apply this view command. No view or project record was changed here.`,
+              sources: [],
+              proposals: [],
+            }
+          : await applyAssistantView(
+              viewIntent,
+              scheduleView,
+              projectId,
+              context.project.version,
+              controller.signal,
+            )
+        : await apiRequest<CopilotAnswer>(endpoint, {
+            method: "POST",
+            signal: controller.signal,
+            body: JSON.stringify({
+              message: text,
+              history,
+              reportState,
+              scheduleView,
+            }),
+          });
       if (
         mounted.current &&
         !controller.signal.aborted &&
@@ -589,7 +669,13 @@ function CopilotSession({ projectId }: { projectId: string }) {
         };
         const complete = [...withQuestion, reply];
         replaceMessages(complete);
-        setRevealingId(reply.id);
+        setRevealingId(
+          answer.mode === "view" || answer.mode === "saved-data"
+            ? null
+            : reply.id,
+        );
+        if (answer.mode === "view" || answer.mode === "saved-data")
+          setAnnouncement("Reply ready from saved project records.");
         try {
           const savedReply = await saveMessages(complete, state);
           if (
@@ -692,9 +778,25 @@ function CopilotSession({ projectId }: { projectId: string }) {
   const ready = context.configuration.state === "ready";
   const contextPanel = <ProjectChecks context={context} />;
   return (
-    <div className="min-w-0 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="min-w-0 flex-1 text-sm leading-6 text-slate-600 tabular-nums">
+    <div className={embedded ? "min-w-0 space-y-2" : "min-w-0 space-y-6"}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {embedded && (
+          <InfoPopover label="Project records">
+            <p>
+              {context.summary.assets} assets · {context.summary.tasks} saved
+              tasks · {context.summary.managedProgrammeActivities} managed
+              activities · {context.summary.importedProgrammeActivities ?? "No"}{" "}
+              imported P6 activities. These are separate populations.
+            </p>
+          </InfoPopover>
+        )}
+        <p
+          className={
+            embedded
+              ? "sr-only"
+              : "min-w-0 flex-1 text-sm leading-6 text-slate-600 tabular-nums"
+          }
+        >
           {context.summary.assets} assets · {context.summary.tasks} tasks ·{" "}
           {context.summary.managedProgrammeActivities} managed app activities
           {context.summary.importedProgrammeActivities !== null && (
@@ -724,10 +826,10 @@ function CopilotSession({ projectId }: { projectId: string }) {
           }}
         >
           <RefreshCw className="size-4" />
-          {refreshing ? "Refreshing checks…" : "Refresh checks"}
+          {refreshing ? "Refreshing…" : embedded ? "Refresh" : "Refresh checks"}
         </Button>
       </div>
-      {!ready && (
+      {!ready && !embedded && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950">
           <p className="text-sm font-semibold">
             {context.configuration.state === "disabled"
@@ -735,10 +837,17 @@ function CopilotSession({ projectId }: { projectId: string }) {
               : "AI chat not configured yet"}
           </p>
           <p className="mt-1 text-sm leading-6">
-            Project checks and manual change previews work below. An
-            administrator must configure and enable AI before chat can answer.
+            Saved-data reports, Schedule view commands and manual previews
+            remain available. An administrator must enable AI for other
+            questions.
           </p>
         </div>
+      )}
+      {!ready && embedded && (
+        <p className="text-xs text-amber-950">
+          AI unavailable · saved-data reports and Schedule view commands still
+          work.
+        </p>
       )}
       <p className="sr-only" role="status">
         {announcement}
@@ -780,12 +889,18 @@ function CopilotSession({ projectId }: { projectId: string }) {
           )}
         </div>
       )}
-      <div className="grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <div
+        className={
+          embedded
+            ? "min-w-0 space-y-3"
+            : "grid min-w-0 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]"
+        }
+      >
         <aside aria-label="Chat history" className="min-w-0 space-y-3">
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              className="lg:w-full"
+              className={embedded ? "" : "lg:w-full"}
               disabled={unsavedReply || historySaving}
               onClick={newChat}
             >
@@ -794,7 +909,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
             </Button>
             <Button
               variant="ghost"
-              className="lg:hidden"
+              className={embedded ? "" : "lg:hidden"}
               aria-expanded={historyOpen}
               aria-controls="past-chats"
               onClick={() => setHistoryOpen((value) => !value)}
@@ -804,7 +919,7 @@ function CopilotSession({ projectId }: { projectId: string }) {
           </div>
           <div
             id="past-chats"
-            className={`${historyOpen ? "block" : "hidden"} space-y-3 lg:block`}
+            className={`${historyOpen ? "block" : "hidden"} space-y-3 ${embedded ? "" : "lg:block"}`}
           >
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-sm font-semibold">Past chats</h2>
@@ -912,9 +1027,13 @@ function CopilotSession({ projectId }: { projectId: string }) {
             )}
           </div>
         </aside>
-        <div className="min-w-0 space-y-6">
+        <div className={embedded ? "min-w-0 space-y-3" : "min-w-0 space-y-6"}>
           <section
-            className="rounded-xl border bg-white p-4 sm:p-5 space-y-5"
+            className={
+              embedded
+                ? "min-w-0 space-y-3"
+                : "rounded-xl border bg-white p-4 sm:p-5 space-y-5"
+            }
             aria-label="Project chat"
           >
             <div className="flex items-center justify-between gap-2">
@@ -956,15 +1075,42 @@ function CopilotSession({ projectId }: { projectId: string }) {
               </p>
             )}
             {!openingChat && !messages.length && (
-              <p className="py-4 text-sm leading-6 text-slate-600">
-                Ask a question about this project, or reopen a past chat.
-                Suggested changes always need your review.
+              <p
+                className={
+                  embedded
+                    ? "text-sm leading-5 text-slate-600"
+                    : "py-4 text-sm leading-6 text-slate-600"
+                }
+              >
+                {sourceView
+                  ? "Ask about this Schedule or change its view."
+                  : "Ask about this project, or reopen a past chat."}{" "}
+                {!embedded && "Suggested changes always need your review."}
+                <button
+                  type="button"
+                  className="mt-1 flex min-h-11 items-center gap-2 text-left font-medium text-blue-800 underline"
+                  onClick={() => {
+                    setDraft(
+                      sourceView
+                        ? "Show progress"
+                        : (context.examples[0] ??
+                            "Show me the next two weeks look ahead."),
+                    );
+                    composer.current?.focus();
+                  }}
+                >
+                  {sourceView
+                    ? "Show progress"
+                    : (context.examples[0] ??
+                      "Show me the next two weeks look ahead.")}
+                  <ArrowRight className="size-4 shrink-0" />
+                </button>
               </p>
             )}
             {!openingChat && messages.length > 0 && (
               <ol
                 ref={transcript}
-                className="max-h-[min(60dvh,36rem)] space-y-5 overflow-y-auto overscroll-contain pr-1"
+                className={`${embedded ? "max-h-[36dvh]" : "max-h-[min(60dvh,36rem)]"} space-y-4 overflow-y-auto overscroll-contain pr-1`}
                 tabIndex={0}
                 onScroll={(event) => {
                   const list = event.currentTarget;
@@ -1181,8 +1327,8 @@ function CopilotSession({ projectId }: { projectId: string }) {
                 Your question
                 <Textarea
                   ref={composer}
-                  className="mt-2 min-h-24"
-                  rows={3}
+                  className="mt-1 min-h-16"
+                  rows={embedded ? 2 : 3}
                   maxLength={4000}
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
@@ -1205,23 +1351,119 @@ function CopilotSession({ projectId }: { projectId: string }) {
                 />
               </label>
               <CopilotVoiceInput
+                resetKey={voicePurpose}
                 projectId={projectId}
-                disabled={!ready || openingChat || !isOnline}
+                providerReady={ready}
+                buttonLabel={
+                  voicePurpose === "review"
+                    ? "Record Send / Edit command"
+                    : replaceVoice
+                      ? "Record replacement text"
+                      : "Use microphone"
+                }
+                autoStart={
+                  voicePurpose === "dictation" &&
+                  (input ?? params.get("input")) === "voice"
+                }
+                disabled={openingChat || !isOnline}
+                onPartial={setVoicePartial}
+                onCaptureChange={(active) => {
+                  voiceCaptureActive.current = active;
+                  setVoiceCapturing(active);
+                }}
                 onTranscript={(text) => {
+                  setVoicePartial("");
+                  if (voicePurpose === "review") {
+                    const command = resolveVoiceReview(
+                      text,
+                      reviewedDraft.current,
+                      lastDraft.current,
+                    );
+                    setVoicePurpose("dictation");
+                    if (command === "send") {
+                      setVoiceNote(
+                        "Recognized Send question. Sending the reviewed question only; this does not confirm changes.",
+                      );
+                      void sendMessage(reviewedDraft.current);
+                    } else if (command === "draft-changed")
+                      setVoiceNote(
+                        "The question changed after command mode was opened. Review it again before sending.",
+                      );
+                    else if (command === "edit") {
+                      setReplaceVoice(true);
+                      setVoiceNote(
+                        "Edit your question, or record replacement text. Review it before sending.",
+                      );
+                      composer.current?.focus();
+                    } else
+                      setVoiceNote(
+                        "No command accepted. Say exactly ‘Send question’ or ‘Edit question’ in a separate command recording, or use the buttons.",
+                      );
+                    return;
+                  }
                   setDraft((previous) =>
-                    `${previous}${previous.trim() ? " " : ""}${text}`.slice(
-                      0,
-                      4000,
-                    ),
+                    (replaceVoice
+                      ? text
+                      : `${previous}${previous.trim() ? " " : ""}${text}`
+                    ).slice(0, 4000),
+                  );
+                  setReplaceVoice(false);
+                  setVoiceNote(
+                    "Transcript ready for review. Nothing has been sent.",
                   );
                   composer.current?.focus();
                 }}
               />
+              {voicePartial && (
+                <p
+                  role="status"
+                  aria-label="Live dictation preview"
+                  className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-950"
+                >
+                  <span className="block text-xs font-medium">
+                    {voicePurpose === "review"
+                      ? "Live command preview · not accepted yet"
+                      : "Live dictation · not sent"}
+                  </span>
+                  {voicePartial}
+                </p>
+              )}
+              {draft.trim() && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={voiceCapturing || openingChat || !isOnline}
+                    aria-pressed={voicePurpose === "review"}
+                    onClick={() => {
+                      reviewedDraft.current = lastDraft.current.trim();
+                      setVoicePurpose((value) =>
+                        value === "review" ? "dictation" : "review",
+                      );
+                      setVoiceNote("");
+                    }}
+                  >
+                    {voicePurpose === "review"
+                      ? "Return to dictation"
+                      : "Voice Send / Edit"}
+                  </Button>
+                  <span className="text-xs text-slate-600">
+                    {voicePurpose === "review"
+                      ? "Separate command mode: record ‘Send question’ or ‘Edit question’."
+                      : "Review the text before sending."}
+                  </span>
+                </div>
+              )}
+              {voiceNote && (
+                <p role="status" className="text-xs text-slate-600">
+                  {voiceNote}
+                </p>
+              )}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="text-xs text-slate-600">
                   {ready
                     ? "Changes always need your confirmation."
-                    : "Sending is available after AI setup."}
+                    : "Saved-data and view commands work without AI."}
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {chatBusy &&
@@ -1239,8 +1481,11 @@ function CopilotSession({ projectId }: { projectId: string }) {
                   <Button
                     className="min-h-11 max-w-full whitespace-normal"
                     disabled={
-                      !ready ||
+                      (!ready &&
+                        !parseAssistantViewCommand(draft) &&
+                        !parseCopilotReadCommand(draft)) ||
                       chatBusy ||
+                      voiceCapturing ||
                       openingChat ||
                       unsavedReply ||
                       !isOnline ||

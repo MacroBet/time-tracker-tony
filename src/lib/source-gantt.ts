@@ -27,6 +27,7 @@ export const sourceGanttViewSchema = z
 export type SourceGanttViewState = z.infer<typeof sourceGanttViewSchema>;
 export type SourceDurationMode = SourceGanttViewState["durationMode"];
 export const sourceGanttViewCommandSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("show") }).strict(),
   z.object({ type: z.literal("date"), date: dateSchema }).strict(),
   z.object({ type: z.literal("today") }).strict(),
   z
@@ -102,6 +103,8 @@ export function reduceSourceGanttView(
   defaults: Partial<SourceGanttViewState> = {},
 ): SourceGanttViewState {
   switch (command.type) {
+    case "show":
+      return state;
     case "date":
       return { ...state, anchor: command.date };
     case "today":

@@ -183,6 +183,13 @@ export async function updateRegister(request: Request, projectId: string) {
     changes = [
       `Project setup: levels ${input.config.levels.join(", ") || "none"}; priorities ${input.config.priorities.join(", ")}`,
     ];
+    if (
+      JSON.stringify(state.config.viewDefaults) !==
+      JSON.stringify(input.config.viewDefaults)
+    )
+      changes.push(
+        `Shared view defaults: ${JSON.stringify(input.config.viewDefaults ?? "standard")}`,
+      );
     next.config = {
       ...input.config,
       documentRequirements:

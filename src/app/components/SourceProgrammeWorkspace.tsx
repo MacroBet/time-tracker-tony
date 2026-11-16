@@ -9,6 +9,9 @@ import {
   CalendarDays,
   Columns3,
   SlidersHorizontal,
+  Plus,
+  CalendarClock,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -688,13 +691,15 @@ function SourceProgrammeView({
   }, [linkedActivity, openDetail]);
   return (
     <div className="space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-2">
+      <header className="flex items-center justify-between gap-2 sm:flex-wrap">
         <div
-          className="flex flex-wrap items-center gap-2"
+          className="flex min-w-0 flex-1 items-center gap-1 sm:flex-wrap sm:gap-2"
           aria-label="Schedule projection"
         >
           <Button
             variant={projection === "working" ? "default" : "outline"}
+            aria-label="Working schedule"
+            className="px-3 sm:px-4"
             aria-pressed={projection === "working"}
             onClick={() => {
               if (projection === "working") return;
@@ -703,10 +708,13 @@ function SourceProgrammeView({
               setData(null);
             }}
           >
-            Working schedule
+            <span className="sm:hidden">Working</span>
+            <span className="hidden sm:inline">Working schedule</span>
           </Button>
           <Button
             variant={projection === "source" ? "default" : "outline"}
+            aria-label="Original source"
+            className="px-3 sm:px-4"
             aria-pressed={projection === "source"}
             onClick={() => {
               if (projection === "source") return;
@@ -716,10 +724,11 @@ function SourceProgrammeView({
               setEditor(null);
             }}
           >
-            Original source
+            <span className="sm:hidden">Source</span>
+            <span className="hidden sm:inline">Original source</span>
           </Button>
           <span
-            className="text-xs tabular-nums text-slate-600"
+            className="hidden text-xs tabular-nums text-slate-600 sm:inline"
             aria-live="polite"
           >
             {loading
@@ -728,6 +737,11 @@ function SourceProgrammeView({
           </span>
           <InfoPopover label="About this source schedule">
             <p className="font-medium text-slate-950">{summary.projectName}</p>
+            <p>
+              {loading
+                ? "Loading…"
+                : `${number(data?.total ?? 0)} matching activities`}
+            </p>
             <p>
               {projection === "working"
                 ? `Working revision ${data?.workingRevision ?? project?.commissioning?.workingSchedule?.revision ?? 0}. Working dates and links; original source retained.`
@@ -748,8 +762,14 @@ function SourceProgrammeView({
           </InfoPopover>
         </div>
         {projection === "working" && hasModule(app.currentUser, "tasks") && (
-          <Button variant="outline" onClick={() => setEditor({})}>
-            Create an asset activity
+          <Button
+            variant="outline"
+            aria-label="Create an asset activity"
+            className="size-11 px-2 sm:w-auto sm:px-4"
+            onClick={() => setEditor({})}
+          >
+            <Plus className="size-4 sm:hidden" aria-hidden="true" />
+            <span className="hidden sm:inline">Create an asset activity</span>
           </Button>
         )}
       </header>
@@ -769,7 +789,7 @@ function SourceProgrammeView({
         />
       )}
       <section
-        className="flex flex-wrap items-center gap-2"
+        className="flex min-w-0 items-center gap-2 sm:flex-wrap"
         aria-label="Filter schedule"
       >
         <label htmlFor={`${id}-query`} className="sr-only">
@@ -777,7 +797,7 @@ function SourceProgrammeView({
         </label>
         <Input
           id={`${id}-query`}
-          className="min-h-11 min-w-40 flex-1 sm:max-w-sm"
+          className="min-h-11 min-w-0 flex-1 sm:min-w-40 sm:max-w-sm"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -789,10 +809,13 @@ function SourceProgrammeView({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
+              className="size-11 px-2 sm:w-auto sm:px-3"
               aria-label={`Schedule filters${activeFilters ? `, ${activeFilters} active` : ""}`}
             >
               <SlidersHorizontal className="size-4" aria-hidden="true" />
-              Filters{activeFilters > 0 ? ` · ${activeFilters}` : ""}
+              <span className="hidden sm:inline">
+                Filters{activeFilters > 0 ? ` · ${activeFilters}` : ""}
+              </span>
             </Button>
           </PopoverTrigger>
           <PopoverContent
@@ -884,6 +907,7 @@ function SourceProgrammeView({
         </Popover>
         <Button
           variant={critical === "yes" ? "default" : "outline"}
+          className="hidden sm:inline-flex"
           aria-pressed={critical === "yes"}
           onClick={() =>
             applyViewCommand({
@@ -901,6 +925,8 @@ function SourceProgrammeView({
         {(query || activeFilters > 0) && (
           <Button
             variant="ghost"
+            aria-label="Clear filters"
+            className="size-11 px-2 sm:w-auto sm:px-4"
             onClick={() => {
               setQuery("");
               setWbs("");
@@ -910,7 +936,8 @@ function SourceProgrammeView({
               setPage(0);
             }}
           >
-            Clear filters
+            <X className="size-4 sm:hidden" aria-hidden="true" />
+            <span className="hidden sm:inline">Clear filters</span>
           </Button>
         )}
       </section>
@@ -974,207 +1001,232 @@ function SourceProgrammeView({
             if (value) applyViewCommand({ type: "date", date: value });
           }}
           controls={
-            <div className="flex w-full flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  className="min-h-11 min-w-11 px-2"
-                  onClick={() =>
-                    applyViewCommand({ type: "pan", direction: -1 })
-                  }
-                  aria-label="Earlier timeline"
-                >
-                  <ArrowLeft className="size-4" aria-hidden="true" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="min-h-11 min-w-11 px-2"
-                  onClick={() =>
-                    applyViewCommand({ type: "pan", direction: 1 })
-                  }
-                  aria-label="Later timeline"
-                >
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => applyViewCommand({ type: "today" })}
-                >
-                  Today
-                </Button>
-              </div>
-              <label htmlFor={`${id}-anchor`} className="sr-only">
-                Gantt go to date
-              </label>
-              <Input
-                id={`${id}-anchor`}
-                aria-label="Gantt go to date"
-                className="min-h-11 w-[148px]"
-                type="date"
-                value={viewportDate}
-                onChange={(event) => {
-                  if (event.target.value)
-                    applyViewCommand({
-                      type: "date",
-                      date: event.target.value,
-                    });
-                }}
-              />
-              <Popover>
-                <PopoverTrigger asChild>
+            <div className="grid w-full min-w-0 gap-2 sm:flex sm:flex-wrap sm:items-center">
+              <div className="flex min-w-0 items-center gap-2 sm:contents">
+                <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
-                    aria-label={`Calendar view: ${scaleLabel}${horizon ? ` · ${horizon / 7}WK` : ""}`}
+                    className="min-h-11 min-w-11 px-2"
+                    onClick={() =>
+                      applyViewCommand({ type: "pan", direction: -1 })
+                    }
+                    aria-label="Earlier timeline"
                   >
-                    <CalendarDays className="size-4" aria-hidden="true" />
-                    {scaleLabel}
-                    {horizon ? ` · ${horizon / 7}WK` : ""}
+                    <ArrowLeft className="size-4" aria-hidden="true" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  collisionPadding={16}
-                  className="w-80 max-w-[calc(100vw-2rem)] space-y-3 bg-white"
-                >
-                  <p className="text-sm font-medium">Calendar view</p>
-                  <div
-                    className="flex gap-1"
-                    role="group"
-                    aria-label="Gantt scale"
+                  <Button
+                    variant="outline"
+                    className="min-h-11 min-w-11 px-2"
+                    onClick={() =>
+                      applyViewCommand({ type: "pan", direction: 1 })
+                    }
+                    aria-label="Later timeline"
                   >
-                    {(["day", "week", "month"] as const).map((value) => (
-                      <Button
-                        key={value}
-                        variant={scale === value ? "default" : "outline"}
-                        aria-pressed={scale === value}
-                        onClick={() =>
-                          applyViewCommand({ type: "scale", scale: value })
-                        }
-                      >
-                        {{ day: "DAY", week: "WK", month: "MTH" }[value]}
-                      </Button>
-                    ))}
-                  </div>
-                  <p className="text-xs font-medium text-slate-600">
-                    Date window
-                  </p>
-                  <div
-                    className="flex flex-wrap gap-1"
-                    role="group"
-                    aria-label="Gantt date window"
-                  >
-                    {([null, 14, 28, 42] as const).map((value) => (
-                      <Button
-                        key={value ?? "auto"}
-                        className="px-3"
-                        variant={horizon === value ? "default" : "outline"}
-                        aria-pressed={horizon === value}
-                        onClick={() =>
-                          applyViewCommand({ type: "horizon", horizon: value })
-                        }
-                      >
-                        {value ? `${value / 7}WK` : "Auto"}
-                      </Button>
-                    ))}
-                  </div>
-                  <p className="text-xs leading-5 text-slate-600">
-                    Scale changes the ruler. The date window changes its span.
-                    Activities and report lookahead filters stay unchanged.
-                  </p>
-                </PopoverContent>
-              </Popover>
-              <label
-                htmlFor={`${id}-duration`}
-                className="flex items-center gap-2 text-sm"
-              >
-                Duration
-                <select
-                  id={`${id}-duration`}
-                  aria-label="Duration display"
-                  value={durationMode}
-                  onChange={(event) =>
-                    applyViewCommand({
-                      type: "duration",
-                      mode: event.target.value as SourceDurationMode,
-                    })
-                  }
-                  className="block min-h-11 w-24 rounded-md border border-slate-300 bg-white px-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-                >
-                  <option value="days">Days</option>
-                  <option value="hours">Hours</option>
-                  <option value="hidden">Hidden</option>
-                </select>
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">
-                    <Columns3 className="size-4" aria-hidden="true" />
-                    Columns
+                    <ArrowRight className="size-4" aria-hidden="true" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="start"
-                  collisionPadding={16}
-                  className="w-72 max-w-[calc(100vw-2rem)] space-y-2 bg-white"
-                >
-                  <p className="text-sm font-medium">Visible columns</p>
-                  <p className="text-xs text-slate-600">
-                    Activity name and ID stay visible.
-                  </p>
-                  {sourceGanttColumns.map((column) => (
-                    <label
-                      key={column}
-                      className="flex min-h-11 items-center gap-3 text-sm"
+                  <Button
+                    variant="outline"
+                    className="px-3 sm:px-4"
+                    onClick={() => applyViewCommand({ type: "today" })}
+                  >
+                    Today
+                  </Button>
+                </div>
+                <label htmlFor={`${id}-anchor`} className="sr-only">
+                  Gantt go to date
+                </label>
+                <Input
+                  id={`${id}-anchor`}
+                  aria-label="Gantt go to date"
+                  className="min-h-11 min-w-0 flex-1 sm:w-[148px] sm:flex-none"
+                  type="date"
+                  value={viewportDate}
+                  onChange={(event) => {
+                    if (event.target.value)
+                      applyViewCommand({
+                        type: "date",
+                        date: event.target.value,
+                      });
+                  }}
+                />
+              </div>
+              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_80px_44px_44px] items-center gap-2 sm:contents">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="min-w-0 gap-1 px-2 sm:gap-2 sm:px-3"
+                      aria-label={`Calendar view: ${scaleLabel}${horizon ? ` · ${horizon / 7}WK` : ""}`}
                     >
+                      <CalendarDays
+                        className="hidden size-4 sm:block"
+                        aria-hidden="true"
+                      />
+                      <span className="truncate">
+                        {scaleLabel}
+                        {horizon ? ` · ${horizon / 7}WK` : ""}
+                      </span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    collisionPadding={16}
+                    className="w-80 max-w-[calc(100vw-2rem)] space-y-3 bg-white"
+                  >
+                    <p className="text-sm font-medium">Calendar view</p>
+                    <div
+                      className="flex gap-1"
+                      role="group"
+                      aria-label="Gantt scale"
+                    >
+                      {(["day", "week", "month"] as const).map((value) => (
+                        <Button
+                          key={value}
+                          variant={scale === value ? "default" : "outline"}
+                          aria-pressed={scale === value}
+                          onClick={() =>
+                            applyViewCommand({ type: "scale", scale: value })
+                          }
+                        >
+                          {{ day: "DAY", week: "WK", month: "MTH" }[value]}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs font-medium text-slate-600">
+                      Date window
+                    </p>
+                    <div
+                      className="flex flex-wrap gap-1"
+                      role="group"
+                      aria-label="Gantt date window"
+                    >
+                      {([null, 14, 28, 42] as const).map((value) => (
+                        <Button
+                          key={value ?? "auto"}
+                          className="px-3"
+                          variant={horizon === value ? "default" : "outline"}
+                          aria-pressed={horizon === value}
+                          onClick={() =>
+                            applyViewCommand({
+                              type: "horizon",
+                              horizon: value,
+                            })
+                          }
+                        >
+                          {value ? `${value / 7}WK` : "Auto"}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs leading-5 text-slate-600">
+                      Scale changes the ruler. The date window changes its span.
+                      Activities and report lookahead filters stay unchanged.
+                    </p>
+                  </PopoverContent>
+                </Popover>
+                <label
+                  htmlFor={`${id}-duration`}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <span className="sr-only sm:not-sr-only">Duration</span>
+                  <select
+                    id={`${id}-duration`}
+                    aria-label="Duration display"
+                    value={durationMode}
+                    onChange={(event) =>
+                      applyViewCommand({
+                        type: "duration",
+                        mode: event.target.value as SourceDurationMode,
+                      })
+                    }
+                    className="block min-h-11 w-20 rounded-md sm:w-24 border border-slate-300 bg-white px-2 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
+                  >
+                    <option value="days">Days</option>
+                    <option value="hours">Hours</option>
+                    <option value="hidden">Hidden</option>
+                  </select>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      aria-label="Columns"
+                      className="size-11 px-2 sm:w-auto sm:px-3"
+                    >
+                      <Columns3 className="size-4" aria-hidden="true" />
+                      <span className="hidden sm:inline">Columns</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    collisionPadding={16}
+                    className="w-72 max-w-[calc(100vw-2rem)] space-y-2 bg-white"
+                  >
+                    <p className="text-sm font-medium">Visible columns</p>
+                    <p className="text-xs text-slate-600">
+                      Activity name and ID stay visible.
+                    </p>
+                    {sourceGanttColumns.map((column) => (
+                      <label
+                        key={column}
+                        className="flex min-h-11 items-center gap-3 text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={columns.includes(column)}
+                          onChange={(event) =>
+                            applyViewCommand({
+                              type: "column",
+                              column,
+                              visible: event.target.checked,
+                            })
+                          }
+                        />
+                        {columnLabel[column]}
+                      </label>
+                    ))}
+                    <label className="flex min-h-11 items-center gap-3 border-t text-sm">
                       <input
                         type="checkbox"
-                        checked={columns.includes(column)}
+                        checked={showLinks}
                         onChange={(event) =>
                           applyViewCommand({
-                            type: "column",
-                            column,
+                            type: "links",
                             visible: event.target.checked,
                           })
                         }
                       />
-                      {columnLabel[column]}
+                      Dependency links
                     </label>
-                  ))}
-                  <label className="flex min-h-11 items-center gap-3 border-t text-sm">
-                    <input
-                      type="checkbox"
-                      checked={showLinks}
-                      onChange={(event) =>
-                        applyViewCommand({
-                          type: "links",
-                          visible: event.target.checked,
-                        })
-                      }
-                    />
-                    Dependency links
-                  </label>
-                  <p className="text-xs text-slate-600">
-                    Changes apply to this view. Reset restores the project
-                    defaults and Today.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => applyViewCommand({ type: "reset" })}
-                  >
-                    Reset view
-                  </Button>
-                </PopoverContent>
-              </Popover>
-              <Button
-                variant="ghost"
-                disabled={!visible.some((row) => row.start || row.finish)}
-                onClick={() => {
-                  const date = sourcePageAnchor(visible);
-                  if (date) applyViewCommand({ type: "date", date });
-                }}
-              >
-                Activity dates
-              </Button>
+                    <p className="text-xs text-slate-600">
+                      Changes apply to this view. Reset restores the project
+                      defaults and Today.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => applyViewCommand({ type: "reset" })}
+                    >
+                      Reset view
+                    </Button>
+                  </PopoverContent>
+                </Popover>
+                <Button
+                  variant="ghost"
+                  aria-label="Activity dates"
+                  title="Show these activity dates"
+                  className="size-11 px-2 sm:w-auto sm:px-4"
+                  disabled={!visible.some((row) => row.start || row.finish)}
+                  onClick={() => {
+                    const date = sourcePageAnchor(visible);
+                    if (date) applyViewCommand({ type: "date", date });
+                  }}
+                >
+                  <CalendarClock
+                    className="size-4 sm:hidden"
+                    aria-hidden="true"
+                  />
+                  <span className="hidden sm:inline">Activity dates</span>
+                </Button>
+              </div>
             </div>
           }
         />

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { projectViewDefaultsSchema } from "./project-view-settings";
 import type { InventoryBatch } from "./inventory-batch";
 import type { WorkingSchedule } from "./schedule-working";
 import type { ProjectLesson } from "./project-library";
@@ -185,6 +186,7 @@ export function documentRequirementChanges(
 export const configSchema = z
   .object({
     levels,
+    viewDefaults: projectViewDefaultsSchema.optional(),
     projectType: z.string().trim().max(100).optional(),
     location: z.string().trim().max(250).optional(),
     capacityMw: z.number().finite().positive().max(1000000).optional(),

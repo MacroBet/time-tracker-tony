@@ -78,40 +78,26 @@ export function TeamPanel() {
       ({ work }) =>
         (workState === "all" && workKind === "all") || work.length > 0,
     );
-  async function submit(
-    event: React.FormEvent<HTMLFormElement>,
-    kind: "account" | "project",
-  ) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
     setBusy(true);
     try {
-      const body =
-        kind === "account"
-          ? {
-              name: data.get("name"),
-              email: data.get("email"),
-              password: data.get("password"),
-              role: data.get("role"),
-              companyId: data.get("companyId"),
-              projectIds: data.getAll("projectIds"),
-            }
-          : {
-              name: data.get("name"),
-              location: data.get("location"),
-              companyId: data.get("companyId"),
-            };
-      await mutate(kind === "account" ? "/api/team" : "/api/projects", {
+      const body = {
+        name: data.get("name"),
+        email: data.get("email"),
+        password: data.get("password"),
+        role: data.get("role"),
+        companyId: data.get("companyId"),
+        projectIds: data.getAll("projectIds"),
+      };
+      await mutate("/api/team", {
         method: "POST",
         body: JSON.stringify(body),
       });
       form.reset();
-      toast.success(
-        kind === "account"
-          ? "Account created with project access"
-          : "Project created",
-      );
+      toast.success("Account created with project access");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed");
     } finally {
@@ -385,10 +371,7 @@ export function TeamPanel() {
             <summary className="min-h-11 cursor-pointer content-center rounded font-semibold focus-visible:outline-2 focus-visible:outline-blue-700">
               Create team account
             </summary>
-            <form
-              onSubmit={(e) => submit(e, "account")}
-              className="mt-4 space-y-3"
-            >
+            <form onSubmit={submit} className="mt-4 space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="team-account-name">Full name</Label>
                 <Input
@@ -475,58 +458,19 @@ export function TeamPanel() {
               <Button disabled={busy || !isOnline}>Create account</Button>
             </form>
           </details>
-          <details className="rounded-xl border bg-white p-5">
-            <summary className="min-h-11 cursor-pointer content-center rounded font-semibold focus-visible:outline-2 focus-visible:outline-blue-700">
-              Create project
-            </summary>
-            <form
-              onSubmit={(e) => submit(e, "project")}
-              className="mt-4 space-y-3"
+          <div className="rounded-xl border bg-white p-5 space-y-3">
+            <h3 className="font-semibold">Projects</h3>
+            <p className="text-sm text-slate-600">
+              Create projects and manage their FieldTrack names in Admin. Return
+              here to manage team access.
+            </p>
+            <Link
+              href="/admin#create-project"
+              className="inline-flex min-h-11 items-center text-sm text-blue-700 underline underline-offset-4"
             >
-              <div className="space-y-2">
-                <Label htmlFor="team-project-name">Project name</Label>
-                <Input
-                  id="team-project-name"
-                  name="name"
-                  aria-label="Project name"
-                  placeholder="Project name"
-                  required
-                  minLength={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="team-project-location">Location</Label>
-                <Input
-                  id="team-project-location"
-                  name="location"
-                  aria-label="Project location"
-                  placeholder="Location"
-                  required
-                  minLength={2}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="team-project-company">Company</Label>
-                <select
-                  id="team-project-company"
-                  name="companyId"
-                  aria-label="Project company"
-                  className="field-select"
-                >
-                  {companies.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <p className="text-xs text-slate-600">
-                You will administer the new project. Create team accounts with
-                access to it to start assigning work.
-              </p>
-              <Button disabled={busy || !isOnline}>Create project</Button>
-            </form>
-          </details>
+              Open project setup
+            </Link>
+          </div>
         </div>
       )}
     </div>

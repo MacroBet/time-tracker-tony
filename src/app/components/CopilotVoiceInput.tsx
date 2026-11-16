@@ -5,6 +5,11 @@ import { Mic, Square } from "lucide-react";
 import { Button } from "./ui/button";
 import { COPILOT_AUDIO, encodeCopilotWav } from "@/lib/copilot-audio";
 import { InfoPopover } from "./InfoPopover";
+import {
+  createLocalDictation,
+  checkLocalDictationAvailability,
+  type LocalRecognitionConstructor,
+} from "@/lib/live-dictation";
 
 type Recording = {
   context: AudioContext;
@@ -21,23 +26,52 @@ export function CopilotVoiceInput({
   projectId,
   disabled = false,
   onTranscript,
+  onPartial,
+  onCaptureChange,
+  providerReady = true,
+  autoStart = false,
+  buttonLabel = "Use microphone",
+  resetKey = "dictation",
 }: {
   projectId: string;
   disabled?: boolean;
   onTranscript: (text: string) => void;
+  onPartial?: (text: string) => void;
+  onCaptureChange?: (active: boolean) => void;
+  providerReady?: boolean;
+  /** Set only after the user chooses the voice entry; never at login. */
+  autoStart?: boolean;
+  buttonLabel?: string;
+  resetKey?: string;
 }) {
   const [state, setState] = useState<
-    "idle" | "permission" | "recording" | "transcribing"
+    | "idle"
+    | "checking"
+    | "permission"
+    | "recording"
+    | "finalizing"
+    | "transcribing"
   >("idle");
   const [seconds, setSeconds] = useState(0),
     [error, setError] = useState("");
   const errorId = useId();
+  const [mode, setMode] = useState<"live" | "file">("live");
+  const [availability, setAvailability] = useState("");
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const probeRequest = useRef<AbortController | null>(null);
+  const local = useRef<ReturnType<typeof createLocalDictation> | null>(null);
+  const callbacks = useRef({ onPartial, onCaptureChange, onTranscript });
+  useEffect(() => {
+    callbacks.current = { onPartial, onCaptureChange, onTranscript };
+  }, [onPartial, onCaptureChange, onTranscript]);
   const recording = useRef<Recording | null>(null);
   const request = useRef<AbortController | null>(null);
   const generation = useRef(0),
     lock = useRef(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const finishRef = useRef<() => void>(() => {});
+  const startRef = useRef<() => void>(() => {});
+  const autoStarted = useRef(false);
 
   function release() {
     if (timer.current) {
@@ -60,10 +94,16 @@ export function CopilotVoiceInput({
   useEffect(() => {
     const cancel = () => {
       generation.current++;
+      probeRequest.current?.abort();
+      local.current?.cancel();
+      local.current = null;
+      callbacks.current.onPartial?.("");
+      callbacks.current.onCaptureChange?.(false);
       lock.current = false;
       request.current?.abort();
       release();
       setState("idle");
+      setCheckingAvailability(false);
       setSeconds(0);
     };
     if (disabled) cancel();
@@ -75,14 +115,23 @@ export function CopilotVoiceInput({
       // This ref is an operation generation counter, not a rendered node.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       generation.current++;
+      probeRequest.current?.abort();
+      local.current?.cancel();
+      local.current = null;
+      callbacks.current.onPartial?.("");
+      callbacks.current.onCaptureChange?.(false);
       lock.current = false;
       request.current?.abort();
       release();
       document.removeEventListener("visibilitychange", hidden);
     };
-  }, [projectId, disabled]);
+  }, [projectId, disabled, resetKey]);
 
   async function finish() {
+    if (mode === "live") {
+      local.current?.stop();
+      return;
+    }
     const active = release();
     if (!active) return;
     const token = generation.current;
@@ -118,8 +167,11 @@ export function CopilotVoiceInput({
         result.text.length > COPILOT_AUDIO.maxText
       )
         throw new Error("No usable transcript returned.");
-      if (generation.current === token && !controller.signal.aborted)
-        onTranscript(result.text);
+      if (generation.current === token && !controller.signal.aborted) {
+        callbacks.current.onCaptureChange?.(false);
+        callbacks.current.onPartial?.("");
+        callbacks.current.onTranscript(result.text);
+      }
     } catch (problem) {
       if (generation.current === token)
         setError(
@@ -133,16 +185,112 @@ export function CopilotVoiceInput({
       clearTimeout(timeout);
       if (generation.current === token) {
         lock.current = false;
+        callbacks.current.onCaptureChange?.(false);
         setState("idle");
       }
     }
   }
   useEffect(() => {
     finishRef.current = () => void finish();
+    startRef.current = () => void start();
   });
+  useEffect(() => {
+    if (!autoStart || disabled || autoStarted.current) return;
+    const timeout = setTimeout(() => {
+      autoStarted.current = true;
+      startRef.current();
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [autoStart, disabled]);
 
   async function start() {
     if (disabled || lock.current) return;
+    if (!window.isSecureContext) {
+      setError(
+        "Live dictation needs a secure browser page. Type your question instead.",
+      );
+      return;
+    }
+    lock.current = true;
+    const token = ++generation.current;
+    setMode("live");
+    setError("");
+    setSeconds(0);
+    const surface = window as typeof window & {
+      SpeechRecognition?: LocalRecognitionConstructor;
+      webkitSpeechRecognition?: LocalRecognitionConstructor;
+    };
+    const controller = createLocalDictation(
+      surface.SpeechRecognition ?? surface.webkitSpeechRecognition,
+      {
+        onState: (value) => {
+          if (token !== generation.current) return;
+          setState(value);
+          if (value === "idle") {
+            lock.current = false;
+            if (timer.current) clearInterval(timer.current);
+            timer.current = null;
+          } else if (value === "recording") {
+            const began = Date.now();
+            timer.current = setInterval(
+              () =>
+                setSeconds(
+                  Math.min(30, Math.floor((Date.now() - began) / 1000)),
+                ),
+              250,
+            );
+          }
+        },
+        onPartial: (text) => {
+          if (token === generation.current) callbacks.current.onPartial?.(text);
+        },
+        onCaptureChange: (active) => {
+          if (token === generation.current)
+            callbacks.current.onCaptureChange?.(active);
+        },
+        onTranscript: (text) => {
+          if (token === generation.current)
+            callbacks.current.onTranscript(text);
+        },
+        onError: (message) => {
+          if (token === generation.current) setError(message);
+        },
+      },
+    );
+    local.current = controller;
+    await controller.start();
+  }
+
+  async function checkAvailability() {
+    if (disabled || lock.current) return;
+    lock.current = true;
+    const token = generation.current;
+    const controller = new AbortController();
+    probeRequest.current = controller;
+    setCheckingAvailability(true);
+    setAvailability("");
+    const surface = window as typeof window & {
+      SpeechRecognition?: LocalRecognitionConstructor;
+      webkitSpeechRecognition?: LocalRecognitionConstructor;
+    };
+    const status = await checkLocalDictationAvailability(
+      surface.SpeechRecognition ?? surface.webkitSpeechRecognition,
+      { signal: controller.signal },
+    );
+    if (token !== generation.current || controller.signal.aborted) return;
+    lock.current = false;
+    setCheckingAvailability(false);
+    setAvailability(
+      status === "available"
+        ? "English (UK) live dictation is ready on this device. This check did not start the microphone."
+        : status === "downloadable" || status === "downloading"
+          ? "English (UK) live dictation is not ready for this page. No language pack was downloaded or microphone started."
+          : "On-device live dictation is unavailable here. This check did not start the microphone. You can still type.",
+    );
+  }
+
+  async function startFile() {
+    if (disabled || lock.current || !providerReady) return;
     if (
       !window.isSecureContext ||
       !navigator.mediaDevices?.getUserMedia ||
@@ -153,14 +301,19 @@ export function CopilotVoiceInput({
       );
       return;
     }
+    local.current?.cancel();
+    local.current = null;
     lock.current = true;
     const token = ++generation.current;
+    setMode("file");
+    callbacks.current.onCaptureChange?.(true);
+    callbacks.current.onPartial?.("");
     setError("");
     setSeconds(0);
     setState("permission");
     let stream: MediaStream | undefined, context: AudioContext | undefined;
     try {
-      // Permission is requested only by this explicit button click.
+      // This follows an explicit microphone entry or recording-button choice.
       stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true },
         video: false,
@@ -222,6 +375,7 @@ export function CopilotVoiceInput({
       release();
       if (generation.current === token) {
         lock.current = false;
+        callbacks.current.onCaptureChange?.(false);
         setState("idle");
         setError(
           "Microphone access is unavailable. Check your browser permission or type your question.",
@@ -233,7 +387,12 @@ export function CopilotVoiceInput({
   return (
     <div
       className="min-w-0 space-y-2"
-      aria-busy={state === "permission" || state === "transcribing"}
+      aria-busy={
+        state === "checking" ||
+        state === "permission" ||
+        state === "finalizing" ||
+        state === "transcribing"
+      }
     >
       <div className="flex flex-wrap items-center gap-2">
         <Button
@@ -241,15 +400,22 @@ export function CopilotVoiceInput({
           variant={state === "recording" ? "destructive" : "outline"}
           className="min-h-11 gap-2"
           disabled={
-            disabled || state === "permission" || state === "transcribing"
+            disabled ||
+            checkingAvailability ||
+            state === "checking" ||
+            state === "permission" ||
+            state === "finalizing" ||
+            state === "transcribing"
           }
           onClick={
             state === "recording" ? () => void finish() : () => void start()
           }
           aria-label={
             state === "recording"
-              ? "Stop recording and transcribe"
-              : "Record a voice query"
+              ? mode === "live"
+                ? "Stop on-device dictation and review"
+                : "Stop recording and transcribe"
+              : "Start on-device live dictation"
           }
           aria-describedby={error ? errorId : undefined}
         >
@@ -260,26 +426,83 @@ export function CopilotVoiceInput({
           )}
           {state === "recording"
             ? `Stop · ${seconds}s`
-            : state === "permission"
-              ? "Allow microphone…"
-              : state === "transcribing"
-                ? "Transcribing…"
-                : "Use microphone"}
+            : state === "checking"
+              ? "Checking on-device dictation…"
+              : state === "finalizing"
+                ? "Finishing transcript…"
+                : state === "permission"
+                  ? "Allow microphone…"
+                  : state === "transcribing"
+                    ? "Transcribing…"
+                    : buttonLabel}
         </Button>
+        {state !== "idle" && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              generation.current++;
+              probeRequest.current?.abort();
+              local.current?.cancel();
+              local.current = null;
+              callbacks.current.onPartial?.("");
+              callbacks.current.onCaptureChange?.(false);
+              lock.current = false;
+              request.current?.abort();
+              release();
+              setState("idle");
+              setSeconds(0);
+              setError("");
+            }}
+          >
+            Cancel voice
+          </Button>
+        )}
+        {state === "idle" && providerReady && (
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-11 whitespace-normal"
+            disabled={disabled}
+            onClick={() => void startFile()}
+          >
+            Record audio after stop
+          </Button>
+        )}
         {state === "idle" ? (
           <InfoPopover label="About voice questions">
             <p>
-              Up to 30 seconds. Review the text before sending. Recording starts
-              only when you choose Use microphone.
+              On-device live dictation shows English (UK) text as you speak when
+              this browser has a ready language pack. No pack is downloaded and
+              no cloud fallback starts automatically. Review the final text
+              before sending.
+              {providerReady &&
+                " Audio after stop is a separate choice: a recording of up to 30 seconds is sent to the configured transcription service after you stop."}
             </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="min-h-11 whitespace-normal"
+              disabled={disabled || checkingAvailability}
+              onClick={() => void checkAvailability()}
+            >
+              {checkingAvailability
+                ? "Checking local availability…"
+                : "Check live availability"}
+            </Button>
+            {availability && <p role="status">{availability}</p>}
           </InfoPopover>
         ) : (
           <span className="text-xs text-slate-600" role="status">
             {state === "recording"
-              ? "Recording · stops after 30 seconds"
-              : state === "transcribing"
-                ? "Microphone off. Preparing text for your review."
-                : "Up to 30 seconds. Review the text before sending."}
+              ? `${mode === "live" ? "On-device live dictation" : "Recording for transcription after stop"} · stops after 30 seconds`
+              : state === "checking"
+                ? "Checking local English (UK) availability. No download starts."
+                : state === "finalizing"
+                  ? "Microphone stopping. Waiting for the final transcript."
+                  : state === "transcribing"
+                    ? "Microphone off. Preparing text for your review."
+                    : "Up to 30 seconds. Review the text before sending."}
           </span>
         )}
       </div>

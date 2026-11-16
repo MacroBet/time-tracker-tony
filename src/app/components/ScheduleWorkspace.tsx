@@ -21,8 +21,11 @@ import { ProgrammeReference } from "./ProgrammeReference";
 import { OverdueList } from "./OverdueList";
 import { InfoPopover } from "./InfoPopover";
 import { useLinkedProject } from "./useLinkedProject";
+import { useProjectView } from "./ProjectViewSettings";
 import { WorkingScheduleEditor } from "./WorkingScheduleEditor";
 import { GanttProgress } from "./GanttProgress";
+import { matchesSavedScheduleQuery } from "@/lib/copilot-reads";
+import { managedWorkingSourceIndex } from "@/lib/schedule-working";
 import { activityStepProgress } from "@/lib/project-reports";
 import {
   SourceProgrammeImport,
@@ -82,6 +85,7 @@ export function ScheduleWorkspace({
   const params = useSearchParams();
   const linkedProject = useLinkedProject();
   const project = linkedProject.project;
+  const viewPreference = useProjectView(project);
   const allowed =
     app.currentUser.role !== "worker" &&
     hasModule(app.currentUser, "commissioning");
@@ -139,13 +143,14 @@ export function ScheduleWorkspace({
       ) : project ? (
         <div
           className="space-y-6"
-          key={`${project.id}-${params.get("activityId") ?? ""}`}
+          key={`${project.id}-${params.get("activityId") ?? ""}-${params.get("q") ?? ""}`}
         >
           {commissioning(project).sourceProgrammeSummary ? (
             <SourceProgrammeWorkspace
-              key={commissioning(project).sourceProgrammeSummary!.sha256}
+              key={`${commissioning(project).sourceProgrammeSummary!.sha256}:${viewPreference.value.durationMode}`}
               projectId={project.id}
               summary={commissioning(project).sourceProgrammeSummary!}
+              defaultDurationMode={viewPreference.value.durationMode}
             />
           ) : (
             <Schedule project={project} />
@@ -179,7 +184,9 @@ function Schedule({ project }: { project: Project }) {
   const [workingOpen, setWorkingOpen] = useState(false);
   const state = commissioning(project);
   const scheduleParams = useSearchParams();
-  const [query, setQuery] = useState(scheduleParams.get("activityId") ?? "");
+  const [query, setQuery] = useState(
+    scheduleParams.get("activityId") ?? scheduleParams.get("q") ?? "",
+  );
   const [mobileTimeline, setMobileTimeline] = useState(false);
   const [page, setPage] = useState(0);
   const [assetId, setAssetId] = useState("");
@@ -196,12 +203,24 @@ function Schedule({ project }: { project: Project }) {
   const ids = selectedAsset
     ? assetActivityIds(selectedAsset, projectTasks)
     : null;
+  const managedIndex = managedWorkingSourceIndex(
+    state.schedule,
+    state.workingSchedule,
+  );
+  const managedByActivity = new Map(
+    managedIndex.activities.map((activity) => [activity.activityId, activity]),
+  );
   const rows = state.schedule.filter(
     (r) =>
       (!ids || ids.has(r.activityId)) &&
-      `${r.activityId} ${r.name}`
-        .toLowerCase()
-        .includes(query.trim().toLowerCase()),
+      matchesSavedScheduleQuery(
+        managedByActivity.get(r.activityId) ?? {
+          internalId: r.activityId,
+          activityId: r.activityId,
+          name: r.name,
+        },
+        query,
+      ),
   );
   const currentPage = Math.min(
     page,

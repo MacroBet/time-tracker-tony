@@ -110,23 +110,21 @@ export function copilotExtensions({
             vendors: result.facets.vendors.slice(0, 15),
             disciplines: result.facets.disciplines.slice(0, 15),
           },
-          rows: result.rows
-            .slice(0, 10)
-            .map((row) =>
-              row.kind === "vendors"
-                ? { ...row, sources: row.sources.slice(0, 5) }
-                : row.kind === "tagging"
-                  ? {
-                      ...row,
-                      levels: row.levels.map((level) => ({
-                        ...level,
-                        reviews: level.reviews.slice(0, 3),
-                      })),
-                    }
-                  : row.kind === "lookahead"
-                    ? { ...row, assets: row.assets.slice(0, 5) }
-                    : { ...row, notes: row.notes.slice(0, 400) },
-            ),
+          rows: result.rows.slice(0, 10).map((row) =>
+            row.kind === "vendors"
+              ? { ...row, sources: row.sources.slice(0, 5) }
+              : row.kind === "tagging"
+                ? {
+                    ...row,
+                    levels: row.levels.map((level) => ({
+                      ...level,
+                      reviews: level.reviews.slice(0, 3),
+                    })),
+                  }
+                : row.kind === "lookahead"
+                  ? { ...row, assets: row.assets.slice(0, 5) }
+                  : { ...row, notes: row.notes.slice(0, 400) },
+          ),
           shownToModel: Math.min(result.rows.length, 10),
           uiShows: result.rows.length,
           modelPreviewTruncated: false,

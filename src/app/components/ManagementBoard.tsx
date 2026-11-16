@@ -1,21 +1,22 @@
 "use client";
+import { dueDateFor, commissioning, taskAsset } from "@/lib/commissioning";
+import { useRef, useState } from "react";
 import {
-  dueDateFor,
-  commissioning,
-  taskAsset,
-  tagReviewLabels,
-} from "@/lib/commissioning";
-import { useState } from "react";
+  taskManagedDates,
+  taskStepSummary,
+  taskTableColumns,
+  toggleTaskColumn,
+  type TaskTableColumn,
+} from "@/lib/task-board";
+import { TaskQuickDetail, TaskStepIndicator } from "./TaskQuickDetail";
 import Link from "next/link";
 import {
-  ArrowUpRight,
   ChevronLeft,
   ChevronRight,
   Search,
   SlidersHorizontal,
   Download,
   UserRound,
-  CalendarDays,
 } from "lucide-react";
 import { useApp } from "../contexts/AppContext";
 import {
@@ -25,19 +26,11 @@ import {
   statusLabels,
   projectDate,
 } from "@/lib/domain";
-import { checksheetProgress } from "@/lib/checksheets";
 import { tasksCsv } from "@/lib/csv";
 import { AssignmentDialog } from "./AssignmentDialog";
 import { TaskStatusBadge } from "./TaskBoard";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "./ui/sheet";
 
 type Queue = "unassigned" | "assigned" | "review" | "closed" | "all";
 const queues: { id: Queue; label: string; description: string }[] = [
@@ -97,6 +90,14 @@ export function ManagementBoard() {
     [selected, setSelected] = useState<string[]>([]),
     [detail, setDetail] = useState<string | null>(null),
     [sort, setSort] = useState("priority");
+  const [columns, setColumns] = useState<TaskTableColumn[]>(
+    taskTableColumns.map((column) => column.id),
+  );
+  const detailTrigger = useRef<HTMLElement | null>(null);
+  function openDetail(id: string, event: React.MouseEvent<HTMLButtonElement>) {
+    detailTrigger.current = event.currentTarget;
+    setDetail(id);
+  }
   const currentProject = projects.find((p) => p.id === project);
   const register = commissioning(currentProject);
   const owner = (t: Task) =>
@@ -146,15 +147,6 @@ export function ManagementBoard() {
   );
   const visible = filtered.slice(currentPage * 20, currentPage * 20 + 20);
   const selection = filtered.filter((t) => selected.includes(t.id));
-  const task = tasks.find((t) => t.id === detail);
-  const detailProject = projects.find(
-    (project) => project.id === task?.projectId,
-  );
-  const detailAsset = task ? taskAsset(task, detailProject) : undefined;
-  const detailSheets =
-    commissioning(detailProject).checksheets?.sheets.filter(
-      (sheet) => sheet.assetId === detailAsset?.id,
-    ) ?? [];
   function equipmentLabel(task: Task) {
     const asset = taskAsset(
       task,
@@ -397,6 +389,33 @@ export function ManagementBoard() {
               )}
             </div>
           )}
+          <details>
+            <summary className="min-h-11 cursor-pointer content-center rounded text-sm font-medium focus-visible:outline-2 focus-visible:outline-blue-700">
+              Visible columns ({columns.length} of {taskTableColumns.length})
+            </summary>
+            <div className="grid gap-x-5 sm:grid-cols-2 lg:grid-cols-3">
+              {taskTableColumns.map((column) => (
+                <label
+                  key={column.id}
+                  className="flex min-h-11 cursor-pointer items-center gap-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    className="size-5"
+                    checked={columns.includes(column.id)}
+                    disabled={column.id === "name"}
+                    onChange={() =>
+                      setColumns(toggleTaskColumn(columns, column.id))
+                    }
+                  />
+                  {column.label}
+                  {column.id === "name" && (
+                    <span className="text-xs text-slate-600">Required</span>
+                  )}
+                </label>
+              ))}
+            </div>
+          </details>
           <div className="flex flex-wrap gap-3 items-center justify-between">
             <p className="text-xs text-slate-600">
               {queues.find((q) => q.id === queue)?.description}
@@ -450,19 +469,17 @@ export function ManagementBoard() {
             </Button>
           </div>
         )}
-        <div className="hidden lg:block">
-          <table className="w-full table-fixed text-left">
+        <div
+          className="hidden overflow-x-auto lg:block focus-visible:outline-2 focus-visible:outline-blue-700"
+          role="region"
+          aria-label="Scrollable project activities"
+          tabIndex={0}
+        >
+          <table className="w-full text-left text-sm">
             <caption className="sr-only">
-              Activities in the selected assignment queue
+              Activities in the selected assignment queue. Required-step
+              progress is separate from task status.
             </caption>
-            <colgroup>
-              <col className="w-12" />
-              <col />
-              <col className="w-40" />
-              <col className="w-32" />
-              <col className="w-24" />
-              <col className="w-28" />
-            </colgroup>
             <thead className="bg-slate-50 text-xs text-slate-600">
               <tr>
                 <th scope="col" className="p-1">
@@ -472,100 +489,169 @@ export function ManagementBoard() {
                       type="checkbox"
                       checked={
                         visible.length > 0 &&
-                        visible.every((t) => selected.includes(t.id))
+                        visible.every((task) => selected.includes(task.id))
                       }
                       disabled={!visible.length}
-                      onChange={(e) =>
+                      onChange={(event) =>
                         setSelected(
-                          e.target.checked ? visible.map((t) => t.id) : [],
+                          event.target.checked
+                            ? visible.map((task) => task.id)
+                            : [],
                         )
                       }
                     />
                   </label>
                 </th>
-                <th scope="col" className="py-3 font-medium">
-                  Activity / company
-                </th>
-                <th scope="col" className="py-3 font-medium">
-                  Responsible
-                </th>
-                <th scope="col" className="py-3 font-medium">
-                  Status
-                </th>
-                <th scope="col" className="py-3 font-medium">
-                  Deadline
-                </th>
-                <th scope="col" className="py-3">
-                  <span className="sr-only">Assignment</span>
-                </th>
+                {taskTableColumns
+                  .filter((column) => columns.includes(column.id))
+                  .map((column) => (
+                    <th
+                      key={column.id}
+                      scope="col"
+                      className="whitespace-nowrap px-3 py-3 font-medium"
+                    >
+                      {column.label}
+                    </th>
+                  ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {visible.map((t) => (
-                <tr
-                  key={t.id}
-                  className={`group hover:bg-slate-50 ${selected.includes(t.id) ? "bg-blue-50/50" : ""}`}
-                >
-                  <td className="p-1">
-                    <label className="flex size-11 cursor-pointer items-center justify-center">
-                      <input
-                        aria-label={`Select activity ${t.externalId || t.title}`}
-                        type="checkbox"
-                        checked={selected.includes(t.id)}
-                        disabled={
-                          !selected.includes(t.id) && selected.length >= 50
-                        }
-                        onChange={() => toggle(t.id)}
-                      />
-                    </label>
-                  </td>
-                  <td className="py-3 pr-4">
-                    <button
-                      aria-label={`Open activity ${t.title}`}
-                      className="block min-h-11 w-full rounded text-left focus-visible:outline-2 focus-visible:outline-blue-700"
-                      onClick={() => setDetail(t.id)}
+              {visible.map((task) => {
+                const taskProject = projects.find(
+                  (row) => row.id === task.projectId,
+                );
+                const asset = taskAsset(task, taskProject);
+                const plan = taskManagedDates(task, taskProject);
+                return (
+                  <tr
+                    key={task.id}
+                    className={`group align-top hover:bg-slate-50 ${selected.includes(task.id) || detail === task.id ? "bg-blue-50/50" : ""}`}
+                  >
+                    <td className="p-1">
+                      <label className="flex size-11 cursor-pointer items-center justify-center">
+                        <input
+                          aria-label={`Select activity ${task.externalId || task.title}`}
+                          type="checkbox"
+                          checked={selected.includes(task.id)}
+                          disabled={
+                            !selected.includes(task.id) && selected.length >= 50
+                          }
+                          onChange={() => toggle(task.id)}
+                        />
+                      </label>
+                    </td>
+                    <th
+                      scope="row"
+                      className="min-w-56 max-w-sm px-3 py-2 font-normal"
                     >
-                      <span className="text-xs text-slate-600 mr-2">
-                        #{t.externalId || "Manual"}
-                      </span>
-                      <span
-                        className={`text-xs font-semibold ${t.priority === "P1" ? "text-red-600" : "text-slate-600"}`}
+                      <button
+                        aria-label={`Open activity ${task.title}`}
+                        aria-haspopup="dialog"
+                        className="block min-h-11 w-full rounded text-left focus-visible:outline-2 focus-visible:outline-blue-700"
+                        onClick={(event) => openDetail(task.id, event)}
                       >
-                        {t.priority || "—"}
-                      </span>
-                      <span className="block text-sm font-medium text-slate-900 mt-1 leading-snug line-clamp-2 group-hover:text-blue-700">
-                        {t.title}
-                      </span>
-                      <span className="block text-xs text-slate-600 truncate mt-1">
-                        {companies.find((c) => c.id === t.companyId)?.name} ·{" "}
-                        {t.location || "No area"}
-                      </span>
-                      {equipmentLabel(t) && (
-                        <span className="mt-1 block truncate text-xs text-slate-600">
-                          Equipment: {equipmentLabel(t)}
+                        <span className="block text-sm font-medium leading-snug text-slate-900 line-clamp-2 group-hover:text-blue-700">
+                          {task.title}
                         </span>
-                      )}
-                    </button>
-                  </td>
-                  <td className="pr-3">
-                    <span
-                      className={`text-xs flex items-center gap-1.5 ${t.assignedTo ? "text-slate-700" : "text-amber-700"}`}
-                    >
-                      <UserRound className="size-3.5 shrink-0" />
-                      {owner(t)}
-                    </span>
-                  </td>
-                  <td className="pr-2">
-                    <TaskStatusBadge task={t} />
-                  </td>
-                  <td>{due(t)}</td>
-                  <td className="pr-3">
-                    <AssignmentDialog compact tasks={[t]}>
-                      {t.assignedTo ? "Reassign" : "Assign"}
-                    </AssignmentDialog>
-                  </td>
-                </tr>
-              ))}
+                        <span className="mt-1 block break-words text-xs text-slate-600">
+                          {task.cx?.activityId
+                            ? `Activity: ${task.cx.activityId}`
+                            : task.externalId
+                              ? `External: ${task.externalId}`
+                              : `Task: ${task.id}`}
+                          {task.cx?.activityId &&
+                          task.externalId &&
+                          task.externalId !== task.cx.activityId
+                            ? ` · External: ${task.externalId}`
+                            : ""}
+                        </span>
+                      </button>
+                    </th>
+                    {columns.includes("progress") && (
+                      <td className="px-3 py-1">
+                        <TaskStepIndicator
+                          summary={taskStepSummary(task, taskProject, tasks)}
+                          onClick={(event) => openDetail(task.id, event)}
+                        />
+                      </td>
+                    )}
+                    {columns.includes("status") && (
+                      <td className="px-3 py-3">
+                        <TaskStatusBadge task={task} />
+                      </td>
+                    )}
+                    {columns.includes("dates") && (
+                      <td className="min-w-32 px-3 py-3">
+                        {due(task)}
+                        {plan?.start && (
+                          <span className="mt-1 block whitespace-nowrap text-xs text-slate-600">
+                            Start: {plan.start}
+                          </span>
+                        )}
+                        {plan &&
+                          "durationDays" in plan &&
+                          plan.durationDays !== undefined && (
+                            <span className="mt-1 block text-xs text-slate-600">
+                              {plan.durationDays} days
+                            </span>
+                          )}
+                      </td>
+                    )}
+                    {columns.includes("equipment") && (
+                      <td className="min-w-36 max-w-xs px-3 py-3">
+                        <span className="text-xs text-slate-700 line-clamp-2">
+                          {equipmentLabel(task) || "No linked equipment"}
+                        </span>
+                        <span className="mt-1 block text-xs text-slate-600">
+                          {task.location ||
+                            asset?.location ||
+                            "Area not recorded"}
+                        </span>
+                      </td>
+                    )}
+                    {columns.includes("responsible") && (
+                      <td className="min-w-44 px-3 py-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <span
+                              className={`block text-xs ${task.assignedTo ? "text-slate-700" : "text-amber-700"}`}
+                            >
+                              {owner(task)}
+                            </span>
+                            <span className="mt-1 block text-xs text-slate-600">
+                              {companies.find(
+                                (company) => company.id === task.companyId,
+                              )?.name || "Company not recorded"}
+                            </span>
+                            {!task.assignedTo && task.importData?.assignee && (
+                              <span className="mt-1 block text-xs text-slate-600">
+                                Report assignee: {task.importData.assignee}
+                              </span>
+                            )}
+                          </div>
+                          <div className="shrink-0">
+                            <AssignmentDialog compact tasks={[task]}>
+                              {task.assignedTo ? "Reassign" : "Assign"}
+                            </AssignmentDialog>
+                          </div>
+                        </div>
+                      </td>
+                    )}
+                    {columns.includes("priority") && (
+                      <td className="min-w-28 px-3 py-3">
+                        <span
+                          className={`text-xs font-medium ${task.priority === "P1" ? "text-red-700" : "text-slate-700"}`}
+                        >
+                          {task.priority || "Not specified"}
+                        </span>
+                        <span className="mt-1 block text-xs text-slate-600">
+                          {task.discipline || "Discipline not recorded"}
+                        </span>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -586,18 +672,23 @@ export function ManagementBoard() {
                 <button
                   aria-label={`Open activity ${t.title}`}
                   className="min-h-11 min-w-0 flex-1 rounded text-left focus-visible:outline-2 focus-visible:outline-blue-700"
-                  onClick={() => setDetail(t.id)}
+                  onClick={(event) => openDetail(t.id, event)}
                 >
                   <span className="text-xs text-slate-600">
-                    #{t.externalId || "Manual"} · {t.priority || "No priority"}
+                    {t.cx?.activityId || t.externalId || t.id}
+                    {columns.includes("priority")
+                      ? ` · ${t.priority || "No priority"}`
+                      : ""}
                   </span>
                   <h3 className="font-medium text-sm leading-snug mt-1">
                     {t.title}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1 truncate">
-                    {companies.find((c) => c.id === t.companyId)?.name}
-                  </p>
-                  {equipmentLabel(t) && (
+                  {columns.includes("responsible") && (
+                    <p className="text-xs text-slate-600 mt-1 truncate">
+                      {companies.find((c) => c.id === t.companyId)?.name}
+                    </p>
+                  )}
+                  {columns.includes("equipment") && equipmentLabel(t) && (
                     <p className="mt-1 text-xs text-slate-600">
                       Equipment: {equipmentLabel(t)}
                     </p>
@@ -605,15 +696,27 @@ export function ManagementBoard() {
                 </button>
               </div>
               <div className="flex justify-between items-center gap-2">
-                <TaskStatusBadge task={t} />
-                {due(t)}
+                {columns.includes("progress") && (
+                  <TaskStepIndicator
+                    summary={taskStepSummary(
+                      t,
+                      projects.find((row) => row.id === t.projectId),
+                      tasks,
+                    )}
+                    onClick={(event) => openDetail(t.id, event)}
+                  />
+                )}
+                {columns.includes("status") && <TaskStatusBadge task={t} />}
+                {columns.includes("dates") && due(t)}
               </div>
               <div className="border-t pt-3 flex items-center justify-between gap-2">
-                <span
-                  className={`text-xs ${t.assignedTo ? "text-slate-700" : "text-amber-700"}`}
-                >
-                  {owner(t)}
-                </span>
+                {columns.includes("responsible") && (
+                  <span
+                    className={`text-xs ${t.assignedTo ? "text-slate-700" : "text-amber-700"}`}
+                  >
+                    {owner(t)}
+                  </span>
+                )}
                 <AssignmentDialog compact tasks={[t]}>
                   {t.assignedTo ? "Reassign" : "Assign worker"}
                 </AssignmentDialog>
@@ -664,136 +767,13 @@ export function ManagementBoard() {
           </div>
         </div>
       </div>
-      <Sheet
-        open={!!task}
-        onOpenChange={(open) => {
-          if (!open) setDetail(null);
-        }}
-      >
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-6">
-          {task && (
-            <>
-              <SheetHeader>
-                <SheetTitle className="break-words pr-9 text-left leading-snug">
-                  {task.title}
-                </SheetTitle>
-                <SheetDescription>
-                  Activity #{task.externalId || "Manual"} ·{" "}
-                  {companies.find((c) => c.id === task.companyId)?.name}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="space-y-5 mt-6">
-                <div className="flex justify-between">
-                  <TaskStatusBadge task={task} />
-                  {due(task)}
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 p-4">
-                  <div className="min-w-0">
-                    <p className="text-xs text-slate-600 mb-1">
-                      Responsible worker
-                    </p>
-                    <p className="break-words text-sm font-medium">
-                      {owner(task)}
-                    </p>
-                  </div>
-                  <AssignmentDialog tasks={[task]}>
-                    {task.assignedTo ? "Reassign" : "Assign"}
-                  </AssignmentDialog>
-                </div>
-                <p className="text-sm whitespace-pre-wrap text-slate-600">
-                  {task.description || "No description provided."}
-                </p>
-                <p className="text-xs text-slate-600 flex gap-2">
-                  <CalendarDays className="size-4" />
-                  {task.location || "No area specified"}
-                </p>
-
-                <section
-                  className="border-t border-slate-200 pt-4 space-y-3"
-                  aria-label="Equipment and checksheet records"
-                >
-                  <h3 className="text-sm font-semibold">
-                    Equipment & checksheets
-                  </h3>
-                  {detailAsset ? (
-                    <>
-                      <Link
-                        className="inline-flex min-h-11 items-center text-sm font-medium text-blue-700 underline underline-offset-4"
-                        href={`/commissioning?${new URLSearchParams({ projectId: task.projectId, asset: detailAsset.id })}`}
-                      >
-                        {detailAsset.name}
-                        {task.cx?.level ? ` · ${task.cx.level}` : ""}
-                      </Link>
-                      {task.cx?.kind === "tag" && (
-                        <dl className="grid grid-cols-2 gap-3 text-xs">
-                          <div>
-                            <dt className="text-slate-600">Test result</dt>
-                            <dd className="mt-1">{task.cx.result}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-slate-600">Tag review</dt>
-                            <dd className="mt-1">
-                              {task.cx.tagReview
-                                ? tagReviewLabels[task.cx.tagReview]
-                                : "Not recorded"}
-                            </dd>
-                          </div>
-                        </dl>
-                      )}
-                      {detailSheets.length ? (
-                        detailSheets.map((sheet) => {
-                          const progress = checksheetProgress(sheet);
-                          return (
-                            <div key={sheet.id} className="text-xs">
-                              <p className="font-medium">
-                                {sheet.templateName}
-                                {sheet.level ? ` · ${sheet.level}` : ""}
-                              </p>
-                              <p className="mt-1 text-slate-600">
-                                {progress.answered}/{progress.total} answered ·{" "}
-                                {progress.activeSignatures} signatures
-                              </p>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <p className="text-xs text-slate-600">
-                          No checksheet assigned to this equipment.
-                        </p>
-                      )}
-                      <Link
-                        className="inline-flex min-h-11 items-center text-xs text-blue-700 underline underline-offset-4"
-                        href="/checksheets"
-                        onClick={() => setProject(task.projectId)}
-                      >
-                        Open equipment checksheets
-                      </Link>
-                    </>
-                  ) : (
-                    <p className="text-xs text-slate-600">
-                      No equipment link recorded.
-                    </p>
-                  )}
-                </section>
-                {task.notes && (
-                  <div className="border-t border-slate-200 pt-3">
-                    <p className="text-xs text-slate-600 mb-1">Latest update</p>
-                    <p className="text-sm whitespace-pre-wrap">{task.notes}</p>
-                  </div>
-                )}
-                <Button asChild className="w-full">
-                  <Link href={`/tasks/${task.id}`}>
-                    {task.status === "review"
-                      ? "Review work and evidence"
-                      : "Open activity and history"}
-                    <ArrowUpRight className="size-4" />
-                  </Link>
-                </Button>
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+      <TaskQuickDetail
+        taskId={detail}
+        onClose={() => setDetail(null)}
+        returnFocus={() =>
+          detailTrigger.current?.focus({ preventScroll: true })
+        }
+      />
     </section>
   );
 }

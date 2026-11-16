@@ -1,5 +1,12 @@
 # Riprendere FieldTrack con Tony
 
+**Aggiornamento16nov2026:** [mandato esecutivo e prove](intake-20261116-implementation.md).
+PianoA1–A8 approvato per implementazione/test/commit locali; monitor unico
+`agente-progetto-tony` **PAUSED**, condizione di stop verificata. Nessuna ulteriore
+lettura WhatsApp o continuazione automatica. Push/deploy richiedono approvazione
+specifica sul risultato, dopo rifiuto dell'estensione da parte dell'auto-review.
+I riferimenti ACTIVE del17ott sotto descrivono il mandato storico, superato.
+
 Apri una **nuova chat nel progetto/cartella Mobile Time Tracking App** e scrivi:
 
 > Riprendi Tony
