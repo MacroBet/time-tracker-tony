@@ -3,8 +3,10 @@
 **Aggiornamento16nov2026:** [mandato esecutivo e prove](intake-20261116-implementation.md).
 PianoA1–A8 approvato per implementazione/test/commit locali; monitor unico
 `agente-progetto-tony` **PAUSED**, condizione di stop verificata. Nessuna ulteriore
-lettura WhatsApp o continuazione automatica. Push/deploy richiedono approvazione
-specifica sul risultato, dopo rifiuto dell'estensione da parte dell'auto-review.
+lettura WhatsApp o continuazione automatica. Consenso specifico successivo16nov
+«Approvo push e deploy»: sei commit fino ad a7b486a pubblicati e verificati
+Production READY/success e alias200. Il precedente rifiuto è superato solo per
+questo pacchetto; accettazione voce reale ancora da collaudare.
 I riferimenti ACTIVE del17ott sotto descrivono il mandato storico, superato.
 
 Apri una **nuova chat nel progetto/cartella Mobile Time Tracking App** e scrivi:
@@ -90,6 +92,22 @@ la verifica di questa unità è documentale e tramite revisione indipendente.
    nuovi incarichi di sviluppo richiedono mandato manuale.
 
 ## Verifiche proporzionate
+
+### Consegna visiva a Marco
+
+Regola esplicita del16nov: alla chiusura delle richieste di Tony, raccogliere
+schermate o dettagli leggibili per tutte le modifiche effettive e preparare un
+PDF inglese essenziale ma completo, pronto per l'inoltro manuale di Marco.
+Riutilizzare gli screenshot disponibili e acquisire solo i mancanti nella demo
+locale sintetica dichiarata. Titoli e didascalie brevi devono spiegare il beneficio;
+non sostituire i risultati con immagini di sole toolbar o con dati cliente privati.
+
+Applicare la skill PDF, marcare l'operazione, renderizzare e ispezionare tutte le
+pagine. Finale sotto `output/pdf/`, originali e manifest pagina→modifica→screenshot
+privati fuoriGit. Separare build demo e verifiche effettive in produzione; voce
+reale o funzioni condizionali non collaudate devono restare esplicite. Il PDF non
+autorizza nuove modifiche, deploy, chiamate pagate, credenziali o invii a Tony.
+[Prima applicazione e copertura](intake-20261116-visual-guide.md).
 
 Per documentazione/configurazione di avvio: link, coerenza delle istruzioni,
 formato e revisione mirata; nessuna suite applicativa o nuovo deploy necessario.

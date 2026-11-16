@@ -95,3 +95,14 @@ La skill generale non deve includere questi dettagli di Tony.
 
 Prove: [attuazione16nov](intake-20261116-implementation.md), regressioni
 `project-profile.test.ts`/API e `source-criticality-api.integration.ts`.
+
+## 16 novembre 2026 — consegna visiva da inoltrare
+
+**E/T, regola diretta di Marco:** a fine consegna Tony preparare screenshot di
+tutte le modifiche e un PDF inglese con titoli/didascalie brevi, pronto da inoltrare
+manualmente. Prima applicazione: [guida visiva16nov](intake-20261116-visual-guide.md),
+16pagine renderizzate/ispezionate e manifest pagina→modifica→fonte. La revisione ha
+mostrato che un'immagine di soli filtri non racconta un report: includere righe,
+totali e link leggibili, con ritagli che non troncano etichette o azioni ai bordi.
+Ambito Tony/FieldTrack; esempi sintetici dichiarati, produzione distinta, nessun
+invio, microfono, nuovo sviluppo o autorizzazione remota impliciti.

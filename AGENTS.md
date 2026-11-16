@@ -20,13 +20,23 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   non sviluppo aggiuntivo. «Riprendi Tony» ricostruisce consegne, vincoli e prossimo
   passo ed esegue il lavoro già chiaramente autorizzato; se mancano decisioni,
   indicarle senza inventarle né chiedere di raccontare tutto da capo.
+- **Consegna visiva Tony, regola esplicita16nov2026:** a fine consegna raccogliere
+  schermate o dettagli leggibili di tutte le funzioni/interfacce cambiate e
+  preparare un PDF inglese pronto da inoltrare, con titoli e didascalie brevi.
+  Riutilizzare le prove esistenti; acquisire soltanto i mancanti nella demo locale
+  sintetica dichiarata, distinguendo collaudi locali e produzione effettiva.
+  PDF/screens privati fuoriGit, finale in `output/pdf/`, manifest pagina→modifica→fonte
+  e render/ispezione di tutte le pagine. Dichiarare limiti e funzioni condizionali;
+  nessun invio cliente implicito. [Procedura e prima consegna](docs/tony-feedback/intake-20261116-visual-guide.md).
 - **Mandato manuale16nov2026**: Marco approva il pianoA1–A8, delega parallela e
   commit progressivi locali (user `01a1e5cb-1f3d-7ba3-8e22-e8a011404eb3`, regia).
   Dashboard con default di progetto/preferenze personali e KPI esistenti. Monitor
   unico `agente-progetto-tony` **PAUSED** dopo verifica conclusiva della condizione
   umana; niente altre letture WhatsApp. Questo supera i riferimenti ACTIVE storici
-  sotto. Il mandato corrente non autorizza push/deploy: estensione rifiutata
-  dall'auto-review, serve approvazione specifica sul risultato concreto. Nessun
+  sotto. Il limite push/deploy iniziale è superato **solo per i sei commit fino
+  ad a7b486a**, da consenso diretto Marco `01a1e620-73d0-7f30-a02d-ad5132689052`
+  («Approvo push e deploy»). Push normale e Production READY/success verificati
+  il16nov21:55Europe/Rome, alias200; prove nel report. Nessun
   nuovo servizio/modello, API pagata, DB remoto o permesso microfono da agente.
   [Attuazione, prove e residui](docs/tony-feedback/intake-20261116-implementation.md).
 - Nuovo mandato umano verificato il **17/10/2026**: seguire la conversazione Tony.
