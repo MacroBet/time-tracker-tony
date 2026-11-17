@@ -44,6 +44,13 @@ viste autenticate verificate soltanto nella demo locale.
 
 ## Rilascio
 
-Normale commit/push su main con l'integrazione Vercel esistente, nel mandato già
-autorizzato per le modifiche richieste. Deployment e alias saranno verificati
-separatamente dai test locali e registrati nelle ricevute private della consegna.
+Codice **`4391404523c368e8c30bfcab95bbeff853326f01`** pushato normalmente su main.
+Deployment **`dpl_E8RoChx6aQDw3wXqvvXCsynBs3uM` READY**; alias pubblico sullo stesso
+deployment. Smoke Schedule200/API programme-source anonima401. Verificato
+**17 Nov 2026 19:11:59 CET**. Ricevuta privata
+`output/tony/gantt-arrows-20261117/release-code.private.json`.
+
+Documenter Impeccable: identità incumbent preservata, nessun nuovo DESIGN/sidecar
+o drift fix. Il successivo aggiornamento documentale non cambia il codice;
+ricevuta di main/alias conclusivi in `release-final.private.json` nello stesso
+percorso privato. Prossimo passo: revisione umana della singola freccia per attività.

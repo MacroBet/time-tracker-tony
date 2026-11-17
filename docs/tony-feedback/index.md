@@ -4,8 +4,8 @@
 Rimosse le frecce ripetute nella timeline source/working; resta Show dates accanto
 al nome, funzionante con mouse/Invio. 12/12browser e statici/build PASS,
 Impeccable ship. PDF inglese1pagina/QA1/1 `output/pdf/fieldtrack-gantt-shortcuts-20261117-en.pdf`.
-Nessun dato/permesso cambiato, prove autenticate solo demo; ricevute rilascio
-separate. Problema login precedente invariato; nessun export/AI/invio, monitor PAUSED.
+Nessun dato/permesso cambiato, prove autenticate solo demo; codice `4391404` su main, Vercel READY e alias
+sullo stesso deployment, Schedule200/APIanonima401, 17 Nov 2026 19:11:59 CET. Problema login precedente invariato; nessun export/AI/invio, monitor PAUSED.
 
 **Nomi nelle barre Gantt17nov:** [richiesta e prove](intake-20261117-gantt-labels.md).
 Nome attività al posto di riferimento/% nelle barre source e gestite; ellissi,
