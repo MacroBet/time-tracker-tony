@@ -10,7 +10,7 @@ export const DASHBOARD_PANELS = [
 ] as const;
 export type DashboardPanelId = (typeof DASHBOARD_PANELS)[number];
 export const dashboardPanelLabels: Record<DashboardPanelId, string> = {
-  summary: "Project summary",
+  summary: "Task progress",
   attention: "Needs attention",
   works: "Works to go",
   reports: "Reports",

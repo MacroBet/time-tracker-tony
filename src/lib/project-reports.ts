@@ -18,6 +18,7 @@ export const REPORT_TYPES = [
 ] as const;
 export const MISSING_REPORT_VALUE = "__missing__";
 export const CONFLICT_REPORT_VALUE = "__conflict__";
+export const LOOKAHEAD_WEEKS = [2, 4, 6] as const;
 const filterValue = z.string().trim().min(1).max(150).optional();
 export const reportQuerySchema = z
   .object({
@@ -34,6 +35,10 @@ export const reportQuerySchema = z
       .regex(/^(?:source:[a-f0-9]{64}:.+|managed:.+)$/)
       .optional(),
     from: z.iso.date().optional(),
+    weeks: z.coerce
+      .number()
+      .pipe(z.union([z.literal(2), z.literal(4), z.literal(6)]))
+      .optional(),
     workStatus: z.enum(["open", "done", "all"]).default("open"),
     activityStatus: z.enum(["open", "done", "all"]).default("open"),
     offset: z.coerce.number().int().min(0).max(1000000).default(0),
@@ -305,7 +310,7 @@ export type ProjectReportResult = {
   revision: { register: number; sourceSha: string | null };
   generatedAt: string;
   timezone: "Europe/Amsterdam";
-  window: { from: string; through: string; days: 14 };
+  window: { from: string; through: string; days: number };
   facets: { vendors: string[]; disciplines: string[]; levels: Level[] };
   coverage: ReportCoverage;
   notes: string[];
@@ -461,8 +466,8 @@ function buildReportPopulation(
     today = projectDate(now);
   const window = {
     from: query.from ?? today,
-    through: addDays(query.from ?? today, 13),
-    days: 14 as const,
+    through: addDays(query.from ?? today, (query.weeks ?? 2) * 7 - 1),
+    days: (query.weeks ?? 2) * 7,
   };
   const tasks = data.tasks.filter((task) => task.projectId === projectId),
     index = options.sourceIndex;
@@ -1071,7 +1076,7 @@ function buildReportPopulation(
       );
     }
     notes.push(
-      "The 14-day window includes ongoing activities overlapping the window. Undated and overdue activities are counted separately; saved dates and calendars are not recalculated.",
+      `The ${window.days}-day window includes ongoing activities overlapping the window. Undated and overdue activities are counted separately; saved dates and calendars are not recalculated.`,
       "For completed imported-source activities, the validated saved planned target_end_date is the deadline. Without that planned target, timeliness is unknown; actual finish is never compared against itself. Open activities use their saved forecast or confirmed working-view finish.",
     );
   }

@@ -2,37 +2,53 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiRequest } from "@/lib/api-client";
-import type { ProjectReportResult } from "@/lib/project-reports";
+import {
+  LOOKAHEAD_WEEKS,
+  type ProjectReportResult,
+} from "@/lib/project-reports";
 import { Button } from "./ui/button";
 import { InfoPopover } from "./InfoPopover";
 
 /** Same complete population and drilldowns as Reports; only the displayed preview is bounded. */
 export function DashboardLookahead({ projectId }: { projectId: string }) {
-  const [result, setResult] = useState<ProjectReportResult | null>(null);
-  const [error, setError] = useState("");
+  return <LookaheadSession key={projectId} projectId={projectId} />;
+}
+
+function LookaheadSession({ projectId }: { projectId: string }) {
+  const [weeks, setWeeks] = useState<2 | 4 | 6>(2);
+  const [response, setResponse] = useState<{
+    key: string;
+    result?: ProjectReportResult;
+    error?: string;
+  } | null>(null);
   const [retry, setRetry] = useState(0);
+  const loadKey = `${projectId}:${weeks}:${retry}`;
+  const current = response?.key === loadKey ? response : null;
+  const result = current?.result;
+  const error = current?.error;
   useEffect(() => {
     const controller = new AbortController();
     void apiRequest<ProjectReportResult>(
-      `/api/projects/${encodeURIComponent(projectId)}/reports?report=lookahead&limit=5`,
+      `/api/projects/${encodeURIComponent(projectId)}/reports?report=lookahead&weeks=${weeks}&limit=5`,
       { signal: controller.signal },
     )
       .then((value) => {
         if (!controller.signal.aborted) {
-          setResult(value);
-          setError("");
+          setResponse({ key: loadKey, result: value });
         }
       })
       .catch((problem: unknown) => {
         if (!controller.signal.aborted)
-          setError(
-            problem instanceof Error
-              ? problem.message
-              : "Could not load the next 14 days.",
-          );
+          setResponse({
+            key: loadKey,
+            error:
+              problem instanceof Error
+                ? problem.message
+                : `Could not load the next ${weeks} weeks.`,
+          });
       });
     return () => controller.abort();
-  }, [projectId, retry]);
+  }, [projectId, weeks, loadKey]);
   return (
     <section
       aria-label="Upcoming schedule activities"
@@ -40,7 +56,7 @@ export function DashboardLookahead({ projectId }: { projectId: string }) {
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <h3 className="text-base font-semibold">Next 14 days</h3>
+          <h3 className="text-base font-semibold">Schedule lookahead</h3>
           <InfoPopover label="Lookahead population">
             <p>
               Saved working Schedule activities overlapping the report window,
@@ -50,15 +66,32 @@ export function DashboardLookahead({ projectId }: { projectId: string }) {
             </p>
           </InfoPopover>
         </div>
-        {result && (
-          <Link
-            className="inline-flex min-h-11 items-center text-sm text-blue-800 underline"
-            href={result.href}
+        <label className="flex min-h-11 items-center gap-2 text-sm font-medium">
+          Window
+          <select
+            aria-label="Lookahead window"
+            className="field-select min-h-11"
+            value={weeks}
+            onChange={(event) =>
+              setWeeks(Number(event.target.value) as 2 | 4 | 6)
+            }
           >
-            Open complete report
-          </Link>
-        )}
+            {LOOKAHEAD_WEEKS.map((value) => (
+              <option key={value} value={value}>
+                {value} weeks
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
+      {result && (
+        <Link
+          className="inline-flex min-h-11 items-center text-sm text-blue-800 underline"
+          href={result.href}
+        >
+          Open complete report
+        </Link>
+      )}
       {error ? (
         <div role="alert" className="space-y-2 text-sm text-red-700">
           <p>{error} The count is unavailable.</p>

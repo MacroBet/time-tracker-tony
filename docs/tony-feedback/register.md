@@ -1,5 +1,14 @@
 # Registro operativo — Tony
 
+**Dashboard overall 17nov:** [curva, opzioni e prove](intake-20261117-project-progress.md).
+Curva planned/actual prima dei task, attività con peso uguale confermate da Marco,
+date registrate e copertura esplicita. Tag indipendenti nei colori progetto,
+filtri/group vendor-disciplina, blockers distinti; lookahead inline2/4/6 settimane.
+391unitari/PGlite + 2API + 20browser PASS, statici/build PASS; Impeccable ship.
+PDF inglese aggiornato13pagine/QA13/13, stesso percorso `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
+Verifica rilascio successiva al normale push; viste autenticate provate solo nella
+demo sintetica locale. Nessun dato business remoto, AI live o invio; monitor PAUSED.
+
 **Schedule diretto 17nov:** [mandato, drag e prove](intake-20261117-schedule-direct.md).
 Scala/intervallo/durata/colonne e filtri sullo schermo; drag righello per navigare,
 barre/estremità per proporre date, motivo + preview + conferma prima del salvataggio.
@@ -513,6 +522,15 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Dashboard overall 17nov:** [curva, opzioni e prove](intake-20261117-project-progress.md).
+Curva planned/actual prima dei task, attività con peso uguale confermate da Marco,
+date registrate e copertura esplicita. Tag indipendenti nei colori progetto,
+filtri/group vendor-disciplina, blockers distinti; lookahead inline2/4/6 settimane.
+391unitari/PGlite + 2API + 20browser PASS, statici/build PASS; Impeccable ship.
+PDF inglese aggiornato13pagine/QA13/13, stesso percorso `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
+Verifica rilascio successiva al normale push; viste autenticate provate solo nella
+demo sintetica locale. Nessun dato business remoto, AI live o invio; monitor PAUSED.
 
 **Schedule diretto 17nov:** [mandato, drag e prove](intake-20261117-schedule-direct.md).
 Scala/intervallo/durata/colonne e filtri sullo schermo; drag righello per navigare,

@@ -7,8 +7,25 @@ import {
 } from "./commissioning";
 import type { Project, Task } from "./domain";
 
+export const MISSING_TAG_VALUE = "__missing__";
+export function matchesTagAttribute(
+  value: string | undefined,
+  filter?: string,
+) {
+  const identity = (text?: string) =>
+    text?.trim().toLocaleLowerCase("en-GB") ?? "";
+  return (
+    !filter ||
+    (filter === MISSING_TAG_VALUE
+      ? !identity(value)
+      : identity(value) === identity(filter))
+  );
+}
+
 export type TagProgressRow = ReturnType<typeof tagRows>[number];
 export type TagProgressFilter = {
+  vendor?: string;
+  discipline?: string;
   assetLocation?: string;
   supply?: "client";
   applicableOnly?: boolean;
@@ -26,6 +43,8 @@ export function filterTagProgress(
 ) {
   return rows.filter(
     (row) =>
+      matchesTagAttribute(row.asset.vendor, filter.vendor) &&
+      matchesTagAttribute(row.asset.discipline, filter.discipline) &&
       (filter.assetLocation === undefined ||
         row.asset.location === filter.assetLocation) &&
       (filter.supply !== "client" || isClientSupplied(row.asset)) &&

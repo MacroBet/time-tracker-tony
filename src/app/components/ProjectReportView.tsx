@@ -10,6 +10,7 @@ import {
   MISSING_REPORT_VALUE,
   CONFLICT_REPORT_VALUE,
   REPORT_TYPES,
+  LOOKAHEAD_WEEKS,
   reportQuerySchema,
   reportQueryParams,
   type OperationalStatus,
@@ -26,8 +27,8 @@ import { InfoPopover } from "./InfoPopover";
 const titles = {
   tagging: "Tagging status",
   "works-to-go": "Works to go",
-  lookahead: "Next 14 days",
-  vendors: "Suppliers needed in the next 14 days",
+  lookahead: "Schedule lookahead",
+  vendors: "Equipment suppliers needed",
 };
 type ReportViewProps = {
   projectId: string;
@@ -349,7 +350,7 @@ function ProjectReportSession({
         {(query.report === "lookahead" || query.report === "vendors") && (
           <>
             <label className="min-w-0 text-sm font-medium">
-              14-day window starts
+              Window starts
               <Input
                 className="mt-1"
                 type="date"
@@ -358,6 +359,24 @@ function ProjectReportSession({
                   update({ from: event.target.value || undefined })
                 }
               />
+            </label>
+            <label className="min-w-0 text-sm font-medium">
+              Lookahead
+              <select
+                className="field-select mt-1 w-full"
+                value={query.weeks ?? 2}
+                onChange={(event) =>
+                  update({
+                    weeks: Number(event.target.value) as 2 | 4 | 6,
+                  })
+                }
+              >
+                {LOOKAHEAD_WEEKS.map((weeks) => (
+                  <option key={weeks} value={weeks}>
+                    {weeks} weeks
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="min-w-0 text-sm font-medium">
               Activities
@@ -459,6 +478,7 @@ function ProjectReportSession({
                   discipline: undefined,
                   query: undefined,
                   from: undefined,
+                  weeks: undefined,
                   workStatus: "open",
                   activityStatus: "open",
                 })

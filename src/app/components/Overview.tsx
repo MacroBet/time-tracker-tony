@@ -35,6 +35,7 @@ import {
 } from "./ProjectViewSettings";
 import { useLinkedProject } from "./useLinkedProject";
 import { DashboardLookahead } from "./DashboardLookahead";
+import { ProjectProgressCurve } from "./ProjectProgressCurve";
 import {
   DashboardTaskGraphics,
   DashboardTagGraphics,
@@ -154,6 +155,11 @@ export function Overview() {
             </Button>
           )}
         </div>
+        <ProjectProgressCurve
+          key={`${project.id}:${data.currentUser.id}`}
+          projectId={project.id}
+          version={state.version}
+        />
         <DashboardPanel id="summary" panels={preferences.value.dashboardPanels}>
           <DashboardTaskGraphics
             project={project}

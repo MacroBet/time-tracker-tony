@@ -432,6 +432,73 @@ test("lookahead queries the full source index beyond the visible page, includes 
   assert.equal(result.coverage.overdueActivities, 300);
   assert.equal(result.coverage.activities, 305);
 });
+test("lookahead supports inclusive four/six-week windows and preserves the selected window in supplier drilldowns and exports", () => {
+  const current = state();
+  current.schedule.push(
+    {
+      activityId: "four-week-edge",
+      name: "Four-week boundary",
+      start: "2026-12-11",
+      finish: "2026-12-11",
+    },
+    {
+      activityId: "six-week-edge",
+      name: "Six-week boundary",
+      start: "2026-12-25",
+      finish: "2026-12-25",
+    },
+    {
+      activityId: "outside-six-weeks",
+      name: "Outside six weeks",
+      start: "2026-12-26",
+      finish: "2026-12-26",
+    },
+  );
+  const data = dataFor(current);
+  const four = buildProjectReport(
+    data,
+    "p",
+    { report: "lookahead", weeks: 4 },
+    { now },
+  );
+  assert.equal(four.window.days, 28);
+  assert.equal(four.window.through, "2026-12-11");
+  assert.deepEqual(
+    four.rows.map((row) => (row as LookaheadReportRow).activityId).sort(),
+    ["ACT-1", "four-week-edge"],
+  );
+  const six = buildProjectReport(
+    data,
+    "p",
+    { report: "lookahead", weeks: 6 },
+    { now },
+  );
+  assert.equal(six.window.days, 42);
+  assert.equal(six.window.through, "2026-12-25");
+  assert.equal(six.total, 3);
+  assert(!six.rows.some((row) => row.name === "Outside six weeks"));
+  const vendors = buildProjectReport(
+    data,
+    "p",
+    { report: "vendors", weeks: 4 },
+    { now },
+  );
+  assert.equal(vendors.window.days, 28);
+  const drilldown = new URL(vendors.rows[0].href, "https://local.test");
+  assert.equal(drilldown.searchParams.get("weeks"), "4");
+  assert.equal(drilldown.searchParams.get("from"), "2026-11-14");
+  const exported = projectReportCsv(
+    data,
+    "p",
+    { report: "lookahead", weeks: 6 },
+    { now },
+  );
+  assert(exported.csv.includes("Six-week boundary"));
+  assert(!exported.csv.includes("Outside six weeks"));
+  for (const weeks of [0, 1, 3, 5, 8, 100, "", "invalid"])
+    assert.equal(reportQuerySchema.safeParse({ weeks }).success, false);
+  assert.equal(reportQuerySchema.parse({ weeks: "4" }).weeks, 4);
+});
 test("ambiguous source/managed codes do not invent supplier links; canonical identities resolve them safely", () => {
   const index = source([
     [

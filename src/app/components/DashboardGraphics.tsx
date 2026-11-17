@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import {
   statusLabels,
@@ -7,15 +9,17 @@ import {
   type Task,
   type TaskStatus,
 } from "@/lib/domain";
-import {
-  commissioning,
-  filterTasks,
-  tagSummary,
-  tagTimeline,
-} from "@/lib/commissioning";
+import { commissioning, filterTasks, tagTimeline } from "@/lib/commissioning";
 import { taskProgress } from "@/lib/dashboard-progress";
 import type { ReportRequest } from "./CommissioningReport";
 import { InfoPopover } from "./InfoPopover";
+import { TagLevel } from "./TagLevel";
+import {
+  dashboardTags,
+  type DashboardTagFilters,
+  type DashboardTagGroupBy,
+} from "@/lib/dashboard-tags";
+import { MISSING_TAG_VALUE } from "@/lib/tag-progress";
 
 const statusSeries: { status: TaskStatus; color: string }[] = [
   { status: "completed", color: "#059669" },
@@ -64,7 +68,7 @@ export function DashboardTaskGraphics({
     >
       <div className="flex flex-wrap items-center justify-between gap-x-4 border-b px-4 py-2 sm:px-5 sm:py-3">
         <div className="flex items-center gap-1">
-          <h3 className="text-base font-semibold">Project progress</h3>
+          <h3 className="text-base font-semibold">Task progress</h3>
           <InfoPopover label="How progress is counted">
             <p>
               Charts count saved tasks in this project. Completion excludes N/A.
@@ -254,18 +258,27 @@ export function DashboardTaskGraphics({
   );
 }
 
-export function DashboardTagGraphics({
-  project,
-  tasks,
-  onOpen,
-}: {
+type TagGraphicsProps = {
   project: Project;
   tasks: Task[];
   onOpen: OpenReport;
-}) {
+};
+export function DashboardTagGraphics(props: TagGraphicsProps) {
+  return <DashboardTagSession key={props.project.id} {...props} />;
+}
+function DashboardTagSession({ project, tasks, onOpen }: TagGraphicsProps) {
+  const [filters, setFilters] = useState<DashboardTagFilters>({});
+  const [groupBy, setGroupBy] = useState<DashboardTagGroupBy>("level");
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const [showBlockers, setShowBlockers] = useState(true);
+  const [showFigures, setShowFigures] = useState(false);
+  const scoped = dashboardTags(project, tasks, filters, groupBy);
   const state = commissioning(project);
-  const total = tagSummary(project, tasks);
-  const timeline = tagTimeline(project, tasks);
+  const total = {
+    completed: scoped.summary.approved,
+    total: scoped.summary.total,
+  };
+  const timeline = tagTimeline(scoped.project, tasks);
   const first = timeline.points[0],
     last = timeline.points.at(-1);
   const days =
@@ -280,12 +293,12 @@ export function DashboardTagGraphics({
     chart.bottom - (value / max) * (chart.bottom - chart.top);
   return (
     <section
-      aria-label="Tag approval graphics"
+      aria-label="Tag progress"
       className="overflow-hidden rounded-xl border bg-white"
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3">
         <div className="flex items-center gap-1">
-          <h3 className="text-base font-semibold">Tag approvals</h3>
+          <h3 className="text-base font-semibold">Tag progress</h3>
           <InfoPopover label="About tag approval charts">
             <p>
               Approved / applicable asset-level tags, including tags with no
@@ -302,11 +315,82 @@ export function DashboardTagGraphics({
         </div>
         <button
           className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-blue-700 hover:underline focus-visible:outline-blue-700"
-          onClick={() => onOpen({ title: "Asset tag register", view: "tags" })}
+          onClick={() =>
+            onOpen({
+              title: "Matching asset tags",
+              view: "tags",
+              filters: { ...filters, applicableOnly: true },
+            })
+          }
         >
           View tag register{" "}
           <ArrowUpRight className="size-4" aria-hidden="true" />
         </button>
+      </div>
+      <div className="grid gap-3 border-b bg-slate-50 px-4 py-3 sm:grid-cols-3 sm:px-5">
+        <label className="min-w-0 text-xs font-medium text-slate-700">
+          Group tags by
+          <select
+            className="field-select mt-1 w-full"
+            value={groupBy}
+            onChange={(event) => {
+              setGroupBy(event.target.value as DashboardTagGroupBy);
+              setShowAllGroups(false);
+            }}
+          >
+            <option value="level">Tag level</option>
+            <option value="vendor">Vendor</option>
+            <option value="discipline">Discipline</option>
+          </select>
+        </label>
+        <label className="min-w-0 text-xs font-medium text-slate-700">
+          Vendor · equipment supplier
+          <select
+            className="field-select mt-1 w-full"
+            value={filters.vendor ?? ""}
+            onChange={(event) => {
+              setFilters({
+                ...filters,
+                vendor: event.target.value || undefined,
+              });
+              setShowAllGroups(false);
+            }}
+          >
+            <option value="">All vendors</option>
+            {scoped.vendors.map((vendor) => (
+              <option key={vendor} value={vendor}>
+                {vendor}
+              </option>
+            ))}
+            {scoped.missingVendor && (
+              <option value={MISSING_TAG_VALUE}>Vendor not recorded</option>
+            )}
+          </select>
+        </label>
+        <label className="min-w-0 text-xs font-medium text-slate-700">
+          Discipline
+          <select
+            className="field-select mt-1 w-full"
+            value={filters.discipline ?? ""}
+            onChange={(event) => {
+              setFilters({
+                ...filters,
+                discipline: event.target.value || undefined,
+              });
+              setShowAllGroups(false);
+            }}
+          >
+            <option value="">All disciplines</option>
+            {scoped.disciplines.map((discipline) => (
+              <option key={discipline} value={discipline}>
+                {discipline}
+              </option>
+            ))}
+            {scoped.missingDiscipline && (
+              <option value={MISSING_TAG_VALUE}>Discipline not recorded</option>
+            )}
+          </select>
+        </label>
       </div>
       <div className="grid divide-y lg:grid-cols-2 lg:divide-x lg:divide-y-0">
         <div className="min-w-0 p-4 sm:p-5">
@@ -316,40 +400,82 @@ export function DashboardTagGraphics({
               {total.completed} / {total.total} approved
             </span>
           </div>
-          <div className="space-y-1">
-            {state.config.levels
-              .map((level) => ({ level, ...tagSummary(project, tasks, level) }))
-              .filter((level) => level.total > 0)
-              .map((level) => (
-                <button
-                  key={level.level}
-                  onClick={() =>
-                    onOpen({
-                      title: `${level.level} tag status`,
-                      filters: { level: level.level },
-                      view: "tags",
-                    })
-                  }
-                  aria-label={`${level.level}: ${level.completed} of ${level.total} tags approved. View details`}
-                  className="grid min-h-11 w-full grid-cols-[2.5rem_minmax(0,1fr)_4rem] items-center gap-3 rounded text-left hover:bg-slate-50 focus-visible:outline-blue-700"
-                >
-                  <span className="text-xs font-semibold">{level.level}</span>
-                  <span
-                    className="h-5 overflow-hidden rounded-sm bg-slate-100"
-                    aria-hidden="true"
-                  >
-                    <span
-                      className="block h-full bg-emerald-600"
-                      style={{ width: `${level.percent ?? 0}%` }}
-                    />
-                  </span>
-                  <span className="text-right text-xs tabular-nums">
-                    {level.completed} / {level.total}
-                  </span>
-                </button>
-              ))}
+          <div className="space-y-4">
+            {(showAllGroups ? scoped.groups : scoped.groups.slice(0, 5)).map(
+              (group) => (
+                <div key={group.key}>
+                  {groupBy !== "level" && (
+                    <h5 className="mb-1 break-words text-sm font-semibold">
+                      {group.label}
+                    </h5>
+                  )}
+                  {group.levels.map((level) => (
+                    <button
+                      key={level.level}
+                      onClick={() =>
+                        onOpen({
+                          title: `${level.level} tag status`,
+                          filters: {
+                            ...group.filter,
+                            level: level.level,
+                            applicableOnly: true,
+                          },
+                          view: "tags",
+                        })
+                      }
+                      aria-label={`${group.label}, ${level.level}: ${level.approved} of ${level.total} tags approved. View details`}
+                      className="grid min-h-11 w-full grid-cols-[minmax(4rem,0.8fr)_minmax(0,1fr)_4.5rem] items-center gap-3 rounded text-left hover:bg-slate-50 focus-visible:outline-blue-700"
+                    >
+                      <span className="text-xs font-semibold">
+                        <TagLevel
+                          level={level.level}
+                          presentation={state.config.phasePresentation}
+                        />
+                      </span>
+                      <span
+                        className="h-5 overflow-hidden rounded-sm bg-slate-100"
+                        aria-hidden="true"
+                      >
+                        <span
+                          className="block h-full rounded-sm border border-slate-400"
+                          style={{
+                            width: `${level.percent ?? 0}%`,
+                            backgroundColor:
+                              state.config.phasePresentation?.[level.level]
+                                ?.color ?? "#64748b",
+                          }}
+                        />
+                      </span>
+                      <span className="text-right text-xs tabular-nums">
+                        {level.percent}%
+                        <span className="block text-slate-600">
+                          {level.approved} / {level.total}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ),
+            )}
+            {!scoped.groups.length && (
+              <p className="py-4 text-sm text-slate-600">
+                No applicable tags match these filters.
+              </p>
+            )}
+            {scoped.groups.length > 5 && (
+              <button
+                className="min-h-11 text-sm font-medium text-blue-700 hover:underline focus-visible:outline-blue-700"
+                onClick={() => setShowAllGroups(!showAllGroups)}
+              >
+                {showAllGroups
+                  ? "Show first 5 groups"
+                  : `Show all ${scoped.groups.length} groups`}
+              </button>
+            )}
           </div>
           <p className="mt-3 text-xs text-slate-600">
+            Each level is independent: L3 can progress while L2 is incomplete.
+            Colours come from this project; unconfigured levels are grey.
             Approval is separate from task completion and passed test steps.
           </p>
         </div>
@@ -358,11 +484,10 @@ export function DashboardTagGraphics({
             <h4 className="text-sm font-semibold">Approval schedule</h4>
             <button
               className="min-h-11 text-xs font-medium text-blue-700 hover:underline focus-visible:outline-blue-700"
-              onClick={() =>
-                onOpen({ title: "Tag schedule trend", view: "trend" })
-              }
+              aria-expanded={showFigures}
+              onClick={() => setShowFigures(!showFigures)}
             >
-              View figures
+              {showFigures ? "Hide figures" : "View figures"}
             </button>
           </div>
           {timeline.points.length > 1 ? (
@@ -456,8 +581,135 @@ export function DashboardTagGraphics({
             {timeline.baselineRecorded} have baselines.
             {!last?.achieved && " No dated approvals to plot."}
           </p>
+          {showFigures && (
+            <div
+              className="mt-3 max-h-64 overflow-auto rounded border"
+              tabIndex={0}
+              aria-label="Matching tag schedule figures"
+            >
+              <table className="w-full text-left text-xs tabular-nums">
+                <caption className="p-2 text-left text-slate-600">
+                  Cumulative counts for the matching applicable tags.
+                </caption>
+                <thead>
+                  <tr>
+                    {["Date", "Baseline", "Forecast", "Approved"].map(
+                      (heading) => (
+                        <th key={heading} className="border-b p-2 font-medium">
+                          {heading}
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {timeline.points.map((point) => (
+                    <tr key={point.date}>
+                      <td className="whitespace-nowrap p-2">{point.date}</td>
+                      <td className="p-2">{point.baseline}</td>
+                      <td className="p-2">{point.forecast}</td>
+                      <td className="p-2">{point.achieved}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
+      <div className="border-t px-4 py-3 sm:px-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h4 className="text-sm font-semibold">Linked blockers</h4>
+          <label className="inline-flex min-h-11 items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="size-4 accent-blue-700"
+              checked={showBlockers}
+              onChange={(event) => setShowBlockers(event.target.checked)}
+            />
+            Show blocker records
+          </label>
+        </div>
+        <p className="text-sm tabular-nums text-slate-700">
+          {scoped.blockedTasks.length} blocked tasks ·{" "}
+          {scoped.openIssues.length} open issues · {scoped.openWorks.length}{" "}
+          open works
+        </p>
+        <p className="mt-1 text-xs text-slate-600">
+          Linked to matching assets with applicable tags. Categories can overlap
+          and are counted separately; they do not change approval percentages.
+        </p>
+        {showBlockers && (
+          <div className="mt-3 grid gap-x-6 gap-y-3 lg:grid-cols-3">
+            <BlockerList
+              title="Blocked tasks"
+              records={scoped.blockedTasks.map((task) => ({
+                id: task.id,
+                title: task.title,
+                href: `/tasks/${encodeURIComponent(task.id)}`,
+              }))}
+            />
+            <BlockerList
+              title="Open issues"
+              records={scoped.openIssues.map((task) => ({
+                id: task.id,
+                title: task.title,
+                href: `/tasks/${encodeURIComponent(task.id)}`,
+              }))}
+            />
+            <BlockerList
+              title="Open works"
+              records={scoped.openWorks.map((work) => ({
+                id: work.id,
+                title: work.title,
+                href: `/checksheets?projectId=${encodeURIComponent(project.id)}&work=${encodeURIComponent(work.id)}`,
+              }))}
+            />
+          </div>
+        )}
+      </div>
     </section>
+  );
+}
+
+function BlockerList({
+  title,
+  records,
+}: {
+  title: string;
+  records: { id: string; title: string; href: string }[];
+}) {
+  const [showAll, setShowAll] = useState(false);
+  return (
+    <div className="min-w-0">
+      <h5 className="text-xs font-semibold text-slate-700">{title}</h5>
+      {records.length ? (
+        <ul className="mt-1 divide-y">
+          {(showAll ? records : records.slice(0, 3)).map((record) => (
+            <li key={record.id}>
+              <Link
+                href={record.href}
+                className="flex min-h-11 items-center gap-2 break-words py-2 text-sm text-blue-700 underline underline-offset-4"
+              >
+                <span className="min-w-0 flex-1 break-words">
+                  {record.title}
+                </span>
+                <ArrowUpRight aria-hidden="true" className="size-4 shrink-0" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="py-2 text-sm text-slate-600">None recorded.</p>
+      )}
+      {records.length > 3 && (
+        <button
+          className="min-h-11 text-sm font-medium text-blue-700 hover:underline focus-visible:outline-blue-700"
+          onClick={() => setShowAll(!showAll)}
+        >
+          {showAll ? "Show first 3" : `Show all ${records.length}`}
+        </button>
+      )}
+    </div>
   );
 }
