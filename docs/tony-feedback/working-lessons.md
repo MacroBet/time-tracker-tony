@@ -106,3 +106,20 @@ mostrato che un'immagine di soli filtri non racconta un report: includere righe,
 totali e link leggibili, con ritagli che non troncano etichette o azioni ai bordi.
 Ambito Tony/FieldTrack; esempi sintetici dichiarati, produzione distinta, nessun
 invio, microfono, nuovo sviluppo o autorizzazione remota impliciti.
+
+## 17 novembre 2026 — lifecycle voce e recupero degli errori
+
+- **T, regressione e browser verificati:** smontare la cattura non basta se un
+  vecchio intento resta memorizzato. Al cambio progetto consumare l'intento nel
+  contenitore effettivo; A→B→A non deve riaprire la voce o avviare una cattura.
+  Prova locale tastiera di ritorno: zero dialoghi e nessun ascolto implicito.
+- **T, test invariati conservati:** un report già ottenuto può recuperare un
+  errore di narrazione/trasporto solo con origine e fase esplicite. Meter, tool,
+  protocollo, accesso, versioni e cancellazione restano terminali. Testare anche
+  `DOMException` nativa `AbortError`, che deve essere cancellazione e non fallback.
+  La suite precedente di metering ha rilevato il difetto; correggere il codice
+  senza indebolire l'aspettativa ha portato35test mirati e372finali aPASS.
+
+Prove e limiti nel [completamento funzionale](intake-20261116-functional-completion.md).
+Ambito: lifecycle e contratto applicativo, nessuna garanzia acustica universale
+o autorizzazione a chiamate AI live derivata dai test sintetici.

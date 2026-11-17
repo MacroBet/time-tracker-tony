@@ -1,4 +1,11 @@
-# Completamento funzionale delle richieste Tony — 16 novembre 2026
+# Completamento funzionale delle richieste Tony — 16–17 novembre 2026
+
+**Esito corrente:** codice pubblicato su main `9b16754`, Vercel Production READY
+e alias verificati; PDF inglese finale18pagine/21dettagli controllato18/18.
+Scarti implementativi individuati chiusi, prove locali e accettazione umana
+Send/Edit distinte dal collaudo AI live. Quest'ultimo **non eseguito**, in attesa
+dell'unica approvazione specifica già aperta in regia dopo il rifiuto automatico.
+Nessuna nuova domanda duplicata, chiamata alternativa o modifica dati business.
 
 ## Mandato e stato
 
@@ -173,3 +180,81 @@ dell'aggiornamento:2.069.657byte, SHA256
 `3cb116cfc3919b08d65f00f8b801711e06e9ce7ace231df4527799d42b78f936`.
 La nuova guida18pagine riusa le immagini valide e aggiorna default, chat/voce e
 mobile; generazione vincolata a ricevuta Production READY del nuovo SHA.
+
+## Pubblicazione verificata — 17 novembre 2026
+
+Push normale di8commit da a7b486a a
+`9b16754267bd610fb8ad82002b9bb14ad6d1a53d` su origin/main,
+MacroBet/time-tracker-tony. Ultimo commit di codice `16a9687`; nessun force,
+reset, stash o pull sopra modifiche. L'integrazione Git esistente ha prodotto
+un solo deployment, senza un secondo deploy CLI:
+
+- Vercel `dpl_5qPypUqfkehsv4rxgwRpBygPiMXk`, target production,
+  stato **READY**, URL
+  `https://time-tracker-tony-oz2x12jav-macrobets-projects.vercel.app`.
+- Metadata del deployment legati allo SHA9b16754; GitHub Vercel status success e
+  deployment Production `7839546938` success sul medesimo SHA.
+- READY16nov23:39:55,538UTC, cioè **17nov00:39:55,538Europe/Rome**;
+  stato GitHub success16nov23:39:56UTC. Non confondere data UTC e locale.
+- Alias `https://time-tracker-tony.vercel.app` risolto allo stesso deployment,
+  HTTP200. Sessione anonima currentUser=null; API admin/ai-usage401.
+- Chrome autenticato da Marco: Dashboard, Schedule, default Admin e contesto
+  chat letti sul nuovo rilascio. Schedule11.510attività, prima pagina50;
+  calendarScaleDAY e durataDays distinti. Nessun form salvato o proposta inviata.
+- Controllo voce della pagina online: **ready for live English (UK)**. Nessun
+  avvio microfono, permesso o installazione da agente. Questa verifica tecnica
+  online non amplia la prova umana locale Send/Edit a ogni dispositivo/acustica.
+
+Ricevuta privata `output/tony/functional-completion-20261116/release-final.private.json`,
+con hash dei riscontri Vercel/GitHub/alias/letture. Le schermate del PDF restano
+sintetiche locali, separate da queste verifiche autenticate.
+
+## Singolo test AI live: limite concreto ancora aperto
+
+Il controllo automatico ha respinto l'azione **prima dell'esecuzione** perché
+avrebbe trasmesso contesto del progetto a OpenAI e potuto generare consumo API;
+il mandato generale di collaudo non era un'autorizzazione sufficientemente
+esplicita su quel payload e costo. **Nessuna domanda inviata, zero chiamate
+provider e nessun tentativo alternativo.** Non si dichiara quindi verificata una
+risposta generata live o una latenza cloud.
+
+In regia è già aperta una sola richiesta specifica per AMS16·Test, configurazione
+OpenAI esistente, normale consumo API, timeout20s, massimo4richieste provider,
+nessun retry né modifica dei dati business. Testo concreto:
+
+> Using only the saved project counts already supplied, state the total assets,
+> saved tasks and imported P6 activities in one short sentence. Do not change any records.
+
+Un eventuale invio autorizzato registrerebbe normalmente conversazione e meter;
+queste scritture vanno distinte da asset/task/Schedule. L'approvazione rimane
+pendente, non è dedotta dal tempo trascorso. Chiave, modello e servizio non
+sono stati creati, sostituiti o esposti. Publisher della regia proprietario di
+richieste/eventi; nessun callback interchat o impersonazione da questo owner.
+
+## PDF finale e chiusura del lavoro indipendente
+
+Finale privato stabile `output/pdf/fieldtrack-visual-update-20261116-en.pdf`:
+**18pagine,21schermate/dettagli,2.306.777byte**, SHA256
+`3ed240e9512cd60a00801f94577806a2d56bac548d0ca9945c3d0c96c83c1053`.
+Aggiornate preferenze/scala Admin, comandi esatti, composer popup/completo,
+setup voce e mobile; immagini ancora valide riusate. PDF precedente conservato.
+
+ReportLab generazione solo dopo ricevuta READY,18render Poppler ispezionati:
+pagine1–9 dal revisoreA3,10–18 dal root, tutti PASS. Testi/titoli/footer/numeri,
+confini e21hash screenshot verificati; prosa ASCII, link pubblico funzionante.
+Manifest pagina→richiesta→originale/hash/ritaglio e ricevute QA sotto
+`output/tony/functional-completion-20261116/visual-guide/`, esclusi daGit.
+Il primo render ha emesso avvisi fontconfig sulla cache non scrivibile ma è
+terminato con18PNG completi; testo renderizzato controllato senza difetti.
+
+Entrambe le demo sono ferme, viewport temporanea ripristinata e tab locale
+creata per la prova voce chiusa. Sessione Chrome produzione mantenuta come
+risultato disponibile. Nessuna suite app ripetuta per la sola documentazione,
+nessun ulteriore deploy per metadati di chiusura. next-env e cambi preesistenti
+preservati; chiusura documentale locale distinta dal codice già online.
+
+Quota condivisa conto50→53%, uso ordinario consentito, cap90/stopnuovi85;
+variazione non attribuita al solo job. Monitor **PAUSED**, nessun WhatsApp,
+invioTony, import, scrittura business remota o scheduler aggiuntivo.
+Prossimo passo residuo: sola decisione sulla prova AI concreta già in regia;
+non attendere né ripetere polling automatico a stato invariato.

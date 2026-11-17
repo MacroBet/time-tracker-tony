@@ -1,5 +1,14 @@
 # Riprendere FieldTrack con Tony
 
+**Chiusura funzionale17nov2026:** [release e PDF finale](intake-20261116-functional-completion.md).
+Main9b16754 pubblicato, VercelREADY/Production success e alias verificati;
+372unitari/PGlite+21API e statici/build PASS. PDF18pagine/21dettagli con QA18/18.
+Send/Edit confermato da Marco nella demo locale; viste autenticate e readiness
+voce online controllate separatamente. Il solo test AI live non è stato eseguito:
+rifiuto automatico su contesto OpenAI/costo, unica approvazione specifica già
+pendente in regia, nessun retry o domanda duplicata. MonitorPAUSED, nessuna nuova
+lettura WhatsApp o modifica dati business. I resoconti sottostanti sono storici.
+
 **Aggiornamento16nov2026:** [mandato esecutivo e prove](intake-20261116-implementation.md).
 PianoA1–A8 approvato per implementazione/test/commit locali; monitor unico
 `agente-progetto-tony` **PAUSED**, condizione di stop verificata. Nessuna ulteriore

@@ -1,5 +1,19 @@
 # Guida visiva del rilascio FieldTrack — 16 novembre 2026
 
+**Edizione aggiornata17nov:** il medesimo percorso finale contiene ora18pagine
+e21schermate/dettagli del rilascio `9b16754` (codice `16a9687`), Production READY
+e alias verificati. QA visiva18/18PASS, SHA256
+`3ed240e9512cd60a00801f94577806a2d56bac548d0ca9945c3d0c96c83c1053`,
+2.306.777byte. [Mandato e prove finali](intake-20261116-functional-completion.md#pdf-finale-e-chiusura-del-lavoro-indipendente).
+Nuove immagini dei default separati scala/durata, chat unica popup/completa,
+voce e mobile; pagine17–18 aggiunte per chat desktop/mobile. Manifest corrente
+`output/tony/functional-completion-20261116/visual-guide/manifest.private.json`.
+Marco ha confermato Send/Edit nella demo Chrome locale; viste autenticate e
+readiness voce online lette separatamente. AI live non esercitata: approvazione
+specifica già pendente in regia dopo rifiuto automatico, nessuna chiamata inviata.
+PDF sempre sintetico locale e non inviato aTony. L'edizione16pagine descritta
+sotto resta storica, conservata privatamente come precedente esatto.
+
 Mandato diretto di Marco: alla fine delle richieste di Tony raccogliere schermate
 di tutte le modifiche per un PDF da inoltrare manualmente. È una regola di consegna
 specifica FieldTrack/Tony, conservata in AGENTS e README; non è un nuovo mandato di

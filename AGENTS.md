@@ -27,6 +27,11 @@ Non servono il trascritto o l'ID di una chat precedente. Per la procedura seguir
   incarico il limite precedente ai sei commit a7b486a; non amplia dati remoti,
   servizi, credenziali o spese. Monitor PAUSED, niente WhatsApp o invii cliente.
   [Mandato, ownership e prove](docs/tony-feedback/intake-20261116-functional-completion.md).
+  Esito17nov: main9b16754 online, VercelREADY/success e alias verificati;
+  372unitari/PGlite+21API, PDF18pagine QA18/18. Send/Edit accettato da Marco
+  in Chrome demo locale; viste autenticate/readiness online distinte. Singolo
+  test AI live non eseguito dopo rifiuto automatico per contesto/costo:
+  approvazione concreta già pendente in regia, niente retry o nuova domanda.
 - **Consegna visiva Tony, regola esplicita16nov2026:** a fine consegna raccogliere
   schermate o dettagli leggibili di tutte le funzioni/interfacce cambiate e
   preparare un PDF inglese pronto da inoltrare, con titoli e didascalie brevi.
