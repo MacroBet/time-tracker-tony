@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type {
   SourceActivityView,
   SourceProgrammePage,
@@ -730,30 +730,11 @@ export function SourceProgrammeGantt({
                                   Due
                                 </span>
                               </button>
-                            ) : row.start || row.finish ? (
-                              <button
-                                className="absolute top-0 left-1 grid size-11 place-items-center rounded-md text-blue-800 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700"
-                                onClick={() => goTo(row)}
-                                aria-label={`Go to timeline dates for ${row.activityId}`}
-                                title={`Show ${formatScheduleDate(row.start ?? row.finish)} on the timeline`}
-                              >
-                                {(row.finish ?? row.start)! < anchor ? (
-                                  <ArrowLeft
-                                    className="size-4"
-                                    aria-hidden="true"
-                                  />
-                                ) : (
-                                  <ArrowRight
-                                    className="size-4"
-                                    aria-hidden="true"
-                                  />
-                                )}
-                              </button>
-                            ) : (
+                            ) : !row.start && !row.finish ? (
                               <span className="absolute top-4 left-3 text-xs text-slate-600">
                                 Dates not recorded
                               </span>
-                            )}
+                            ) : null}
                           </div>
                         );
                       })}
