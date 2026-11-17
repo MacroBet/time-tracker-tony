@@ -635,7 +635,9 @@ export function SourceProgrammeGantt({
                                         width: visualWidth,
                                       }}
                                     >
-                                      {row.activityId}
+                                      <span className="min-w-0 truncate">
+                                        {row.name}
+                                      </span>
                                     </span>
                                   )}
                                 </button>

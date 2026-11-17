@@ -1783,10 +1783,8 @@ function Gantt({
                                 className="absolute left-0 inset-y-0 bg-blue-400/50"
                                 style={{ width: `${r.progress ?? 0}%` }}
                               />
-                              <span className="relative whitespace-nowrap px-1">
-                                {r.progress !== undefined
-                                  ? `${r.progress}%`
-                                  : r.activityId}
+                              <span className="relative min-w-0 truncate px-1">
+                                {r.name}
                               </span>
                             </span>
                           </button>
