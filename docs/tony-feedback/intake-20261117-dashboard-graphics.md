@@ -67,3 +67,19 @@ invariati; il gate AI già pendente non viene riaperto. Monitor PAUSED, nessun i
 Rilascio normale su main e Vercel esistenti entro il mandato AGENTS per il lavoro
 richiesto. SHA, deployment e alias effettivamente verificati sono registrati nella
 chiusura successiva; la build locale non è prova di pubblicazione.
+
+## Pubblicazione verificata
+
+Codice **dc3cbef**, push normale su origin/main. Vercel Production
+`dpl_2G4MFaAY4BCJHbFTFwbt371s3K9r` **READY**, URL
+`https://time-tracker-tony-fckhjaci3-macrobets-projects.vercel.app`. SHA nei metadati della lista deployment corrispondente
+al commit; alias `https://time-tracker-tony.vercel.app` risolto allo stesso ID.
+Smoke pubblico di sola lettura il **17 Nov 2026 09:03:02 CET**: root e pagine richieste HTTP200,
+API bootstrap anonima401. Nessun accesso autenticato alla UI Production attestato.
+
+PDF7pagine/QA7/7: SHA256 `3724d5d657d31c11a85adbcdf6019b29171853d2218275a4097ec6888366f7dc`.
+Ricevute private `release-plan.private.json`, `deployment-inspect.private.json`,
+`alias-inspect.private.json`, `public-smoke.private.json` e manifest PDF nella
+cartella di consegna. Quota conto53% iniziale/finale, ordinaryUsageAllowed true.
+Modifiche documentali preesistenti e next-env preservati; lo stato operativo
+aggiunto al registro viene versionato separatamente dal codice. Nessun invio Tony.

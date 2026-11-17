@@ -1,5 +1,16 @@
 # Registro operativo — Tony
 
+**Dashboard grafica 17nov:** [richieste, attuazione e prove](intake-20261117-dashboard-graphics.md).
+Quattro grafici reali e drilldown, prima schermata mobile compatta, Schedule con
+frecce/date leggibili/durata in Columns, Assets senza Supply con azioni a sinistra
+e colonne regolabili (conferma diretta Marco). 372 unitari/PGlite + 2 API + 28
+controlli browser e statici/build PASS. Revisore: due fix mobile risolti. PDF inglese
+7 pagine, QA 7/7, privato `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
+Codice `dc3cbef` su main e online: Vercel READY, alias sullo stesso deployment/HTTP200
+e API anonima401 verificati il 17 Nov 2026 09:03:02 CET. Nessun dato business
+remoto modificato, AI live o invio Tony; monitor PAUSED. Dettagli autenticati
+collaudati soltanto nella demo locale sintetica.
+
 ## Fix chat urgente: cronologia DB, Markdown e attesa inline — 14 novembre 2026
 
 Marco richiede fix e produzione; decisione diretta «salvale su db». Implementati
@@ -491,6 +502,17 @@ modificata. Nessuna azione fisica necessaria. Altri controlli soltanto per nuovo
 pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
+
+**Dashboard grafica 17nov:** [richieste, attuazione e prove](intake-20261117-dashboard-graphics.md).
+Quattro grafici reali e drilldown, prima schermata mobile compatta, Schedule con
+frecce/date leggibili/durata in Columns, Assets senza Supply con azioni a sinistra
+e colonne regolabili (conferma diretta Marco). 372 unitari/PGlite + 2 API + 28
+controlli browser e statici/build PASS. Revisore: due fix mobile risolti. PDF inglese
+7 pagine, QA 7/7, privato `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
+Codice `dc3cbef` su main e online: Vercel READY, alias sullo stesso deployment/HTTP200
+e API anonima401 verificati il 17 Nov 2026 09:03:02 CET. Nessun dato business
+remoto modificato, AI live o invio Tony; monitor PAUSED. Dettagli autenticati
+collaudati soltanto nella demo locale sintetica.
 
 **Dashboard AI usage 14nov online:** [perimetro, prove e limiti](intake-20261114-ai-usage.md).
 Solo admin su pagina/API/query SQL; consumi globali giornalieri, filtri periodo/modello/fonte,
