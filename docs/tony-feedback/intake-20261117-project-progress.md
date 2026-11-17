@@ -93,8 +93,16 @@ fuori ambito perché i criteri non sono definiti. Modifiche preesistenti e
 
 ## Rilascio e prossimo passo
 
-Codice e prove sono pronti per il normale commit/push su main autorizzato. Verifica
-di commit remoto, deployment Vercel esistente e alias separata dai test locali;
-ricevuta e risultato conclusivo verranno registrati dopo il push. Prossimo passo
-funzionale: revisione umana della Dashboard con i record del progetto. Nessun nuovo
-sviluppo su altre pagine o monitor implicito.
+Codice **`a8e3ebfc3ce6f69cf5f2cc863b01199bdf40c94c`** pushato normalmente su main.
+Deployment Vercel esistente **`dpl_8DfZ7krUtdbensw9y4ry4sK6Tcnv` READY**; SHA
+verificato dai metadati della lista e URL confrontato con inspect. L'alias
+`time-tracker-tony.vercel.app` punta allo stesso deployment READY. Smoke pubblici
+Dashboard e Schedule HTTP200; nuovo endpoint progress anonimo HTTP401.
+Verificato il **17 novembre 2026, 13:16:16 CET**. Ricevuta privata:
+`output/tony/project-curve-20261117/release-code.private.json`.
+
+Le viste autenticate restano collaudate nella sola demo locale sintetica. Il
+successivo commit documentale non cambia il codice dell'app; la ricevuta privata
+conclusiva conserva il controllo del relativo deployment/alias. Prossimo passo:
+revisione umana della Dashboard con i record del progetto. Nessun nuovo sviluppo
+su altre pagine, invio o monitor implicito.

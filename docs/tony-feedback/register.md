@@ -6,8 +6,10 @@ date registrate e copertura esplicita. Tag indipendenti nei colori progetto,
 filtri/group vendor-disciplina, blockers distinti; lookahead inline2/4/6 settimane.
 391unitari/PGlite + 2API + 20browser PASS, statici/build PASS; Impeccable ship.
 PDF inglese aggiornato13pagine/QA13/13, stesso percorso `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
-Verifica rilascio successiva al normale push; viste autenticate provate solo nella
-demo sintetica locale. Nessun dato business remoto, AI live o invio; monitor PAUSED.
+Codice `a8e3ebf` pushato su main e online: Vercel READY e alias sullo stesso
+deployment, Dashboard/Schedule200 e API progress anonima401, 17nov13:16:16CET.
+Viste autenticate provate solo nella demo sintetica locale. Nessun dato business
+remoto, AI live o invio; monitor PAUSED.
 
 **Schedule diretto 17nov:** [mandato, drag e prove](intake-20261117-schedule-direct.md).
 Scala/intervallo/durata/colonne e filtri sullo schermo; drag righello per navigare,
@@ -529,8 +531,10 @@ date registrate e copertura esplicita. Tag indipendenti nei colori progetto,
 filtri/group vendor-disciplina, blockers distinti; lookahead inline2/4/6 settimane.
 391unitari/PGlite + 2API + 20browser PASS, statici/build PASS; Impeccable ship.
 PDF inglese aggiornato13pagine/QA13/13, stesso percorso `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
-Verifica rilascio successiva al normale push; viste autenticate provate solo nella
-demo sintetica locale. Nessun dato business remoto, AI live o invio; monitor PAUSED.
+Codice `a8e3ebf` pushato su main e online: Vercel READY e alias sullo stesso
+deployment, Dashboard/Schedule200 e API progress anonima401, 17nov13:16:16CET.
+Viste autenticate provate solo nella demo sintetica locale. Nessun dato business
+remoto, AI live o invio; monitor PAUSED.
 
 **Schedule diretto 17nov:** [mandato, drag e prove](intake-20261117-schedule-direct.md).
 Scala/intervallo/durata/colonne e filtri sullo schermo; drag righello per navigare,
