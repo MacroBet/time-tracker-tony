@@ -73,3 +73,19 @@ preservata. Font incorporati, manifest pagina→modifica→fonte, render e ispez
 Pubblicazione normale su main/Vercel esistenti autorizzata da AGENTS per il lavoro
 richiesto; stato e ricevuta del deploy saranno distinti dalle prove locali. Monitor
 PAUSED, gate AI precedente invariato, nessun invio cliente.
+
+## Pubblicazione verificata
+
+Codice **050e4fb**, push normale su origin/main. Vercel Production
+`dpl_HZ9wyHWpdh7vpe9g58A32bsA5VQr` **READY**, URL
+`https://time-tracker-tony-myvqqy68h-macrobets-projects.vercel.app`. SHA nei metadati della lista deployment corrispondente
+al commit; alias `https://time-tracker-tony.vercel.app` risolto allo stesso ID.
+Smoke pubblico di sola lettura il **17 Nov 2026 10:05:52 CET**: root e pagine richieste HTTP200,
+API bootstrap anonima401. Nessun accesso autenticato alla UI Production attestato.
+
+PDF9pagine/QA9/9: SHA256 `cebd007f0ad5d757b85ef11dd95389943b77a413ea75d32089e1212eed997002`.
+Ricevute private `release-plan.private.json`, `deployment-inspect.private.json`,
+`alias-inspect.private.json`, `public-smoke.private.json` e manifest PDF nella
+cartella di consegna. Quota conto53% iniziale→54% finale, ordinaryUsageAllowed true.
+Modifiche documentali preesistenti e next-env preservati; lo stato operativo
+aggiunto al registro viene versionato separatamente dal codice. Nessun invio Tony.

@@ -1,5 +1,16 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Schedule diretto 17nov:** [mandato, drag e prove](intake-20261117-schedule-direct.md).
+Scala/intervallo/durata/colonne e filtri sullo schermo; drag righello per navigare,
+barre/estremità per proporre date, motivo + preview + conferma prima del salvataggio.
+Source e baseline conservati, actuals protetti, ruolo/versione/offline verificati.
+380 unitari/PGlite + 2 API su demo vuota PASS; browser sorgente18/18,
+ruoli4/4 e verifica gestito4/4, touch/Escape/resize provati. Revisione Impeccable ship.
+PDF inglese aggiornato9pagine/QA9/9: `output/pdf/fieldtrack-dashboard-update-20261117-en.pdf`.
+Codice `050e4fb` su main e online: Vercel READY, alias sullo stesso deployment/HTTP200
+e API anonima401 verificati il 17 Nov 2026 10:05:52 CET. Nessuna scrittura
+business remota, AI live o invio Tony. Monitor PAUSED; dettagli autenticati locali.
+
 **Dashboard grafica 17nov:** [richieste, attuazione e prove](intake-20261117-dashboard-graphics.md).
 Quattro grafici reali e drilldown, prima schermata mobile compatta, Schedule con
 frecce/date leggibili/durata in Columns, Assets senza Supply con azioni a sinistra
