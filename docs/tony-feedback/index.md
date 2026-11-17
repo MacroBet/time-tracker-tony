@@ -6,8 +6,8 @@ nome completo nel tooltip nativo e aria label, apertura con tastiera invariata.
 20/20browser locali, statici/build PASS; Impeccable ship. PDF inglese dedicato
 2pagine/QA2/2 `output/pdf/fieldtrack-gantt-labels-20261117-en.pdf`.
 Nessuna modifica a date/dati/permessi; viste autenticate collaudate solo in demo.
-Ricevuta di rilascio separata dalle prove locali; problema login/DB già segnalato
-invariato. Nessun export segreti/AI live/invio; monitor PAUSED.
+Codice `0e66a11` pushato su main, Vercel READY e alias sullo stesso deployment;
+Schedule200/API source anonima401, 17 Nov 2026 18:57:42 CET. Login/DB già segnalato invariato. Nessun export segreti/AI live/invio; monitor PAUSED.
 
 **Dashboard overall 17nov:** [curva, opzioni e prove](intake-20261117-project-progress.md).
 Curva planned/actual prima dei task, attività con peso uguale confermate da Marco,

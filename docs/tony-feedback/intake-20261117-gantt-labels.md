@@ -52,9 +52,13 @@ inclusi documenti sull'accesso admin e `next-env.d.ts`, preservati.
 
 ## Rilascio e limiti
 
-Normale commit/push su main e deploy tramite l'integrazione Vercel esistente,
-autorizzati dalle istruzioni di progetto per la modifica richiesta. SHA, stato
-deployment e alias verranno confrontati nella ricevuta privata conclusiva.
+Codice **`0e66a112e4d1039df523924f7d81b73b6c52a65b`** pushato normalmente su main.
+Deployment **`dpl_FVqdpmGjLBmLDqJR4iAMRhJY9osX` READY**, SHA associato dall'elenco Vercel;
+alias `time-tracker-tony.vercel.app` sullo stesso deployment. Smoke pubblici:
+Schedule200, API programme-source anonima401. Verificato **17 Nov 2026 18:57:42 CET**.
+Ricevuta privata `output/tony/gantt-labels-20261117/release-code.private.json`.
+Il successivo aggiornamento documentale non modifica il codice; ricevuta finale
+conservata nello stesso percorso privato come `release-final.private.json`.
 
 L'accesso admin Production precedentemente fallito con500 resta un problema
 separato: la connessione DB disponibile risponde402/quota Neon e il valore/branch
