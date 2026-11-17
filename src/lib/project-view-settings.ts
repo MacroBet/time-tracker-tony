@@ -2,10 +2,10 @@ import { z } from "zod";
 
 export const DASHBOARD_PANELS = [
   "summary",
+  "tags",
   "attention",
   "works",
   "reports",
-  "tags",
   "details",
 ] as const;
 export type DashboardPanelId = (typeof DASHBOARD_PANELS)[number];

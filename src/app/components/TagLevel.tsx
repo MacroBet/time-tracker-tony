@@ -3,13 +3,18 @@ import type { Level, ProjectConfig } from "@/lib/commissioning";
 export function TagLevel({
   level,
   presentation,
+  compact = false,
 }: {
   level: Level;
   presentation?: ProjectConfig["phasePresentation"];
+  compact?: boolean;
 }) {
   const display = presentation?.[level];
   return (
-    <span className="inline-flex max-w-full min-w-0 items-center gap-2 align-middle">
+    <span
+      title={compact ? display?.label : undefined}
+      className="inline-flex max-w-full min-w-0 items-center gap-2 align-middle"
+    >
       {display?.color && (
         <span
           aria-hidden="true"
@@ -19,7 +24,9 @@ export function TagLevel({
       )}
       <span className="min-w-0 break-words [overflow-wrap:anywhere]">
         {level}
-        {display?.label && display.label !== level ? ` · ${display.label}` : ""}
+        {!compact && display?.label && display.label !== level
+          ? ` · ${display.label}`
+          : ""}
       </span>
     </span>
   );

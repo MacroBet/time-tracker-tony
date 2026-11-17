@@ -1,11 +1,12 @@
 "use client";
-import { useState, type MouseEvent } from "react";
+import { useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Copy,
   CopyPlus,
   GripVertical,
+  Pencil,
   Plus,
   Trash2,
   Upload,
@@ -45,6 +46,74 @@ type Preview = {
   version: number;
   assets: number;
 };
+const registerColumnDefaults = {
+  asset: 320,
+  equipment: 200,
+  area: 144,
+  phase: 144,
+};
+type RegisterColumn = keyof typeof registerColumnDefaults;
+
+function ColumnResizeHandle({
+  label,
+  width,
+  minimum,
+  defaultWidth,
+  onChange,
+}: {
+  label: string;
+  width: number;
+  minimum: number;
+  defaultWidth: number;
+  onChange: (width: number) => void;
+}) {
+  const drag = useRef<{ x: number; width: number } | null>(null);
+  const maximum = 640;
+  const resize = (next: number) =>
+    onChange(Math.round(Math.max(minimum, Math.min(maximum, next))));
+  return (
+    <span
+      role="separator"
+      aria-label={`Resize ${label} column`}
+      aria-orientation="vertical"
+      aria-valuemin={minimum}
+      aria-valuemax={maximum}
+      aria-valuenow={width}
+      aria-valuetext={`${width} pixels`}
+      tabIndex={0}
+      title="Drag to resize. Arrow keys adjust width; Home resets."
+      className="absolute inset-y-0 -right-2 z-30 flex w-4 touch-none cursor-col-resize select-none items-center justify-center text-blue-700 hover:bg-blue-50 focus-visible:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700"
+      onPointerDown={(event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        drag.current = { x: event.clientX, width };
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerMove={(event) => {
+        if (drag.current)
+          resize(drag.current.width + event.clientX - drag.current.x);
+      }}
+      onPointerUp={(event) => {
+        drag.current = null;
+        if (event.currentTarget.hasPointerCapture(event.pointerId))
+          event.currentTarget.releasePointerCapture(event.pointerId);
+      }}
+      onPointerCancel={() => (drag.current = null)}
+      onLostPointerCapture={() => (drag.current = null)}
+      onDoubleClick={() => resize(defaultWidth)}
+      onKeyDown={(event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+          return;
+        event.preventDefault();
+        if (event.key === "Home") resize(defaultWidth);
+        else if (event.key === "End") resize(maximum);
+        else resize(width + (event.key === "ArrowRight" ? 16 : -16));
+      }}
+    >
+      <span aria-hidden="true" className="h-6 border-l border-current" />
+    </span>
+  );
+}
 export function AssetRegister({
   project,
   onAdd,
@@ -69,8 +138,8 @@ export function AssetRegister({
   const [query, setQuery] = useState(""),
     [area, setArea] = useState("all"),
     [phase, setPhase] = useState("all"),
-    [supply, setSupply] = useState("all"),
     [page, setPage] = useState(0);
+  const [columnWidths, setColumnWidths] = useState(registerColumnDefaults);
   const [selected, setSelected] = useState<string[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Level[]>>({});
   const [copied, setCopied] = useState<{
@@ -94,7 +163,7 @@ export function AssetRegister({
     query,
     area,
     phase,
-    supply,
+    supply: "all",
     programmeId: state.programmeId,
   }).filter((asset) => matchesCopilotAssetFilters(asset, linkedFilters));
   const actualPage = Math.min(
@@ -120,13 +189,11 @@ export function AssetRegister({
   const selection = selected.filter((id) =>
     state.assets.some((asset) => asset.id === id),
   );
-  const filtersActive =
-    linked || query || area !== "all" || phase !== "all" || supply !== "all";
+  const filtersActive = linked || query || area !== "all" || phase !== "all";
   function clearFilters() {
     setQuery("");
     setArea("all");
     setPhase("all");
-    setSupply("all");
     setPage(0);
     if (linked)
       router.replace(
@@ -295,33 +362,19 @@ export function AssetRegister({
       </select>
     );
   }
-  const supplyFilter = (
-    <select
-      className="field-select mt-1 min-h-11 min-w-32 w-full text-sm font-normal"
-      aria-label="Filter by supply"
-      value={supply}
-      onChange={(event) => {
-        setSupply(event.target.value);
-        setPage(0);
-      }}
-    >
-      <option value="all">All supply</option>
-      <option value="true">Client supplied</option>
-      <option value="false">Contractor supplied</option>
-      <option value="unknown">Not classified</option>
-    </select>
-  );
   function actions(asset: Asset) {
     return (
       canEdit && (
         <div className="flex flex-wrap items-center gap-1">
           <Button
-            className="min-h-11"
-            size="sm"
+            className="size-11"
+            size="icon"
             variant="ghost"
+            aria-label={`Edit ${asset.name}`}
+            title="Edit asset"
             onClick={() => onEdit(asset)}
           >
-            Edit
+            <Pencil className="size-4" />
           </Button>
           <Button
             className="size-11"
@@ -386,6 +439,23 @@ export function AssetRegister({
       )
     );
   }
+  function resizeHandle(
+    column: RegisterColumn,
+    label: string,
+    minimum: number,
+  ) {
+    return (
+      <ColumnResizeHandle
+        label={label}
+        width={columnWidths[column]}
+        minimum={minimum}
+        defaultWidth={registerColumnDefaults[column]}
+        onChange={(width) =>
+          setColumnWidths((current) => ({ ...current, [column]: width }))
+        }
+      />
+    );
+  }
   return (
     <section
       className="min-w-0 rounded-xl border bg-white p-3 sm:p-4 space-y-3"
@@ -425,15 +495,7 @@ export function AssetRegister({
               </Button>
             </>
           )}
-          {hasModule(currentUser, "reports") ? (
-            <Button className="min-h-11" variant="outline" asChild>
-              <Link
-                href={`/reports?report=tagging&projectId=${encodeURIComponent(project.id)}`}
-              >
-                Tagging status report
-              </Link>
-            </Button>
-          ) : (
+          {!hasModule(currentUser, "reports") && (
             <Button className="min-h-11" variant="outline" asChild>
               <Link
                 href={`/commissioning?view=status&projectId=${encodeURIComponent(project.id)}`}
@@ -565,10 +627,9 @@ export function AssetRegister({
           <summary className="min-h-11 cursor-pointer font-medium">
             Filters{filtersActive ? " · active" : ""}
           </summary>
-          <div className="grid gap-3 sm:grid-cols-3 pb-3">
+          <div className="grid gap-3 sm:grid-cols-2 pb-3">
             <label className="text-sm">Area{fieldFilter("area")}</label>
             <label className="text-sm">Phase{fieldFilter("phase")}</label>
-            <label className="text-sm">Supply{supplyFilter}</label>
           </div>
         </details>
       </div>
@@ -578,11 +639,33 @@ export function AssetRegister({
         aria-label="Scrollable asset register"
         tabIndex={0}
       >
-        <table className="w-full min-w-[1100px] text-sm text-left tabular-nums">
+        <table
+          className="table-fixed text-sm text-left tabular-nums"
+          style={{
+            width:
+              Object.values(columnWidths).reduce(
+                (sum, value) => sum + value,
+                0,
+              ) +
+              (canEdit ? 60 : 0) +
+              levels.length * 80,
+            minWidth: "100%",
+          }}
+        >
           <caption className="sr-only">
             Equipment inventory and required tag configuration. Test and
             approval status is in Reports.
           </caption>
+          <colgroup>
+            {canEdit && <col style={{ width: 60 }} />}
+            <col style={{ width: columnWidths.asset }} />
+            <col style={{ width: columnWidths.equipment }} />
+            <col style={{ width: columnWidths.area }} />
+            <col style={{ width: columnWidths.phase }} />
+            {levels.map((level) => (
+              <col key={level} style={{ width: 80 }} />
+            ))}
+          </colgroup>
           <thead className="sticky top-0 z-10 bg-slate-50 align-top">
             <tr>
               {canEdit && (
@@ -616,7 +699,7 @@ export function AssetRegister({
               )}
               <th
                 scope="col"
-                className="sticky left-0 z-20 min-w-56 bg-slate-50 p-2"
+                className="sticky left-0 z-20 bg-slate-50 p-2 pr-4"
               >
                 Asset
                 <Input
@@ -629,35 +712,29 @@ export function AssetRegister({
                     setPage(0);
                   }}
                 />
+                {resizeHandle("asset", "Asset", 240)}
               </th>
-              <th scope="col" className="p-2 min-w-40">
-                Equipment / location
+              <th scope="col" className="relative p-2 pr-4">
+                Equipment
+                {resizeHandle("equipment", "Equipment", 144)}
               </th>
-              <th scope="col" className="p-2">
+              <th scope="col" className="relative p-2 pr-4">
                 Area{fieldFilter("area")}
+                {resizeHandle("area", "Area", 128)}
               </th>
-              <th scope="col" className="p-2">
+              <th scope="col" className="relative p-2 pr-4">
                 Phase{fieldFilter("phase")}
+                {resizeHandle("phase", "Phase", 128)}
               </th>
               {levels.map((level) => (
                 <th key={level} scope="col" className="p-2 text-center">
                   <TagLevel
                     level={level}
                     presentation={state.config.phasePresentation}
+                    compact
                   />
                 </th>
               ))}
-              <th scope="col" className="p-2">
-                Supply{supplyFilter}
-              </th>
-              {canEdit && (
-                <th
-                  scope="col"
-                  className="sticky right-0 z-20 min-w-48 border-l border-slate-200 bg-slate-50 p-2"
-                >
-                  Actions
-                </th>
-              )}
             </tr>
           </thead>
           <tbody>
@@ -731,6 +808,7 @@ export function AssetRegister({
                       Project ref: {asset.clientAssetId}
                     </p>
                   )}
+                  {actions(asset)}
                   {drafts[asset.id] &&
                     changes.some(([id]) => id === asset.id) && (
                       <p className="text-xs font-medium text-amber-800">
@@ -738,31 +816,23 @@ export function AssetRegister({
                       </p>
                     )}
                 </td>
-                <td className="p-2">
+                <td className="break-words p-2">
                   {asset.equipmentType}
                   <p className="mt-1 text-xs text-slate-600">
                     {asset.location || "Location not recorded"}
                   </p>
                 </td>
-                <td className="p-2">{asset.area?.trim() || "Not recorded"}</td>
-                <td className="p-2">{asset.phase?.trim() || "Not recorded"}</td>
+                <td className="break-words p-2">
+                  {asset.area?.trim() || "Not recorded"}
+                </td>
+                <td className="break-words p-2">
+                  {asset.phase?.trim() || "Not recorded"}
+                </td>
                 {levels.map((level) => (
                   <td key={level} className="p-1">
                     {tagCheckbox(asset, level)}
                   </td>
                 ))}
-                <td className="p-2">
-                  {asset.clientSupplied == null
-                    ? "Not classified"
-                    : asset.clientSupplied
-                      ? "Client"
-                      : "Contractor"}
-                </td>
-                {canEdit && (
-                  <td className="sticky right-0 z-10 border-l border-slate-200 bg-white p-1">
-                    {actions(asset)}
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>

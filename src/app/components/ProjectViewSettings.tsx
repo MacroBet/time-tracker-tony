@@ -198,8 +198,11 @@ export function PersonalViewSettings({ project }: { project: Project }) {
   return (
     <details className="rounded-lg border bg-white px-3">
       <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium">
-        Customize my view ·{" "}
-        {preference.personal ? "Personal" : "Project default"}
+        <span className="sm:hidden">Customize</span>
+        <span className="hidden sm:inline">
+          Customize my view ·{" "}
+          {preference.personal ? "Personal" : "Project default"}
+        </span>
       </summary>
       <div className="max-w-lg space-y-3 pb-3">
         <p className="text-xs text-slate-600">

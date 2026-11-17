@@ -40,6 +40,7 @@ import {
   type ScheduleActivity,
 } from "@/lib/commissioning";
 import { calendarDays, dayNumber, workingDuration } from "@/lib/scheduling";
+import { formatScheduleDate } from "@/lib/schedule-date";
 import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
 import { GanttRuler } from "./GanttRuler";
 import {
@@ -1403,26 +1404,6 @@ function Gantt({
               {totalMatching} matching activities
             </span>
             <label className="text-sm">
-              Duration
-              <select
-                aria-label="Duration display"
-                className="field-select mt-1 w-24"
-                value={view.durationMode}
-                onChange={(event) =>
-                  applyCommand({
-                    type: "duration",
-                    mode: event.target.value as SourceDurationMode,
-                  })
-                }
-              >
-                <option value="days">Days</option>
-                <option value="hours" disabled>
-                  Hours unavailable
-                </option>
-                <option value="hidden">Hidden</option>
-              </select>
-            </label>
-            <label className="text-sm">
               Date window
               <select
                 aria-label="Gantt date window"
@@ -1449,6 +1430,26 @@ function Gantt({
                 <Button variant="outline">Columns</Button>
               </PopoverTrigger>
               <PopoverContent className="bg-white" align="start">
+                <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
+                  Duration column
+                  <select
+                    aria-label="Duration display"
+                    className="field-select w-28"
+                    value={view.durationMode}
+                    onChange={(event) =>
+                      applyCommand({
+                        type: "duration",
+                        mode: event.target.value as SourceDurationMode,
+                      })
+                    }
+                  >
+                    <option value="days">Days</option>
+                    <option value="hours" disabled>
+                      Hours unavailable
+                    </option>
+                    <option value="hidden">Hidden</option>
+                  </select>
+                </label>
                 {(["progress", "start", "finish"] as const).map((column) => (
                   <label
                     key={column}
@@ -1466,9 +1467,11 @@ function Gantt({
                       }
                     />
                     {
-                      { progress: "Steps %", start: "Start", finish: "Finish" }[
-                        column
-                      ]
+                      {
+                        progress: "Step completion %",
+                        start: "Start",
+                        finish: "Finish",
+                      }[column]
                     }
                   </label>
                 ))}
@@ -1519,9 +1522,10 @@ function Gantt({
                   {showProgress && (
                     <th
                       className="px-1 w-16"
+                      aria-label="Step completion percentage"
                       title="Passed required applicable steps; approval is separate"
                     >
-                      Steps %
+                      %
                     </th>
                   )}
                   {showStart && <th className="px-2 w-24">Start</th>}
@@ -1619,12 +1623,12 @@ function Gantt({
                       )}
                       {showStart && (
                         <td className="whitespace-nowrap px-2 text-[13px]">
-                          {r.start ?? "Not set"}
+                          {formatScheduleDate(r.start)}
                         </td>
                       )}
                       {showFinish && (
                         <td className="whitespace-nowrap px-2 text-[13px]">
-                          {r.finish ?? "Not set"}
+                          {formatScheduleDate(r.finish)}
                         </td>
                       )}
                       {showLinks && (
@@ -1837,11 +1841,24 @@ function Gantt({
                         >
                           Due
                         </button>
+                      ) : r.start || r.finish ? (
+                        <button
+                          className="absolute top-0 left-1 grid size-11 place-items-center rounded-md text-blue-800 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700"
+                          onClick={() =>
+                            setAnchor(shiftDate((r.start ?? r.finish)!, -2))
+                          }
+                          aria-label={`Go to timeline dates for ${r.activityId}`}
+                          title={`Show ${formatScheduleDate(r.start ?? r.finish)} on the timeline`}
+                        >
+                          {(r.finish ?? r.start)! < start ? (
+                            <ArrowLeft className="size-4" aria-hidden="true" />
+                          ) : (
+                            <ArrowRight className="size-4" aria-hidden="true" />
+                          )}
+                        </button>
                       ) : (
-                        <span className="absolute left-3 top-4 text-xs text-slate-500">
-                          {r.start && r.finish
-                            ? "Outside this date window"
-                            : "Dates not set"}
+                        <span className="absolute left-3 top-4 text-xs text-slate-600">
+                          Dates not set
                         </span>
                       )}
                     </div>

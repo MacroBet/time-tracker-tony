@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { CalendarClock } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import type {
   SourceActivityView,
   SourceProgrammePage,
@@ -25,6 +25,7 @@ import {
   type SourceGanttColumn,
 } from "@/lib/source-gantt";
 import { dayNumber } from "@/lib/scheduling";
+import { formatScheduleDate } from "@/lib/schedule-date";
 import { GanttRuler } from "./GanttRuler";
 import { InfoPopover } from "./InfoPopover";
 import type { ActivityStepProgress } from "@/lib/project-reports";
@@ -202,7 +203,15 @@ export function SourceProgrammeGantt({
               <th className="sticky left-0 z-10 border-b bg-slate-50 px-3">
                 Activity / ID
               </th>
-              {show("progress") && <th className="border-b px-1">Steps %</th>}
+              {show("progress") && (
+                <th
+                  className="border-b px-1"
+                  aria-label="Step completion percentage"
+                  title="Passed required applicable steps; approval is separate"
+                >
+                  %
+                </th>
+              )}
               {showDuration && (
                 <th className="border-b px-2">
                   {durationMode === "days" ? "Days" : "Hours"}
@@ -259,7 +268,7 @@ export function SourceProgrammeGantt({
                       title="Show this activity on the timeline"
                       onClick={() => goTo(row)}
                     >
-                      <CalendarClock className="size-4" aria-hidden="true" />
+                      <ArrowRight className="size-4" aria-hidden="true" />
                     </button>
                   </div>
                 </td>
@@ -304,12 +313,12 @@ export function SourceProgrammeGantt({
                 )}
                 {show("start") && (
                   <td className="whitespace-nowrap px-2 text-[13px]">
-                    {row.start ?? "Not set"}
+                    {formatScheduleDate(row.start)}
                   </td>
                 )}
                 {show("finish") && (
                   <td className="whitespace-nowrap px-2 text-[13px]">
-                    {row.finish ?? "Not set"}
+                    {formatScheduleDate(row.finish)}
                   </td>
                 )}
                 {show("wbs") && (
@@ -513,17 +522,29 @@ export function SourceProgrammeGantt({
                                   Due
                                 </span>
                               </button>
-                            ) : (
+                            ) : row.start || row.finish ? (
                               <button
-                                className="absolute top-0 left-3 min-h-11 text-left text-xs text-blue-800 underline underline-offset-2 disabled:text-slate-500 disabled:no-underline"
-                                disabled={!row.start && !row.finish}
+                                className="absolute top-0 left-1 grid size-11 place-items-center rounded-md text-blue-800 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-blue-700"
                                 onClick={() => goTo(row)}
                                 aria-label={`Go to timeline dates for ${row.activityId}`}
+                                title={`Show ${formatScheduleDate(row.start ?? row.finish)} on the timeline`}
                               >
-                                {row.start || row.finish
-                                  ? "Go to activity dates"
-                                  : "Dates not recorded"}
+                                {(row.finish ?? row.start)! < anchor ? (
+                                  <ArrowLeft
+                                    className="size-4"
+                                    aria-hidden="true"
+                                  />
+                                ) : (
+                                  <ArrowRight
+                                    className="size-4"
+                                    aria-hidden="true"
+                                  />
+                                )}
                               </button>
+                            ) : (
+                              <span className="absolute top-4 left-3 text-xs text-slate-600">
+                                Dates not recorded
+                              </span>
                             )}
                           </div>
                         );
@@ -543,7 +564,7 @@ export function SourceProgrammeGantt({
             <span>
               {" "}
               · These activities have no bars in this date area. Use Activity
-              dates or a row’s calendar button.
+              dates or a row’s arrow button.
             </span>
           )}
         </p>
@@ -563,8 +584,8 @@ export function SourceProgrammeGantt({
               : "Dependency arrows are hidden."}
           </p>
           <p>
-            Select a name or bar for details. Use the calendar button to locate
-            an activity outside the window. Scroll horizontally for columns and
+            Select a name or bar for details. Use the arrow button to locate an
+            activity outside the window. Scroll horizontally for columns and
             dates.
           </p>
         </InfoPopover>

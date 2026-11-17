@@ -6,20 +6,11 @@ import { ArrowUpRight, AlertTriangle, ChevronDown } from "lucide-react";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
 import { Button } from "./ui/button";
-import { InfoPopover } from "./InfoPopover";
-import {
-  isClosed,
-  isOverdue,
-  projectDate,
-  statusLabels,
-  type Project,
-  type TaskStatus,
-} from "@/lib/domain";
+import { isClosed, isOverdue, projectDate, type Project } from "@/lib/domain";
 import {
   commissioning,
   dueDateFor,
   tagSummary,
-  tagTimeline,
   taskKind,
   hasModule,
 } from "@/lib/commissioning";
@@ -44,51 +35,10 @@ import {
 } from "./ProjectViewSettings";
 import { useLinkedProject } from "./useLinkedProject";
 import { DashboardLookahead } from "./DashboardLookahead";
-
-const statuses: { status: TaskStatus; color: string }[] = [
-  { status: "pending", color: "#ffb347" },
-  { status: "in-progress", color: "#2867ff" },
-  { status: "review", color: "#8c74f4" },
-  { status: "blocked", color: "#ef6670" },
-  { status: "completed", color: "#14b87a" },
-  { status: "not-applicable", color: "#cbd5e1" },
-];
-function TagLevelProgress({
-  percent,
-  label,
-  detail,
-  onClick,
-}: {
-  percent: number | null;
-  label: string;
-  detail: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="group grid min-h-11 w-full grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-1 rounded-lg px-2 py-3 text-left hover:bg-slate-50 focus-visible:outline-blue-600"
-      aria-label={`${label}: ${percent === null ? "no applicable assets" : `${percent}% complete`}. View details`}
-    >
-      <span className="font-semibold text-sm group-hover:text-blue-600">
-        {label}
-      </span>
-      <strong className="text-sm tabular-nums">
-        {percent === null ? "—" : `${percent}%`}
-      </strong>
-      <span className="col-span-2 text-xs text-slate-600">{detail}</span>
-      <span
-        aria-hidden="true"
-        className="col-span-2 mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100"
-      >
-        <span
-          className="block h-full rounded-full bg-blue-600"
-          style={{ width: `${percent ?? 0}%` }}
-        />
-      </span>
-    </button>
-  );
-}
+import {
+  DashboardTaskGraphics,
+  DashboardTagGraphics,
+} from "./DashboardGraphics";
 
 function OverviewDetails({
   title,
@@ -152,15 +102,11 @@ export function Overview() {
   const completedConstruction = applicableConstruction.filter(
     (task) => task.status === "completed",
   ).length;
-  const timeline = tagTimeline(project, tasks);
   const open = (
     title: string,
     filters: ReportRequest["filters"] = {},
     view: ReportRequest["view"] = "tasks",
   ) => setReport({ title, filters, view });
-  const unlinked = tasks.filter(
-    (t) => !t.cx?.assetId || !t.cx.activityId,
-  ).length;
   const hasTags = tags.total > 0;
   const canPlan = hasModule(data.currentUser, "commissioning");
   if (reportsTab)
@@ -177,137 +123,43 @@ export function Overview() {
     );
   return (
     <AppShell title="Dashboard" wide>
-      <DashboardNavigation
-        projectId={project.id}
-        reports={false}
-        canDashboard={canDashboard}
-        canReports={canReports}
-      />
-      <PersonalViewSettings project={project} />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <DashboardNavigation
+          projectId={project.id}
+          reports={false}
+          canDashboard={canDashboard}
+          canReports={canReports}
+        />
+        <PersonalViewSettings project={project} />
+      </div>
       <DashboardLayout panels={preferences.value.dashboardPanels}>
-        <div className="order-[-1] flex flex-wrap justify-between items-center gap-3">
+        <div className="order-[-1] flex justify-between items-center gap-3">
           <div>
-            <h2 className="text-xl font-semibold">Project progress</h2>
-            <p className="text-sm text-slate-600 mt-1">
+            <h2 className="text-xl font-semibold">Project overview</h2>
+            <p className="hidden sm:block text-sm text-slate-600 mt-1">
               {project.location} · As of {projectDate()} · Schedule revision{" "}
+              {state.version}
+            </p>
+            <p className="mt-1 text-xs text-slate-600 sm:hidden">
+              As of {projectDate().split("-").reverse().join("/")} · Revision{" "}
               {state.version}
             </p>
           </div>
           {canPlan && (
             <Button asChild className="min-h-11">
-              <Link href="/schedule">
-                Open schedule <ArrowUpRight className="size-4" />
+              <Link href="/schedule" aria-label="Open schedule">
+                <span className="hidden sm:inline">Open schedule</span>{" "}
+                <ArrowUpRight className="size-4" />
               </Link>
             </Button>
           )}
         </div>
         <DashboardPanel id="summary" panels={preferences.value.dashboardPanels}>
-          <section
-            aria-label="Project summary"
-            className="rounded-xl border bg-white px-4 py-3"
-          >
-            <p className="mb-2 text-xs text-slate-600">
-              {state.sourceProgrammeSummary
-                ? `${state.sourceProgrammeSummary.activities.toLocaleString("en-GB")} imported P6 source activities · `
-                : ""}
-              {state.schedule.length} managed app activities · {tasks.length}{" "}
-              saved tasks. Completion below counts saved tasks.
-            </p>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-1">
-                  <h3 className="text-base font-semibold">Project summary</h3>
-                  <InfoPopover label="How progress is counted">
-                    <p>
-                      Completion excludes N/A. Late means open and due before
-                      today, using the schedule date where recorded, otherwise
-                      the task deadline.
-                    </p>
-                    <p>
-                      Project Health criteria and scope still need to be agreed.
-                      No health rating has been calculated.
-                    </p>
-                  </InfoPopover>
-                </div>
-                <p className="break-words text-sm text-slate-600">
-                  {project.name}
-                </p>
-              </div>
-              <div className="w-full sm:w-auto sm:min-w-80">
-                <ProgressCounters
-                  label="Saved tasks"
-                  summary={taskProgress(tasks)}
-                  onOpen={(metric) =>
-                    open(
-                      `Saved tasks · ${metric === "total" ? "all" : metric} activities`,
-                      metricFilters(metric),
-                    )
-                  }
-                />
-              </div>
-            </div>
-            {tasks.length > 0 && (
-              <div
-                role="group"
-                aria-label="Tasks by status"
-                className="mt-3 grid grid-cols-2 gap-x-4 border-t pt-1 sm:grid-cols-3 xl:grid-cols-6"
-              >
-                {statuses.map((s) => (
-                  <button
-                    key={s.status}
-                    onClick={() =>
-                      open(statusLabels[s.status], { status: s.status })
-                    }
-                    className="flex min-h-11 min-w-0 items-center gap-2 rounded px-1 text-sm hover:bg-slate-50 focus-visible:outline-blue-600"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ background: s.color }}
-                    />
-                    <span className="text-left text-slate-600">
-                      {statusLabels[s.status]}
-                    </span>
-                    <strong className="ml-auto tabular-nums">
-                      {tasks.filter((t) => t.status === s.status).length}
-                    </strong>
-                  </button>
-                ))}
-              </div>
-            )}
-            {(hasTags || state.assets.length > 0 || unlinked > 0) && (
-              <div className="mt-1 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-slate-600">
-                {hasTags && (
-                  <button
-                    className="min-h-11 text-left hover:text-blue-700 focus-visible:outline-blue-600"
-                    onClick={() => open("Approved tags", {}, "tags")}
-                  >
-                    <strong className="tabular-nums">
-                      {tags.completed} / {tags.total}
-                    </strong>{" "}
-                    approved tags ·{" "}
-                    {tags.percent === null
-                      ? "Register applicable assets to begin"
-                      : `${tags.percent}% of applicable asset tags`}
-                  </button>
-                )}
-                {state.assets.length > 0 && (
-                  <span>
-                    <strong className="tabular-nums">
-                      {state.assets.length}
-                    </strong>{" "}
-                    assets
-                  </span>
-                )}
-                {unlinked > 0 && (
-                  <span>
-                    <strong className="tabular-nums">{unlinked}</strong>{" "}
-                    activities missing asset or schedule links
-                  </span>
-                )}
-              </div>
-            )}
-          </section>
+          <DashboardTaskGraphics
+            project={project}
+            tasks={tasks}
+            onOpen={setReport}
+          />
         </DashboardPanel>
         <DashboardPanel id="reports" panels={preferences.value.dashboardPanels}>
           <section
@@ -396,180 +248,146 @@ export function Overview() {
           id="attention"
           panels={preferences.value.dashboardPanels}
         >
-          {canReports && (
-            <DashboardLookahead
-              key={`${project.id}:${state.version}:${projectDate()}`}
-              projectId={project.id}
-            />
-          )}
-          {tasks.length > 0 && (
-            <section
-              aria-label="Work needing attention"
-              className="rounded-xl border bg-white p-4 sm:p-5"
-            >
-              <h3 className="text-base font-semibold">Needs attention</h3>
-              <div className="mt-2 grid grid-cols-2 gap-x-2 sm:gap-x-6 xl:grid-cols-4">
-                {[
-                  {
-                    label: "Overdue activities",
-                    count: overdue.length,
-                    caption: "Open overdue list",
-                    color: "text-red-600",
-                    filters: { attention: "overdue" },
-                  },
-                  {
-                    label: "Blockers",
-                    count: blocked.length,
-                    caption: "Require action to proceed",
-                    color: "text-amber-700",
-                    filters: { attention: "blocked" },
-                  },
-                  {
-                    label: "Failed / retest",
-                    count: failed.length,
-                    caption: "Open test follow-ups",
-                    color: "text-rose-600",
-                    filters: { attention: "failed" },
-                  },
-                  {
-                    label: "Need assignment",
-                    count: tasks.filter((t) => !t.assignedTo && !isClosed(t))
-                      .length,
-                    caption: "Open activities without an assignee",
-                    color: "text-slate-900",
-                    filters: { attention: "unassigned" },
-                  },
-                ].map((metric) => {
-                  const content = (
-                    <>
-                      <span className="flex items-center justify-between gap-3 text-sm">
-                        <span>{metric.label}</span>
-                        <strong
-                          className={`text-lg tabular-nums ${metric.count > 0 ? metric.color : "text-slate-600"}`}
-                        >
-                          {metric.count}
-                        </strong>
-                      </span>
-                      <span className="mt-1 block text-xs text-slate-600">
-                        {metric.caption}
-                      </span>
-                    </>
-                  );
-                  const className =
-                    "min-h-11 rounded-lg px-2 py-3 text-left hover:bg-slate-50 focus-visible:outline-blue-600";
-                  return metric.label === "Overdue activities" ? (
-                    <Link
-                      key={metric.label}
-                      href="/schedule?view=overdue"
-                      className={className}
-                    >
-                      {content}
-                    </Link>
-                  ) : (
-                    <button
-                      key={metric.label}
-                      className={className}
-                      onClick={() =>
-                        open(
-                          metric.label === "Need assignment"
-                            ? "Activities needing assignment"
-                            : metric.label,
-                          metric.filters,
-                        )
-                      }
-                    >
-                      {content}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-          )}
+          <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+            {canReports && (
+              <DashboardLookahead
+                key={`${project.id}:${state.version}:${projectDate()}`}
+                projectId={project.id}
+              />
+            )}
+            {tasks.length > 0 && (
+              <section
+                aria-label="Work needing attention"
+                className="rounded-xl border bg-white p-4 sm:p-5"
+              >
+                <h3 className="text-base font-semibold">Needs attention</h3>
+                <div className="mt-3 divide-y">
+                  {[
+                    {
+                      label: "Overdue activities",
+                      count: overdue.length,
+                      caption: "Open overdue list",
+                      color: "text-red-600",
+                      filters: { attention: "overdue" },
+                    },
+                    {
+                      label: "Blockers",
+                      count: blocked.length,
+                      caption: "Require action to proceed",
+                      color: "text-amber-700",
+                      filters: { attention: "blocked" },
+                    },
+                    {
+                      label: "Failed / retest",
+                      count: failed.length,
+                      caption: "Open test follow-ups",
+                      color: "text-rose-600",
+                      filters: { attention: "failed" },
+                    },
+                    {
+                      label: "Need assignment",
+                      count: tasks.filter((t) => !t.assignedTo && !isClosed(t))
+                        .length,
+                      caption: "Open activities without an assignee",
+                      color: "text-slate-900",
+                      filters: { attention: "unassigned" },
+                    },
+                  ].map((metric) => {
+                    const content = (
+                      <>
+                        <span className="flex items-center justify-between gap-3 text-sm">
+                          <span>{metric.label}</span>
+                          <strong
+                            className={`text-lg tabular-nums ${metric.count > 0 ? metric.color : "text-slate-600"}`}
+                          >
+                            {metric.count}
+                          </strong>
+                        </span>
+                        <span className="mt-1 block text-xs text-slate-600">
+                          {metric.caption}
+                        </span>
+                      </>
+                    );
+                    const className =
+                      "block w-full min-h-11 rounded-lg px-2 py-4 text-left hover:bg-slate-50 focus-visible:outline-blue-600";
+                    return metric.label === "Overdue activities" ? (
+                      <Link
+                        key={metric.label}
+                        href="/schedule?view=overdue"
+                        className={className}
+                      >
+                        {content}
+                      </Link>
+                    ) : (
+                      <button
+                        key={metric.label}
+                        className={className}
+                        onClick={() =>
+                          open(
+                            metric.label === "Need assignment"
+                              ? "Activities needing assignment"
+                              : metric.label,
+                            metric.filters,
+                          )
+                        }
+                      >
+                        {content}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </div>
           {blocked.length > 0 && (
-            <section className="rounded-xl border bg-white p-5">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <AlertTriangle className="size-4 text-amber-500" />
-                  Blockers & risks
-                </h3>
-                <button
-                  className="min-h-11 text-xs text-blue-700 focus-visible:outline-blue-600"
-                  onClick={() =>
-                    open("Blockers and impact", { attention: "blocked" })
-                  }
-                >
-                  Open report
-                </button>
-              </div>
-              <div className="grid gap-x-6 sm:grid-cols-2">
-                {blocked.slice(0, 4).map((t) => (
-                  <Link
-                    key={t.id}
-                    href={`/tasks/${t.id}`}
-                    className="rounded-lg px-2 py-3 hover:bg-slate-50 focus-visible:outline-blue-600"
+            <OverviewDetails
+              title={`Blockers and risks · ${blocked.length} activities`}
+            >
+              <section className="rounded-xl border bg-white p-5">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <AlertTriangle className="size-4 text-amber-500" />
+                    Blockers & risks
+                  </h3>
+                  <button
+                    className="min-h-11 text-xs text-blue-700 focus-visible:outline-blue-600"
+                    onClick={() =>
+                      open("Blockers and impact", { attention: "blocked" })
+                    }
                   >
-                    <p className="font-medium text-sm">{t.title}</p>
-                    <p className="text-xs text-slate-600 mt-1">
-                      {t.cx?.blockerRisk || t.notes || "Impact not recorded"}
-                    </p>
-                    <p className="text-xs text-slate-600 mt-2">
-                      {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
-                      {data.users.find((u) => u.id === t.assignedTo)?.name ??
-                        "Unassigned"}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            </section>
+                    Open report
+                  </button>
+                </div>
+                <div className="grid gap-x-6 sm:grid-cols-2">
+                  {blocked.slice(0, 4).map((t) => (
+                    <Link
+                      key={t.id}
+                      href={`/tasks/${t.id}`}
+                      className="rounded-lg px-2 py-3 hover:bg-slate-50 focus-visible:outline-blue-600"
+                    >
+                      <p className="font-medium text-sm">{t.title}</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        {t.cx?.blockerRisk || t.notes || "Impact not recorded"}
+                      </p>
+                      <p className="text-xs text-slate-600 mt-2">
+                        {t.cx?.assetId ?? "Asset unlinked"} ·{" "}
+                        {data.users.find((u) => u.id === t.assignedTo)?.name ??
+                          "Unassigned"}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            </OverviewDetails>
           )}
         </DashboardPanel>
         <DashboardPanel id="tags" panels={preferences.value.dashboardPanels}>
           {hasTags && (
-            <section className="rounded-xl border bg-white p-5">
-              <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-sm">
-                  Tag completion by level
-                </h3>
-                <button
-                  className="text-xs text-blue-600"
-                  onClick={() => open("Asset tag register", {}, "tags")}
-                >
-                  View register
-                </button>
-              </div>
-              <div className="mt-3 grid gap-x-6 sm:grid-cols-2 xl:grid-cols-3">
-                {state.config.levels
-                  .filter(
-                    (level) => tagSummary(project, tasks, level).total > 0,
-                  )
-                  .map((level) => {
-                    const s = tagSummary(project, tasks, level);
-                    return (
-                      <TagLevelProgress
-                        key={level}
-                        percent={s.percent}
-                        label={level}
-                        detail={`${s.completed} / ${s.total} approved`}
-                        onClick={() =>
-                          open(`${level} tag status`, { level }, "tags")
-                        }
-                      />
-                    );
-                  })}
-              </div>
-              {!state.config.levels.length && (
-                <p className="py-10 text-center text-sm text-slate-600">
-                  Configure this project’s commissioning levels in project
-                  setup.
-                </p>
-              )}
-              <p className="text-xs text-slate-600 mt-3">
-                Approved tags / applicable asset-level records. A counts as
-                explicit approval; tags without review status retain legacy
-                completed-workflow approval. Testing and review are tracked
-                separately.
-              </p>
-            </section>
+            <DashboardTagGraphics
+              project={project}
+              tasks={tasks}
+              onOpen={setReport}
+            />
           )}
         </DashboardPanel>
         <DashboardPanel id="details" panels={preferences.value.dashboardPanels}>
@@ -810,101 +628,6 @@ export function Overview() {
               </section>
             </OverviewDetails>
           )}
-          {hasTags &&
-            (timeline.scheduled > 0 ||
-              timeline.baselineRecorded > 0 ||
-              timeline.points.some((point) => point.achieved > 0)) && (
-              <OverviewDetails title="Tag schedule trend">
-                <section className="rounded-xl border bg-white p-5">
-                  <div className="flex justify-between gap-3">
-                    <h3 className="text-base font-semibold">
-                      Tag schedule · planned, forecast & approved
-                    </h3>
-                    <button
-                      className="text-xs text-blue-600"
-                      onClick={() => open("Tag schedule trend", {}, "trend")}
-                    >
-                      View figures
-                    </button>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-2">
-                    {timeline.scheduled} of {timeline.total} applicable tags
-                    have forecast dates. {timeline.baselineRecorded} have
-                    baseline dates. Approval uses the recorded workflow
-                    completion date for approved tags; approvals without that
-                    date are not placed on the trend.
-                  </p>
-                  {timeline.points.length > 1 ? (
-                    <>
-                      <svg
-                        role="img"
-                        aria-label="Cumulative tag schedule: baseline, forecast and approved tags"
-                        viewBox="0 0 800 180"
-                        className="w-full h-44 mt-4"
-                      >
-                        <line
-                          x1="20"
-                          y1="155"
-                          x2="780"
-                          y2="155"
-                          stroke="#e2e8f0"
-                        />
-                        {(
-                          [
-                            ["baseline", "#94a3b8"],
-                            ["forecast", "#2563eb"],
-                            ["achieved", "#10b981"],
-                          ] as const
-                        )
-                          .filter(([key]) =>
-                            key === "baseline"
-                              ? timeline.baselineRecorded > 0
-                              : key === "forecast"
-                                ? timeline.scheduled > 0
-                                : true,
-                          )
-                          .map(([key, color]) => (
-                            <polyline
-                              key={key}
-                              fill="none"
-                              stroke={color}
-                              strokeWidth="3"
-                              points={timeline.points
-                                .map(
-                                  (p) =>
-                                    `${20 + (760 * (Date.parse(p.date) - Date.parse(timeline.points[0].date))) / (Date.parse(timeline.points.at(-1)!.date) - Date.parse(timeline.points[0].date))},${155 - (135 * p[key]) / Math.max(timeline.total, 1)}`,
-                                )
-                                .join(" ")}
-                            />
-                          ))}
-                        <text x="20" y="178" fontSize="11" fill="#64748b">
-                          {timeline.points[0].date}
-                        </text>
-                        <text
-                          x="780"
-                          y="178"
-                          textAnchor="end"
-                          fontSize="11"
-                          fill="#64748b"
-                        >
-                          {timeline.points.at(-1)?.date}
-                        </text>
-                      </svg>
-                      <div className="flex gap-5 text-xs">
-                        <span className="text-slate-600">Baseline</span>
-                        <span className="text-blue-600">Forecast</span>
-                        <span className="text-emerald-600">Approved</span>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="py-6 text-sm text-slate-600">
-                      Link tag activities to dated schedule records to compare
-                      the schedule with approvals.
-                    </p>
-                  )}
-                </section>
-              </OverviewDetails>
-            )}
         </DashboardPanel>
       </DashboardLayout>
       <ReportDialog

@@ -10,7 +10,6 @@ import {
   Columns3,
   SlidersHorizontal,
   Plus,
-  CalendarClock,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -643,7 +642,7 @@ function SourceProgrammeView({
     [wbs, calendar, status].filter(Boolean).length + Number(critical !== "all");
   const scaleLabel = { day: "DAY", week: "WK", month: "MTH" }[scale];
   const columnLabel = {
-    progress: "Steps %",
+    progress: "Step completion %",
     start: "Start date",
     finish: "Finish date",
     wbs: "WBS",
@@ -1134,28 +1133,6 @@ function SourceProgrammeView({
                     </p>
                   </PopoverContent>
                 </Popover>
-                <label
-                  htmlFor={`${id}-duration`}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <span className="sr-only sm:not-sr-only">Duration</span>
-                  <select
-                    id={`${id}-duration`}
-                    aria-label="Duration display"
-                    value={durationMode}
-                    onChange={(event) =>
-                      applyViewCommand({
-                        type: "duration",
-                        mode: event.target.value as SourceDurationMode,
-                      })
-                    }
-                    className="block min-h-11 w-20 rounded-md sm:w-24 border border-slate-300 bg-white px-1 text-xs! sm:px-2 sm:text-sm! focus-visible:outline-2 focus-visible:outline-blue-700"
-                  >
-                    <option value="days">Days</option>
-                    <option value="hours">Hours</option>
-                    <option value="hidden">Hidden</option>
-                  </select>
-                </label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -1176,6 +1153,24 @@ function SourceProgrammeView({
                     <p className="text-xs text-slate-600">
                       Activity name and ID stay visible.
                     </p>
+                    <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
+                      Duration column
+                      <select
+                        aria-label="Duration display"
+                        value={durationMode}
+                        onChange={(event) =>
+                          applyViewCommand({
+                            type: "duration",
+                            mode: event.target.value as SourceDurationMode,
+                          })
+                        }
+                        className="field-select w-28"
+                      >
+                        <option value="days">Days</option>
+                        <option value="hours">Hours</option>
+                        <option value="hidden">Hidden</option>
+                      </select>
+                    </label>
                     {sourceGanttColumns.map((column) => (
                       <label
                         key={column}
@@ -1231,10 +1226,7 @@ function SourceProgrammeView({
                     if (date) applyViewCommand({ type: "date", date });
                   }}
                 >
-                  <CalendarClock
-                    className="size-4 sm:hidden"
-                    aria-hidden="true"
-                  />
+                  <ArrowRight className="size-4 sm:hidden" aria-hidden="true" />
                   <span className="hidden sm:inline">Activity dates</span>
                 </Button>
               </div>
