@@ -2,18 +2,10 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Upload,
-  CalendarDays,
-  Columns3,
-  SlidersHorizontal,
-  Plus,
-  X,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Upload, Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
+  type SourceActivityView,
   type SourceProgrammePage,
   type SourceProgrammeSummary,
 } from "@/lib/programme-source";
@@ -33,13 +25,13 @@ import {
   sourcePageAnchor,
   sourceGanttInitialView,
   reduceSourceGanttView,
-  sourceGanttColumns,
   type SourceGanttViewState,
   type SourceGanttViewCommand,
   type SourceDurationMode,
   sourceCriticalityLabel,
 } from "@/lib/source-gantt";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { ScheduleViewControls } from "./ScheduleViewControls";
+import { ScheduleDateChangeReview } from "./ScheduleDateChangeReview";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { InfoPopover } from "./InfoPopover";
 import { WorkingScheduleEditor } from "./WorkingScheduleEditor";
@@ -390,6 +382,13 @@ function SourceProgrammeView({
   const projectVersion = project?.commissioning?.version ?? 0;
   const [projection, setProjection] = useState<"working" | "source">("working");
   const [editor, setEditor] = useState<{ internalId?: string } | null>(null);
+  const [pendingDateChange, setPendingDateChange] = useState<{
+    activity: SourceActivityView;
+    dates: { start?: string; finish?: string };
+    version: number;
+    trigger: HTMLElement;
+  } | null>(null);
+  const dateChangeTrigger = useRef<HTMLElement | null>(null);
   const handledActivity = useRef<string | null>(null);
   const [query, setQuery] = useState("");
   const [wbs, setWbs] = useState("");
@@ -432,7 +431,10 @@ function SourceProgrammeView({
     );
     viewRef.current = next;
     setView(next);
-    if (command.type === "critical" || command.type === "reset") setPage(0);
+    if (command.type === "critical" || command.type === "reset") {
+      setPendingDateChange(null);
+      setPage(0);
+    }
     if (navigates) {
       updateViewportDate(next.anchor);
       setTimelineReset((value) => value + 1);
@@ -444,6 +446,16 @@ function SourceProgrammeView({
   const [detailLoading, setDetailLoading] = useState(false);
   useEffect(() => () => detailRequest.current?.abort(), []);
   const [refresh, setRefresh] = useState(0);
+  const cancelDateChange = useCallback(() => {
+    setPendingDateChange(null);
+    dateChangeTrigger.current?.focus({ preventScroll: true });
+    dateChangeTrigger.current = null;
+  }, [setPendingDateChange]);
+  const dateChangeSaved = useCallback(() => {
+    setRefresh((value) => value + 1);
+    setPendingDateChange(null);
+    dateChangeTrigger.current = null;
+  }, [setRefresh, setPendingDateChange]);
   const loadedKey = useRef<string | null>(null);
   const requestKey = JSON.stringify([
     projectId,
@@ -640,14 +652,6 @@ function SourceProgrammeView({
   const visible = data?.activities ?? [];
   const activeFilters =
     [wbs, calendar, status].filter(Boolean).length + Number(critical !== "all");
-  const scaleLabel = { day: "DAY", week: "WK", month: "MTH" }[scale];
-  const columnLabel = {
-    progress: "Step completion %",
-    start: "Start date",
-    finish: "Finish date",
-    wbs: "WBS",
-    calendar: "Calendar",
-  };
   const openDetail = useCallback(
     async (internalId: string, trigger: HTMLElement) => {
       detailRequest.current?.abort();
@@ -691,7 +695,7 @@ function SourceProgrammeView({
     }
   }, [linkedActivity, openDetail]);
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       <header className="flex items-center justify-between gap-2 sm:flex-wrap">
         <div
           className="flex min-w-0 flex-1 items-center gap-1 sm:flex-wrap sm:gap-2"
@@ -704,6 +708,7 @@ function SourceProgrammeView({
             aria-pressed={projection === "working"}
             onClick={() => {
               if (projection === "working") return;
+              setPendingDateChange(null);
               setProjection("working");
               setLoading(true);
               setData(null);
@@ -719,6 +724,7 @@ function SourceProgrammeView({
             aria-pressed={projection === "source"}
             onClick={() => {
               if (projection === "source") return;
+              setPendingDateChange(null);
               setProjection("source");
               setLoading(true);
               setData(null);
@@ -776,7 +782,10 @@ function SourceProgrammeView({
             variant="outline"
             aria-label="Create an asset activity"
             className="size-11 px-2 sm:w-auto sm:px-4"
-            onClick={() => setEditor({})}
+            onClick={() => {
+              setPendingDateChange(null);
+              setEditor({});
+            }}
           >
             <Plus className="size-4 sm:hidden" aria-hidden="true" />
             <span className="hidden sm:inline">Create an asset activity</span>
@@ -799,157 +808,140 @@ function SourceProgrammeView({
         />
       )}
       <section
-        className="flex min-w-0 items-center gap-2 sm:flex-wrap"
+        className="min-w-0 space-y-2 sm:grid sm:grid-cols-3 sm:items-end sm:gap-3 sm:space-y-0 xl:grid-cols-[minmax(14rem,1.5fr)_minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(8rem,1fr)_minmax(10rem,1fr)_auto]"
         aria-label="Filter schedule"
       >
-        <label htmlFor={`${id}-query`} className="sr-only">
-          Activity ID or name
-        </label>
-        <Input
-          id={`${id}-query`}
-          className="min-h-11 min-w-0 flex-1 sm:min-w-40 sm:max-w-sm"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setPage(0);
-          }}
-          placeholder="Find an activity by ID or name"
-        />
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="size-11 px-2 sm:w-auto sm:px-3"
-              aria-label={`Schedule filters${activeFilters ? `, ${activeFilters} active` : ""}`}
-            >
-              <SlidersHorizontal className="size-4" aria-hidden="true" />
-              <span className="hidden sm:inline">
-                Filters{activeFilters > 0 ? ` · ${activeFilters}` : ""}
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            collisionPadding={16}
-            className="w-80 max-w-[calc(100vw-2rem)] space-y-3 bg-white"
-          >
-            <label htmlFor={`${id}-wbs`} className="block text-sm font-medium">
-              WBS ID or path
-              <Input
-                id={`${id}-wbs`}
-                className="mt-1 min-h-11"
-                value={wbs}
-                onChange={(event) => {
-                  setWbs(event.target.value);
-                  setPage(0);
-                }}
-                placeholder="Search a work package"
-              />
-            </label>
-            <label
-              htmlFor={`${id}-calendar`}
-              className="block text-sm font-medium"
-            >
-              Calendar
-              <select
-                id={`${id}-calendar`}
-                className="mt-1 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-                value={calendar}
-                onChange={(event) => {
-                  setCalendar(event.target.value);
-                  setPage(0);
-                }}
-              >
-                <option value="">All calendars</option>
-                {data?.filters.calendars.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name || item.id}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label
-              htmlFor={`${id}-status`}
-              className="block text-sm font-medium"
-            >
-              Status
-              <select
-                id={`${id}-status`}
-                className="mt-1 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-                value={status}
-                onChange={(event) => {
-                  setStatus(event.target.value);
-                  setPage(0);
-                }}
-              >
-                <option value="">All statuses</option>
-                {data?.filters.statuses.map((item) => (
-                  <option key={item} value={item}>
-                    {statusLabel(item)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label
-              htmlFor={`${id}-critical`}
-              className="block text-sm font-medium"
-            >
-              Saved P6 criticality
-              <select
-                id={`${id}-critical`}
-                className="mt-1 block min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-blue-700"
-                value={critical}
-                onChange={(event) =>
-                  applyViewCommand({
-                    type: "critical",
-                    filter: event.target
-                      .value as SourceGanttViewState["critical"],
-                  })
-                }
-              >
-                <option value="all">All activities</option>
-                <option value="yes">Critical in saved P6</option>
-                <option value="no">Non-critical in saved P6</option>
-                <option value="unknown">Unknown criticality</option>
-              </select>
-            </label>
-          </PopoverContent>
-        </Popover>
-        <Button
-          variant={critical === "yes" ? "default" : "outline"}
-          className="hidden sm:inline-flex"
-          aria-pressed={critical === "yes"}
-          onClick={() =>
-            applyViewCommand({
-              type: "critical",
-              filter: critical === "yes" ? "all" : "yes",
-            })
-          }
+        <label
+          htmlFor={`${id}-query`}
+          className="block min-w-0 text-xs font-medium text-slate-600"
         >
-          P6 critical
-        </Button>
-        <SourceCriticalityInfo
-          metadata={loading ? undefined : data?.criticality}
-          loading={loading}
-        />
-        {(query || activeFilters > 0) && (
-          <Button
-            variant="ghost"
-            aria-label="Clear filters"
-            className="size-11 px-2 sm:w-auto sm:px-4"
-            onClick={() => {
-              setQuery("");
-              setWbs("");
-              setCalendar("");
-              setStatus("");
-              applyViewCommand({ type: "critical", filter: "all" });
+          <span className="sr-only sm:not-sr-only">Activity ID or name</span>
+          <Input
+            id={`${id}-query`}
+            className="min-h-11 min-w-0 w-full text-sm font-normal sm:mt-1"
+            value={query}
+            onChange={(event) => {
+              setPendingDateChange(null);
+              setQuery(event.target.value);
               setPage(0);
             }}
+            placeholder="Find an activity by ID or name"
+          />
+        </label>
+        <div
+          role="group"
+          aria-label="Activity filters"
+          className="flex max-w-full items-end gap-3 overflow-x-auto overscroll-x-contain pb-1 sm:contents"
+        >
+          <label
+            htmlFor={`${id}-wbs`}
+            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
           >
-            <X className="size-4 sm:hidden" aria-hidden="true" />
-            <span className="hidden sm:inline">Clear filters</span>
-          </Button>
-        )}
+            WBS ID or path
+            <Input
+              id={`${id}-wbs`}
+              className="mt-1 min-h-11 w-full text-sm font-normal"
+              value={wbs}
+              onChange={(event) => {
+                setPendingDateChange(null);
+                setWbs(event.target.value);
+                setPage(0);
+              }}
+              placeholder="Work package"
+            />
+          </label>
+          <label
+            htmlFor={`${id}-calendar`}
+            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
+          >
+            Calendar
+            <select
+              id={`${id}-calendar`}
+              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
+              value={calendar}
+              onChange={(event) => {
+                setPendingDateChange(null);
+                setCalendar(event.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="">All calendars</option>
+              {data?.filters.calendars.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name || item.id}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label
+            htmlFor={`${id}-status`}
+            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
+          >
+            Status
+            <select
+              id={`${id}-status`}
+              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
+              value={status}
+              onChange={(event) => {
+                setPendingDateChange(null);
+                setStatus(event.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="">All statuses</option>
+              {data?.filters.statuses.map((item) => (
+                <option key={item} value={item}>
+                  {statusLabel(item)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label
+            htmlFor={`${id}-critical`}
+            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
+          >
+            Saved P6 criticality
+            <select
+              id={`${id}-critical`}
+              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
+              value={critical}
+              onChange={(event) =>
+                applyViewCommand({
+                  type: "critical",
+                  filter: event.target
+                    .value as SourceGanttViewState["critical"],
+                })
+              }
+            >
+              <option value="all">All activities</option>
+              <option value="yes">Critical in saved P6</option>
+              <option value="no">Non-critical in saved P6</option>
+              <option value="unknown">Unknown criticality</option>
+            </select>
+          </label>
+          <div className="flex min-h-11 shrink-0 items-center gap-1 self-end">
+            <SourceCriticalityInfo
+              metadata={loading ? undefined : data?.criticality}
+              loading={loading}
+            />
+            {(query || activeFilters > 0) && (
+              <Button
+                variant="ghost"
+                className="min-h-11 px-2"
+                onClick={() => {
+                  setQuery("");
+                  setWbs("");
+                  setCalendar("");
+                  setStatus("");
+                  applyViewCommand({ type: "critical", filter: "all" });
+                  setPage(0);
+                }}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        </div>
       </section>
       {error && (
         <div role="alert" className="space-y-2 text-sm text-red-700">
@@ -1010,9 +1002,48 @@ function SourceProgrammeView({
             const value = sourcePageAnchor([row]);
             if (value) applyViewCommand({ type: "date", date: value });
           }}
+          onPanToDate={(date) => applyViewCommand({ type: "date", date })}
+          onDateChange={
+            projection === "working" &&
+            app.currentUser.role !== "worker" &&
+            hasModule(app.currentUser, "commissioning") &&
+            !loading &&
+            !error &&
+            !pendingDateChange
+              ? (activity, dates, trigger) => {
+                  if (loadedKey.current !== requestKey) {
+                    toast.error(
+                      "The Schedule is refreshing. Try the date change again when it has loaded.",
+                    );
+                    return;
+                  }
+                  dateChangeTrigger.current = trigger;
+                  setPendingDateChange({
+                    activity,
+                    dates,
+                    trigger,
+                    version: data?.projectVersion ?? projectVersion,
+                  });
+                }
+              : undefined
+          }
+          dateChangeReview={
+            pendingDateChange && projection === "working" ? (
+              <ScheduleDateChangeReview
+                key={`${pendingDateChange.activity.internalId}:${pendingDateChange.version}:${pendingDateChange.dates.start ?? ""}:${pendingDateChange.dates.finish ?? ""}`}
+                projectId={projectId}
+                sourceSha256={summary.sha256}
+                version={pendingDateChange.version}
+                activity={pendingDateChange.activity}
+                dates={pendingDateChange.dates}
+                onCancel={cancelDateChange}
+                onSaved={dateChangeSaved}
+              />
+            ) : null
+          }
           controls={
-            <div className="grid w-full min-w-0 gap-2 sm:flex sm:flex-wrap sm:items-center">
-              <div className="flex min-w-0 items-center gap-2 sm:contents">
+            <div className="grid w-full min-w-0 gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
@@ -1036,7 +1067,7 @@ function SourceProgrammeView({
                   </Button>
                   <Button
                     variant="outline"
-                    className="px-3 sm:px-4"
+                    className="min-h-11 px-3 sm:px-4"
                     onClick={() => applyViewCommand({ type: "today" })}
                   >
                     Today
@@ -1059,177 +1090,22 @@ function SourceProgrammeView({
                       });
                   }}
                 />
-              </div>
-              <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_80px_44px_44px] items-center gap-2 sm:contents">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="min-w-0 gap-1 px-2 sm:gap-2 sm:px-3"
-                      aria-label={`Calendar view: ${scaleLabel}${horizon ? ` · ${horizon / 7}WK` : ""}`}
-                    >
-                      <CalendarDays
-                        className="hidden size-4 sm:block"
-                        aria-hidden="true"
-                      />
-                      <span className="truncate">
-                        {scaleLabel}
-                        {horizon ? ` · ${horizon / 7}WK` : ""}
-                      </span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="start"
-                    collisionPadding={16}
-                    className="w-80 max-w-[calc(100vw-2rem)] space-y-3 bg-white"
-                  >
-                    <p className="text-sm font-medium">Calendar view</p>
-                    <div
-                      className="flex gap-1"
-                      role="group"
-                      aria-label="Gantt scale"
-                    >
-                      {(["day", "week", "month"] as const).map((value) => (
-                        <Button
-                          key={value}
-                          variant={scale === value ? "default" : "outline"}
-                          aria-pressed={scale === value}
-                          onClick={() =>
-                            applyViewCommand({ type: "scale", scale: value })
-                          }
-                        >
-                          {{ day: "DAY", week: "WK", month: "MTH" }[value]}
-                        </Button>
-                      ))}
-                    </div>
-                    <p className="text-xs font-medium text-slate-600">
-                      Date window
-                    </p>
-                    <div
-                      className="flex flex-wrap gap-1"
-                      role="group"
-                      aria-label="Gantt date window"
-                    >
-                      {([null, 14, 28, 42] as const).map((value) => (
-                        <Button
-                          key={value ?? "auto"}
-                          className="px-3"
-                          variant={horizon === value ? "default" : "outline"}
-                          aria-pressed={horizon === value}
-                          onClick={() =>
-                            applyViewCommand({
-                              type: "horizon",
-                              horizon: value,
-                            })
-                          }
-                        >
-                          {value ? `${value / 7}WK` : "Auto"}
-                        </Button>
-                      ))}
-                    </div>
-                    <p className="text-xs leading-5 text-slate-600">
-                      Scale changes the ruler. The date window changes its span.
-                      Activities and report lookahead filters stay unchanged.
-                    </p>
-                  </PopoverContent>
-                </Popover>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      aria-label="Columns"
-                      className="size-11 px-2 sm:w-auto sm:px-3"
-                    >
-                      <Columns3 className="size-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Columns</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="start"
-                    collisionPadding={16}
-                    className="w-72 max-w-[calc(100vw-2rem)] space-y-2 bg-white"
-                  >
-                    <p className="text-sm font-medium">Visible columns</p>
-                    <p className="text-xs text-slate-600">
-                      Activity name and ID stay visible.
-                    </p>
-                    <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
-                      Duration column
-                      <select
-                        aria-label="Duration display"
-                        value={durationMode}
-                        onChange={(event) =>
-                          applyViewCommand({
-                            type: "duration",
-                            mode: event.target.value as SourceDurationMode,
-                          })
-                        }
-                        className="field-select w-28"
-                      >
-                        <option value="days">Days</option>
-                        <option value="hours">Hours</option>
-                        <option value="hidden">Hidden</option>
-                      </select>
-                    </label>
-                    {sourceGanttColumns.map((column) => (
-                      <label
-                        key={column}
-                        className="flex min-h-11 items-center gap-3 text-sm"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={columns.includes(column)}
-                          onChange={(event) =>
-                            applyViewCommand({
-                              type: "column",
-                              column,
-                              visible: event.target.checked,
-                            })
-                          }
-                        />
-                        {columnLabel[column]}
-                      </label>
-                    ))}
-                    <label className="flex min-h-11 items-center gap-3 border-t text-sm">
-                      <input
-                        type="checkbox"
-                        checked={showLinks}
-                        onChange={(event) =>
-                          applyViewCommand({
-                            type: "links",
-                            visible: event.target.checked,
-                          })
-                        }
-                      />
-                      Dependency links
-                    </label>
-                    <p className="text-xs text-slate-600">
-                      Changes apply to this view. Reset restores the selected
-                      starting view and Today.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => applyViewCommand({ type: "reset" })}
-                    >
-                      Reset view
-                    </Button>
-                  </PopoverContent>
-                </Popover>
                 <Button
                   variant="ghost"
                   aria-label="Activity dates"
                   title="Show these activity dates"
-                  className="size-11 px-2 sm:w-auto sm:px-4"
+                  className="hidden min-h-11 px-3 sm:inline-flex"
                   disabled={!visible.some((row) => row.start || row.finish)}
                   onClick={() => {
                     const date = sourcePageAnchor(visible);
                     if (date) applyViewCommand({ type: "date", date });
                   }}
                 >
-                  <ArrowRight className="size-4 sm:hidden" aria-hidden="true" />
-                  <span className="hidden sm:inline">Activity dates</span>
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                  Activity dates
                 </Button>
               </div>
+              <ScheduleViewControls view={view} onCommand={applyViewCommand} />
             </div>
           }
         />
@@ -1249,6 +1125,7 @@ function SourceProgrammeView({
             className="min-h-11"
             disabled={loading || !data || data.page === 0}
             onClick={() => {
+              setPendingDateChange(null);
               setPage((value) => Math.max(0, value - 1));
             }}
           >
@@ -1261,6 +1138,7 @@ function SourceProgrammeView({
               loading || !data || (data.page + 1) * data.pageSize >= data.total
             }
             onClick={() => {
+              setPendingDateChange(null);
               setPage((value) => value + 1);
             }}
           >
@@ -1336,6 +1214,7 @@ function SourceProgrammeView({
                 {projection === "working" && (
                   <Button
                     onClick={() => {
+                      setPendingDateChange(null);
                       setEditor({ internalId: detail.activity.internalId });
                       setDetail(undefined);
                       setDetailLoading(false);

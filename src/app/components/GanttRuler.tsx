@@ -22,7 +22,8 @@ export function GanttRuler({
   const { columns, width, unit } = ganttAxis(start, scale, horizon);
   return (
     <div
-      className="relative h-14 bg-slate-50 text-xs font-medium text-slate-700"
+      data-gantt-pan
+      className="relative h-14 cursor-grab touch-pan-y select-none bg-slate-50 text-xs font-medium text-slate-700 active:cursor-grabbing"
       style={{ width }}
     >
       {columns.map((column, i) => {

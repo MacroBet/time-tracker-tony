@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -41,8 +41,14 @@ import {
 } from "@/lib/commissioning";
 import { calendarDays, dayNumber, workingDuration } from "@/lib/scheduling";
 import { formatScheduleDate } from "@/lib/schedule-date";
-import { ganttAxis, type GanttScale } from "@/lib/gantt-axis";
+import { ganttAxis } from "@/lib/gantt-axis";
 import { GanttRuler } from "./GanttRuler";
+import { ScheduleViewControls } from "./ScheduleViewControls";
+import { ScheduleDateChangeReview } from "./ScheduleDateChangeReview";
+import { useGanttPan } from "./useGanttPan";
+import { useGanttDateDrag } from "./useGanttDateDrag";
+import type { GanttDateRange } from "@/lib/gantt-date-drag";
+import type { SourceActivityView } from "@/lib/programme-source";
 import {
   sourceGanttInitialView,
   reduceSourceGanttView,
@@ -50,7 +56,6 @@ import {
   sourceViewport,
   shiftSourceDate,
   type SourceGanttViewCommand,
-  type SourceDurationMode,
 } from "@/lib/source-gantt";
 import {
   scheduleViewCommandEvent,
@@ -59,7 +64,6 @@ import {
   resolveScheduleViewCommand,
   scheduleViewStorageKey,
 } from "@/lib/schedule-view-context";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { projectDate, type Project, type Task } from "@/lib/domain";
 import type { Asset } from "@/lib/commissioning";
 
@@ -1149,10 +1153,22 @@ function Gantt({
   totalMatching: number;
   onEdit: (r: ScheduleActivity, anchor: HTMLElement) => void;
 }) {
-  const { tasks } = useApp();
+  const { tasks, currentUser, isOnline } = useApp();
   const preference = useProjectView(project);
   const progressState = commissioning(project);
   const progressTasks = tasks.filter((t) => t.projectId === project?.id);
+  const managedIndex = useMemo(
+    () =>
+      managedWorkingSourceIndex(
+        progressState.schedule,
+        progressState.workingSchedule,
+      ),
+    [progressState.schedule, progressState.workingSchedule],
+  );
+  const managedByActivity = useMemo(
+    () => new Map(managedIndex.activities.map((row) => [row.activityId, row])),
+    [managedIndex],
+  );
   const first =
     rows
       .flatMap((r) => (r.start ? [r.start] : r.finish ? [r.finish] : []))
@@ -1207,9 +1223,6 @@ function Gantt({
     showStart = view.columns.includes("start"),
     showFinish = view.columns.includes("finish");
   const setAnchor = (date: string) => applyCommand({ type: "date", date });
-  const setZoom = (scale: GanttScale) => applyCommand({ type: "scale", scale });
-  const setShowLinks = (visible: boolean) =>
-    applyCommand({ type: "links", visible });
   const tableWidth =
     224 +
     (showDuration ? 64 : 0) +
@@ -1218,6 +1231,31 @@ function Gantt({
     (showFinish ? 96 : 0) +
     (showLinks ? 190 : 0);
   const { span, unit, width, columns } = ganttAxis(start, zoom, view.horizon);
+  const [dateChange, setDateChange] = useState<{
+    activity: SourceActivityView;
+    dates: GanttDateRange;
+    version: number;
+  } | null>(null);
+  const canDrag =
+    isOnline &&
+    hasModule(currentUser, "commissioning") &&
+    currentUser.role !== "worker" &&
+    !dateChange;
+  const drag = useGanttDateDrag({
+    pixelsPerDay: unit,
+    onPropose(row, dates) {
+      if (!canDrag) return;
+      const activity = managedIndex.byId.get(row.id)?.activity;
+      if (activity && activity.status !== "TK_Complete")
+        setDateChange({ activity, dates, version: progressState.version });
+    },
+  });
+  const pan = useGanttPan({
+    scroller,
+    pixelsPerDay: unit,
+    getDate: () => viewportDateRef.current,
+    onDate: setAnchor,
+  });
   function updateViewport() {
     const el = scroller.current;
     if (!el) return;
@@ -1360,129 +1398,15 @@ function Gantt({
                 }}
               />
             </label>
-            <label className="text-sm">
-              Scale
-              <select
-                aria-label="Gantt scale"
-                value={zoom}
-                onChange={(e) => setZoom(e.target.value as GanttScale)}
-                className="field-select mt-1"
-              >
-                <option value="day">Days</option>
-                <option value="week">Weeks</option>
-                <option value="month">Months</option>
-              </select>
-            </label>
             <Button
               variant="outline"
-              size="sm"
-              onClick={() => setAnchor(projectDate())}
+              onClick={() => applyCommand({ type: "today" })}
             >
               Today
             </Button>
-            <label className="flex min-h-11 items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={showLinks}
-                onChange={(e) => setShowLinks(e.target.checked)}
-              />
-              Show dependency links
-            </label>
-            <InfoPopover label="About schedule dependency links">
-              <p>
-                Show or hide finish-to-start arrows between activities on this
-                page and the predecessor/successor columns. This changes the
-                display only; links and dates stay unchanged. Starting view:{" "}
-                {preference.personal
-                  ? "personal preference in this browser"
-                  : "shared project default"}
-                , {defaults.scale} scale and duration {defaults.durationMode}.
-                Reset restores this starting view and Today.
-              </p>
-            </InfoPopover>
             <span className="text-xs tabular-nums text-slate-600">
               {totalMatching} matching activities
             </span>
-            <label className="text-sm">
-              Date window
-              <select
-                aria-label="Gantt date window"
-                className="field-select mt-1"
-                value={view.horizon ?? "auto"}
-                onChange={(event) =>
-                  applyCommand({
-                    type: "horizon",
-                    horizon:
-                      event.target.value === "auto"
-                        ? null
-                        : (Number(event.target.value) as 14 | 28 | 42),
-                  })
-                }
-              >
-                <option value="auto">Auto</option>
-                <option value="14">2WK</option>
-                <option value="28">4WK</option>
-                <option value="42">6WK</option>
-              </select>
-            </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">Columns</Button>
-              </PopoverTrigger>
-              <PopoverContent className="bg-white" align="start">
-                <label className="flex min-h-11 items-center justify-between gap-3 text-sm">
-                  Duration column
-                  <select
-                    aria-label="Duration display"
-                    className="field-select w-28"
-                    value={view.durationMode}
-                    onChange={(event) =>
-                      applyCommand({
-                        type: "duration",
-                        mode: event.target.value as SourceDurationMode,
-                      })
-                    }
-                  >
-                    <option value="days">Days</option>
-                    <option value="hours" disabled>
-                      Hours unavailable
-                    </option>
-                    <option value="hidden">Hidden</option>
-                  </select>
-                </label>
-                {(["progress", "start", "finish"] as const).map((column) => (
-                  <label
-                    key={column}
-                    className="flex min-h-11 items-center gap-2 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={view.columns.includes(column)}
-                      onChange={(event) =>
-                        applyCommand({
-                          type: "column",
-                          column,
-                          visible: event.target.checked,
-                        })
-                      }
-                    />
-                    {
-                      {
-                        progress: "Step completion %",
-                        start: "Start",
-                        finish: "Finish",
-                      }[column]
-                    }
-                  </label>
-                ))}
-              </PopoverContent>
-            </Popover>
-            <Button
-              variant="outline"
-              onClick={() => applyCommand({ type: "reset" })}
-            >
-              Reset view
-            </Button>
             <Button
               variant="ghost"
               onClick={() => setAnchor(shiftDate(first, -2))}
@@ -1490,11 +1414,17 @@ function Gantt({
               Activity dates
             </Button>
           </div>
+          <ScheduleViewControls view={view} onCommand={applyCommand} managed />
         </div>
         <div
           ref={scroller}
+          {...pan.handlers}
+          style={{
+            touchAction: "pan-y",
+            userSelect: pan.dragging ? "none" : undefined,
+          }}
           onScroll={updateViewport}
-          className="overflow-x-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
+          className="max-h-[65dvh] overflow-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
           tabIndex={0}
           role="region"
           aria-label="Scrollable schedule table and timeline"
@@ -1508,7 +1438,7 @@ function Gantt({
                 Schedule activities. Select an activity to edit its dates and
                 dependencies.
               </caption>
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="h-14 bg-slate-50 text-slate-600 text-left">
                   <th className="px-3 w-44">Activity / asset</th>
                   <th className="w-12">
@@ -1623,12 +1553,26 @@ function Gantt({
                       )}
                       {showStart && (
                         <td className="whitespace-nowrap px-2 text-[13px]">
-                          {formatScheduleDate(r.start)}
+                          <button
+                            disabled={!r.start}
+                            className="min-h-11 text-left hover:text-blue-700 focus-visible:outline-blue-700"
+                            aria-label={`Show start date for ${r.activityId}`}
+                            onClick={() => r.start && setAnchor(r.start)}
+                          >
+                            {formatScheduleDate(r.start)}
+                          </button>
                         </td>
                       )}
                       {showFinish && (
                         <td className="whitespace-nowrap px-2 text-[13px]">
-                          {formatScheduleDate(r.finish)}
+                          <button
+                            disabled={!r.finish}
+                            className="min-h-11 text-left hover:text-blue-700 focus-visible:outline-blue-700"
+                            aria-label={`Show finish date for ${r.activityId}`}
+                            onClick={() => r.finish && setAnchor(r.finish)}
+                          >
+                            {formatScheduleDate(r.finish)}
+                          </button>
                         </td>
                       )}
                       {showLinks && (
@@ -1661,7 +1605,7 @@ function Gantt({
               </tbody>
             </table>
             <div className="relative shrink-0 border-l" style={{ width }}>
-              <div className="border-b">
+              <div className="sticky top-0 z-10 border-b">
                 <GanttRuler
                   start={start}
                   scale={zoom}
@@ -1749,7 +1693,20 @@ function Gantt({
                     />
                   )}
                 </svg>
-                {rows.map((r) => {
+                {rows.map((original) => {
+                  const internal =
+                    managedByActivity.get(original.activityId)?.internalId ??
+                    original.activityId;
+                  const r =
+                    drag.preview?.id === internal
+                      ? { ...original, ...drag.preview }
+                      : original;
+                  const dragRow = {
+                    id: internal,
+                    start: original.start,
+                    finish: original.finish,
+                  };
+                  const editable = canDrag && !original.actualFinish;
                   const left = r.start ? x(r.start) : -1,
                     right = r.finish ? x(r.finish) + unit : -1;
                   const baselineLeft = r.baselineStart
@@ -1769,6 +1726,7 @@ function Gantt({
                     <div
                       key={r.activityId}
                       className="h-12 border-b relative"
+                      data-gantt-pan
                       tabIndex={-1}
                       onContextMenu={(event) => {
                         event.preventDefault();
@@ -1796,41 +1754,87 @@ function Gantt({
                           />
                         )}
                       {r.start && r.finish && right > 0 && left < width ? (
-                        <button
-                          className="group absolute top-0.5 h-11 text-left text-xs text-blue-950 focus-visible:outline-2 focus-visible:outline-blue-700"
-                          style={{
-                            left: hitLeft,
-                            width: hitWidth,
-                          }}
-                          title={`${r.activityId}: ${r.name}; ${r.start} → ${r.finish}; ${r.progress ?? "unrecorded"}%`}
-                          aria-label={`Edit ${r.activityId}: ${r.name}, ${r.start} to ${r.finish}`}
-                          onClick={(event) => onEdit(r, event.currentTarget)}
-                        >
-                          <span
-                            className="absolute top-2.5 flex h-6 items-center overflow-hidden rounded-sm border border-blue-400 bg-blue-100 group-hover:bg-blue-200"
+                        <>
+                          <button
+                            {...(editable
+                              ? drag.bindings(dragRow, "move")
+                              : {})}
+                            data-date-drag={editable || undefined}
+                            draggable={false}
                             style={{
-                              left: visualLeft - hitLeft,
-                              width: visualWidth,
+                              left: hitLeft,
+                              width: hitWidth,
+                              touchAction: "pan-y",
+                              cursor: editable ? "grab" : undefined,
                             }}
+                            className="group absolute top-0.5 h-11 text-left text-xs text-blue-950 focus-visible:outline-2 focus-visible:outline-blue-700"
+                            title={`${r.activityId}: ${r.name}; ${r.start} → ${r.finish}; ${r.progress ?? "unrecorded"}%`}
+                            aria-label={`Edit ${r.activityId}: ${r.name}, ${r.start} to ${r.finish}`}
+                            onClick={(event) => onEdit(r, event.currentTarget)}
                           >
                             <span
-                              className="absolute left-0 inset-y-0 bg-blue-400/50"
-                              style={{ width: `${r.progress ?? 0}%` }}
-                            />
-                            <span className="relative whitespace-nowrap px-1">
-                              {r.progress !== undefined
-                                ? `${r.progress}%`
-                                : r.activityId}
+                              className="absolute top-2.5 flex h-6 items-center overflow-hidden rounded-sm border border-blue-400 bg-blue-100 group-hover:bg-blue-200"
+                              style={{
+                                left: visualLeft - hitLeft,
+                                width: visualWidth,
+                              }}
+                            >
+                              <span
+                                className="absolute left-0 inset-y-0 bg-blue-400/50"
+                                style={{ width: `${r.progress ?? 0}%` }}
+                              />
+                              <span className="relative whitespace-nowrap px-1">
+                                {r.progress !== undefined
+                                  ? `${r.progress}%`
+                                  : r.activityId}
+                              </span>
                             </span>
-                          </span>
-                        </button>
+                          </button>
+                          {editable && left >= 44 && left < width && (
+                            <button
+                              {...drag.bindings(dragRow, "start")}
+                              data-date-drag
+                              draggable={false}
+                              style={{ left: left - 44, touchAction: "pan-y" }}
+                              className="absolute top-0.5 z-[2] grid h-11 w-11 cursor-ew-resize place-items-center text-blue-800 hover:bg-blue-50 focus-visible:outline-blue-700"
+                              aria-label={`Drag start date for ${r.activityId}`}
+                              title="Drag start; Alt + arrow keys adjusts one day"
+                            >
+                              <span
+                                className="h-5 border-l-2 border-current"
+                                aria-hidden="true"
+                              />
+                            </button>
+                          )}
+                          {editable && right > 0 && right + 44 <= width && (
+                            <button
+                              {...drag.bindings(dragRow, "finish")}
+                              data-date-drag
+                              draggable={false}
+                              style={{ left: right, touchAction: "pan-y" }}
+                              className="absolute top-0.5 z-[2] grid h-11 w-11 cursor-ew-resize place-items-center text-blue-800 hover:bg-blue-50 focus-visible:outline-blue-700"
+                              aria-label={`Drag finish date for ${r.activityId}`}
+                              title="Drag finish; Alt + arrow keys adjusts one day"
+                            >
+                              <span
+                                className="h-5 border-l-2 border-current"
+                                aria-hidden="true"
+                              />
+                            </button>
+                          )}
+                        </>
                       ) : !r.start &&
                         r.finish &&
                         x(r.finish) >= 0 &&
                         x(r.finish) < width ? (
                         <button
+                          {...(editable ? drag.bindings(dragRow, "move") : {})}
+                          data-date-drag={editable || undefined}
+                          draggable={false}
                           className="absolute top-0.5 flex h-11 min-w-11 items-center justify-center text-xs text-blue-800 underline"
                           style={{
+                            touchAction: "pan-y",
+                            cursor: editable ? "grab" : undefined,
                             left: Math.min(
                               Math.max(0, x(r.finish) - 22),
                               width - 44,
@@ -1868,6 +1872,22 @@ function Gantt({
             </div>
           </div>
         </div>
+        {dateChange && (
+          <ScheduleDateChangeReview
+            projectId={project.id}
+            sourceSha256="managed"
+            version={dateChange.version}
+            activity={dateChange.activity}
+            dates={dateChange.dates}
+            onCancel={() => setDateChange(null)}
+            onSaved={() => setDateChange(null)}
+          />
+        )}
+        <p className="border-t px-4 py-2 text-xs leading-5 text-slate-600">
+          Drag the date ruler or an empty timeline area to browse dates. Drag a
+          bar to move it; drag an end to resize. Changes need review and
+          confirmation.
+        </p>
         <div className="flex items-center justify-between gap-3 px-4 py-1 text-xs text-slate-600">
           <p>Saved schedule · Days use the app’s Monday–Friday calendar</p>
           <InfoPopover label="About the schedule timeline">
