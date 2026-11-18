@@ -51,7 +51,11 @@ escluse dal commit di questo lotto.
 
 ## Rilascio
 
-Verifiche locali concluse; commit/push e verifica deployment/alias in corso.
-Le ricevute private `release-code.private.json` e `release-final.private.json`
-documenteranno separatamente il rilascio codice e la chiusura documentale.
+Codice **`d1eb4c414b84e9db8da367e8f610df891845f922`** pushato normalmente su main.
+Deployment **`dpl_4SBnUxv1C58kYvc3dnaMjjVqhrUW` READY**, alias pubblico sullo stesso deployment.
+Smoke Schedule200/API programme-source anonima401 verificati **18 Nov 2026 09:16:35 CET**.
+Ricevuta privata `output/tony/schedule-toolbar-20261117/release-code.private.json`.
+Il successivo commit aggiorna soltanto lo stato documentale; la verifica conclusiva
+di main/alias è conservata in `release-final.private.json` nello stesso percorso.
+Browser e server demo propri chiusi; modifiche precedenti preservate ed escluse.
 Prossimo passo: revisione umana del controllo Timeline compatto.

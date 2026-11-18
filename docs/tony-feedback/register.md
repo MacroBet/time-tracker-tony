@@ -5,8 +5,9 @@ Un solo Timeline apre i controlli inline; Time units/Visible range distinti,
 Priority con origine/coverage P6 nel popup, WBS e Calendar in fondo ai filtri.
 Source e gestito, desktop/mobile:21unitari+25browser e statici/build PASS;
 Impeccable ship, PDF inglese2pagine/QA2/2 `output/pdf/fieldtrack-schedule-toolbar-20261117-en.pdf`.
-Verifiche locali concluse; pubblicazione e verifica alias in corso. Dati/permessi
-invariati, viste autenticate solo demo; nessun AI/invio, monitor PAUSED.
+Codice `d1eb4c4` su main, Vercel READY e alias sullo stesso deployment;
+Schedule200/API source anonima401, 18 Nov 2026 09:16:35 CET. Dati/permessi invariati,
+viste autenticate solo demo; nessun AI/invio, monitor PAUSED.
 
 **Una freccia per attività17nov:** [richiesta e prove](intake-20261117-gantt-shortcuts.md).
 Rimosse le frecce ripetute nella timeline source/working; resta Show dates accanto
@@ -554,8 +555,9 @@ Un solo Timeline apre i controlli inline; Time units/Visible range distinti,
 Priority con origine/coverage P6 nel popup, WBS e Calendar in fondo ai filtri.
 Source e gestito, desktop/mobile:21unitari+25browser e statici/build PASS;
 Impeccable ship, PDF inglese2pagine/QA2/2 `output/pdf/fieldtrack-schedule-toolbar-20261117-en.pdf`.
-Verifiche locali concluse; pubblicazione e verifica alias in corso. Dati/permessi
-invariati, viste autenticate solo demo; nessun AI/invio, monitor PAUSED.
+Codice `d1eb4c4` su main, Vercel READY e alias sullo stesso deployment;
+Schedule200/API source anonima401, 18 Nov 2026 09:16:35 CET. Dati/permessi invariati,
+viste autenticate solo demo; nessun AI/invio, monitor PAUSED.
 
 **Una freccia per attività17nov:** [richiesta e prove](intake-20261117-gantt-shortcuts.md).
 Rimosse le frecce ripetute nella timeline source/working; resta Show dates accanto
