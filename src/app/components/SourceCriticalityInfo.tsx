@@ -11,16 +11,11 @@ export function SourceCriticalityInfo({
   const number = (value: number) => value.toLocaleString("en-GB");
   return (
     <div className="flex shrink-0 items-center gap-1">
-      {metadata?.workingStale && (
-        <span className="hidden text-xs text-amber-900 sm:inline">
-          Saved P6 · predates edits
-        </span>
-      )}
       <InfoPopover
-        label="About saved P6 criticality"
+        label="About priority"
         className={metadata?.workingStale ? "text-amber-800" : ""}
       >
-        <p className="font-medium text-slate-950">Saved P6 criticality</p>
+        <p className="font-medium text-slate-950">Priority</p>
         {loading ? (
           <p>Loading the source classification…</p>
         ) : !metadata ? (

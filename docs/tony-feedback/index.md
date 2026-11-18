@@ -1,5 +1,13 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Schedule compatto, feedback17nov:** [attuazione e prove](intake-20261117-schedule-toolbar.md).
+Un solo Timeline apre i controlli inline; Time units/Visible range distinti,
+Priority con origine/coverage P6 nel popup, WBS e Calendar in fondo ai filtri.
+Source e gestito, desktop/mobile:21unitari+25browser e statici/build PASS;
+Impeccable ship, PDF inglese2pagine/QA2/2 `output/pdf/fieldtrack-schedule-toolbar-20261117-en.pdf`.
+Verifiche locali concluse; pubblicazione e verifica alias in corso. Dati/permessi
+invariati, viste autenticate solo demo; nessun AI/invio, monitor PAUSED.
+
 **Una freccia per attività17nov:** [richiesta e prove](intake-20261117-gantt-shortcuts.md).
 Rimosse le frecce ripetute nella timeline source/working; resta Show dates accanto
 al nome, funzionante con mouse/Invio. 12/12browser e statici/build PASS,

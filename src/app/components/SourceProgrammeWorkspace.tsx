@@ -808,7 +808,7 @@ function SourceProgrammeView({
         />
       )}
       <section
-        className="min-w-0 space-y-2 sm:grid sm:grid-cols-3 sm:items-end sm:gap-3 sm:space-y-0 xl:grid-cols-[minmax(14rem,1.5fr)_minmax(9rem,1fr)_minmax(9rem,1fr)_minmax(8rem,1fr)_minmax(10rem,1fr)_auto]"
+        className="min-w-0 space-y-2 sm:grid sm:grid-cols-3 sm:items-end sm:gap-3 sm:space-y-0 xl:grid-cols-[minmax(14rem,1.5fr)_minmax(8rem,1fr)_minmax(11rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_auto]"
         aria-label="Filter schedule"
       >
         <label
@@ -833,6 +833,60 @@ function SourceProgrammeView({
           aria-label="Activity filters"
           className="flex max-w-full items-end gap-3 overflow-x-auto overscroll-x-contain pb-1 sm:contents"
         >
+          <label
+            htmlFor={`${id}-status`}
+            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
+          >
+            Status
+            <select
+              id={`${id}-status`}
+              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
+              value={status}
+              onChange={(event) => {
+                setPendingDateChange(null);
+                setStatus(event.target.value);
+                setPage(0);
+              }}
+            >
+              <option value="">All statuses</option>
+              {data?.filters.statuses.map((item) => (
+                <option key={item} value={item}>
+                  {statusLabel(item)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="w-[190px] min-w-[190px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0">
+            <label
+              htmlFor={`${id}-critical`}
+              className="text-xs font-medium text-slate-600"
+            >
+              Priority
+            </label>
+            <div className="mt-1 flex min-w-0 items-center gap-1">
+              <select
+                id={`${id}-critical`}
+                className="field-select min-h-11 min-w-0 flex-1 text-sm font-normal"
+                value={critical}
+                onChange={(event) =>
+                  applyViewCommand({
+                    type: "critical",
+                    filter: event.target
+                      .value as SourceGanttViewState["critical"],
+                  })
+                }
+              >
+                <option value="all">All activities</option>
+                <option value="yes">Critical</option>
+                <option value="no">Non-critical</option>
+                <option value="unknown">Unknown</option>
+              </select>
+              <SourceCriticalityInfo
+                metadata={loading ? undefined : data?.criticality}
+                loading={loading}
+              />
+            </div>
+          </div>
           <label
             htmlFor={`${id}-wbs`}
             className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
@@ -873,57 +927,7 @@ function SourceProgrammeView({
               ))}
             </select>
           </label>
-          <label
-            htmlFor={`${id}-status`}
-            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
-          >
-            Status
-            <select
-              id={`${id}-status`}
-              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
-              value={status}
-              onChange={(event) => {
-                setPendingDateChange(null);
-                setStatus(event.target.value);
-                setPage(0);
-              }}
-            >
-              <option value="">All statuses</option>
-              {data?.filters.statuses.map((item) => (
-                <option key={item} value={item}>
-                  {statusLabel(item)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label
-            htmlFor={`${id}-critical`}
-            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
-          >
-            Saved P6 criticality
-            <select
-              id={`${id}-critical`}
-              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
-              value={critical}
-              onChange={(event) =>
-                applyViewCommand({
-                  type: "critical",
-                  filter: event.target
-                    .value as SourceGanttViewState["critical"],
-                })
-              }
-            >
-              <option value="all">All activities</option>
-              <option value="yes">Critical in saved P6</option>
-              <option value="no">Non-critical in saved P6</option>
-              <option value="unknown">Unknown criticality</option>
-            </select>
-          </label>
           <div className="flex min-h-11 shrink-0 items-center gap-1 self-end">
-            <SourceCriticalityInfo
-              metadata={loading ? undefined : data?.criticality}
-              loading={loading}
-            />
             {(query || activeFilters > 0) && (
               <Button
                 variant="ghost"
