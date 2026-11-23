@@ -550,6 +550,17 @@ pertinente o nuovo mandato; nessun loop o heartbeat aggiunto.
 
 ## Stato corrente per ripresa
 
+**Curve pulite, feedback18nov (23nov):** [attuazione e prove](intake-20261123-progress-curves.md).
+Grafico fluido e protagonista, valori/data una sola volta, conteggi/tabella nel
+pulsante informativo e ispezione diretta touch/tastiera. Confronti original/current
+e critical salvato P6, senza ricalcolo CPM; finePhase1 da identificare (Marco non sa).
+394unitari/PGlite, API gestito/P6, 24browser e statici/build PASS; revisore ship.
+PDF inglese4pagine/QA4/4 `output/pdf/fieldtrack-progress-curves-20261123-en.pdf`.
+Codice7268dce pushato su main; Vercel READY e alias sullo stesso deployment,
+Overview200/API progress anonima401, 23nov2026 20:28:19CET. Prove autenticate solo
+nella demo sintetica; nessun dato business remoto/AI/invio. Monitor PAUSED,
+modifiche preesistenti preservate.
+
 **Schedule compatto, feedback17nov:** [attuazione e prove](intake-20261117-schedule-toolbar.md).
 Un solo Timeline apre i controlli inline; Time units/Visible range distinti,
 Priority con origine/coverage P6 nel popup, WBS e Calendar in fondo ai filtri.
