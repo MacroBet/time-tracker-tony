@@ -29,6 +29,7 @@ test("the requested Dashboard display phrases resolve to one saved-data view", (
     ["check project import", { kind: "readiness" }],
     ["show me missing report criteria", { kind: "readiness" }],
     ["show dashboard", { kind: "overview" }],
+    ["show me issues overview", { kind: "issues" }],
     ["show original vs current", { kind: "progress", comparison: "current" }],
     [
       "show original versus current curves",

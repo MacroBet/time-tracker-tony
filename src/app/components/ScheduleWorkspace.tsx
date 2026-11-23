@@ -14,8 +14,7 @@ import {
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { AppShell } from "./AppShell";
-import { ProjectAudit } from "./ProjectAudit";
-import { ProgrammeReference } from "./ProgrammeReference";
+import { ScheduleActions } from "./ScheduleActions";
 import { OverdueList } from "./OverdueList";
 import { InfoPopover } from "./InfoPopover";
 import { useLinkedProject } from "./useLinkedProject";
@@ -25,11 +24,7 @@ import { GanttProgress } from "./GanttProgress";
 import { matchesSavedScheduleQuery } from "@/lib/copilot-reads";
 import { managedWorkingSourceIndex } from "@/lib/schedule-working";
 import { activityStepProgress } from "@/lib/project-reports";
-import {
-  SourceProgrammeImport,
-  SourceProgrammeRestore,
-  SourceProgrammeWorkspace,
-} from "./SourceProgrammeWorkspace";
+import { SourceProgrammeWorkspace } from "./SourceProgrammeWorkspace";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
@@ -129,26 +124,35 @@ export function ScheduleWorkspace({
         (allowed || canViewOverdue) && (
           <nav
             aria-label="Schedule views"
-            className="mb-5 flex flex-wrap items-center gap-1 border-b border-slate-200"
+            className="flex flex-wrap items-center justify-between gap-1 border-b border-slate-200"
           >
-            {allowed && (
-              <Link
-                href="/schedule"
-                aria-current={!overdue ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${!overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
-              >
-                <CalendarDays className="size-4" aria-hidden="true" />
-                Timeline
-              </Link>
-            )}
-            {canViewOverdue && (
-              <Link
-                href="/schedule?view=overdue"
-                aria-current={overdue ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
-              >
-                Overdue <span className="tabular-nums">{overdueCount}</span>
-              </Link>
+            <div className="flex flex-wrap items-center gap-1">
+              {allowed && (
+                <Link
+                  href="/schedule"
+                  aria-current={!overdue ? "page" : undefined}
+                  className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${!overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
+                >
+                  <CalendarDays className="size-4" aria-hidden="true" />
+                  Timeline
+                </Link>
+              )}
+              {canViewOverdue && (
+                <Link
+                  href="/schedule?view=overdue"
+                  aria-current={overdue ? "page" : undefined}
+                  className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-3 text-sm font-medium ${overdue ? "border-blue-600 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-950"}`}
+                >
+                  Overdue <span className="tabular-nums">{overdueCount}</span>
+                </Link>
+              )}
+            </div>
+            {allowed && !overdue && (
+              <ScheduleActions
+                key={`${project.id}:${params.get("setup") ?? ""}`}
+                project={project}
+                openImport={params.get("setup") === "import"}
+              />
             )}
           </nav>
         )}
@@ -162,7 +166,7 @@ export function ScheduleWorkspace({
         <p>Schedule planning requires commissioning management access.</p>
       ) : project ? (
         <div
-          className="space-y-6"
+          className="min-w-0"
           key={`${project.id}-${params.get("activityId") ?? ""}-${params.get("q") ?? ""}`}
         >
           {commissioning(project).sourceProgrammeSummary ? (
@@ -177,22 +181,6 @@ export function ScheduleWorkspace({
           ) : (
             <Schedule project={project} />
           )}
-          <SourceProgrammeImport
-            projectId={project.id}
-            version={commissioning(project).version}
-            onImported={app.refreshData}
-          />
-          {app.currentUser.role === "admin" &&
-            commissioning(project).sourceProgrammeSummary && (
-              <SourceProgrammeRestore
-                projectId={project.id}
-                version={commissioning(project).version}
-                sourceSha256={
-                  commissioning(project).sourceProgrammeSummary!.sha256
-                }
-                onRestored={app.refreshData}
-              />
-            )}
         </div>
       ) : (
         <p>No project assigned.</p>
@@ -267,16 +255,6 @@ function Schedule({ project }: { project: Project }) {
       durationDays: 1,
     });
   }
-  const history = (
-    <details className="border-t border-slate-200 pt-5">
-      <summary className="min-h-11 cursor-pointer text-sm font-medium text-slate-700">
-        Project history
-      </summary>
-      <div className="mt-3">
-        <ProjectAudit projectId={project.id} refreshKey={state.version} />
-      </div>
-    </details>
-  );
   const activityDialog = (
     <>
       <div className="space-y-4">
@@ -310,7 +288,6 @@ function Schedule({ project }: { project: Project }) {
   if (!state.schedule.length)
     return (
       <div className="space-y-8">
-        <ProgrammeReference key={project.id} project={project} />
         {activityDialog}
         <section
           className="bg-white border rounded-xl px-5 py-8 sm:px-10 sm:py-12"
@@ -339,7 +316,12 @@ function Schedule({ project }: { project: Project }) {
               <Plus className="size-4" /> Add first activity
             </Button>
             <Button asChild variant="outline" className="min-h-11">
-              <Link href="/commissioning#import-register">Import schedule</Link>
+              <Link
+                href={`/schedule?projectId=${encodeURIComponent(project.id)}&setup=import`}
+                scroll={false}
+              >
+                Import schedule
+              </Link>
             </Button>
           </div>
           <div className="mt-10 border-t pt-6 grid gap-6 sm:grid-cols-2 max-w-2xl">
@@ -373,12 +355,10 @@ function Schedule({ project }: { project: Project }) {
             </div>
           </div>
         </section>
-        {history}
       </div>
     );
   return (
-    <div className="space-y-6">
-      <ProgrammeReference key={project.id} project={project} />
+    <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="font-semibold text-lg">Schedule activities</h2>
@@ -387,9 +367,6 @@ function Schedule({ project }: { project: Project }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild variant="outline" className="min-h-11">
-            <Link href="/commissioning#import-register">Import</Link>
-          </Button>
           <Button
             disabled={!isOnline}
             className="min-h-11"
@@ -690,7 +667,6 @@ function Schedule({ project }: { project: Project }) {
           Baseline dates stay recorded when the schedule changes.
         </p>
       </details>
-      {history}
     </div>
   );
 }

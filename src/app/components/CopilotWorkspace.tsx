@@ -62,14 +62,20 @@ import {
 } from "@/lib/assistant-conversations";
 import { projectReportHref } from "@/lib/project-reports";
 import { AssistantReply } from "./AssistantReply";
-import { parseAssistantViewCommand } from "@/lib/assistant-view-commands";
+import {
+  parseAssistantViewCommand,
+  parseSchedulePanelCommand,
+} from "@/lib/assistant-view-commands";
 import { parseCopilotReadCommand } from "@/lib/copilot-reads";
 import { VoiceSetup } from "./VoiceSetup";
 import {
   createVoiceQuestionSession,
   voiceSetupKey,
 } from "@/lib/voice-commands";
-import { applyAssistantView } from "./assistant-view-dispatch";
+import {
+  applyAssistantView,
+  applySchedulePanel,
+} from "./assistant-view-dispatch";
 import { parseDashboardViewCommand } from "@/lib/dashboard-view-commands";
 import { applyDashboardView } from "./dashboard-view-dispatch";
 import { dashboardViewHref } from "@/lib/dashboard-views";
@@ -616,12 +622,16 @@ export function CopilotSession({
     const dashboardIntent = dashboardContext
       ? parseDashboardViewCommand(text)
       : null;
-    const viewIntent = dashboardIntent ? null : parseAssistantViewCommand(text);
+    const schedulePanel =
+      embedded && sourceView ? parseSchedulePanelCommand(text) : null;
+    const viewIntent =
+      dashboardIntent || schedulePanel ? null : parseAssistantViewCommand(text);
     const savedRead = parseCopilotReadCommand(text);
     if (
       !context ||
       (context.configuration.state !== "ready" &&
         !dashboardIntent &&
+        !schedulePanel &&
         !viewIntent &&
         !savedRead) ||
       chatLock.current ||
@@ -693,15 +703,24 @@ export function CopilotSession({
       setSavingQuestion(false);
       if (saved.created) setHistoryTotal((previous) => previous + 1);
       setChatUrl(saved.conversation.id);
-      let answer: CopilotAnswer = dashboardIntent
-        ? await applyDashboardView(
-            dashboardIntent,
-            projectId,
-            context.project.version,
-            controller.signal,
-          )
-        : viewIntent
-          ? !embedded || !sourceView
+      let answer: CopilotAnswer;
+      if (schedulePanel) {
+        answer = await applySchedulePanel(
+          schedulePanel,
+          projectId,
+          context.project.version,
+          controller.signal,
+        );
+      } else if (dashboardIntent) {
+        answer = await applyDashboardView(
+          dashboardIntent,
+          projectId,
+          context.project.version,
+          controller.signal,
+        );
+      } else if (viewIntent) {
+        answer =
+          !embedded || !sourceView
             ? {
                 mode: "view",
                 text: `Schedule view command · no AI generation.\n\n[Open the working Schedule](/schedule?projectId=${encodeURIComponent(projectId)}) and use its assistant to apply this view command. No view or project record was changed here.`,
@@ -714,17 +733,19 @@ export function CopilotSession({
                 projectId,
                 context.project.version,
                 controller.signal,
-              )
-          : await apiRequest<CopilotAnswer>(endpoint, {
-              method: "POST",
-              signal: controller.signal,
-              body: JSON.stringify({
-                message: text,
-                history,
-                reportState,
-                scheduleView,
-              }),
-            });
+              );
+      } else {
+        answer = await apiRequest<CopilotAnswer>(endpoint, {
+          method: "POST",
+          signal: controller.signal,
+          body: JSON.stringify({
+            message: text,
+            history,
+            reportState,
+            scheduleView,
+          }),
+        });
+      }
       if (answer.dashboardView) {
         if (dashboardContext) {
           try {
@@ -1623,6 +1644,16 @@ export function CopilotSession({
                 }}
                 onFinalPhrase={(phrase) => {
                   const flow = voiceSession.current;
+                  if (
+                    embedded &&
+                    sourceView &&
+                    !phrase.before.trim() &&
+                    !phrase.hasInterim &&
+                    !lastDraft.current.trim() &&
+                    parseSchedulePanelCommand(phrase.text)
+                  ) {
+                    return "accept-and-finish";
+                  }
                   const control = flow?.phrase(phrase, lastDraft.current);
                   if (control === "replace") setReplaceVoice(true);
                   setVoiceNote(
@@ -1650,10 +1681,18 @@ export function CopilotSession({
                     );
                     return;
                   }
+                  const opensSchedulePanel =
+                    embedded &&
+                    sourceView &&
+                    !lastDraft.current.trim() &&
+                    parseSchedulePanelCommand(result.draft);
                   lastDraft.current = result.draft;
                   setDraft(result.draft);
                   setReplaceVoice(false);
-                  if (result.send) {
+                  if (opensSchedulePanel) {
+                    setVoiceNote("");
+                    void sendMessage(result.draft);
+                  } else if (result.send) {
                     setVoiceNote(
                       "Sending your question. This does not confirm changes.",
                     );
@@ -1696,6 +1735,11 @@ export function CopilotSession({
                 disabled={
                   (!ready &&
                     !(dashboardContext && parseDashboardViewCommand(draft)) &&
+                    !(
+                      embedded &&
+                      sourceView &&
+                      parseSchedulePanelCommand(draft)
+                    ) &&
                     !parseAssistantViewCommand(draft) &&
                     !parseCopilotReadCommand(draft)) ||
                   chatBusy ||

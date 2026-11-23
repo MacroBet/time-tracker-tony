@@ -45,6 +45,29 @@ export const scheduleViewCommandSchema = z
   })
   .strict();
 export type ScheduleViewCommand = z.infer<typeof scheduleViewCommandSchema>;
+
+const schedulePanelSchema = z.enum(["import", "changes", "export"]);
+export type SchedulePanel = z.infer<typeof schedulePanelSchema>;
+
+const schedulePanelScope = {
+  projectId: scheduleViewSnapshotSchema.shape.projectId,
+  projectVersion: scheduleViewSnapshotSchema.shape.projectVersion,
+  requestId: z.uuid(),
+};
+export const schedulePanelCommandSchema = z
+  .object({ ...schedulePanelScope, panel: schedulePanelSchema })
+  .strict();
+export const schedulePanelCommandResultSchema = z
+  .object({
+    ...schedulePanelScope,
+    ok: z.boolean(),
+    error: z.string().optional(),
+  })
+  .strict();
+export const schedulePanelCommandEvent = "fieldtrack:schedule-panel-command";
+export const schedulePanelCommandResultEvent =
+  "fieldtrack:schedule-panel-command-result";
+
 /** Local display commands carry the same scope/version as captured row references. */
 export function resolveScheduleViewCommand(
   input: unknown,

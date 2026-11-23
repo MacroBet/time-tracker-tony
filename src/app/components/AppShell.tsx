@@ -24,9 +24,13 @@ import {
   FileBarChart,
   GanttChart,
   MoreHorizontal,
+  PanelLeftOpen,
+  PanelLeftClose,
+  Shield,
+  ChartNoAxesCombined,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
@@ -66,6 +70,20 @@ const mobileTitles: Record<string, string> = {
   "Workspace feedback": "Feedback",
   "Task unavailable": "Unavailable",
 };
+
+// Page shells remount on navigation. Keep the desktop preference for this tab
+// until the workspace is reloaded.
+let desktopNavigationExpanded = false;
+const navigationListeners = new Set<() => void>();
+function subscribeToDesktopNavigation(listener: () => void) {
+  navigationListeners.add(listener);
+  return () => navigationListeners.delete(listener);
+}
+function toggleDesktopNavigation() {
+  desktopNavigationExpanded = !desktopNavigationExpanded;
+  navigationListeners.forEach((listener) => listener());
+}
+
 export function AppShell({
   title,
   subtitle,
@@ -94,6 +112,21 @@ export function AppShell({
   } = useApp();
   const [refreshing, setRefreshing] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const expandedNavigation = useSyncExternalStore(
+    subscribeToDesktopNavigation,
+    () => desktopNavigationExpanded,
+    () => false,
+  );
+  const sidebarNavigationId = useId();
+  const desktopNavItemLayout = expandedNavigation
+    ? "gap-3 px-3"
+    : "justify-center";
+  const toggleNavigationLabel = expandedNavigation
+    ? "Collapse navigation"
+    : "Expand navigation";
+  const NavigationToggleIcon = expandedNavigation
+    ? PanelLeftClose
+    : PanelLeftOpen;
   const pathname = usePathname();
   const router = useRouter();
   const params = useSearchParams();
@@ -210,8 +243,12 @@ export function AppShell({
     { label: "Settings", href: "/settings", icon: Settings },
     ...(currentUser.role === "admin"
       ? [
-          { label: "Admin control", href: "/admin", icon: ShieldCheck },
-          { label: "AI usage", href: "/admin/ai-usage", icon: FileBarChart },
+          { label: "Admin control", href: "/admin", icon: Shield },
+          {
+            label: "AI usage",
+            href: "/admin/ai-usage",
+            icon: ChartNoAxesCombined,
+          },
         ]
       : []),
   ];
@@ -257,49 +294,82 @@ export function AppShell({
       >
         Skip to main content
       </a>
-      <aside className="workspace-sidebar fixed inset-y-0 left-0 z-30 hidden lg:flex w-56 flex-col text-slate-300">
-        <Link
-          href={primaryNav[0]?.href ?? "/settings"}
-          className="flex items-center gap-3 px-5 h-20 border-b border-white/10"
+      <aside
+        className={`workspace-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col text-slate-300 lg:flex ${expandedNavigation ? "w-56" : "w-16"}`}
+      >
+        <div
+          className={`flex h-[70px] shrink-0 items-center border-b border-white/10 ${expandedNavigation ? "justify-between gap-2 px-3" : "justify-center"}`}
         >
-          <span className="flex size-9 items-center justify-center rounded-lg bg-white/5">
-            <HardHat className="size-6 text-amber-300" />
-          </span>
-          <span>
-            <span className="block font-semibold text-white tracking-tight">
-              FieldTrack
-            </span>
-          </span>
-        </Link>
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5">
+          {expandedNavigation && (
+            <Link
+              href={primaryNav[0]?.href ?? "/settings"}
+              className="flex min-h-11 min-w-0 items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-blue-300"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-white/5">
+                <HardHat className="size-5 text-amber-300" aria-hidden="true" />
+              </span>
+              <span className="truncate font-semibold tracking-tight text-white">
+                FieldTrack
+              </span>
+            </Link>
+          )}
+          <button
+            type="button"
+            aria-label={toggleNavigationLabel}
+            title={toggleNavigationLabel}
+            aria-expanded={expandedNavigation}
+            aria-controls={sidebarNavigationId}
+            onClick={toggleDesktopNavigation}
+            className="grid size-11 shrink-0 place-items-center rounded-lg text-slate-200 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-300"
+          >
+            <NavigationToggleIcon className="size-5" aria-hidden="true" />
+          </button>
+        </div>
+        <div
+          id={sidebarNavigationId}
+          className={`min-h-0 flex-1 overflow-y-auto py-3 ${expandedNavigation ? "px-3" : "px-2"}`}
+        >
           <nav aria-label="Project navigation" className="space-y-1">
             {primaryNav.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
                 aria-current={active(n.href) ? "page" : undefined}
-                className={`min-h-12 flex items-center gap-3 px-3 py-3 text-sm rounded-lg transition-colors focus-visible:outline-2 focus-visible:outline-blue-300 ${active(n.href) ? "sidebar-link-active text-white" : "hover:bg-white/5 hover:text-white"}`}
+                title={expandedNavigation ? undefined : n.label}
+                className={`flex min-h-11 items-center rounded-lg text-sm transition-colors focus-visible:outline-2 focus-visible:outline-blue-300 ${desktopNavItemLayout} ${active(n.href) ? "sidebar-link-active text-white" : "hover:bg-white/5 hover:text-white"}`}
               >
-                <n.icon className="size-4 shrink-0" />
-                {n.label}
+                <n.icon className="size-[18px] shrink-0" aria-hidden="true" />
+                <span className={expandedNavigation ? undefined : "sr-only"}>
+                  {n.label}
+                </span>
               </Link>
             ))}
           </nav>
           {organizationNav.length > 0 && (
-            <div className="mt-6 border-t border-white/10 pt-4">
-              <h2 className="px-3 mb-2 text-xs font-medium text-slate-400">
-                {worker ? "Your records" : "Organization"}
-              </h2>
+            <div className="mt-3 border-t border-white/10 pt-2.5">
+              {expandedNavigation && (
+                <h2 className="mb-2 px-3 text-xs font-medium text-slate-400">
+                  {worker ? "Your records" : "Organization"}
+                </h2>
+              )}
               <nav aria-label="Organization navigation" className="space-y-0.5">
                 {organizationNav.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     aria-current={active(item.href) ? "page" : undefined}
-                    className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-[13px] focus-visible:outline-2 focus-visible:outline-blue-300 ${active(item.href) ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
+                    title={expandedNavigation ? undefined : item.label}
+                    className={`flex min-h-11 items-center rounded-lg text-[13px] focus-visible:outline-2 focus-visible:outline-blue-300 ${desktopNavItemLayout} ${active(item.href) ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
                   >
-                    <item.icon className="size-4" />
-                    {item.label}
+                    <item.icon
+                      className="size-[18px] shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className={expandedNavigation ? undefined : "sr-only"}
+                    >
+                      {item.label}
+                    </span>
                   </Link>
                 ))}
               </nav>
@@ -307,45 +377,70 @@ export function AppShell({
           )}
           <nav
             aria-label="Workspace tools"
-            className="mt-4 border-t border-white/10 pt-3 space-y-0.5"
+            className="mt-3 space-y-0.5 border-t border-white/10 pt-2.5"
           >
             {utilityNav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={active(item.href) ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-3 rounded-lg px-3 text-xs focus-visible:outline-2 focus-visible:outline-blue-300 ${active(item.href) ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
+                title={expandedNavigation ? undefined : item.label}
+                className={`flex min-h-11 items-center rounded-lg text-xs focus-visible:outline-2 focus-visible:outline-blue-300 ${desktopNavItemLayout} ${active(item.href) ? "bg-white/10 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
               >
-                <item.icon className="size-4" />
-                {item.label}
+                <item.icon
+                  className="size-[18px] shrink-0"
+                  aria-hidden="true"
+                />
+                <span className={expandedNavigation ? undefined : "sr-only"}>
+                  {item.label}
+                </span>
               </Link>
             ))}
             {hasModule(currentUser, "feedback") && projects.length > 0 && (
               <button
+                type="button"
+                title={expandedNavigation ? undefined : "Report an issue"}
                 onClick={() =>
                   window.dispatchEvent(new Event("fieldtrack:open-feedback"))
                 }
-                className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-xs text-slate-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-300"
+                className={`flex min-h-11 w-full items-center rounded-lg text-xs text-slate-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-300 ${desktopNavItemLayout}`}
               >
-                <Bug className="size-4" />
-                Report an issue
+                <Bug className="size-[18px] shrink-0" aria-hidden="true" />
+                <span className={expandedNavigation ? undefined : "sr-only"}>
+                  Report an issue
+                </span>
               </button>
             )}
           </nav>
         </div>
-        <div className="border-t border-white/10 px-4 pt-3">
-          <p className="flex items-center gap-2 text-xs text-slate-400">
-            <Building2 className="size-3.5 shrink-0" />
-            <span className="truncate">
+        <div
+          className={`shrink-0 border-t border-white/10 pt-3 ${expandedNavigation ? "px-4" : "px-2"}`}
+        >
+          <p
+            className={`flex items-center gap-2 text-xs text-slate-400 ${expandedNavigation ? "" : "justify-center"}`}
+            title={
+              expandedNavigation
+                ? undefined
+                : currentCompany?.name || "Project workspace"
+            }
+          >
+            <Building2 className="size-4 shrink-0" aria-hidden="true" />
+            <span className={expandedNavigation ? "truncate" : "sr-only"}>
               {currentCompany?.name || "Project workspace"}
             </span>
           </p>
         </div>
-        <div className="p-4 flex items-center gap-3">
-          <span className="size-9 shrink-0 rounded-full bg-blue-500/20 text-blue-200 grid place-items-center text-xs font-semibold">
+        <div
+          className={`flex shrink-0 items-center ${expandedNavigation ? "gap-3 p-4" : "flex-col gap-1 px-2 pt-2 pb-1"}`}
+        >
+          <span
+            title={expandedNavigation ? undefined : currentUser.name}
+            aria-hidden="true"
+            className="size-9 shrink-0 rounded-full bg-blue-500/20 text-blue-200 grid place-items-center text-xs font-semibold"
+          >
             {initials}
           </span>
-          <span className="min-w-0 flex-1">
+          <span className={expandedNavigation ? "min-w-0 flex-1" : "sr-only"}>
             <span className="block text-sm text-white truncate">
               {currentUser.name}
             </span>
@@ -354,15 +449,19 @@ export function AppShell({
             </span>
           </span>
           <button
+            type="button"
             aria-label="Sign out"
+            title={expandedNavigation ? undefined : "Sign out"}
             onClick={logout}
             className="flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-300"
           >
-            <LogOut className="size-4" />
+            <LogOut className="size-[18px]" aria-hidden="true" />
           </button>
         </div>
       </aside>
-      <div className="lg:pl-56 pb-28 lg:pb-12">
+      <div
+        className={`pb-28 lg:pb-12 ${expandedNavigation ? "lg:pl-56" : "lg:pl-16"}`}
+      >
         <header className="sticky top-0 z-20 border-b border-[#e2e9f4] bg-white/95 backdrop-blur-sm">
           <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-7 lg:flex lg:gap-4">
             <div className="flex min-w-0 items-center gap-2 max-[359px]:col-span-2 lg:shrink-0">

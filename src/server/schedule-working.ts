@@ -4,12 +4,16 @@ import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { requireUser } from "./auth";
 import {
+  loadCopilotProjectAccess,
   loadData,
   loadProgrammeSourceIndex,
   saveWorkingSchedule,
 } from "./repository";
 import { commissioning, hasModule } from "@/lib/commissioning";
-import { querySourceProgrammeIndex } from "@/lib/programme-source";
+import {
+  querySourceProgrammeIndex,
+  type SourceProgrammeIndex,
+} from "@/lib/programme-source";
 import {
   canConfirmWorkingSchedule,
   managedWorkingSourceIndex,
@@ -27,6 +31,7 @@ import { HttpError, requireCondition } from "./errors";
 import { json, readJson } from "./http";
 import type { Task, Activity } from "@/lib/domain";
 import { activityStepProgress } from "@/lib/project-reports";
+import { csvCell } from "@/lib/csv";
 
 const TTL = 10 * 60 * 1000;
 const proofSchema = z
@@ -326,12 +331,36 @@ export async function getWorkingSchedule(request: Request, projectId: string) {
   const { user, state, source, data } = await authorized(projectId);
   const params = new URL(request.url).searchParams,
     original = params.get("view") === "source";
-  const critical = z
-    .enum(["all", "yes", "no", "unknown"])
-    .parse(params.get("critical") ?? "all");
+  const exportCsv = params.get("format") === "csv";
+  if (exportCsv) {
+    z.enum(["working", "source"]).parse(params.get("view"));
+    const version = z
+      .string()
+      .regex(/^\d+$/)
+      .pipe(z.coerce.number<string>().int())
+      .parse(params.get("version"));
+    const access = await loadCopilotProjectAccess(user, projectId);
+    requireCondition(
+      state.version === version &&
+        access.version === version &&
+        source.summary.sha256 ===
+          (state.sourceProgrammeSummary?.sha256 ?? "managed"),
+      409,
+      "The Schedule changed. Refresh the project before exporting.",
+    );
+    requireCondition(
+      !original || state.sourceProgrammeSummary,
+      404,
+      "This project has no original source schedule.",
+    );
+  }
   const index = original
     ? source
     : resolveWorkingSourceIndex(source, state.workingSchedule);
+  if (exportCsv) return scheduleCsvResponse(index, projectId, original);
+  const critical = z
+    .enum(["all", "yes", "no", "unknown"])
+    .parse(params.get("critical") ?? "all");
   const page = querySourceProgrammeIndex(index, {
     q: params.get("q") ?? undefined,
     wbs: params.get("wbs") ?? undefined,
@@ -340,6 +369,7 @@ export async function getWorkingSchedule(request: Request, projectId: string) {
     critical,
     page: Number(params.get("page") ?? 0),
     pageSize: 50,
+    includeNextPage: params.get("continuous") === "1",
     internalId: params.get("internalId") ?? undefined,
   });
   return json({
@@ -363,6 +393,79 @@ export async function getWorkingSchedule(request: Request, projectId: string) {
         ),
       ]),
     ),
+  });
+}
+
+function scheduleCsvResponse(
+  index: SourceProgrammeIndex,
+  projectId: string,
+  original: boolean,
+) {
+  const headers = [
+    "Schedule view",
+    "Activity ID",
+    "Internal ID",
+    "Activity",
+    "Start",
+    "Finish",
+    "Status",
+    "WBS ID",
+    "WBS path",
+    "Calendar ID",
+    "Calendar",
+    "Source duration (hours)",
+    "Duration (days)",
+  ];
+  const encoder = new TextEncoder();
+  const line = (cells: unknown[]) => `${cells.map(csvCell).join(",")}\r\n`;
+  const view = original ? "Original P6 source" : "Working schedule";
+  let row = 0;
+  const content = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(encoder.encode(`\uFEFF${line(headers)}`));
+    },
+    pull(controller) {
+      const chunk = index.activities.slice(row, row + 128);
+      if (!chunk.length) {
+        controller.close();
+        return;
+      }
+      row += chunk.length;
+      controller.enqueue(
+        encoder.encode(
+          chunk
+            .map((activity) =>
+              line([
+                view,
+                activity.activityId,
+                activity.internalId,
+                activity.name,
+                activity.start,
+                activity.finish,
+                activity.status,
+                activity.wbsId,
+                activity.wbsPath,
+                activity.calendarId,
+                activity.calendarName,
+                activity.durationHours,
+                activity.durationDays,
+              ]),
+            )
+            .join(""),
+        ),
+      );
+    },
+  });
+  const safeId = projectId.replace(/[^a-zA-Z0-9_-]/g, "_");
+  const filename = `fieldtrack-${safeId}-${original ? "original-source" : "working-schedule"}.csv`;
+  return new Response(content, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
+      "X-Schedule-Total": String(index.activities.length),
+    },
   });
 }
 export async function proposeWorkingSchedule(

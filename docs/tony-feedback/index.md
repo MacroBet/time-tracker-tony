@@ -1,5 +1,24 @@
 # Indice della conoscenza FieldTrack / Tony
 
+**Lotto successivo, 4/4:** [feedback, intervento e prove](intake-20261123-next-feedback-batch.md).
+Schedule compatto con tutte le attività P6 a scorrimento, filtri raccolti e azioni
+da pulsante o comando. Barra laterale desktop a icone, espandibile dal pulsante
+in alto. Vista Issues selezionabile nella Dashboard e con comando assistente,
+filtri collegati al registro e campi di origine disponibili. Collaudi in demo.
+
+**Dashboard dinamica, feedback18nov (23nov):** [attuazione e prove](intake-20261123-dynamic-dashboard.md).
+Un selettore per curve/report al posto delle tab, stesso Tag report dei grafici,
+assistente contestuale con viste applicate e confermate dal browser. Check11report
+su dati salvati, criteri mancanti/rimedi e verifica automatica dopo import P6;
+nessun asset/livello/vendor dedotto.417unitari/PGlite,3API,39browser e statici/build
+PASS; revisore ship. PDF inglese6pagine/QA6/6
+`output/pdf/fieldtrack-dynamic-dashboard-20261123-en.pdf`. Codice424a1de su main,
+Vercel READY/alias uguale e Overview200/readiness anonima401,23nov21:04:25CET.
+CPH3 reale non letto; prove locali sintetiche/mocked,nessunaAI live o scrittura
+business remota/invio. Monitor PAUSED. **Marco23nov: accorpare i4feedback in attesa;
+niente suite/build/deploy ripetuti per messaggio.** Documenti locali da includere
+alla chiusura del lotto; prossima unità: i nuovi messaggi, non altri collaudi.
+
 **Curve pulite, feedback18nov (23nov):** [attuazione e prove](intake-20261123-progress-curves.md).
 Grafico fluido e protagonista, valori/data una sola volta, conteggi/tabella nel
 pulsante informativo e ispezione diretta touch/tastiera. Confronti original/current

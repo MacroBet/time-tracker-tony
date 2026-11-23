@@ -22,6 +22,11 @@ export function parseDashboardViewCommand(
       view: { kind: "overview" },
       description: "Opened the project Dashboard overview.",
     };
+  if (new RegExp(`^${show}issues?(?: overview| dashboard)?$`).test(text))
+    return {
+      view: { kind: "issues" },
+      description: "Opened the project Issues overview.",
+    };
   if (
     new RegExp(`^${show}(?:(?:saved )?p6 )?crit(?:ical|ival) path$`).test(text)
   )

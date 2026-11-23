@@ -1,4 +1,20 @@
 import type { SourceGanttViewCommand } from "./source-gantt";
+import type { SchedulePanel } from "./schedule-view-context";
+
+/** Recognize short requests to open a panel. The panel owns any later action. */
+export function parseSchedulePanelCommand(
+  message: string,
+): SchedulePanel | null {
+  const text = message
+    .trim()
+    .toLowerCase()
+    .replace(/[.!]+$/, "")
+    .replace(/\s+/g, " ");
+  const command = text.match(
+    /^(?:please )?(?:(?:open|show(?: me)?) (?:the )?)?(?:schedule )?(import|changes|export)(?: (?:panel|menu))?$/,
+  );
+  return command ? (command[1] as SchedulePanel) : null;
+}
 
 export type AssistantViewIntent = {
   commands: SourceGanttViewCommand[];

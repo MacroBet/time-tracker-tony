@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { hasModule } from "./commissioning";
+import type { User } from "./domain";
 
 /** These requests select saved-data views; they never describe a record mutation. */
 export const dashboardViewRequestSchema = z.discriminatedUnion("kind", [
@@ -38,10 +40,32 @@ export const dashboardViewRequestSchema = z.discriminatedUnion("kind", [
     })
     .strict(),
   z.object({ kind: z.literal("readiness") }).strict(),
+  z.object({ kind: z.literal("issues") }).strict(),
   z.object({ kind: z.literal("overview") }).strict(),
 ]);
 
 export type DashboardViewRequest = z.infer<typeof dashboardViewRequestSchema>;
+
+export function canRequestDashboardView(
+  user: User,
+  view: DashboardViewRequest,
+) {
+  if (user.role === "worker") return false;
+  const dashboard = hasModule(user, "dashboard");
+  const reports = hasModule(user, "reports");
+  switch (view.kind) {
+    case "issues":
+      return (dashboard || reports) && hasModule(user, "tasks");
+    case "report":
+    case "vendor-progress":
+    case "lookahead":
+      return reports;
+    case "readiness":
+      return dashboard || reports;
+    default:
+      return dashboard;
+  }
+}
 
 const scope = {
   projectId: z.string().min(1).max(150),

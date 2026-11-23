@@ -123,3 +123,15 @@ invio, microfono, nuovo sviluppo o autorizzazione remota impliciti.
 Prove e limiti nel [completamento funzionale](intake-20261116-functional-completion.md).
 Ambito: lifecycle e contratto applicativo, nessuna garanzia acustica universale
 o autorizzazione a chiamate AI live derivata dai test sintetici.
+
+## 23 novembre 2026 — accorpare i feedback prima delle verifiche complessive
+
+**E, correzione diretta Marco nella chat di progetto:** «non fare test per tutto e
+build ci sono altri4messaggi in attesa». Ambito FieldTrack/Tony e lotto corrente:
+acquisire e lavorare i feedback collegati insieme, verificare in modo mirato dove
+serve e rinviare suite complessive/build/consegna alla chiusura del lotto; evitare
+un ciclo completo per ogni messaggio. Non significa saltare una verifica necessaria
+per una modifica rischiosa. Fonte/esito: [Dashboard dinamica](intake-20261123-dynamic-dashboard.md),
+codice424a1de già pushato prima della correzione e VercelREADY verificato in sola
+lettura. Nessun altro build o push documentale avviato dopo la richiesta. Prossima
+ripresa: i quattro messaggi annunciati; documenti locali da accorpare al lotto.

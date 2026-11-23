@@ -230,6 +230,7 @@ export type SourceProgrammeQuery = {
   status?: string;
   page?: number;
   pageSize?: number;
+  includeNextPage?: boolean;
   internalId?: string;
 };
 
@@ -400,7 +401,7 @@ export function indexSourceProgramme(
   };
 }
 
-/** Every record remains stored; only the requested page/detail is sent to a viewer. */
+/** Every record remains stored; only the requested window/detail is sent to a viewer. */
 export function querySourceProgrammeIndex(
   index: SourceProgrammeIndex,
   query: SourceProgrammeQuery = {},
@@ -427,7 +428,11 @@ export function querySourceProgrammeIndex(
     Math.max(0, Math.floor(query.page || 0)),
     Math.max(0, Math.ceil(filtered.length / pageSize) - 1),
   );
-  const activities = filtered.slice(page * pageSize, (page + 1) * pageSize),
+  const windowPages = query.includeNextPage ? 2 : 1;
+  const activities = filtered.slice(
+      page * pageSize,
+      (page + windowPages) * pageSize,
+    ),
     ids = new Set(activities.map((a) => a.internalId));
   const result: SourceProgrammePage = {
     ...(index.criticality

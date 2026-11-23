@@ -33,6 +33,8 @@ import type { ActivityStepProgress } from "@/lib/project-reports";
 import { GanttProgress } from "./GanttProgress";
 import { useGanttDateDrag } from "./useGanttDateDrag";
 import type { GanttDateRange, GanttDragRow } from "@/lib/gantt-date-drag";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 // Same 48px body rows and 56px ruler as the editable Schedule Gantt.
 const rowHeight = 48;
@@ -57,6 +59,8 @@ export function SourceProgrammeGantt({
   onDateChange,
   dateChangeReview,
   onPanToDate,
+  onPageChange,
+  pagingKey,
 }: {
   data: SourceProgrammePage | null;
   anchor: string;
@@ -82,6 +86,8 @@ export function SourceProgrammeGantt({
   ) => void;
   dateChangeReview?: ReactNode;
   onPanToDate?: (date: string) => void;
+  onPageChange?: (page: number) => void;
+  pagingKey?: string;
 }) {
   const showDuration = durationMode !== "hidden";
   const show = (column: SourceGanttColumn) => columns.includes(column);
@@ -94,8 +100,15 @@ export function SourceProgrammeGantt({
     (show("calendar") ? 120 : 0);
   const marker = useId().replace(/:/g, "");
   const scroller = useRef<HTMLDivElement>(null);
+  const requestedPage = useRef(0);
   const axis = ganttAxis(anchor, scale, horizon),
     rows = data?.activities ?? [];
+  const columnCount = 2 + columns.length + Number(showDuration);
+  const beforeRows = onPageChange && data ? data.page * data.pageSize : 0;
+  const afterRows =
+    onPageChange && data
+      ? Math.max(0, data.total - beforeRows - rows.length)
+      : 0;
   const dateDrag = useGanttDateDrag({
     pixelsPerDay: axis.unit,
     onPropose(item, dates, trigger) {
@@ -140,9 +153,35 @@ export function SourceProgrammeGantt({
       scrollLeft: el.scrollLeft,
       otherColumnsWidth,
     };
-    setVisiblePixels({ from: viewport.from, to: viewport.to });
+    setVisiblePixels((previous) =>
+      previous.from === viewport.from && previous.to === viewport.to
+        ? previous
+        : { from: viewport.from, to: viewport.to },
+    );
     onViewportDateChange(shiftSourceDate(anchor, viewport.dayOffset));
   }
+  function requestVisiblePage(scrollTop: number) {
+    if (!onPageChange || !data?.total) return;
+    const page = Math.min(
+      Math.floor(Math.max(0, scrollTop) / (rowHeight * data.pageSize)),
+      Math.ceil(data.total / data.pageSize) - 1,
+    );
+    if (page === requestedPage.current) return;
+    requestedPage.current = page;
+    onPageChange(page);
+  }
+  function goToRow(row: number) {
+    const el = scroller.current;
+    if (!el || !data?.total) return;
+    const safeRow = Math.max(1, Math.min(data.total, row));
+    el.scrollTop = (safeRow - 1) * rowHeight;
+    requestVisiblePage(el.scrollTop);
+    el.focus({ preventScroll: true });
+  }
+  useLayoutEffect(() => {
+    requestedPage.current = 0;
+    if (scroller.current) scroller.current.scrollTop = 0;
+  }, [pagingKey, projectId]);
   // Explicit date, scale and project changes must clear the old horizontal offset.
   // Otherwise a Today input can still display December columns after a November reset.
   useLayoutEffect(() => {
@@ -198,27 +237,106 @@ export function SourceProgrammeGantt({
       aria-label="Source schedule Gantt"
       className="relative isolate z-0 [--source-activity-width:180px] sm:[--source-activity-width:280px] overflow-hidden rounded-xl border border-slate-200 bg-white"
     >
-      <div className="flex flex-wrap items-end justify-between gap-2 border-b px-3 py-2">
+      <div className="flex items-start gap-2 border-b px-3 py-2">
         {controls}
+        <InfoPopover label="About the source timeline" className="ml-auto">
+          {onPageChange && (
+            <p>
+              Scroll the table to browse all matching activities. Focus the
+              table and use Home or End to jump to the first or last activity.
+            </p>
+          )}
+          {onPageChange && data && data.total > 0 && (
+            <form
+              className="space-y-1"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const row = Number(
+                  new FormData(event.currentTarget).get("row"),
+                );
+                if (Number.isInteger(row)) goToRow(row);
+              }}
+            >
+              <label htmlFor={`${marker}-row`} className="text-xs font-medium">
+                Go to activity row (1–{data.total.toLocaleString("en-GB")})
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  id={`${marker}-row`}
+                  name="row"
+                  type="number"
+                  min="1"
+                  max={data.total}
+                  required
+                />
+                <Button type="submit" variant="outline">
+                  Go
+                </Button>
+              </div>
+            </form>
+          )}
+          {!loading && rows.length > 0 && inWindow === 0 && (
+            <p>
+              To bring an activity’s bar into view, choose Activity dates or use
+              the arrow next to the activity name.
+            </p>
+          )}
+          <p>
+            Drag the ruler or empty timeline to browse dates. Days use each
+            activity’s saved calendar hours per day. Missing conversions stay in
+            source hours.
+          </p>
+          <p>
+            {links.length} relationships within the loaded rows and{" "}
+            {Math.max(0, outsideLinks)} outside them. Dependency arrows are{" "}
+            {showLinks ? "shown when both endpoints are in view" : "hidden"}.
+          </p>
+          <p>
+            Select an activity name or bar for details.{" "}
+            {dateChangeReview
+              ? "Review or cancel the current proposal before dragging another activity."
+              : onDateChange &&
+                "Drag a bar to propose moving it or drag either end to resize it. Alt+arrow keys move it by one day. Shift+Alt+arrows change the finish. Review and confirm to save."}
+          </p>
+        </InfoPopover>
       </div>
+      {loading && (
+        <p role="status" className="border-b px-3 py-3 text-sm text-slate-600">
+          Loading activities…
+        </p>
+      )}
       <div
         ref={scroller}
         {...(onPanToDate ? pan.handlers : {})}
-        onScroll={updateViewport}
+        onScroll={(event) => {
+          const { scrollTop, scrollLeft } = event.currentTarget;
+          if (lastViewport.current.scrollLeft !== scrollLeft) updateViewport();
+          requestVisiblePage(scrollTop);
+        }}
+        onKeyDown={(event) => {
+          if (
+            onPageChange &&
+            data?.total &&
+            event.target === event.currentTarget &&
+            ["Home", "End"].includes(event.key)
+          ) {
+            event.preventDefault();
+            goToRow(event.key === "Home" ? 1 : data.total);
+          } else if (onPanToDate) pan.handlers.onKeyDown(event);
+        }}
         role="region"
         aria-label="Scrollable schedule table and timeline"
         aria-busy={loading}
         tabIndex={0}
-        className="relative overflow-auto overscroll-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
+        className="relative max-h-[min(65dvh,640px)] overflow-auto overscroll-contain [overflow-anchor:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700"
         style={{
-          height: "min(65dvh, 640px)",
-          minHeight: 240,
           touchAction: "pan-y",
           userSelect: pan.dragging ? "none" : undefined,
         }}
       >
         <table
           className="table-fixed border-collapse text-sm tabular-nums"
+          aria-rowcount={onPageChange && data ? data.total + 1 : undefined}
           style={{
             width: `calc(var(--source-activity-width) + ${otherColumnsWidth + axis.width}px)`,
           }}
@@ -274,10 +392,22 @@ export function SourceProgrammeGantt({
             </tr>
           </thead>
           <tbody>
+            {beforeRows > 0 && (
+              <tr aria-hidden="true">
+                <td
+                  className="p-0"
+                  colSpan={columnCount}
+                  style={{ height: beforeRows * rowHeight }}
+                />
+              </tr>
+            )}
             {rows.map((row, index) => (
               <tr
                 key={row.internalId}
                 data-source-row={row.internalId}
+                aria-rowindex={
+                  onPageChange ? firstRowNumber + index + 1 : undefined
+                }
                 className="h-12 border-b border-slate-200 hover:bg-blue-50/40"
                 style={{ height: rowHeight }}
               >
@@ -743,58 +873,24 @@ export function SourceProgrammeGantt({
                 )}
               </tr>
             ))}
+            {afterRows > 0 && (
+              <tr aria-hidden="true">
+                <td
+                  className="p-0"
+                  colSpan={columnCount}
+                  style={{ height: afterRows * rowHeight }}
+                />
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
       {dateChangeReview}
-      <p className="border-t px-4 py-2 text-xs leading-5 text-slate-600">
-        Drag the date ruler or empty timeline to browse dates.{" "}
-        {dateChangeReview
-          ? "Review or cancel this proposal before dragging another activity."
-          : onDateChange
-            ? "Drag a bar to move it; drag an end to resize. Review and confirm to save."
-            : "Original source dates are read-only."}
-      </p>
       <p role="status" className="sr-only">
         {dateDrag.preview
           ? `Proposed dates: ${formatScheduleDate(dateDrag.preview.start)} to ${formatScheduleDate(dateDrag.preview.finish)}. Release to review the change.`
           : ""}
       </p>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-1 text-xs text-slate-600">
-        <p className="tabular-nums">
-          {inWindow} of {rows.length} loaded activities in the visible date area
-          {!loading && rows.length > 0 && inWindow === 0 && (
-            <span>
-              {" "}
-              · These activities have no bars in this date area. Use Activity
-              dates or a row’s arrow button.
-            </span>
-          )}
-        </p>
-        <InfoPopover label="About the source timeline">
-          <p>
-            Activities retain source order. The date window opens on Today in
-            the project timezone. Activity dates is a separate navigation
-            action. Days use each activity’s saved calendar hours per day;
-            missing conversions stay in source hours. No dates or source
-            durations are recalculated.
-          </p>
-          <p>
-            {links.length} source relationships connect loaded activities;{" "}
-            {Math.max(0, outsideLinks)} connections lead outside this page.{" "}
-            {showLinks
-              ? "Arrows show saved endpoints within the date window."
-              : "Dependency arrows are hidden."}
-          </p>
-          <p>
-            Select a name or bar for details. Use the arrow button to locate an
-            activity outside the window. Scroll horizontally for columns and
-            dates.{" "}
-            {onDateChange &&
-              "Drag a bar to propose moving its dates; use the endpoints to resize. Alt+arrow keys move one day, and Shift+Alt+arrows adjusts the finish. Dates are saved only after review and confirmation."}
-          </p>
-        </InfoPopover>
-      </div>
     </section>
   );
 }

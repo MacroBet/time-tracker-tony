@@ -109,7 +109,8 @@ export type LocalFinalPhrase = {
   hasInterim: boolean;
   now: number;
 };
-export type LocalPhraseControl = "finish" | "replace" | "omit" | undefined;
+export type LocalPhraseControl =
+  "finish" | "accept-and-finish" | "replace" | "omit" | undefined;
 export type LocalDictationState =
   "idle" | "checking" | "permission" | "recording" | "finalizing";
 
@@ -331,7 +332,10 @@ export function createLocalDictation(
               } else if (control === "finish" || control === "omit") {
                 omitted.add(i);
                 if (control === "finish") finishRequested = true;
-              } else accepted.set(i, text.trim());
+              } else {
+                accepted.set(i, text.trim());
+                if (control === "accept-and-finish") finishRequested = true;
+              }
             }
             const results = Array.from(
               { length: event.results.length },

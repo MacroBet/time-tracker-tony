@@ -7,6 +7,7 @@ import type { Project } from "@/lib/domain";
 import { canManage } from "@/lib/permissions";
 import type { ProjectReportQuery } from "@/lib/project-reports";
 import {
+  canRequestDashboardView,
   dashboardViewCommandEvent,
   dashboardViewCommandResultEvent,
   dashboardViewCommandSchema,
@@ -24,6 +25,7 @@ import { useApp } from "../contexts/AppContext";
 import { PersonalViewSettings } from "./ProjectViewSettings";
 import { ProjectProgressCurve } from "./ProjectProgressCurve";
 import { DashboardTagGraphics } from "./DashboardGraphics";
+import { DashboardIssues } from "./DashboardIssues";
 import {
   CommissioningReport,
   type ReportRequest,
@@ -85,12 +87,6 @@ export function DashboardWorkspace({
   const [pending, setPending] = useState<DashboardViewCommand | null>(null);
   const acknowledged = useRef("");
   const canvas = useRef<HTMLDivElement>(null);
-  const permitted = (target: DashboardViewRequest) =>
-    target.kind === "readiness"
-      ? canDashboard || canReports
-      : ["overview", "progress"].includes(target.kind)
-        ? canDashboard
-        : canReports;
   const navigate = (target: DashboardViewRequest) =>
     window.history.replaceState(
       null,
@@ -108,12 +104,7 @@ export function DashboardWorkspace({
           projectId: project.id,
           projectVersion: version,
         });
-        const allowed =
-          requested.kind === "readiness"
-            ? canDashboard || canReports
-            : ["overview", "progress"].includes(requested.kind)
-              ? canDashboard
-              : canReports;
+        const allowed = canRequestDashboardView(currentUser, requested);
         if (!allowed)
           throw Error("This Dashboard view is not available to your account.");
         setPending(input.data);
@@ -141,7 +132,7 @@ export function DashboardWorkspace({
     };
     window.addEventListener(dashboardViewCommandEvent, receive);
     return () => window.removeEventListener(dashboardViewCommandEvent, receive);
-  }, [project.id, version, canDashboard, canReports]);
+  }, [project.id, version, currentUser]);
   useEffect(() => {
     if (
       !pending ||
@@ -154,11 +145,7 @@ export function DashboardWorkspace({
     const ok =
       pending.projectId === project.id &&
       pending.projectVersion === version &&
-      (view.kind === "readiness"
-        ? canDashboard || canReports
-        : ["overview", "progress"].includes(view.kind)
-          ? canDashboard
-          : canReports);
+      canRequestDashboardView(currentUser, view);
     window.dispatchEvent(
       new CustomEvent(dashboardViewCommandResultEvent, {
         detail: {
@@ -177,17 +164,9 @@ export function DashboardWorkspace({
     );
     if (ok)
       canvas.current?.scrollIntoView({ block: "start", behavior: "instant" });
-  }, [
-    pending,
-    view,
-    parsed.success,
-    project.id,
-    version,
-    canDashboard,
-    canReports,
-  ]);
+  }, [pending, view, parsed.success, project.id, version, currentUser]);
   let content: ReactNode;
-  if (!parsed.success || !permitted(view))
+  if (!parsed.success || !canRequestDashboardView(currentUser, view))
     content = (
       <p role="alert" className="text-sm text-red-700">
         This view or its filters are not available. Choose another Dashboard
@@ -195,6 +174,8 @@ export function DashboardWorkspace({
       </p>
     );
   else if (view.kind === "overview") content = children;
+  else if (view.kind === "issues")
+    content = <DashboardIssues key={project.id} projectId={project.id} />;
   else if (view.kind === "progress")
     content = (
       <ProjectProgressCurve
@@ -328,6 +309,15 @@ export function DashboardWorkspace({
             label,
             view: { kind: "report", report } as DashboardViewRequest,
           })),
+        ]
+      : []),
+    ...(canRequestDashboardView(currentUser, { kind: "issues" })
+      ? [
+          {
+            value: "issues",
+            label: "Issues overview",
+            view: { kind: "issues" } as const,
+          },
         ]
       : []),
     ...(view.kind === "vendor-progress"

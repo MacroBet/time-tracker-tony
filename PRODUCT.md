@@ -167,6 +167,26 @@ Evidence: docs/tony-feedback/intake-20261114-chat-history.md.
 
 ## Product Principles
 
+The 23 November Dashboard uses one view selector instead of report tab rows. The
+contextual assistant opens version-scoped views on the current canvas only after
+browser acknowledgement. Exact display commands remain available without generated
+AI. Original/current curves, saved P6 criticality, lookahead, supplier progress and
+the canonical asset-level Tag report share that surface. Approvals and required
+checksheet-step progress remain distinct. A saved-data readiness review explains
+eleven reports' prerequisites, missing inputs and scoped remedies; it also runs
+after a P6 import without inferring equipment, levels or supplier links. Existing
+provider tools can consult the same review and request a display change. Local
+synthetic/mocked verification does not attest the actual CPH3 import or live AI.
+Evidence: docs/tony-feedback/intake-20261123-dynamic-dashboard.md.
+
+Issues overview uses the selected project's saved issue records. Filterable
+status, company and creation charts lead to the underlying records. The average
+counts calendar days since creation for currently open issues with a usable date.
+Issue type and root cause use the original imported fields when recorded.
+Schedule opens with activity data and exposes Import, Changes and Export above
+the timeline. The desktop navigation opens as an icon rail with expandable labels.
+Evidence: docs/tony-feedback/intake-20261123-next-feedback-batch.md.
+
 The 16 November implementation keeps Dashboard and Reports on one surface, with
 existing project metrics, shared admin defaults and separate browser preferences.
 Schedule view controls and assistant commands share one scoped reducer; stored P6

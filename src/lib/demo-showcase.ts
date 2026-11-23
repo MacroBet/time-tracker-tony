@@ -289,15 +289,20 @@ export function withDemoShowcase(data: AppData, now: Date): AppData {
         },
       });
     }
-    if (assetIndex % 3 === 0)
+    if (assetIndex % 3 === 0) {
+      const scenario = assetIndex / 3;
+      const assignee = assignees[scenario % assignees.length];
+      const completed = scenario % 3 === 1;
       tasks.push({
-        ...baseTask(
-          `demo-nb-issue-${asset.id}`,
-          asset,
-          assetIndex % 2 === 0 ? "u6" : undefined,
-        ),
+        ...baseTask(`demo-nb-issue-${asset.id}`, asset, assignee),
         title: `${asset.name} · ${assetIndex % 2 === 0 ? "Interlock retest required" : "Documentation discrepancy"}`,
-        status: assetIndex % 2 === 0 ? "blocked" : "pending",
+        status: completed
+          ? "completed"
+          : assetIndex % 2 === 0
+            ? "blocked"
+            : "pending",
+        createdAt: ago(7 + scenario * 18),
+        completedAt: completed ? ago(2 + scenario) : undefined,
         priority: assetIndex % 2 === 0 ? "P1" : "P2",
         notes: `${SYNTHETIC} Demonstration issue: verify the control sequence and capture the outcome.`,
         cx: {
@@ -305,13 +310,18 @@ export function withDemoShowcase(data: AppData, now: Date): AppData {
           assetId: asset.id,
           activityId: asset.levelActivities!.L3,
           level: "L3",
-          result: assetIndex % 2 === 0 ? "retest" : "untested",
+          result: completed
+            ? "passed"
+            : assetIndex % 2 === 0
+              ? "retest"
+              : "untested",
           blockerRisk:
-            assetIndex % 2 === 0
+            !completed && assetIndex % 2 === 0
               ? "SYNTHETIC interlock issue holds pre-functional verification."
               : undefined,
         },
       });
+    }
   }
   for (const [index, area] of areas.entries()) {
     const asset = assets.find((row) => row.id === `DEMO-NB-AREA-${area.id}`)!;

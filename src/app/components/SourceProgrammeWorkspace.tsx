@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Upload, Plus } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Upload,
+  Plus,
+  SlidersHorizontal,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   type SourceActivityView,
@@ -28,6 +34,8 @@ import {
   sourcePageAnchor,
   sourceGanttInitialView,
   reduceSourceGanttView,
+  shiftSourceDate,
+  sourceBar,
   type SourceGanttViewState,
   type SourceGanttViewCommand,
   type SourceDurationMode,
@@ -37,6 +45,7 @@ import { ScheduleViewControls } from "./ScheduleViewControls";
 import { ScheduleDateChangeReview } from "./ScheduleDateChangeReview";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { InfoPopover } from "./InfoPopover";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { WorkingScheduleEditor } from "./WorkingScheduleEditor";
 import { useApp } from "../contexts/AppContext";
 import { hasModule } from "@/lib/commissioning";
@@ -169,14 +178,10 @@ export function SourceProgrammeImport({
 }) {
   const id = useId();
   const app = useApp();
-  const params = useSearchParams();
   const destination =
     projectName ??
     app.projects.find((project) => project.id === projectId)?.name ??
     projectId;
-  const [importOpen, setImportOpen] = useState(
-    params.get("setup") === "import",
-  );
   const [file, setFile] = useState<File | null>(null);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -291,99 +296,87 @@ export function SourceProgrammeImport({
     }
   }
   return (
-    <details
-      open={importOpen}
-      onToggle={(event) => setImportOpen(event.currentTarget.open)}
-      className="rounded-xl border border-slate-200 bg-white px-5 py-4"
-    >
-      <summary className="min-h-11 cursor-pointer content-center text-sm font-medium text-slate-800">
-        Import Primavera XER schedule
-      </summary>
-      <div className="mt-4 space-y-4 max-w-2xl">
-        <p className="text-sm font-medium">Destination: {destination}</p>
-        <p className="text-sm leading-relaxed text-slate-600">
-          Keep the complete exported schedule and its saved dates, calendars and
-          relationships. This does not convert its logic into the app’s
-          working-day calculation or create tasks.
-        </p>
-        <label htmlFor={`${id}-file`} className="block text-sm font-medium">
-          XER export or prepared source package
-        </label>
-        <Input
-          id={`${id}-file`}
-          className="min-h-11"
-          type="file"
-          accept=".xer,.gz"
-          disabled={busy}
-          onChange={(event) => {
-            setFile(event.target.files?.[0] ?? null);
-            setPreview(null);
-          }}
-        />
-        <Button
-          type="button"
-          className="min-h-11"
-          disabled={busy || !file}
-          onClick={stage}
+    <div className="space-y-4">
+      <p className="text-sm font-medium">Destination: {destination}</p>
+      <p className="text-sm leading-relaxed text-slate-600">
+        Keep the complete exported schedule and its saved dates, calendars and
+        relationships. This does not convert its logic into the app’s
+        working-day calculation or create tasks.
+      </p>
+      <label htmlFor={`${id}-file`} className="block text-sm font-medium">
+        XER export or prepared source package
+      </label>
+      <Input
+        id={`${id}-file`}
+        className="min-h-11"
+        type="file"
+        accept=".xer,.gz"
+        disabled={busy}
+        onChange={(event) => {
+          setFile(event.target.files?.[0] ?? null);
+          setPreview(null);
+        }}
+      />
+      <Button
+        type="button"
+        className="min-h-11"
+        disabled={busy || !file}
+        onClick={stage}
+      >
+        <Upload className="size-4" aria-hidden="true" />
+        {busy ? "Reading schedule…" : "Preview schedule"}
+      </Button>
+      {preview && (
+        <section
+          className="space-y-3 border-t border-slate-200 pt-4"
+          aria-label="P6 import preview"
         >
-          <Upload className="size-4" aria-hidden="true" />
-          {busy ? "Reading schedule…" : "Preview schedule"}
-        </Button>
-        {preview && (
-          <section
-            className="space-y-3 border-t border-slate-200 pt-4"
-            aria-label="P6 import preview"
+          <p className="text-sm">
+            Destination: <strong>{destination}</strong>
+          </p>
+          <p className="font-medium">
+            Source programme: {preview.summary.projectName}
+          </p>
+          <p className="text-xs text-slate-600">{preview.summary.fileName}</p>
+          <p className="text-sm tabular-nums">
+            {number(preview.summary.activities)} activities ·{" "}
+            {number(preview.summary.relationships)} relationships ·{" "}
+            {number(preview.summary.calendars)} calendars
+          </p>
+          <p className="text-sm text-slate-600">
+            The source schedule will be saved for this project. Existing assets,
+            tasks and assignments are unchanged.
+          </p>
+          <label htmlFor={`${id}-reason`} className="block text-sm font-medium">
+            Reason for this import
+          </label>
+          <Input
+            id={`${id}-reason`}
+            className="min-h-11"
+            value={reason}
+            maxLength={1000}
+            disabled={busy}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="Describe the schedule revision or test purpose"
+          />
+          {preview.version !== version && (
+            <p role="alert" className="text-sm text-red-700">
+              The project changed. Preview the file again before saving.
+            </p>
+          )}
+          <Button
+            type="button"
+            className="min-h-11"
+            disabled={
+              busy || reason.trim().length < 10 || preview.version !== version
+            }
+            onClick={save}
           >
-            <p className="text-sm">
-              Destination: <strong>{destination}</strong>
-            </p>
-            <p className="font-medium">
-              Source programme: {preview.summary.projectName}
-            </p>
-            <p className="text-xs text-slate-600">{preview.summary.fileName}</p>
-            <p className="text-sm tabular-nums">
-              {number(preview.summary.activities)} activities ·{" "}
-              {number(preview.summary.relationships)} relationships ·{" "}
-              {number(preview.summary.calendars)} calendars
-            </p>
-            <p className="text-sm text-slate-600">
-              The source schedule will be saved for this project. Existing
-              assets, tasks and assignments are unchanged.
-            </p>
-            <label
-              htmlFor={`${id}-reason`}
-              className="block text-sm font-medium"
-            >
-              Reason for this import
-            </label>
-            <Input
-              id={`${id}-reason`}
-              className="min-h-11"
-              value={reason}
-              maxLength={1000}
-              disabled={busy}
-              onChange={(event) => setReason(event.target.value)}
-              placeholder="Describe the schedule revision or test purpose"
-            />
-            {preview.version !== version && (
-              <p role="alert" className="text-sm text-red-700">
-                The project changed. Preview the file again before saving.
-              </p>
-            )}
-            <Button
-              type="button"
-              className="min-h-11"
-              disabled={
-                busy || reason.trim().length < 10 || preview.version !== version
-              }
-              onClick={save}
-            >
-              Save source schedule
-            </Button>
-          </section>
-        )}
-      </div>
-    </details>
+            Save source schedule
+          </Button>
+        </section>
+      )}
+    </div>
   );
 }
 
@@ -428,7 +421,6 @@ function SourceProgrammeView({
   const [wbs, setWbs] = useState("");
   const [calendar, setCalendar] = useState("");
   const [status, setStatus] = useState("");
-  const [page, setPage] = useState(0);
   const defaults = {
     ...defaultView,
     durationMode: defaultView?.durationMode ?? defaultDurationMode,
@@ -439,6 +431,7 @@ function SourceProgrammeView({
   const { anchor, scale, horizon, showLinks, durationMode, columns, critical } =
     view;
   const viewRef = useRef(view);
+  const initialDateSettled = useRef(false);
   const [viewportDate, setViewportDate] = useState(anchor);
   const viewportDateRef = useRef(anchor);
   function updateViewportDate(date: string) {
@@ -470,6 +463,7 @@ function SourceProgrammeView({
       setPage(0);
     }
     if (navigates) {
+      initialDateSettled.current = true;
       updateViewportDate(next.anchor);
       setTimelineReset((value) => value + 1);
     }
@@ -491,6 +485,29 @@ function SourceProgrammeView({
     dateChangeTrigger.current = null;
   }, [setRefresh, setPendingDateChange]);
   const loadedKey = useRef<string | null>(null);
+  const pagingKey = JSON.stringify([
+    projectId,
+    summary.sha256,
+    projectVersion,
+    projection,
+    query,
+    wbs,
+    calendar,
+    status,
+    critical,
+  ]);
+  const [pageSelection, setPageSelection] = useState({
+    key: pagingKey,
+    page: 0,
+  });
+  const page = pageSelection.key === pagingKey ? pageSelection.page : 0;
+  const setPage = (next: number) => {
+    setPageSelection((previous) =>
+      previous.key === pagingKey && previous.page === next
+        ? previous
+        : { key: pagingKey, page: next },
+    );
+  };
   const requestKey = JSON.stringify([
     projectId,
     summary.sha256,
@@ -509,6 +526,7 @@ function SourceProgrammeView({
         workingRevision?: number;
         projectVersion?: number;
         activityProgress?: Record<string, ActivityStepProgress>;
+        pagingKey: string;
       })
     | null
   >(null);
@@ -535,6 +553,7 @@ function SourceProgrammeView({
           critical,
           page: String(page),
           view: projection,
+          continuous: "1",
         });
         try {
           const response = await fetch(
@@ -545,8 +564,33 @@ function SourceProgrammeView({
           if (!response.ok)
             throw new Error(result.error || "Could not load schedule.");
           if (controller.signal.aborted) return;
+          if (!initialDateSettled.current && page === 0) {
+            initialDateSettled.current = true;
+            const firstRows = (result as SourceProgrammePage).activities.slice(
+              0,
+              12,
+            );
+            const current = viewRef.current;
+            const days =
+              current.scale === "day" ? 4 : current.scale === "week" ? 14 : 31;
+            const firstDated = firstRows.find((row) =>
+              sourceBar(row, row.start ?? row.finish ?? current.anchor, 1, 1),
+            );
+            if (
+              firstDated &&
+              !firstRows.some((row) => sourceBar(row, current.anchor, days, 1))
+            ) {
+              const date = shiftSourceDate(
+                (firstDated.start ?? firstDated.finish)!,
+                -1,
+              );
+              const next = { ...current, anchor: date };
+              viewRef.current = next;
+              setView(next);
+            }
+          }
           loadedKey.current = requestKey;
-          setData(result);
+          setData({ ...result, pagingKey });
         } catch (failure) {
           if (!controller.signal.aborted) {
             setData(null);
@@ -578,6 +622,7 @@ function SourceProgrammeView({
     refresh,
     projection,
     projectVersion,
+    pagingKey,
     requestKey,
   ]);
   useEffect(() => {
@@ -683,7 +728,9 @@ function SourceProgrammeView({
     view,
     viewportDate,
   ]);
-  const visible = data?.activities ?? [];
+  const timelineData = data?.pagingKey === pagingKey ? data : null;
+  const unknownCritical = timelineData?.criticality?.coverage.unknown ?? 0;
+  const visible = timelineData?.activities ?? [];
   const activeFilters =
     [wbs, calendar, status].filter(Boolean).length + Number(critical !== "all");
   const openDetail = useCallback(
@@ -729,10 +776,10 @@ function SourceProgrammeView({
     }
   }, [linkedActivity, openDetail]);
   return (
-    <div className="space-y-2 sm:space-y-4">
-      <header className="flex items-center justify-between gap-2 sm:flex-wrap">
+    <div className="space-y-2">
+      <header className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <div
-          className="flex min-w-0 flex-1 items-center gap-1 sm:flex-wrap sm:gap-2"
+          className="flex min-w-0 items-center gap-1"
           aria-label="Schedule projection"
         >
           <Button
@@ -744,6 +791,7 @@ function SourceProgrammeView({
               if (projection === "working") return;
               setPendingDateChange(null);
               setProjection("working");
+              setPage(0);
               setLoading(true);
               setData(null);
             }}
@@ -760,6 +808,7 @@ function SourceProgrammeView({
               if (projection === "source") return;
               setPendingDateChange(null);
               setProjection("source");
+              setPage(0);
               setLoading(true);
               setData(null);
               setEditor(null);
@@ -768,14 +817,6 @@ function SourceProgrammeView({
             <span className="sm:hidden">Source</span>
             <span className="hidden sm:inline">Original source</span>
           </Button>
-          <span
-            className="hidden text-xs tabular-nums text-slate-600 sm:inline"
-            aria-live="polite"
-          >
-            {loading
-              ? "Loading…"
-              : `${number(data?.total ?? 0)} matching activities`}
-          </span>
           <InfoPopover label="About this source schedule">
             <p className="font-medium text-slate-950">{summary.projectName}</p>
             <p>
@@ -815,172 +856,181 @@ function SourceProgrammeView({
           <Button
             variant="outline"
             aria-label="Create an asset activity"
-            className="size-11 px-2 sm:w-auto sm:px-4"
+            className="ml-auto size-11 px-2 lg:ml-0 xl:w-auto xl:px-4"
             onClick={() => {
               setPendingDateChange(null);
               setEditor({});
             }}
           >
-            <Plus className="size-4 sm:hidden" aria-hidden="true" />
-            <span className="hidden sm:inline">Create an asset activity</span>
+            <Plus className="size-4 xl:hidden" aria-hidden="true" />
+            <span className="hidden xl:inline">Create an asset activity</span>
           </Button>
         )}
-      </header>
-      {editor && (
-        <WorkingScheduleEditor
-          key={`${projectId}-${editor.internalId ?? "new"}`}
-          projectId={projectId}
-          sourceSha256={summary.sha256}
-          internalId={editor.internalId}
-          onClose={() => setEditor(null)}
-          onSaved={async () => {
-            await app.refreshData();
-            setRefresh((value) => value + 1);
-            setProjection("working");
-            setEditor(null);
-          }}
-        />
-      )}
-      <section
-        className="min-w-0 space-y-2 sm:grid sm:grid-cols-3 sm:items-end sm:gap-3 sm:space-y-0 xl:grid-cols-[minmax(14rem,1.5fr)_minmax(8rem,1fr)_minmax(11rem,1fr)_minmax(8rem,1fr)_minmax(8rem,1fr)_auto]"
-        aria-label="Filter schedule"
-      >
-        <label
-          htmlFor={`${id}-query`}
-          className="block min-w-0 text-xs font-medium text-slate-600"
-        >
-          <span className="sr-only sm:not-sr-only">Activity ID or name</span>
-          <Input
-            id={`${id}-query`}
-            className="min-h-11 min-w-0 w-full text-sm font-normal sm:mt-1"
-            value={query}
-            onChange={(event) => {
-              setPendingDateChange(null);
-              setQuery(event.target.value);
-              setPage(0);
+        {editor && (
+          <WorkingScheduleEditor
+            key={`${projectId}-${editor.internalId ?? "new"}`}
+            projectId={projectId}
+            sourceSha256={summary.sha256}
+            internalId={editor.internalId}
+            onClose={() => setEditor(null)}
+            onSaved={async () => {
+              await app.refreshData();
+              setRefresh((value) => value + 1);
+              setProjection("working");
+              setEditor(null);
             }}
-            placeholder="Find an activity by ID or name"
           />
-        </label>
-        <div
-          role="group"
-          aria-label="Activity filters"
-          className="flex max-w-full items-end gap-3 overflow-x-auto overscroll-x-contain pb-1 sm:contents"
+        )}
+        <section
+          className="flex min-w-0 basis-full items-center gap-2 lg:flex-1"
+          aria-label="Filter schedule"
         >
-          <label
-            htmlFor={`${id}-status`}
-            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
-          >
-            Status
-            <select
-              id={`${id}-status`}
-              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
-              value={status}
-              onChange={(event) => {
-                setPendingDateChange(null);
-                setStatus(event.target.value);
-                setPage(0);
-              }}
-            >
-              <option value="">All statuses</option>
-              {data?.filters.statuses.map((item) => (
-                <option key={item} value={item}>
-                  {statusLabel(item)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="w-[190px] min-w-[190px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0">
-            <label
-              htmlFor={`${id}-critical`}
-              className="text-xs font-medium text-slate-600"
-            >
-              Priority
-            </label>
-            <div className="mt-1 flex min-w-0 items-center gap-1">
-              <select
-                id={`${id}-critical`}
-                className="field-select min-h-11 min-w-0 flex-1 text-sm font-normal"
-                value={critical}
-                onChange={(event) =>
-                  applyViewCommand({
-                    type: "critical",
-                    filter: event.target
-                      .value as SourceGanttViewState["critical"],
-                  })
-                }
-              >
-                <option value="all">All activities</option>
-                <option value="yes">Critical</option>
-                <option value="no">Non-critical</option>
-                <option value="unknown">Unknown</option>
-              </select>
-              <SourceCriticalityInfo
-                metadata={loading ? undefined : data?.criticality}
-                loading={loading}
-              />
-            </div>
-          </div>
-          <label
-            htmlFor={`${id}-wbs`}
-            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
-          >
-            WBS ID or path
+          <label htmlFor={`${id}-query`} className="block min-w-0 flex-1">
+            <span className="sr-only">Activity ID or name</span>
             <Input
-              id={`${id}-wbs`}
-              className="mt-1 min-h-11 w-full text-sm font-normal"
-              value={wbs}
+              id={`${id}-query`}
+              className="min-h-11 min-w-0 w-full text-sm font-normal"
+              value={query}
               onChange={(event) => {
                 setPendingDateChange(null);
-                setWbs(event.target.value);
+                setQuery(event.target.value);
                 setPage(0);
               }}
-              placeholder="Work package"
+              placeholder="Find an activity by ID or name"
             />
           </label>
-          <label
-            htmlFor={`${id}-calendar`}
-            className="w-[140px] min-w-[140px] shrink-0 text-xs font-medium text-slate-600 sm:w-auto sm:min-w-0"
-          >
-            Calendar
-            <select
-              id={`${id}-calendar`}
-              className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
-              value={calendar}
-              onChange={(event) => {
-                setPendingDateChange(null);
-                setCalendar(event.target.value);
-                setPage(0);
-              }}
-            >
-              <option value="">All calendars</option>
-              {data?.filters.calendars.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name || item.id}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="flex min-h-11 shrink-0 items-center gap-1 self-end">
-            {(query || activeFilters > 0) && (
-              <Button
-                variant="ghost"
-                className="min-h-11 px-2"
-                onClick={() => {
-                  setQuery("");
-                  setWbs("");
-                  setCalendar("");
-                  setStatus("");
-                  applyViewCommand({ type: "critical", filter: "all" });
-                  setPage(0);
-                }}
-              >
-                Clear filters
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="min-h-11 shrink-0">
+                <SlidersHorizontal className="size-4" aria-hidden="true" />
+                Filters{activeFilters > 0 && ` (${activeFilters})`}
               </Button>
-            )}
-          </div>
-        </div>
-      </section>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              aria-label="Activity filters"
+              className="max-h-[var(--radix-popover-content-available-height)] w-[min(27rem,calc(100vw-1.5rem))] overflow-y-auto bg-white"
+            >
+              <div
+                role="group"
+                aria-label="Activity filters"
+                className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2"
+              >
+                <label
+                  htmlFor={`${id}-status`}
+                  className="min-w-0 text-xs font-medium text-slate-600"
+                >
+                  Status
+                  <select
+                    id={`${id}-status`}
+                    className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
+                    value={status}
+                    onChange={(event) => {
+                      setPendingDateChange(null);
+                      setStatus(event.target.value);
+                      setPage(0);
+                    }}
+                  >
+                    <option value="">All statuses</option>
+                    {data?.filters.statuses.map((item) => (
+                      <option key={item} value={item}>
+                        {statusLabel(item)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="min-w-0 text-xs font-medium text-slate-600">
+                  <label
+                    htmlFor={`${id}-critical`}
+                    className="text-xs font-medium text-slate-600"
+                  >
+                    Priority
+                  </label>
+                  <div className="mt-1 flex min-w-0 items-center gap-1">
+                    <select
+                      id={`${id}-critical`}
+                      className="field-select min-h-11 min-w-0 flex-1 text-sm font-normal"
+                      value={critical}
+                      onChange={(event) =>
+                        applyViewCommand({
+                          type: "critical",
+                          filter: event.target
+                            .value as SourceGanttViewState["critical"],
+                        })
+                      }
+                    >
+                      <option value="all">All activities</option>
+                      <option value="yes">Critical</option>
+                      <option value="no">Non-critical</option>
+                      <option value="unknown">Unknown</option>
+                    </select>
+                    <SourceCriticalityInfo
+                      metadata={loading ? undefined : data?.criticality}
+                      loading={loading}
+                    />
+                  </div>
+                </div>
+                <label
+                  htmlFor={`${id}-wbs`}
+                  className="min-w-0 text-xs font-medium text-slate-600"
+                >
+                  WBS ID or path
+                  <Input
+                    id={`${id}-wbs`}
+                    className="mt-1 min-h-11 w-full text-sm font-normal"
+                    value={wbs}
+                    onChange={(event) => {
+                      setPendingDateChange(null);
+                      setWbs(event.target.value);
+                      setPage(0);
+                    }}
+                    placeholder="Work package"
+                  />
+                </label>
+                <label
+                  htmlFor={`${id}-calendar`}
+                  className="min-w-0 text-xs font-medium text-slate-600"
+                >
+                  Calendar
+                  <select
+                    id={`${id}-calendar`}
+                    className="field-select mt-1 min-h-11 min-w-0 w-full text-sm font-normal"
+                    value={calendar}
+                    onChange={(event) => {
+                      setPendingDateChange(null);
+                      setCalendar(event.target.value);
+                      setPage(0);
+                    }}
+                  >
+                    <option value="">All calendars</option>
+                    {data?.filters.calendars.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name || item.id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {(query || activeFilters > 0) && (
+                  <Button
+                    variant="ghost"
+                    className="min-h-11 px-2"
+                    onClick={() => {
+                      setQuery("");
+                      setWbs("");
+                      setCalendar("");
+                      setStatus("");
+                      applyViewCommand({ type: "critical", filter: "all" });
+                      setPage(0);
+                    }}
+                  >
+                    Clear filters
+                  </Button>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </section>
+      </header>
       {error && (
         <div role="alert" className="space-y-2 text-sm text-red-700">
           <p>{error}</p>
@@ -993,17 +1043,16 @@ function SourceProgrammeView({
           </Button>
         </div>
       )}
-      {!loading && data && !visible.length ? (
+      {!loading && timelineData && !visible.length ? (
         <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
           <p aria-live="polite">No activities match these filters.</p>
-          {critical === "yes" &&
-            Boolean(data.criticality?.coverage.unknown) && (
-              <p>
-                Saved P6 criticality is unknown for{" "}
-                {number(data.criticality!.coverage.unknown)} activities in this
-                schedule. Missing float is not treated as non-critical.
-              </p>
-            )}
+          {critical === "yes" && unknownCritical > 0 && (
+            <p>
+              Saved P6 criticality is unknown for {number(unknownCritical)}{" "}
+              activities in this schedule. Missing float is not treated as
+              non-critical.
+            </p>
+          )}
           <Button
             variant="outline"
             className="min-h-11"
@@ -1020,68 +1069,70 @@ function SourceProgrammeView({
           </Button>
         </div>
       ) : (
-        <SourceProgrammeGantt
-          data={loading ? null : data}
-          anchor={anchor}
-          scale={scale}
-          horizon={horizon}
-          today={projectDate()}
-          columns={columns}
-          onViewportDateChange={updateViewportDate}
-          showLinks={showLinks}
-          loading={loading}
-          progress={data?.activityProgress}
-          projectId={projectId}
-          firstRowNumber={(data?.page ?? 0) * (data?.pageSize ?? 50) + 1}
-          durationMode={durationMode}
-          resetViewKey={timelineReset}
-          onSelect={openDetail}
-          onGoTo={(row) => {
-            const value = sourcePageAnchor([row]);
-            if (value) applyViewCommand({ type: "date", date: value });
-          }}
-          onPanToDate={(date) => applyViewCommand({ type: "date", date })}
-          onDateChange={
-            projection === "working" &&
-            app.currentUser.role !== "worker" &&
-            hasModule(app.currentUser, "commissioning") &&
-            !loading &&
-            !error &&
-            !pendingDateChange
-              ? (activity, dates, trigger) => {
-                  if (loadedKey.current !== requestKey) {
-                    toast.error(
-                      "The Schedule is refreshing. Try the date change again when it has loaded.",
-                    );
-                    return;
+        !error && (
+          <SourceProgrammeGantt
+            data={timelineData}
+            pagingKey={pagingKey}
+            onPageChange={setPage}
+            anchor={anchor}
+            scale={scale}
+            horizon={horizon}
+            today={projectDate()}
+            columns={columns}
+            onViewportDateChange={updateViewportDate}
+            showLinks={showLinks}
+            loading={loading || !timelineData}
+            progress={timelineData?.activityProgress}
+            projectId={projectId}
+            firstRowNumber={(data?.page ?? 0) * (data?.pageSize ?? 50) + 1}
+            durationMode={durationMode}
+            resetViewKey={timelineReset}
+            onSelect={openDetail}
+            onGoTo={(row) => {
+              const value = sourcePageAnchor([row]);
+              if (value) applyViewCommand({ type: "date", date: value });
+            }}
+            onPanToDate={(date) => applyViewCommand({ type: "date", date })}
+            onDateChange={
+              projection === "working" &&
+              app.currentUser.role !== "worker" &&
+              hasModule(app.currentUser, "commissioning") &&
+              !loading &&
+              !error &&
+              !pendingDateChange
+                ? (activity, dates, trigger) => {
+                    if (loadedKey.current !== requestKey) {
+                      toast.error(
+                        "The Schedule is refreshing. Try the date change again when it has loaded.",
+                      );
+                      return;
+                    }
+                    dateChangeTrigger.current = trigger;
+                    setPendingDateChange({
+                      activity,
+                      dates,
+                      trigger,
+                      version: data?.projectVersion ?? projectVersion,
+                    });
                   }
-                  dateChangeTrigger.current = trigger;
-                  setPendingDateChange({
-                    activity,
-                    dates,
-                    trigger,
-                    version: data?.projectVersion ?? projectVersion,
-                  });
-                }
-              : undefined
-          }
-          dateChangeReview={
-            pendingDateChange && projection === "working" ? (
-              <ScheduleDateChangeReview
-                key={`${pendingDateChange.activity.internalId}:${pendingDateChange.version}:${pendingDateChange.dates.start ?? ""}:${pendingDateChange.dates.finish ?? ""}`}
-                projectId={projectId}
-                sourceSha256={summary.sha256}
-                version={pendingDateChange.version}
-                activity={pendingDateChange.activity}
-                dates={pendingDateChange.dates}
-                onCancel={cancelDateChange}
-                onSaved={dateChangeSaved}
-              />
-            ) : null
-          }
-          controls={
-            <div className="grid w-full min-w-0 gap-2">
-              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                : undefined
+            }
+            dateChangeReview={
+              pendingDateChange && projection === "working" ? (
+                <ScheduleDateChangeReview
+                  key={`${pendingDateChange.activity.internalId}:${pendingDateChange.version}:${pendingDateChange.dates.start ?? ""}:${pendingDateChange.dates.finish ?? ""}`}
+                  projectId={projectId}
+                  sourceSha256={summary.sha256}
+                  version={pendingDateChange.version}
+                  activity={pendingDateChange.activity}
+                  dates={pendingDateChange.dates}
+                  onCancel={cancelDateChange}
+                  onSaved={dateChangeSaved}
+                />
+              ) : null
+            }
+            controls={
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
                 <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
@@ -1117,7 +1168,7 @@ function SourceProgrammeView({
                 <Input
                   id={`${id}-anchor`}
                   aria-label="Gantt go to date"
-                  className="min-h-11 min-w-0 flex-1 sm:w-[148px] sm:flex-none"
+                  className="min-h-11 min-w-0 w-[9rem]"
                   type="date"
                   value={viewportDate}
                   onChange={(event) => {
@@ -1142,48 +1193,15 @@ function SourceProgrammeView({
                   <ArrowRight className="size-4" aria-hidden="true" />
                   Activity dates
                 </Button>
+                <ScheduleViewControls
+                  view={view}
+                  onCommand={applyViewCommand}
+                />
               </div>
-              <ScheduleViewControls view={view} onCommand={applyViewCommand} />
-            </div>
-          }
-        />
-      )}
-      <nav
-        aria-label="Schedule pages"
-        className="flex flex-wrap items-center justify-between gap-3 text-sm"
-      >
-        <p className="tabular-nums">
-          {data?.total
-            ? `${number(data.page * data.pageSize + 1)}–${number(Math.min((data.page + 1) * data.pageSize, data.total))} of ${number(data.total)}`
-            : "0 activities"}
-        </p>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            className="min-h-11"
-            disabled={loading || !data || data.page === 0}
-            onClick={() => {
-              setPendingDateChange(null);
-              setPage((value) => Math.max(0, value - 1));
-            }}
-          >
-            Previous 50
-          </Button>
-          <Button
-            variant="outline"
-            className="min-h-11"
-            disabled={
-              loading || !data || (data.page + 1) * data.pageSize >= data.total
             }
-            onClick={() => {
-              setPendingDateChange(null);
-              setPage((value) => value + 1);
-            }}
-          >
-            Next 50
-          </Button>
-        </div>
-      </nav>
+          />
+        )
+      )}
       <Dialog
         open={Boolean(detail) || detailLoading}
         onOpenChange={(open) => {
@@ -1316,21 +1334,6 @@ function SourceProgrammeView({
           )}
         </DialogContent>
       </Dialog>
-      <details className="border-t border-slate-200 pt-3 text-sm text-slate-600">
-        <summary className="min-h-11 cursor-pointer content-center font-medium">
-          Schedule source
-        </summary>
-        <p className="mt-2">{summary.fileName}</p>
-        <p className="mt-2 break-all font-mono text-xs">
-          SHA256 {summary.sha256}
-        </p>
-        <p className="mt-3 max-w-3xl leading-relaxed">
-          All source tables, including WBS, calendars, resource assignments and
-          original date fields, are retained. Planned dates are not presented as
-          an approved baseline; no conversion to a universal eight-hour working
-          day is applied.
-        </p>
-      </details>
     </div>
   );
 }

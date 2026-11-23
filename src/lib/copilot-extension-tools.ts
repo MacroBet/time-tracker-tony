@@ -1,12 +1,9 @@
-import { LEVELS, hasModule } from "./commissioning";
+import { LEVELS } from "./commissioning";
 import { z } from "zod";
-import {
-  dashboardViewRequestSchema,
-  type DashboardViewRequest,
-} from "./dashboard-view-context";
-import type { User } from "./domain";
+import { dashboardViewRequestSchema } from "./dashboard-view-context";
 import { REPORT_TYPES } from "./project-reports";
 import type { CopilotFunctionTool } from "./copilot-provider";
+export { canRequestDashboardView } from "./dashboard-view-context";
 const object = (properties: Record<string, unknown>) => ({
   type: "object",
   properties,
@@ -68,6 +65,7 @@ const reportFields = {
 };
 const dashboardKinds = [
   "overview",
+  "issues",
   "progress",
   "lookahead",
   "vendor-progress",
@@ -103,18 +101,6 @@ export const dashboardViewToolInputSchema = z
   )
   .pipe(dashboardViewRequestSchema);
 
-export function canRequestDashboardView(
-  user: User,
-  view: DashboardViewRequest,
-) {
-  if (user.role === "worker") return false;
-  return ["report", "vendor-progress", "lookahead"].includes(view.kind)
-    ? hasModule(user, "reports")
-    : view.kind === "readiness"
-      ? hasModule(user, "dashboard") || hasModule(user, "reports")
-      : hasModule(user, "dashboard");
-}
-
 export const EXTENSION_TOOLS: CopilotFunctionTool[] = [
   tool(
     "review_import",
@@ -123,7 +109,7 @@ export const EXTENSION_TOOLS: CopilotFunctionTool[] = [
   ),
   tool(
     "display_dashboard_view",
-    "Request a supported view on the current Dashboard: overall/original-current/saved-P6-critical progress, 2/4/6-week lookahead, exact equipment-supplier progress, a report, or import readiness. Use only in response to an explicit display request. Set unused fields null. A request is PENDING browser acknowledgement: never claim the screen has changed, a report succeeded or data was modified. The application checks the active project/version, access and actual rendered view before acknowledging. Critical means saved P6 classification, not a new CPM or a Phase 1 path. Tag report means report=tags (approvals); tagging means separate test-step progress. vendor is the exact supplier name from authorized saved records, not owner/manufacturer/assignee. No data writes.",
+    "Request a supported view on the current Dashboard: overall/original-current/saved-P6-critical progress, Issues overview, 2/4/6-week lookahead, exact equipment-supplier progress, a report, or import readiness. Use only in response to an explicit display request. Set unused fields null. A request is PENDING browser acknowledgement: never claim the screen has changed, a report succeeded or data was modified. The application checks the active project/version, access and actual rendered view before acknowledging. Critical means saved P6 classification, not a new CPM or a Phase 1 path. Tag report means report=tags (approvals); tagging means separate test-step progress. vendor is the exact supplier name from authorized saved records, not owner/manufacturer/assignee. No data writes.",
     object({
       kind: { type: "string", enum: dashboardKinds },
       comparison: nullable(["overall", "current", "critical"]),
