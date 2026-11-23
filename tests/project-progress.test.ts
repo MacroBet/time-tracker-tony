@@ -12,7 +12,7 @@ import {
   projectProgressPopulation,
 } from "../src/lib/project-progress";
 
-function source(rows: string[][]) {
+function source(rows: string[][], floats?: string[]) {
   const programme: SourceProgramme = {
     format: "p6-xer-v1",
     source: {
@@ -22,6 +22,15 @@ function source(rows: string[][]) {
       header: "synthetic",
     },
     tables: {
+      ...(floats
+        ? {
+            PROJECT: {
+              fields: ["proj_id", "critical_path_type", "critical_drtn_hr_cnt"],
+              rows: [["p6", "CT_TotFloat", "0"]],
+              lines: [1],
+            },
+          }
+        : {}),
       TASK: {
         fields: [
           "task_id",
@@ -32,8 +41,11 @@ function source(rows: string[][]) {
           "act_end_date",
           "early_end_date",
           "phys_complete_pct",
+          ...(floats ? ["proj_id", "total_float_hr_cnt"] : []),
         ],
-        rows,
+        rows: floats
+          ? rows.map((row, index) => [...row, "p6", floats[index]])
+          : rows,
         lines: rows.map((_, i) => i + 1),
       },
     },
@@ -71,6 +83,8 @@ test("source population is complete beyond the page size and keeps planned targe
   assert.equal(population.rows.length, 61);
   assert.equal(population.rows[0].plannedFinish, "2026-11-10");
   assert.equal(population.rows[0].actualFinish, "2026-11-15");
+  assert.equal(population.rows[0].currentFinish, "2026-12-01");
+  assert.equal(population.rows[1].currentFinish, "2026-11-15");
   assert.equal(population.rows[0].plannedBasis, "source-target");
   assert.equal(population.plannedBasisCoverage.sourceTarget, 61);
   assert.equal(JSON.stringify([...index.byId.values()]), before);
@@ -262,7 +276,7 @@ test("equal activity weights use the full denominator and cut actuals at as-of w
   assert.equal(progress.futureActualDates, 1);
   assert.deepEqual(
     progress.points.find((point) => point.date === progress.asOf),
-    { date: "2026-11-17", planned: 50, actual: 25 },
+    { date: "2026-11-17", planned: 50, actual: 25, current: 25 },
   );
   assert(
     progress.points
@@ -280,6 +294,8 @@ test("empty and unavailable source populations do not claim zero-percent overall
   assert.equal(empty.total, 0);
   assert.equal(empty.plannedToday, null);
   assert.equal(empty.actualToday, null);
+  assert.equal(empty.currentToday, null);
+  assert.equal(empty.criticalPath, null);
   const index = source([
     ["1", "S", "Expected source", "TK_NotStart", "2026-11-10", "", "", ""],
   ]);
@@ -299,6 +315,202 @@ test("empty and unavailable source populations do not claim zero-percent overall
   assert.equal(missing.sourceUnavailable, true);
   assert.equal(missing.plannedToday, null);
   assert.equal(missing.actualToday, null);
+  assert.equal(missing.currentToday, null);
+});
+
+test("current curve uses saved current finishes with the full population and never replaces missing original dates", () => {
+  const state = commissioning();
+  state.schedule = [
+    {
+      activityId: "shifted",
+      name: "Moved later",
+      baselineFinish: "2026-11-10",
+      finish: "2026-12-10",
+    },
+    {
+      activityId: "current-only",
+      name: "Only a current date",
+      finish: "2026-11-16",
+    },
+    {
+      activityId: "original-only",
+      name: "No current finish",
+      baselineFinish: "2026-11-12",
+    },
+    { activityId: "missing", name: "No dated schedule" },
+  ];
+  const before = JSON.stringify(state);
+  const population = projectProgressPopulation(state);
+  const progress = buildProjectProgress(population, "2026-11-17");
+  assert.equal(progress.total, 4);
+  assert.equal(progress.plannedRecorded, 2);
+  assert.equal(progress.currentRecorded, 2);
+  assert.equal(progress.plannedToday, 50);
+  assert.equal(progress.currentToday, 25);
+  assert.equal(population.rows[1].plannedFinish, undefined);
+  assert.equal(population.rows[2].currentFinish, undefined);
+  assert.equal(progress.points.at(-1)?.date, "2026-12-10");
+  assert.equal(progress.points.at(-1)?.current, 50);
+  assert(progress.points.some((point) => point.date === progress.asOf));
+  assert(progress.points.length <= 240);
+  assert.equal(JSON.stringify(state), before);
+});
+
+test("saved critical curve uses only classified P6 critical activities and reports unknown coverage and stale working state", () => {
+  const index = source(
+    [
+      [
+        "negative",
+        "A1",
+        "Critical completed",
+        "TK_Complete",
+        "2026-11-10",
+        "2026-11-15",
+        "2026-11-20",
+        "100",
+      ],
+      [
+        "zero",
+        "A2",
+        "Critical future",
+        "TK_NotStart",
+        "2026-11-24",
+        "",
+        "2026-11-24",
+        "0",
+      ],
+      [
+        "positive",
+        "A3",
+        "Non critical",
+        "TK_NotStart",
+        "2026-11-10",
+        "",
+        "2026-11-20",
+        "0",
+      ],
+      [
+        "unknown",
+        "A4",
+        "Missing float",
+        "TK_Complete",
+        "2026-11-10",
+        "",
+        "2026-11-20",
+        "100",
+      ],
+      [
+        "invalid",
+        "A5",
+        "Invalid float",
+        "TK_NotStart",
+        "2026-11-10",
+        "",
+        "2026-11-20",
+        "0",
+      ],
+    ],
+    ["-8", "0", "0.5", "", "NaN"],
+  );
+  const state = commissioning();
+  state.sourceProgrammeSummary = index.summary;
+  state.schedule = [
+    {
+      activityId: "managed",
+      name: "Unknown managed row",
+      baselineFinish: "2026-11-10",
+    },
+  ];
+  state.workingSchedule = {
+    sourceSha256: index.summary.sha256,
+    revision: 3,
+    activityPatches: [{ internalId: "zero", finish: "2026-12-10" }],
+    addedActivities: [],
+    addedLinks: [],
+    removedLinkIds: [],
+    receipts: [],
+  };
+  const before = JSON.stringify([...index.byId.values()]);
+  const population = projectProgressPopulation(
+    state,
+    resolveWorkingSourceIndex(index, state.workingSchedule),
+  );
+  const progress = buildProjectProgress(population, "2026-11-17");
+  const critical = progress.criticalPath!;
+  assert(critical);
+  assert.deepEqual(critical.coverage, {
+    total: 6,
+    critical: 2,
+    nonCritical: 1,
+    unknown: 3,
+  });
+  assert.equal(critical.workingStale, true);
+  assert.equal(critical.series.total, 2);
+  assert.equal(critical.series.plannedToday, 50);
+  assert.equal(critical.series.actualToday, 50);
+  assert.equal(critical.series.currentToday, 50);
+  assert.equal(critical.series.actualCoveragePartial, false);
+  assert.equal(
+    progress.actualCoveragePartial,
+    true,
+    "An undated completed unknown row affects overall coverage only.",
+  );
+  assert.equal(critical.series.points.at(-1)?.date, "2026-12-10");
+  assert.equal(critical.series.points.at(-1)?.current, 100);
+  assert(
+    critical.series.points
+      .filter((point) => point.date > progress.asOf)
+      .every((point) => point.actual === null),
+  );
+  assert.equal(JSON.stringify([...index.byId.values()]), before);
+  assert.equal(index.criticality?.workingStale, false);
+  const original = buildProjectProgress(
+    projectProgressPopulation(state, index),
+    "2026-11-17",
+  );
+  assert.equal(original.criticalPath?.workingStale, false);
+});
+
+test("missing criticality is unavailable rather than inferred from overdue dates, current finish or completed status", () => {
+  const index = source([
+    [
+      "1",
+      "A1",
+      "Complete overdue",
+      "TK_Complete",
+      "2026-11-01",
+      "2026-11-02",
+      "2026-11-03",
+      "100",
+    ],
+  ]);
+  const progress = buildProjectProgress(
+    projectProgressPopulation(commissioning(), index),
+    "2026-11-17",
+  );
+  assert.equal(progress.criticalPath, null);
+  const nonCritical = source(
+    [
+      [
+        "1",
+        "A1",
+        "Non critical overdue",
+        "TK_Complete",
+        "2026-11-01",
+        "2026-11-02",
+        "2026-11-03",
+        "100",
+      ],
+    ],
+    ["1"],
+  );
+  assert.equal(
+    buildProjectProgress(
+      projectProgressPopulation(commissioning(), nonCritical),
+      "2026-11-17",
+    ).criticalPath,
+    null,
+  );
 });
 
 test("long programme sampling stays bounded, monotonic and retains the exact as-of point", () => {

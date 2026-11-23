@@ -62,6 +62,13 @@ test("project progress is an authorized bounded read, preserves project records 
     "The aggregate must include the complete rich Schedule, beyond one source page.",
   );
   assert(result.points.length <= 240);
+  assert.equal(typeof result.currentRecorded, "number");
+  assert(result.points.every((point) => "current" in point));
+  if (result.criticalPath) {
+    assert(result.criticalPath.series.points.length <= 240);
+    assert.equal(result.criticalPath.coverage.total, result.total);
+    assert.equal("rows" in result.criticalPath.series, false);
+  }
   assert.equal(result.revision.register, rich.commissioning?.version ?? 0);
   assert.equal(result.sourceUnavailable, false);
   assert.equal(

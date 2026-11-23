@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { Curve } from "recharts";
 import { apiRequest } from "@/lib/api-client";
 import { hasModule } from "@/lib/commissioning";
 import type { ProjectProgress } from "@/lib/project-progress";
 import { useApp } from "../contexts/AppContext";
 import { Button } from "./ui/button";
 import { InfoPopover } from "./InfoPopover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 const percent = (value: number | null) =>
   value === null ? "Unavailable" : `${Number(value.toFixed(1))}%`;
@@ -78,23 +86,9 @@ export function ProjectProgressCurve({
           <div className="flex items-center gap-1">
             <h3 className="text-lg font-semibold">Project progress</h3>
             <InfoPopover label="How project progress is calculated">
-              <p>
-                Each Schedule activity has equal weight. Planned is the share
-                due to finish by each date; actual is the share with a recorded
-                actual finish. Partial activity percentages are not counted as
-                completions.
-              </p>
-              <p>
-                Imported activities use their saved planned target, which is not
-                an approved baseline. Managed activities use their saved
-                baseline finish. Working date changes do not rewrite this plan.
-                Missing dates remain visible in coverage.
-              </p>
+              <ProgressInformation result={result} />
             </InfoPopover>
           </div>
-          <p className="text-xs text-slate-600 sm:text-sm">
-            Overall Schedule · activities with equal weight
-          </p>
         </div>
         {hasModule(currentUser, "commissioning") && (
           <Link
@@ -146,14 +140,20 @@ export function ProjectProgressCurve({
   );
 }
 
+type CurveView = "overall" | "current" | "critical";
+type CurveField = "planned" | "actual" | "current";
+
 function ProgressPlot({ result }: { result: ProjectProgress }) {
-  const points = result.points;
+  const inspectionHelpId = useId();
+  const [view, setView] = useState<CurveView>("overall");
+  const [selected, setSelected] = useState<number | null>(null);
+  const series = view === "critical" ? result.criticalPath!.series : result;
+  const points = series.points;
   const asOfIndex = Math.max(
     0,
     points.findIndex((point) => point.date === result.asOf),
   );
-  const [selected, setSelected] = useState(asOfIndex);
-  const point = points[selected];
+  const point = points[selected ?? asOfIndex];
   const first = points[0],
     last = points.at(-1);
   const start = first ? Date.parse(first.date) : 0;
@@ -161,104 +161,200 @@ function ProgressPlot({ result }: { result: ProjectProgress }) {
   const x = (date: string) =>
     span ? ((Date.parse(date) - start) / span) * 1000 : 0;
   const y = (value: number) => 200 - value * 2;
-  const line = (field: "planned" | "actual") => {
-    let previous: number | null = null;
-    return points
-      .map((item) => {
-        const value = item[field];
-        if (value === null) {
-          previous = null;
-          return "";
+  const fields: {
+    field: CurveField;
+    label: string;
+    color: string;
+    dashed?: boolean;
+    partial: boolean;
+  }[] = [
+    {
+      field: "planned",
+      label: view === "overall" ? "Planned" : "Original",
+      color: "#2563eb",
+      dashed: true,
+      partial: series.plannedRecorded < series.total,
+    },
+    view === "current"
+      ? {
+          field: "current",
+          label: "Current",
+          color: "#7e22ce",
+          partial: series.currentRecorded < series.total,
         }
-        const command =
-          previous === null
-            ? `M ${x(item.date)} ${y(value)}`
-            : `H ${x(item.date)} V ${y(value)}`;
-        previous = value;
-        return command;
-      })
-      .join(" ");
+      : {
+          field: "actual",
+          label: "Actual",
+          color: "#047857",
+          partial: series.actualCoveragePartial || series.futureActualDates > 0,
+        },
+  ];
+  const figures = (item: typeof point) =>
+    fields
+      .map(
+        ({ field, label, partial }) =>
+          `${label}${partial ? " (partial)" : ""} ${field === "actual" && item.date > result.asOf ? "future" : percent(item[field])}`,
+      )
+      .join("; ");
+  const inspect = (event: React.PointerEvent<SVGSVGElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const target = Math.max(
+      0,
+      Math.min(1, (event.clientX - bounds.left) / bounds.width),
+    );
+    const at = start + target * span;
+    let nearest = 0;
+    for (let i = 1; i < points.length; i++)
+      if (
+        Math.abs(Date.parse(points[i].date) - at) <
+        Math.abs(Date.parse(points[nearest].date) - at)
+      )
+        nearest = i;
+    setSelected(nearest);
   };
-  const plannedPartial = result.plannedRecorded < result.total;
-  const completeCoverage =
-    !plannedPartial &&
-    !result.actualCoveragePartial &&
-    !result.futureActualDates;
-  const gap =
-    completeCoverage &&
-    result.plannedToday !== null &&
-    result.actualToday !== null
-      ? result.actualToday - result.plannedToday
-      : null;
   return (
     <>
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-        <dl className="flex flex-wrap gap-x-7 gap-y-3 tabular-nums">
-          <div>
-            <dt className="text-xs text-slate-600">
-              Planned{plannedPartial ? " · partial dates" : ""}
-            </dt>
-            <dd className="mt-1 text-2xl font-semibold text-blue-800">
-              {percent(result.plannedToday)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-slate-600">
-              Actual
-              <span className="hidden sm:inline"> · dated completions</span>
-            </dt>
-            <dd className="mt-1 text-2xl font-semibold text-emerald-800">
-              {percent(result.actualToday)}
-            </dd>
-          </div>
-          {gap !== null && (
-            <div className="hidden sm:block">
-              <dt className="text-xs text-slate-600">Actual minus planned</dt>
-              <dd className="mt-1 text-2xl font-semibold text-slate-950">
-                {gap > 0 ? "+" : ""}
-                {Number(gap.toFixed(1))}{" "}
-                <span className="text-sm font-normal">pp</span>
-              </dd>
-            </div>
-          )}
-        </dl>
-        <p className="text-xs leading-5 text-slate-600 tabular-nums">
-          As of {dateLabel(result.asOf)}
-          <br />
-          {result.total.toLocaleString("en-GB")} activities
-          <span className="hidden sm:inline">
-            {" "}
-            · revision {result.revision.register}
-          </span>
-        </p>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+        <Select
+          value={view}
+          onValueChange={(value) => {
+            setView(value as CurveView);
+            setSelected(null);
+          }}
+        >
+          <SelectTrigger
+            aria-label="Progress curve comparison"
+            className="w-56"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="overall">Overall</SelectItem>
+            <SelectItem value="current" disabled={!result.currentRecorded}>
+              Original vs current
+            </SelectItem>
+            <SelectItem
+              value="critical"
+              disabled={!result.criticalPath?.series.total}
+            >
+              Critical path · saved P6
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <div
+          className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs tabular-nums text-slate-700"
+          aria-live="off"
+        >
+          {fields.map(({ field, label, color, dashed, partial }) => (
+            <span key={field} className="flex items-center gap-2">
+              <svg aria-hidden="true" width="20" height="8">
+                <line
+                  x1="0"
+                  x2="20"
+                  y1="4"
+                  y2="4"
+                  stroke={color}
+                  strokeWidth="2.5"
+                  strokeDasharray={dashed ? "5 3" : undefined}
+                />
+              </svg>
+              <span>
+                {label}
+                {partial ? " · partial" : ""}{" "}
+                <strong className="font-semibold">
+                  {point && field === "actual" && point.date > result.asOf
+                    ? "Future"
+                    : percent(point?.[field] ?? null)}
+                </strong>
+              </span>
+            </span>
+          ))}
+          <span>{dateLabel(point?.date ?? result.asOf)}</span>
+        </div>
       </div>
-      <p className="mb-4 text-xs leading-5 text-slate-600 tabular-nums">
-        {result.plannedRecorded} / {result.total} planned dates ·{" "}
-        {result.actualRecorded - result.futureActualDates} dated actual finishes
-        {result.completedWithoutActualDate > 0 &&
-          ` · ${result.completedWithoutActualDate} completions without an actual date`}
-        {result.futureActualDates > 0 &&
-          ` · ${result.futureActualDates} future actual dates excluded`}
-      </p>
       {points.length > 1 ? (
         <>
-          <div className="flex h-48 sm:h-60">
+          <div className="flex h-56 sm:h-72">
             <div
               aria-hidden="true"
               className="flex w-10 shrink-0 flex-col justify-between pr-2 text-right text-xs tabular-nums text-slate-600"
             >
-              {[100, 75, 50, 25, 0].map((value) => (
+              {[100, 50, 0].map((value) => (
                 <span key={value}>{value}%</span>
               ))}
             </div>
+            <p id={inspectionHelpId} className="sr-only">
+              Use Left and Right arrows to inspect dates, Home for the first
+              date and End for the last. Touch or point at the curve to inspect.
+              Values use recorded dates; lines are smoothed between samples.
+            </p>
             <svg
-              role="img"
-              aria-label={`Cumulative project activity completion. Planned ${percent(result.plannedToday)}, dated actual ${percent(result.actualToday)} as of ${result.asOf}. Use Inspect progress date below to read figures.`}
+              role="slider"
+              tabIndex={0}
+              aria-label={
+                view === "critical"
+                  ? "Inspect saved P6 critical activity curves"
+                  : "Inspect project progress curves"
+              }
+              aria-describedby={inspectionHelpId}
+              aria-valuemin={0}
+              aria-valuemax={points.length - 1}
+              aria-valuenow={selected ?? asOfIndex}
+              aria-valuetext={
+                point
+                  ? `${dateLabel(point.date)}; ${figures(point)}`
+                  : "No dated points"
+              }
+              aria-orientation="horizontal"
               viewBox="0 -4 1000 208"
               preserveAspectRatio="none"
-              className="h-full min-w-0 flex-1 overflow-visible"
+              className="h-full min-w-0 flex-1 cursor-crosshair touch-pan-y rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
+              onPointerMove={inspect}
+              onPointerDown={(event) => {
+                event.currentTarget.focus({ preventScroll: true });
+                inspect(event);
+              }}
+              onPointerLeave={(event) => {
+                if (document.activeElement !== event.currentTarget)
+                  setSelected(null);
+              }}
+              onFocus={() => setSelected((value) => value ?? asOfIndex)}
+              onBlur={() => setSelected(null)}
+              onKeyDown={(event) => {
+                const changes: Record<string, number> = {
+                  ArrowLeft: -1,
+                  ArrowDown: -1,
+                  ArrowRight: 1,
+                  ArrowUp: 1,
+                };
+                if (
+                  event.key === "Home" ||
+                  event.key === "End" ||
+                  event.key in changes
+                ) {
+                  event.preventDefault();
+                  setSelected(
+                    event.key === "Home"
+                      ? 0
+                      : event.key === "End"
+                        ? points.length - 1
+                        : Math.max(
+                            0,
+                            Math.min(
+                              points.length - 1,
+                              (selected ?? asOfIndex) + changes[event.key],
+                            ),
+                          ),
+                  );
+                }
+              }}
             >
-              {[0, 25, 50, 75, 100].map((value) => (
+              <title>
+                {view === "critical"
+                  ? "Saved P6 critical activities"
+                  : "Project activity completion"}
+              </title>
+              {[0, 50, 100].map((value) => (
                 <line
                   key={value}
                   x1="0"
@@ -279,27 +375,47 @@ function ProgressPlot({ result }: { result: ProjectProgress }) {
                 strokeDasharray="2 4"
                 vectorEffect="non-scaling-stroke"
               />
-              {(["planned", "actual"] as const).map((field) => (
-                <path
+              {fields.map(({ field, color, dashed }) => (
+                <Curve
                   key={field}
-                  d={line(field)}
+                  type="monotoneX"
+                  points={points
+                    .filter((item) => item[field] !== null)
+                    .map((item) => ({ x: x(item.date), y: y(item[field]!) }))}
                   fill="none"
-                  stroke={field === "planned" ? "#2563eb" : "#047857"}
+                  stroke={color}
                   strokeWidth="2.5"
-                  strokeDasharray={field === "planned" ? "7 4" : undefined}
+                  strokeDasharray={dashed ? "7 4" : undefined}
+                  strokeLinecap="round"
                   vectorEffect="non-scaling-stroke"
+                  data-progress-curve={field}
                 />
               ))}
-              {point && (
-                <line
-                  x1={x(point.date)}
-                  x2={x(point.date)}
-                  y1="0"
-                  y2="200"
-                  stroke="#0f172a"
-                  strokeOpacity="0.4"
-                  vectorEffect="non-scaling-stroke"
-                />
+              {selected !== null && point && (
+                <g aria-hidden="true">
+                  <line
+                    x1={x(point.date)}
+                    x2={x(point.date)}
+                    y1="0"
+                    y2="200"
+                    stroke="#0f172a"
+                    strokeOpacity="0.4"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {fields.map(
+                    ({ field, color }) =>
+                      point[field] !== null && (
+                        <circle
+                          key={field}
+                          cx={x(point.date)}
+                          cy={y(point[field]!)}
+                          r="2"
+                          fill={color}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      ),
+                  )}
+                </g>
               )}
             </svg>
           </div>
@@ -307,110 +423,96 @@ function ProgressPlot({ result }: { result: ProjectProgress }) {
             <span>{dateLabel(first.date)}</span>
             <span>{dateLabel(last!.date)}</span>
           </div>
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-700">
-            <span className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="w-5 border-t-2 border-dashed border-blue-600"
-              />
-              Planned
-            </span>
-            <span className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="w-5 border-t-2 border-emerald-700"
-              />
-              Actual · stops at as of date
-            </span>
-          </div>
-          <div className="mt-4 border-t pt-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs tabular-nums">
-              <label
-                htmlFor="project-progress-date"
-                className="text-sm font-medium"
-              >
-                Inspect progress date
-              </label>
-              <output htmlFor="project-progress-date">
-                {point
-                  ? `${dateLabel(point.date)} · planned ${percent(point.planned)} · actual ${point.date > result.asOf ? "future" : percent(point.actual)}`
-                  : "No dated points"}
-              </output>
-            </div>
-            <input
-              id="project-progress-date"
-              aria-label="Inspect progress date"
-              type="range"
-              min="0"
-              max={points.length - 1}
-              step="1"
-              value={selected}
-              onChange={(event) => setSelected(Number(event.target.value))}
-              className="mt-1 min-h-11 w-full cursor-pointer accent-blue-700 focus-visible:outline-blue-700"
-            />
-          </div>
         </>
       ) : (
         <p className="py-6 text-sm text-slate-600">
           Planned and actual dates are needed to draw the curve.
         </p>
       )}
-      <details className="mt-2 border-t text-sm">
-        <summary className="min-h-11 cursor-pointer py-3 font-medium focus-visible:outline-blue-700">
-          Calculation, coverage & figures
-        </summary>
-        <p className="max-w-prose leading-6 text-slate-600">
-          Each activity counts once. Planned dates: {result.plannedRecorded} /{" "}
-          {result.total}; missing: {result.total - result.plannedRecorded}.
-          Recorded actual finishes: {result.actualRecorded}. Completed without
-          an actual date: {result.completedWithoutActualDate}. Future actual
-          dates excluded: {result.futureActualDates}. Missing dates are not
-          estimated; partial coverage can understate progress.
-        </p>
-        <p className="mt-2 max-w-prose leading-6 text-slate-600">
-          Imported saved planned targets and managed baseline finishes form the
-          plan. The actual curve uses dated completions only and ends at the as
-          of date. Task completion, tag approvals and test steps remain separate
-          below.
-        </p>
-        {!!points.length && (
-          <div className="mt-3 max-h-64 overflow-auto rounded-lg border">
-            <table className="w-full text-left text-xs tabular-nums">
-              <caption className="sr-only">
-                Sampled cumulative activity completion percentages
-              </caption>
-              <thead className="sticky top-0 bg-slate-50">
-                <tr>
-                  <th scope="col" className="p-3">
-                    Date
-                  </th>
-                  <th scope="col" className="p-3">
-                    Planned
-                  </th>
-                  <th scope="col" className="p-3">
-                    Actual
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {points.map((item) => (
-                  <tr key={item.date} className="border-t">
-                    <th scope="row" className="p-3 font-normal">
-                      {dateLabel(item.date)}
-                    </th>
-                    <td className="p-3">{percent(item.planned)}</td>
-                    <td className="p-3">
-                      {item.date > result.asOf
-                        ? "Future"
-                        : percent(item.actual)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </details>
+    </>
+  );
+}
+
+function ProgressInformation({ result }: { result?: ProjectProgress }) {
+  return (
+    <>
+      <p>
+        Each Schedule activity has equal weight. Planned uses saved P6 targets
+        or managed baseline finishes. The original plan is not an approved
+        baseline unless one was recorded. Current uses saved Schedule finishes,
+        including working date changes.
+      </p>
+      <p>
+        Actual uses recorded actual finishes and stops at the as of date.
+        Missing dates are not estimated. Lines are smoothed between sampled
+        dates; inspected values and figures use the saved dates.
+      </p>
+      <p>
+        Point at the curve, touch it or use the arrow keys to inspect a date.
+      </p>
+      {result && (
+        <>
+          <p className="tabular-nums">
+            Overall as of {dateLabel(result.asOf)} ·{" "}
+            {result.total.toLocaleString("en-GB")} activities · revision{" "}
+            {result.revision.register}. Planned dates: {result.plannedRecorded}/
+            {result.total}; current dates: {result.currentRecorded}/
+            {result.total}; recorded actual finishes: {result.actualRecorded}.
+            Completed without an actual date:{" "}
+            {result.completedWithoutActualDate}. Future actual dates excluded:{" "}
+            {result.futureActualDates}. Partial coverage can understate
+            progress.
+          </p>
+          <p>
+            Critical path compares activities classified critical by the saved
+            P6 total-float rule. This is the saved classification, without a new
+            critical path calculation.
+            {result.criticalPath
+              ? ` Coverage: ${result.criticalPath.coverage.critical} critical, ${result.criticalPath.coverage.nonCritical} non-critical, ${result.criticalPath.coverage.unknown} unknown. ${result.criticalPath.workingStale ? "Working changes have made the saved classification stale." : ""}`
+              : " No saved P6 critical activities are available."}{" "}
+            A path to Phase 1 requires an identified finish milestone.
+          </p>
+          {!!result.points.length && (
+            <details>
+              <summary className="min-h-11 cursor-pointer py-3 font-medium focus-visible:outline-blue-700">
+                Overall figures by date
+              </summary>
+              <div className="overflow-auto">
+                <table className="w-full text-left text-xs tabular-nums">
+                  <caption className="sr-only">
+                    Overall sampled cumulative activity completion percentages
+                  </caption>
+                  <thead>
+                    <tr>
+                      {["Date", "Planned", "Current", "Actual"].map((label) => (
+                        <th key={label} scope="col" className="py-2 pr-2">
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.points.map((item) => (
+                      <tr key={item.date} className="border-t">
+                        <th scope="row" className="py-2 pr-2 font-normal">
+                          {dateLabel(item.date)}
+                        </th>
+                        <td className="py-2 pr-2">{percent(item.planned)}</td>
+                        <td className="py-2 pr-2">{percent(item.current)}</td>
+                        <td className="py-2">
+                          {item.date > result.asOf
+                            ? "Future"
+                            : percent(item.actual)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
+        </>
+      )}
     </>
   );
 }
