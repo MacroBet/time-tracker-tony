@@ -262,13 +262,26 @@ type TagGraphicsProps = {
   project: Project;
   tasks: Task[];
   onOpen: OpenReport;
+  initialFilters?: DashboardTagFilters;
+  initialGroupBy?: DashboardTagGroupBy;
 };
 export function DashboardTagGraphics(props: TagGraphicsProps) {
-  return <DashboardTagSession key={props.project.id} {...props} />;
+  return (
+    <DashboardTagSession
+      key={`${props.project.id}:${JSON.stringify(props.initialFilters ?? {})}`}
+      {...props}
+    />
+  );
 }
-function DashboardTagSession({ project, tasks, onOpen }: TagGraphicsProps) {
-  const [filters, setFilters] = useState<DashboardTagFilters>({});
-  const [groupBy, setGroupBy] = useState<DashboardTagGroupBy>("level");
+function DashboardTagSession({
+  project,
+  tasks,
+  onOpen,
+  initialFilters = {},
+  initialGroupBy = "level",
+}: TagGraphicsProps) {
+  const [filters, setFilters] = useState<DashboardTagFilters>(initialFilters);
+  const [groupBy, setGroupBy] = useState<DashboardTagGroupBy>(initialGroupBy);
   const [showAllGroups, setShowAllGroups] = useState(false);
   const [showBlockers, setShowBlockers] = useState(true);
   const [showFigures, setShowFigures] = useState(false);

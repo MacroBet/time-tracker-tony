@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CopilotVoiceInput } from "./CopilotVoiceInput";
 import {
   AlertCircle,
@@ -70,6 +70,9 @@ import {
   voiceSetupKey,
 } from "@/lib/voice-commands";
 import { applyAssistantView } from "./assistant-view-dispatch";
+import { parseDashboardViewCommand } from "@/lib/dashboard-view-commands";
+import { applyDashboardView } from "./dashboard-view-dispatch";
+import { dashboardViewHref } from "@/lib/dashboard-views";
 
 type ContextResponse = CopilotContext & { configuration: CopilotStatus };
 type Message = ConversationMessage & { answer?: CopilotAnswer };
@@ -149,6 +152,9 @@ export function CopilotSession({
 }) {
   const params = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const dashboardContext =
+    embedded && ["/overview", "/dashboard"].includes(pathname);
   const { isOnline, refreshData, currentUser } = useApp();
   const [context, setContext] = useState<ContextResponse | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -280,10 +286,10 @@ export function CopilotSession({
   const viewGeneration = useRef(0);
   const turnGeneration = useRef(0);
   const [historyRetry, setHistoryRetry] = useState(0);
+  const entryInput = input ?? params.get("input");
   useEffect(() => {
-    if (!loading && (input ?? params.get("input")) === "text")
-      composer.current?.focus();
-  }, [loading, params, input]);
+    if (!loading && entryInput === "text") composer.current?.focus();
+  }, [loading, entryInput, voiceIntent]);
   const endpoint = `/api/projects/${encodeURIComponent(projectId)}/copilot`;
   const historyEndpoint = `${endpoint}/conversations`;
   const [embeddedChat, setEmbeddedChat] = useState<string | null>(null);
@@ -607,11 +613,17 @@ export function CopilotSession({
     await sendMessage(draft.trim());
   }
   async function sendMessage(text: string, retryId?: string) {
-    const viewIntent = parseAssistantViewCommand(text);
+    const dashboardIntent = dashboardContext
+      ? parseDashboardViewCommand(text)
+      : null;
+    const viewIntent = dashboardIntent ? null : parseAssistantViewCommand(text);
     const savedRead = parseCopilotReadCommand(text);
     if (
       !context ||
-      (context.configuration.state !== "ready" && !viewIntent && !savedRead) ||
+      (context.configuration.state !== "ready" &&
+        !dashboardIntent &&
+        !viewIntent &&
+        !savedRead) ||
       chatLock.current ||
       !text ||
       openingChat ||
@@ -681,31 +693,68 @@ export function CopilotSession({
       setSavingQuestion(false);
       if (saved.created) setHistoryTotal((previous) => previous + 1);
       setChatUrl(saved.conversation.id);
-      const answer: CopilotAnswer = viewIntent
-        ? !embedded || !sourceView
-          ? {
-              mode: "view",
-              text: `Schedule view command · no AI generation.\n\n[Open the working Schedule](/schedule?projectId=${encodeURIComponent(projectId)}) and use its assistant to apply this view command. No view or project record was changed here.`,
-              sources: [],
-              proposals: [],
-            }
-          : await applyAssistantView(
-              viewIntent,
-              scheduleView,
+      let answer: CopilotAnswer = dashboardIntent
+        ? await applyDashboardView(
+            dashboardIntent,
+            projectId,
+            context.project.version,
+            controller.signal,
+          )
+        : viewIntent
+          ? !embedded || !sourceView
+            ? {
+                mode: "view",
+                text: `Schedule view command · no AI generation.\n\n[Open the working Schedule](/schedule?projectId=${encodeURIComponent(projectId)}) and use its assistant to apply this view command. No view or project record was changed here.`,
+                sources: [],
+                proposals: [],
+              }
+            : await applyAssistantView(
+                viewIntent,
+                scheduleView,
+                projectId,
+                context.project.version,
+                controller.signal,
+              )
+          : await apiRequest<CopilotAnswer>(endpoint, {
+              method: "POST",
+              signal: controller.signal,
+              body: JSON.stringify({
+                message: text,
+                history,
+                reportState,
+                scheduleView,
+              }),
+            });
+      if (answer.dashboardView) {
+        if (dashboardContext) {
+          try {
+            await applyDashboardView(
+              {
+                view: answer.dashboardView,
+                description: "Requested Dashboard view displayed.",
+              },
               projectId,
               context.project.version,
               controller.signal,
-            )
-        : await apiRequest<CopilotAnswer>(endpoint, {
-            method: "POST",
-            signal: controller.signal,
-            body: JSON.stringify({
-              message: text,
-              history,
-              reportState,
-              scheduleView,
-            }),
-          });
+            );
+            answer = {
+              ...answer,
+              text: `Dashboard view updated.\n\n${answer.text}`,
+            };
+          } catch (problem) {
+            if (controller.signal.aborted) throw problem;
+            answer = {
+              ...answer,
+              text: `The Dashboard view was not changed. ${problem instanceof Error ? problem.message : "Refresh the Dashboard and try again."} Saved report results below remain separate from this display request.`,
+            };
+          }
+        } else {
+          answer = {
+            ...answer,
+            text: `Dashboard view requested. [Open this view on the Dashboard](${dashboardViewHref(projectId, answer.dashboardView)}). No Dashboard view was changed in this assistant page.`,
+          };
+        }
+      }
       if (
         mounted.current &&
         !controller.signal.aborted &&
@@ -1078,16 +1127,16 @@ export function CopilotSession({
                     : "AI chat not configured yet"}
                 </p>
                 <p className="mt-1 text-sm leading-6">
-                  Saved-data reports, Schedule view commands and manual previews
-                  remain available. An administrator must enable AI for other
-                  questions.
+                  Saved-data reports, import reviews, display commands and
+                  manual previews remain available. An administrator must enable
+                  AI for other questions.
                 </p>
               </div>
             )}
             {!ready && embedded && (
               <p className="text-xs text-amber-950">
-                AI unavailable · saved-data reports and Schedule view commands
-                still work.
+                AI unavailable · saved-data reports, import reviews and display
+                commands still work.
               </p>
             )}
 
@@ -1646,6 +1695,7 @@ export function CopilotSession({
                 aria-label="Send question"
                 disabled={
                   (!ready &&
+                    !(dashboardContext && parseDashboardViewCommand(draft)) &&
                     !parseAssistantViewCommand(draft) &&
                     !parseCopilotReadCommand(draft)) ||
                   chatBusy ||

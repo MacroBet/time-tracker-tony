@@ -3,6 +3,8 @@ import type { ProjectReportResult } from "./project-reports";
 import type { AssistantReportState } from "./assistant-report-state";
 import type { WorkingScheduleDraft } from "./schedule-working";
 import type { ProjectLibraryPage } from "./project-library";
+import type { DashboardViewRequest } from "./dashboard-view-context";
+import type { ReportReadiness } from "./report-readiness";
 import {
   commissioning,
   hasModule,
@@ -56,6 +58,8 @@ export type CopilotAnswer = {
   reportState?: AssistantReportState;
   scheduleProposals?: WorkingScheduleDraft[];
   librarySearches?: ProjectLibraryPage[];
+  dashboardView?: DashboardViewRequest;
+  readiness?: ReportReadiness;
 };
 export type CopilotTask = Pick<
   Task,

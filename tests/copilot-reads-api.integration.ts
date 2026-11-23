@@ -5,6 +5,7 @@ import { gzipSync } from "node:zlib";
 import { MODULES } from "../src/lib/commissioning";
 import { projectDate, type Bootstrap } from "../src/lib/domain";
 import type { ProjectReportResult } from "../src/lib/project-reports";
+import type { ReportReadiness } from "../src/lib/report-readiness";
 const base = process.env.TEST_BASE_URL || "http://127.0.0.1:3107";
 async function request(
   path: string,
@@ -40,6 +41,7 @@ type Reply = {
   reportState?: { projectId: string; query: ProjectReportResult["query"] };
   proposals: unknown[];
   scheduleProposals: unknown[];
+  readiness?: ReportReadiness;
 };
 test("the two observed questions return authorized saved-data results without any configured provider, with exact deterministic totals and report filters", async () => {
   assert(["localhost", "127.0.0.1", "[::1]"].includes(new URL(base).hostname));
@@ -153,6 +155,44 @@ test("the two observed questions return authorized saved-data results without an
   assert.deepEqual(
     deterministic.rows.map((row) => row.id),
     report.rows.map((row) => row.id),
+  );
+  const beforeReview = await json<Bootstrap>(
+    await request("/api/bootstrap", admin),
+  );
+  const review = await json<Reply>(
+    await request(endpoint, admin, "POST", {
+      message: "Review the import",
+    }),
+  );
+  assert.equal(review.mode, "saved-data");
+  assert.match(review.text, /Saved import review · no AI generation/);
+  assert.equal(review.readiness?.summary.sourceActivities, 61);
+  assert.equal(review.readiness?.summary.assets, 0);
+  assert.equal(
+    review.readiness?.reports.find((row) => row.id === "tags")?.state,
+    "missing",
+  );
+  assert.equal(
+    review.readiness?.reports.find((row) => row.id === "lookahead")?.state,
+    "ready",
+  );
+  const readiness = await json<ReportReadiness>(
+    await request(`/api/projects/${created.id}/report-readiness`, admin),
+  );
+  assert.deepEqual(review.readiness?.reports, readiness.reports);
+  assert.deepEqual(
+    (await json<Bootstrap>(await request("/api/bootstrap", admin))).projects,
+    beforeReview.projects,
+  );
+  assert.equal(review.proposals.length, 0);
+  assert.equal(review.scheduleProposals.length, 0);
+  assert.equal(
+    (
+      await request(endpoint, admin, "POST", {
+        message: "Review the import and fill all missing fields",
+      })
+    ).status,
+    503,
   );
   const filtered = await json<Reply>(
     await request(endpoint, admin, "POST", {

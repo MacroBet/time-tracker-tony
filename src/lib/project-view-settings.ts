@@ -13,7 +13,7 @@ export const dashboardPanelLabels: Record<DashboardPanelId, string> = {
   summary: "Task progress",
   attention: "Needs attention",
   works: "Works to go",
-  reports: "Reports",
+  reports: "Report data check",
   tags: "Tag approvals",
   details: "Detailed progress and issues",
 };

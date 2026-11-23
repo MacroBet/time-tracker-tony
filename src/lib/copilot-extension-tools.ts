@@ -1,4 +1,10 @@
-import { LEVELS } from "./commissioning";
+import { LEVELS, hasModule } from "./commissioning";
+import { z } from "zod";
+import {
+  dashboardViewRequestSchema,
+  type DashboardViewRequest,
+} from "./dashboard-view-context";
+import type { User } from "./domain";
 import { REPORT_TYPES } from "./project-reports";
 import type { CopilotFunctionTool } from "./copilot-provider";
 const object = (properties: Record<string, unknown>) => ({
@@ -60,7 +66,72 @@ const reportFields = {
     },
   },
 };
+const dashboardKinds = [
+  "overview",
+  "progress",
+  "lookahead",
+  "vendor-progress",
+  "report",
+  "readiness",
+] as const;
+const dashboardReports = [
+  "tasks",
+  "tags",
+  "schedule",
+  "handover",
+  "conformance",
+  "equipment",
+  "trend",
+  "tagging",
+  "works-to-go",
+  "vendors",
+] as const;
+/** Nullable strict tool fields become the same scoped request used by manual controls. */
+export const dashboardViewToolInputSchema = z
+  .object({
+    kind: z.enum(dashboardKinds),
+    comparison: z.enum(["overall", "current", "critical"]).nullable(),
+    weeks: z.union([z.literal(2), z.literal(4), z.literal(6)]).nullable(),
+    vendor: z.string().trim().min(1).max(150).nullable(),
+    report: z.enum(dashboardReports).nullable(),
+  })
+  .strict()
+  .transform((value) =>
+    Object.fromEntries(
+      Object.entries(value).filter(([, field]) => field !== null),
+    ),
+  )
+  .pipe(dashboardViewRequestSchema);
+
+export function canRequestDashboardView(
+  user: User,
+  view: DashboardViewRequest,
+) {
+  if (user.role === "worker") return false;
+  return ["report", "vendor-progress", "lookahead"].includes(view.kind)
+    ? hasModule(user, "reports")
+    : view.kind === "readiness"
+      ? hasModule(user, "dashboard") || hasModule(user, "reports")
+      : hasModule(user, "dashboard");
+}
+
 export const EXTENSION_TOOLS: CopilotFunctionTool[] = [
+  tool(
+    "review_import",
+    "Review the current project's saved import and report criteria. Returns aggregate populations, readiness, missing mappings/dates/tag applicability/checksheets and concrete source links. A programme import does not create asset/tag/supplier records. Missing responses or approvals are incomplete work, not proof of a broken report. Never invent criteria or fill gaps. Read-only; no records are changed.",
+    object({}),
+  ),
+  tool(
+    "display_dashboard_view",
+    "Request a supported view on the current Dashboard: overall/original-current/saved-P6-critical progress, 2/4/6-week lookahead, exact equipment-supplier progress, a report, or import readiness. Use only in response to an explicit display request. Set unused fields null. A request is PENDING browser acknowledgement: never claim the screen has changed, a report succeeded or data was modified. The application checks the active project/version, access and actual rendered view before acknowledging. Critical means saved P6 classification, not a new CPM or a Phase 1 path. Tag report means report=tags (approvals); tagging means separate test-step progress. vendor is the exact supplier name from authorized saved records, not owner/manufacturer/assignee. No data writes.",
+    object({
+      kind: { type: "string", enum: dashboardKinds },
+      comparison: nullable(["overall", "current", "critical"]),
+      weeks: { type: ["integer", "null"], enum: [2, 4, 6, null] },
+      vendor: nullable(),
+      report: nullable(dashboardReports),
+    }),
+  ),
   tool(
     "project_report",
     "Show or refine tagging, actual Works to go, a 14-day activity lookahead or equipment suppliers required for that same window. Vendor means explicitly recorded EQUIPMENT SUPPLIER. Null retains current filter; clear removes named fields; reset starts fresh. Filters accumulate and are visible. Combine all filters requested in one message in a single call. activity is a canonical verified activity reference for Gantt drilldown, null retains it. Exact total precedes paging; missing mappings are not zero or on-time. __missing__ selects unclassified vendor/discipline, __conflict__ discipline conflicts. Step % counts explicit passed required applicable checksheet steps; approval/signatures separate. from is complete ISO date or null for today.",

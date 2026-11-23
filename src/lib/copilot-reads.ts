@@ -1,6 +1,7 @@
 import { projectDate } from "./domain";
 import type { SourceProgrammeIndex } from "./programme-source";
 import type { ProjectReportResult } from "./project-reports";
+import type { ReportReadiness } from "./report-readiness";
 import { recoverableCopilotNarration } from "./copilot-provider";
 import {
   matchesSavedScheduleQuery,
@@ -11,6 +12,7 @@ export { matchesSavedScheduleQuery } from "./schedule-search";
 /** A deliberately small read-command grammar. Anything else goes to the real provider. */
 export type CopilotReadCommand =
   | { kind: "lookahead"; from: string }
+  | { kind: "report-readiness" }
   | { kind: "schedule-search"; query: string };
 
 export function parseCopilotReadCommand(
@@ -21,6 +23,12 @@ export function parseCopilotReadCommand(
     .trim()
     .replace(/[.!?]+$/, "")
     .trim();
+  if (
+    /^(?:please )?(?:(?:review|check) (?:the |my )?(?:project )?import|(?:show(?: me)?|check|review) (?:the )?(?:report readiness|missing report criteria))$/i.test(
+      text,
+    )
+  )
+    return { kind: "report-readiness" };
   if (
     /^(?:(?:please )?(?:show(?: me)?|give(?: me)?|list|open) )?(?:the )?(?:next (?:two|2) weeks(?:['’])?(?: look[ -]?ahead)?|(?:two|2)[ -]week look[ -]?ahead|look[ -]?ahead (?:for )?(?:the )?next (?:two|2) weeks)$/i.test(
       text,
@@ -44,6 +52,33 @@ export function parseCopilotReadCommand(
   )
     return undefined;
   return { kind: "schedule-search", query };
+}
+
+/** Saved criteria are evidence of coverage, never instructions to fill missing records. */
+export function savedReportReadinessReply(result: ReportReadiness) {
+  return [
+    "Saved import review · no AI generation.",
+    `${result.summary.activities === null ? "The complete Schedule activity count is unavailable" : `${result.summary.activities} Schedule activities recorded`}; ${result.summary.assets} assets and ${result.summary.applicableTags} applicable tags in the saved project. A programme import does not create equipment, tag applicability, checksheets or supplier mappings.`,
+    ...result.reports.map((report) => {
+      const missing = report.criteria.filter(
+        (criterion) =>
+          criterion.required && criterion.recorded < criterion.total,
+      );
+      return `${report.title}: ${report.state}; ${report.records === null ? "record count unavailable" : `${report.records} saved records`}.${
+        missing.length
+          ? ` ${missing
+              .slice(0, 3)
+              .map(
+                (criterion) =>
+                  `${criterion.label}: ${criterion.recorded}/${criterion.total}. [${criterion.remedy}](${criterion.href})`,
+              )
+              .join(" ")}`
+          : ""
+      }`;
+    }),
+    ...result.notes,
+    "This is a read-only review. No missing record, association, date, test result or approval has been inferred or saved.",
+  ].join("\n\n");
 }
 
 export function searchSavedSchedule(

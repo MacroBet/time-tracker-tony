@@ -32,9 +32,15 @@ const dateLabel = (date: string) =>
 export function ProjectProgressCurve({
   projectId,
   version,
+  initialComparison = "overall",
+  onComparisonChange,
+  hideComparisonPicker = false,
 }: {
   projectId: string;
   version: number;
+  initialComparison?: "overall" | "current" | "critical";
+  onComparisonChange?: (comparison: "overall" | "current" | "critical") => void;
+  hideComparisonPicker?: boolean;
 }) {
   const { currentUser, memberships } = useApp();
   const [retry, setRetry] = useState(0);
@@ -128,7 +134,21 @@ export function ProjectProgressCurve({
             again.
           </p>
         ) : result && result.total > 0 ? (
-          <ProgressPlot result={result} key={`${key}:${result.asOf}`} />
+          initialComparison === "critical" && !result.criticalPath ? (
+            <p role="status" className="py-8 text-sm leading-6 text-slate-600">
+              No saved P6 critical activities are available. Review the import
+              to check the classification and coverage; a current critical path
+              has not been calculated.
+            </p>
+          ) : (
+            <ProgressPlot
+              result={result}
+              initialComparison={initialComparison}
+              onComparisonChange={onComparisonChange}
+              hideComparisonPicker={hideComparisonPicker}
+              key={`${key}:${result.asOf}:${initialComparison}`}
+            />
+          )
         ) : (
           <p className="py-8 text-sm leading-6 text-slate-600">
             No Schedule activities are recorded yet. Add the project programme
@@ -143,9 +163,19 @@ export function ProjectProgressCurve({
 type CurveView = "overall" | "current" | "critical";
 type CurveField = "planned" | "actual" | "current";
 
-function ProgressPlot({ result }: { result: ProjectProgress }) {
+function ProgressPlot({
+  result,
+  initialComparison,
+  onComparisonChange,
+  hideComparisonPicker,
+}: {
+  result: ProjectProgress;
+  initialComparison: CurveView;
+  onComparisonChange?: (comparison: CurveView) => void;
+  hideComparisonPicker: boolean;
+}) {
   const inspectionHelpId = useId();
-  const [view, setView] = useState<CurveView>("overall");
+  const [view, setView] = useState<CurveView>(initialComparison);
   const [selected, setSelected] = useState<number | null>(null);
   const series = view === "critical" ? result.criticalPath!.series : result;
   const points = series.points;
@@ -215,32 +245,35 @@ function ProgressPlot({ result }: { result: ProjectProgress }) {
   return (
     <>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
-        <Select
-          value={view}
-          onValueChange={(value) => {
-            setView(value as CurveView);
-            setSelected(null);
-          }}
-        >
-          <SelectTrigger
-            aria-label="Progress curve comparison"
-            className="w-56"
+        {!hideComparisonPicker && (
+          <Select
+            value={view}
+            onValueChange={(value) => {
+              setView(value as CurveView);
+              setSelected(null);
+              onComparisonChange?.(value as CurveView);
+            }}
           >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="overall">Overall</SelectItem>
-            <SelectItem value="current" disabled={!result.currentRecorded}>
-              Original vs current
-            </SelectItem>
-            <SelectItem
-              value="critical"
-              disabled={!result.criticalPath?.series.total}
+            <SelectTrigger
+              aria-label="Progress curve comparison"
+              className="w-56"
             >
-              Critical path · saved P6
-            </SelectItem>
-          </SelectContent>
-        </Select>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="overall">Overall</SelectItem>
+              <SelectItem value="current" disabled={!result.currentRecorded}>
+                Original vs current
+              </SelectItem>
+              <SelectItem
+                value="critical"
+                disabled={!result.criticalPath?.series.total}
+              >
+                Critical path · saved P6
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
         <div
           className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs tabular-nums text-slate-700"
           aria-live="off"

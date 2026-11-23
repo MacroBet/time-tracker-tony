@@ -5,6 +5,7 @@ import {
   searchSavedSchedule,
   savedScheduleSearchReply,
   savedLookaheadReply,
+  savedReportReadinessReply,
   matchesSavedScheduleQuery,
 } from "../src/lib/copilot-reads";
 import {
@@ -15,7 +16,52 @@ import {
 import { commissioning } from "../src/lib/commissioning";
 import { emptyData } from "../src/lib/domain";
 import { buildProjectReport } from "../src/lib/project-reports";
+import { buildReportReadiness } from "../src/lib/report-readiness";
 const now = new Date("2026-11-16T12:00:00Z");
+test("import reviews have an exact read-only grammar and do not turn repair requests into reads", () => {
+  for (const text of [
+    "Review the import",
+    "Check my project import",
+    "Show me missing report criteria",
+    "Check report readiness",
+  ])
+    assert.deepEqual(parseCopilotReadCommand(text, now), {
+      kind: "report-readiness",
+    });
+  for (const text of [
+    "Review the import and fill all blanks",
+    "Don't check the import",
+    'Example: "Review the import"',
+    "Why does the import need review?",
+  ])
+    assert.equal(parseCopilotReadCommand(text, now), undefined, text);
+});
+test("saved import review replies describe prerequisites and remedies without inventing data or claiming AI", () => {
+  const data = structuredClone(emptyData);
+  data.projects.push({
+    id: "synthetic",
+    name: "Synthetic",
+    companyId: "company",
+    location: "Local only",
+    commissioning: commissioning(),
+  });
+  const before = JSON.stringify(data);
+  const result = buildReportReadiness(data, "synthetic", undefined, { now });
+  const reply = savedReportReadinessReply(result);
+  assert.match(reply, /Saved import review · no AI generation/);
+  assert.match(
+    reply,
+    /does not create equipment, tag applicability, checksheets or supplier mappings/,
+  );
+  assert.match(reply, /read-only review/);
+  assert.match(reply, /Tag/);
+  result.summary.activities = null;
+  assert.match(
+    savedReportReadinessReply(result),
+    /complete Schedule activity count is unavailable/,
+  );
+  assert.equal(JSON.stringify(data), before);
+});
 function source(count = 16969) {
   const fields = [
     "task_id",

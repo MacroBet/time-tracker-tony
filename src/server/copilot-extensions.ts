@@ -30,6 +30,9 @@ import {
 import { CopilotWorkingIndexMemo } from "@/lib/copilot-snapshot";
 import { requireUser } from "./auth";
 import { loadProjectReport } from "./project-reports";
+import { loadReportReadiness } from "./report-readiness";
+import type { ReportReadiness } from "@/lib/report-readiness";
+import type { DashboardViewRequest } from "@/lib/dashboard-view-context";
 import { prepareWorkingScheduleProposal } from "./schedule-working";
 import { requireCondition } from "./errors";
 import {
@@ -37,7 +40,11 @@ import {
   type ScheduleViewSnapshot,
 } from "@/lib/schedule-view-context";
 export { EXTENSION_TOOLS } from "@/lib/copilot-extension-tools";
-import { EXTENSION_TOOLS } from "@/lib/copilot-extension-tools";
+import {
+  EXTENSION_TOOLS,
+  dashboardViewToolInputSchema,
+  canRequestDashboardView,
+} from "@/lib/copilot-extension-tools";
 export function copilotExtensions({
   user,
   data,
@@ -55,6 +62,8 @@ export function copilotExtensions({
     data.projects.find((p) => p.id === projectId),
   ).version;
   let reportState = initialReport;
+  let readiness: ReportReadiness | undefined;
+  let dashboardView: DashboardViewRequest | undefined;
   const workingMemo = new CopilotWorkingIndexMemo();
   const reports: ProjectReportResult[] = [],
     scheduleProposals: WorkingScheduleDraft[] = [],
@@ -76,6 +85,12 @@ export function copilotExtensions({
     get reportState() {
       return reportState;
     },
+    get readiness() {
+      return readiness;
+    },
+    get dashboardView() {
+      return dashboardView;
+    },
     viewContext: () => ({
       today: projectDate(),
       report: reportState ?? null,
@@ -86,6 +101,14 @@ export function copilotExtensions({
       args: Record<string, unknown>,
     ): Promise<{ output: unknown } | undefined> => {
       if (!EXTENSION_TOOLS.some((tool) => tool.name === name)) return undefined;
+      if (name === "review_import") {
+        z.object({}).strict().parse(args);
+        readiness = await loadReportReadiness(projectId, {
+          userId: user.id,
+          projectVersion,
+        });
+        return { output: { dataOnly: true, ...readiness } };
+      }
       // The report loader checks the same actor, modules, project membership and revision.
       // Avoid a second full bootstrap load immediately before that identical check.
       if (name === "project_report") {
@@ -162,6 +185,42 @@ export function copilotExtensions({
         409,
         "The project records changed. Refresh before asking again.",
       );
+      if (name === "display_dashboard_view") {
+        const view = dashboardViewToolInputSchema.parse(args);
+        requireCondition(
+          canRequestDashboardView(actor, view),
+          403,
+          "Dashboard and the requested report access are required.",
+        );
+        requireCondition(
+          !dashboardView,
+          400,
+          "Only one Dashboard view can be requested per response.",
+        );
+        requireCondition(
+          view.kind !== "vendor-progress" ||
+            currentState.assets.some(
+              (asset) =>
+                asset.vendor?.trim().toLowerCase() ===
+                view.vendor.toLowerCase(),
+            ),
+          400,
+          "That equipment supplier is not recorded in this project. Review the import or choose an exact saved supplier name.",
+        );
+        dashboardView = view;
+        return {
+          output: {
+            projectId,
+            projectVersion,
+            view,
+            status: "pending-browser-acknowledgement",
+            applied: false,
+            recordsChanged: false,
+            message:
+              "The application must verify and render this view. No screen change is claimed by this tool.",
+          },
+        };
+      }
       if (name === "search_schedule_activities") {
         requireCondition(
           hasModule(actor, "commissioning"),

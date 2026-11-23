@@ -25,7 +25,7 @@ import { Input } from "./ui/input";
 import { InfoPopover } from "./InfoPopover";
 
 const titles = {
-  tagging: "Tagging status",
+  tagging: "Test step progress",
   "works-to-go": "Works to go",
   lookahead: "Schedule lookahead",
   vendors: "Equipment suppliers needed",
@@ -33,7 +33,9 @@ const titles = {
 type ReportViewProps = {
   projectId: string;
   initialQuery?: Partial<ProjectReportQuery>;
+  externalQuery?: ProjectReportQuery;
   onQueryChange?: (query: ProjectReportQuery) => void;
+  hideReportPicker?: boolean;
 };
 export function ProjectReportView(props: ReportViewProps) {
   return <ProjectReportSession key={props.projectId} {...props} />;
@@ -41,7 +43,9 @@ export function ProjectReportView(props: ReportViewProps) {
 function ProjectReportSession({
   projectId,
   initialQuery = {},
+  externalQuery,
   onQueryChange,
+  hideReportPicker = false,
 }: ReportViewProps) {
   const { isOnline, currentUser, projects, memberships } = useApp();
   const allowed =
@@ -66,6 +70,21 @@ function ProjectReportSession({
   const [query, setQuery] = useState<ProjectReportQuery>(() =>
     reportQuerySchema.parse(initialQuery),
   );
+  const externalKey = JSON.stringify(externalQuery ?? null);
+  const [querySync, setQuerySync] = useState({
+    observed: externalKey,
+    emitted: [] as string[],
+  });
+  // Native history updates can arrive after the next keystroke. Own URL echoes
+  // must not replace the immediate input state with an older typed value.
+  if (querySync.observed !== externalKey) {
+    const echo = querySync.emitted.lastIndexOf(externalKey);
+    setQuerySync({
+      observed: externalKey,
+      emitted: echo < 0 ? [] : querySync.emitted.slice(echo + 1),
+    });
+    if (externalQuery && echo < 0) setQuery(externalQuery);
+  }
   const [response, setResponse] = useState<{
       result: ProjectReportResult;
       access: string;
@@ -118,6 +137,10 @@ function ProjectReportSession({
       offset: patch.offset ?? 0,
     });
     setQuery(next);
+    setQuerySync((current) => ({
+      ...current,
+      emitted: [...current.emitted.slice(-31), JSON.stringify(next)],
+    }));
     onQueryChange?.(next);
   }
   async function download() {
@@ -204,28 +227,30 @@ function ProjectReportSession({
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <label className="min-w-0 text-sm font-medium">
-          Report
-          <select
-            className="field-select mt-1 w-full"
-            value={query.report}
-            onChange={(event) =>
-              update({
-                report: event.target.value as ProjectReportQuery["report"],
-                activity: undefined,
-                level: undefined,
-                late: "all",
-                query: undefined,
-              })
-            }
-          >
-            {REPORT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {titles[type]}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!hideReportPicker && (
+          <label className="min-w-0 text-sm font-medium">
+            Report
+            <select
+              className="field-select mt-1 w-full"
+              value={query.report}
+              onChange={(event) =>
+                update({
+                  report: event.target.value as ProjectReportQuery["report"],
+                  activity: undefined,
+                  level: undefined,
+                  late: "all",
+                  query: undefined,
+                })
+              }
+            >
+              {REPORT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {titles[type]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="min-w-0 text-sm font-medium">
           Equipment supplier
           <select

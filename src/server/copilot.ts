@@ -42,9 +42,11 @@ import {
   parseCopilotReadCommand,
   savedLookaheadReply,
   savedScheduleSearchReply,
+  savedReportReadinessReply,
   recoverCompletedReport,
   type SavedScheduleSearch,
 } from "@/lib/copilot-reads";
+import { canRequestDashboardView } from "@/lib/copilot-extension-tools";
 
 const safeToolError = (error: unknown): never => {
   if (
@@ -419,6 +421,19 @@ async function performCopilotChat(
       403,
       "Reports access changed. Start a new conversation.",
     );
+    requireCondition(
+      !extensions.readiness ||
+        hasModule(actor, "dashboard") ||
+        hasModule(actor, "reports"),
+      403,
+      "Report review access changed. Start a new conversation.",
+    );
+    requireCondition(
+      !extensions.dashboardView ||
+        canRequestDashboardView(actor, extensions.dashboardView),
+      403,
+      "Dashboard view access changed. Start a new conversation.",
+    );
     const result = json({
       text,
       sources: [...sources.values()],
@@ -428,6 +443,8 @@ async function performCopilotChat(
       reportState: extensions.reportState,
       scheduleProposals: extensions.scheduleProposals,
       librarySearches: extensions.librarySearches,
+      readiness: extensions.readiness,
+      dashboardView: extensions.dashboardView,
       mode,
     });
     return result;
@@ -435,6 +452,14 @@ async function performCopilotChat(
   const read = parseCopilotReadCommand(input.message);
   if (read) {
     const started = performance.now();
+    if (read.kind === "report-readiness") {
+      await extensions.execute("review_import", {});
+      timings.read = performance.now() - started;
+      return finish(
+        savedReportReadinessReply(extensions.readiness!),
+        "saved-data",
+      );
+    }
     if (read.kind === "lookahead") {
       await extensions.execute("project_report", {
         report: "lookahead",

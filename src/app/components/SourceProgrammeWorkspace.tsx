@@ -10,6 +10,9 @@ import {
   type SourceProgrammeSummary,
 } from "@/lib/programme-source";
 import { parseP6Xer } from "@/lib/p6-xer";
+import { apiRequest } from "@/lib/api-client";
+import type { ReportReadiness } from "@/lib/report-readiness";
+import { dashboardViewHref } from "@/lib/dashboard-views";
 import {
   scheduleViewCommandEvent,
   scheduleViewCommandResultEvent,
@@ -248,6 +251,37 @@ export function SourceProgrammeImport({
       setReason("");
       await onImported?.();
       toast.success("P6 source schedule saved");
+      if (
+        hasModule(app.currentUser, "dashboard") ||
+        hasModule(app.currentUser, "reports")
+      ) {
+        const action = {
+          label: "Review report data",
+          onClick: () =>
+            window.location.assign(
+              dashboardViewHref(projectId, { kind: "readiness" }),
+            ),
+        };
+        try {
+          const review = await apiRequest<ReportReadiness>(
+            `/api/projects/${encodeURIComponent(projectId)}/report-readiness`,
+          );
+          const incomplete = review.reports.filter(
+            (report) => report.state !== "ready",
+          ).length;
+          toast.info(
+            incomplete
+              ? `Saved-data check: ${incomplete} reports need data or a coverage review`
+              : "Saved-data check: report inputs are available",
+            { action },
+          );
+        } catch {
+          toast.info(
+            "Schedule saved. Report data check is unavailable; review it from the Dashboard.",
+            { action },
+          );
+        }
+      }
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Schedule was not saved.",
